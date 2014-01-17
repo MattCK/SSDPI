@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+	<p:cSld>
+		<p:spTree>
+			<p:nvGrpSpPr>
+				<p:cNvPr id="1" name=""/>
+				<p:cNvGrpSpPr/>
+				<p:nvPr/>
+			</p:nvGrpSpPr>
+			<p:grpSpPr>
+				<a:xfrm>
+					<a:off x="0" y="0"/>
+					<a:ext cx="0" cy="0"/>
+					<a:chOff x="0" y="0"/>
+					<a:chExt cx="0" cy="0"/>
+				</a:xfrm>
+			</p:grpSpPr>
+			<p:sp>
+				<p:nvSpPr>
+					<p:cNvPr id="34" name="CustomShape 1"/>
+					<p:cNvSpPr/>
+					<p:nvPr/>
+				</p:nvSpPr>
+				<p:spPr>
+					<a:xfrm>
+						<a:off x="0" y="0"/>
+						<a:ext cx="2468520" cy="259920"/>
+					</a:xfrm>
+					<a:prstGeom prst="rect">
+						<a:avLst/>
+					</a:prstGeom>
+				</p:spPr>
+				<p:txBody>
+					<a:bodyPr bIns="45000" lIns="90000" rIns="90000" tIns="45000" wrap="none"/>
+					<a:p>
+						<a:r>
+							<a:rPr lang="en-US"/>
+							<a:t>TopLeft</a:t>
+						</a:r>
+						<a:endParaRPr/>
+					</a:p>
+				</p:txBody>
+			</p:sp>
+			<p:sp>
+				<p:nvSpPr>
+					<p:cNvPr id="35" name="CustomShape 2"/>
+					<p:cNvSpPr/>
+					<p:nvPr/>
+				</p:nvSpPr>
+				<p:spPr>
+					<a:xfrm>
+						<a:off x="8503200" y="5410080"/>
+						<a:ext cx="1576440" cy="259920"/>
+					</a:xfrm>
+					<a:prstGeom prst="rect">
+						<a:avLst/>
+					</a:prstGeom>
+				</p:spPr>
+				<p:txBody>
+					<a:bodyPr bIns="45000" lIns="90000" rIns="90000" tIns="45000" wrap="none"/>
+					<a:p>
+						<a:r>
+							<a:rPr lang="en-US"/>
+							<a:t>BottomRight</a:t>
+						</a:r>
+						<a:endParaRPr/>
+					</a:p>
+				</p:txBody>
+			</p:sp>
+			<p:sp>
+				<p:nvSpPr>
+					<p:cNvPr id="36" name="CustomShape 3"/>
+					<p:cNvSpPr/>
+					<p:nvPr/>
+				</p:nvSpPr>
+				<p:spPr>
+					<a:xfrm>
+						<a:off x="8320320" y="0"/>
+						<a:ext cx="1759320" cy="259920"/>
+					</a:xfrm>
+					<a:prstGeom prst="rect">
+						<a:avLst/>
+					</a:prstGeom>
+				</p:spPr>
+				<p:txBody>
+					<a:bodyPr bIns="45000" lIns="90000" rIns="90000" tIns="45000" wrap="none"/>
+					<a:p>
+						<a:r>
+							<a:rPr lang="en-US"/>
+							<a:t>TopRight</a:t>
+						</a:r>
+						<a:endParaRPr/>
+					</a:p>
+				</p:txBody>
+			</p:sp>
+			<p:sp>
+				<p:nvSpPr>
+					<p:cNvPr id="37" name="CustomShape 4"/>
+					<p:cNvSpPr/>
+					<p:nvPr/>
+				</p:nvSpPr>
+				<p:spPr>
+					<a:xfrm>
+						<a:off x="0" y="5349240"/>
+						<a:ext cx="1737000" cy="259920"/>
+					</a:xfrm>
+					<a:prstGeom prst="rect">
+						<a:avLst/>
+					</a:prstGeom>
+				</p:spPr>
+				<p:txBody>
+					<a:bodyPr bIns="45000" lIns="90000" rIns="90000" tIns="45000" wrap="none"/>
+					<a:p>
+						<a:r>
+							<a:rPr lang="en-US"/>
+							<a:t>BottomLeft</a:t>
+						</a:r>
+						<a:endParaRPr/>
+					</a:p>
+				</p:txBody>
+			</p:sp>
+		</p:spTree>
+	</p:cSld>
+	<p:timing>
+		<p:tnLst>
+			<p:par>
+				<p:cTn dur="indefinite" id="1" nodeType="tmRoot" restart="never">
+					<p:childTnLst>
+						<p:seq>
+							<p:cTn id="2" nodeType="mainSeq">
+								<p:childTnLst/>
+							</p:cTn>
+							<p:prevCondLst>
+								<p:cond delay="0" evt="onPrev">
+									<p:tgtEl>
+										<p:sldTgt/>
+									</p:tgtEl>
+								</p:cond>
+							</p:prevCondLst>
+							<p:nextCondLst>
+								<p:cond delay="0" evt="onNext">
+									<p:tgtEl>
+										<p:sldTgt/>
+									</p:tgtEl>
+								</p:cond>
+							</p:nextCondLst>
+						</p:seq>
+					</p:childTnLst>
+				</p:cTn>
+			</p:par>
+		</p:tnLst>
+	</p:timing>
+</p:sld>
