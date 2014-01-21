@@ -160,12 +160,36 @@ public class Pptx4jTester {
         }
         return textBoxAdded;
     }
-    public boolean addScreenShotToCurrentSlide(String filePath)
+    public boolean addScreenShotToCurrentSlide(String filePath, int x, int y, int height, int width)
     {
         boolean screenShotAdded = false;
+        try{
+        File picFile = new File(filePath);
+        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(presentationPackage, currentSlide, picFile);
+        this.dbgmsg("After creatingImagePart");
+        PictureDetails picture1 = new PictureDetails();
+        picture1.relationshipID = imagePart.getSourceRelationship().getId();
+        picture1.x = x;
+        picture1.y = y;
+        picture1.width = width;
+        picture1.height = height;
+        String pictureStringXML = picture1.BuildXMLPictureString();
+        this.dbgmsg("After buildingXML");
+        Object picObject;
+            picObject = org.docx4j.XmlUtils.unmarshalString(pictureStringXML, Context.jcPML, Pic.class);
+        // Add p:pic to slide
+        this.dbgmsg("After creating pic object");
+	currentSlide.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(picObject);
         
+        }
+        catch(Exception e)
+        {
+            this.dbgmsg("Failed to add image to slide");
+            e.printStackTrace();
+        }
+        return screenShotAdded;
     }
-    private static String BACKGROUND="<p:bg xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\"><p:bgPr><a:blipFill dpi=\"0\" rotWithShape=\"1\"><a:blip r:embed=\"${rID}\" cstate=\"print\"><a:lum/></a:blip><a:srcRect/><a:stretch><a:fillRect/></a:stretch></a:blipFill><a:effectLst/></p:bgPr></p:bg>";
+    private static final String BACKGROUND="<p:bg xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\"><p:bgPr><a:blipFill dpi=\"0\" rotWithShape=\"1\"><a:blip r:embed=\"${rID}\" cstate=\"print\"><a:lum/></a:blip><a:srcRect/><a:stretch><a:fillRect/></a:stretch></a:blipFill><a:effectLst/></p:bgPr></p:bg>";
     private static final String SAMPLE_PICTURE = 			
           "<p:pic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\"> "
             + "<p:nvPicPr>"

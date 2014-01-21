@@ -38,9 +38,10 @@ public class Tester2 {
         textBox2.fontSize = 12;
         String box2XML = textBox2.BuildXMLTextBoxString();
         pptx.addTextBoxToCurrentSlide(box2XML);
+        pptx.addScreenShotToCurrentSlide("V:\\Work\\Screenshot\\java\\picToInsert.png", 10, 20, 300, 350);
         pptx.addnewslide();
         pptx.setBackgroundOfCurrentSlide("V:\\Work\\Screenshot\\java\\sc3.jpg");
-        pptx.SaveFile("V:\\Work\\Screenshot\\java\\pptx4jTester\\pptxFiles\\pptx-picture11.pptx");
+        pptx.SaveFile("V:\\Work\\Screenshot\\java\\pptx4jTester\\pptxFiles\\pptx-picture13.pptx");
         
         
         
