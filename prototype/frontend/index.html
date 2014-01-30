@@ -6,23 +6,41 @@
 	
 	<link rel="stylesheet" href="http://jqueryui.com/jquery-wp-content/themes/jqueryui.com/style.css">
 	
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 	
 	 <script>
-		$(function() {
+		/*$(function() {
 			$( "#dialog-modal" ).dialog({
 				height: 140,
 				modal: true,
 				autoOpen: false
 			});
-		});
+		});*/
 		
+		var currentTagID;
 		function sendTagRetrieveAdClip() {
-			
-			$.post( "retrieveAdClip.php", $( "#insertedTag" ).serialize(), function( data ) {
-				$("#adClip").html("<img src='" + data.adURL + "'/>");
+			$.post("requestAdClip.php", "tag=" + $("#insertedTag").val(), function(data) {
+				currentTagID = data;
+				getImage();
+				$('#adClip').html('Waiting...');
 			}, "json");
+		}
+		
+		function getImage() {
+			$.post("getTagFile.php", "tagID=" + currentTagID, function(data) {
+			
+				//If a name was returned, show the image
+				if (data) {
+					$('#adClip').html('<img src="' + data + '" />');
+				}
+				
+				//Else, try again in half a second
+				else {
+					$('#adClip').append('Waiting...');
+					setTimeout(getImage, 500);
+				}
+			});
 		}
 	</script>
 </head>
@@ -32,12 +50,12 @@
 
 
 <div id="tagDiv">
-	<div id="enterTag">
 		Enter the tag: <br>
-		<textarea id="insertedTag" rows="15" cols="100"><br>
+		<textarea id="insertedTag" rows="15" cols="100"></textarea><br>
 		<input id="sendTagButton" type="button" value="Submit Tag" onClick="sendTagRetrieveAdClip()"><br><br>
-		Time: <div id="runTime"></div><br><br>
-		AdClip: <div id="adClip"></div>
+		<!--Time: <div id="runTime"></div><br><br>-->
+		AdClip:<br><br>
+		<div id="adClip"></div>
 		
 </div>
 
