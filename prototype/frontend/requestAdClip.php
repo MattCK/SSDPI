@@ -12,13 +12,11 @@ dbQuery($addTagQuery);
 
 $tagID = mysql_insert_id();
 
-$session = curl_init('http://');
+$session = curl_init('http://10.1.1.50/?tagID=' . $tagID);
 curl_setopt($session, CURLOPT_HEADER, false);
 curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($session, CURLOPT_FAILONERROR, false);
-curl_setopt($session, CURLOPT_POST, true);
-curl_setopt($session, CURLOPT_POSTFIELDS, 'tagID=' . $tagID);	
 $responseText = curl_exec($session);
 curl_close($session);
 
-echo $tagID
+echo $tagID;

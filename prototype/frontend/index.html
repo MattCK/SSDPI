@@ -20,7 +20,8 @@
 		
 		var currentTagID;
 		function sendTagRetrieveAdClip() {
-			$.post("requestAdClip.php", "tag=" + $("#insertedTag").val(), function(data) {
+			
+			$.post("requestAdClip.php", $('#tagForm').serialize(), function(data) {
 				currentTagID = data;
 				getImage();
 				$('#adClip').html('Waiting...');
@@ -28,7 +29,7 @@
 		}
 		
 		function getImage() {
-			$.post("getTagFile.php", "tagID=" + currentTagID, function(data) {
+			$.get("getTagFile.php", "tagID=" + currentTagID, function(data) {
 			
 				//If a name was returned, show the image
 				if (data) {
@@ -49,14 +50,14 @@
 <div style="font-size: 24px;"><strong>Campaign:</strong> Prototype</div>
 
 
-<div id="tagDiv">
+<div id="tagDiv"><form id=tagForm>
 		Enter the tag: <br>
-		<textarea id="insertedTag" rows="15" cols="100"></textarea><br>
+		<textarea name=tag id="insertedTag" rows="15" cols="100"></textarea><br>
 		<input id="sendTagButton" type="button" value="Submit Tag" onClick="sendTagRetrieveAdClip()"><br><br>
 		<!--Time: <div id="runTime"></div><br><br>-->
 		AdClip:<br><br>
 		<div id="adClip"></div>
-		
+</form>		
 </div>
 
 
