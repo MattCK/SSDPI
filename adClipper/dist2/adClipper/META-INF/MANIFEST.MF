@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.1
+X-COMMENT: Main-Class will be added automatically by build
+Class-Path: lib/apache-mime4j-0.6.jar lib/bsh-1.3.0.jar lib/c3p0-0.9.1
+ -pre6.jar lib/cglib-nodep-2.1_3.jar lib/commons-codec-1.8.jar lib/com
+ mons-collections-3.2.1.jar lib/commons-exec-1.1.jar lib/commons-io-2.
+ 2.jar lib/commons-jxpath-1.3.jar lib/commons-lang3-3.1.jar lib/common
+ s-logging-1.1.1.jar lib/cssparser-0.9.11.jar lib/guava-15.0.jar lib/h
+ amcrest-core-1.3.jar lib/hamcrest-library-1.3.jar lib/htmlunit-2.13.j
+ ar lib/htmlunit-core-js-2.13.jar lib/httpclient-4.3.1.jar lib/httpcor
+ e-4.3.jar lib/httpmime-4.3.1.jar lib/ini4j-0.5.2.jar lib/jboss-common
+ -jdbc-wrapper-src.jar lib/jboss-common-jdbc-wrapper.jar lib/jcommande
+ r-1.29.jar lib/jetty-websocket-8.1.8.jar lib/jna-3.4.0.jar lib/jna-pl
+ atform-3.4.0.jar lib/json-20080701.jar lib/junit-dep-4.11.jar lib/mys
+ ql-connector-java-5.1.28-bin.jar lib/nekohtml-1.9.19.jar lib/netty-3.
+ 5.7.Final.jar lib/operadriver-1.5.jar lib/phantomjsdriver-1.0.4.jar l
+ ib/protobuf-java-2.4.1.jar lib/sac-1.3.jar lib/selenium-java-2.39.0-s
+ rcs.jar lib/selenium-java-2.39.0.jar lib/serializer-2.7.1.jar lib/slf
+ 4j-api-1.6.1.jar lib/testng-6.8.5.jar lib/xalan-2.7.1.jar lib/xercesI
+ mpl-2.10.0.jar lib/xml-apis-1.4.01.jar
+Created-By: 1.7.0_45-b18 (Oracle Corporation)
+Main-Class: adclipper.AdClipper
+

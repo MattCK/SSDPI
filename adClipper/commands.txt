@@ -1,0 +1,4 @@
+cd /root/JavaTestCode/adClipper/src/adclipper/
+javac -encoding ISO-8859-1 -cp "/root/JavaTestCode/adClipper/lib/*" AdClipper.java
+cd ..
+jar -cmf manifest2.mf adClipper.jar adclipper/AdClipper.class
