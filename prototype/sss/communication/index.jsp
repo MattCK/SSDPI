@@ -24,7 +24,7 @@ ResultSet rs = null;
 	//out.println(tagScript);
 	
 	String scriptFile = "/var/lib/tomcat6/webapps/ROOT/scripts/" + request.getParameter("tagID") + ".html";
-	String ssFile = "/var/lib/tomcat6/webapps/ROOT/tempClips/" + request.getParameter("tagID") + ".png";
+	String ssFile = "/adClips/" + request.getParameter("tagID") + ".png";
 	//String ssFile = "/var/lib/tomcat6/webapps/ROOT/sshfs/adClips/" + request.getParameter("tagID") + ".png";
 	String scriptURL = "http://10.1.1.50/scripts/" + request.getParameter("tagID") + ".html"; 
 	
@@ -34,7 +34,7 @@ ResultSet rs = null;
 	
 	String s = null;
 	
-	Process p = Runtime.getRuntime().exec("java -jar /var/lib/tomcat6/webapps/ROOT/adClipper/adClipTester.jar " + scriptURL + " " + ssFile);
+	Process p = Runtime.getRuntime().exec("java -jar /var/lib/tomcat6/webapps/ROOT/adClipper/adClipper.jar " + scriptURL + " " + request.getParameter("tagID"));
 		
 	/*out.println("<br>Command: java -jar /var/lib/tomcat6/webapps/ROOT/adClipper/adClipTester.jar " + scriptURL + " " + ssFile);
 		

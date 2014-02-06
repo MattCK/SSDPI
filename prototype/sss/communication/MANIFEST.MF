@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: 1.6.0 (Sun Microsystems Inc.)
+Class-Path: /root/JavaTestCode/selenium-2.39.0/*:/root/JavaTestCode/selenium-2.39.0/libs/*:/root/JavaTestCode/adClipTester/src/
+Main-Class: AdClipTester.AdClipTester
