@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en">
+<head profile="http://gmpg.org/xfn/11">
+	<meta charset="utf-8" />
+	<title>Campaign Submit</title>
+	
+	<link rel="stylesheet" href="http://jqueryui.com/jquery-wp-content/themes/jqueryui.com/style.css">
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+	
+	 <script>
+		
+		function submitCampaign() {
+			
+			$.post("submitCampaign.php", $('#campaignForm').serialize(), function(data) {
+				alert('Submitted. ' + data);
+			}, "text");
+		}
+		
+	</script>
+</head>
+<body>
+
+<div style="font-size: 24px;"><strong>Campaign Submission</strong></div><br>
+
+
+<div id="tagDiv"><form id="campaignForm">
+		Campaign Name: <input id="campaignName" name="campaignName" type="input"><br><br>
+		URL: <input id="url1" name="url[]" type="input" style="width: 250px;"><br>
+		URL: <input id="url2" name="url[]" type="input" style="width: 250px;"><br>
+		URL: <input id="url3" name="url[]" type="input" style="width: 250px;"><br>
+		URL: <input id="url4" name="url[]" type="input" style="width: 250px;"><br>
+		URL: <input id="url5" name="url[]" type="input" style="width: 250px;"><br>
+		URL: <input id="url6" name="url[]" type="input" style="width: 250px;"><br><br>
+		<input id="sendTagButton" type="button" value="Submit Tag" onClick="submitCampaign()"><br><br>
+</form>		
+
+
+</body>
+</html>
