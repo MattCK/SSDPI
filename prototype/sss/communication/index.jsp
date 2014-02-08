@@ -29,7 +29,7 @@ ResultSet rs = null;
 	String scriptURL = "http://10.1.1.50/scripts/" + request.getParameter("tagID") + ".html"; 
 	
 	PrintWriter pw = new PrintWriter(new FileOutputStream(scriptFile));
-    pw.println("<style>body { margin:0px; padding:0px; }</style>" + tagScript);
+    pw.println("<style>body { margin: 75px 0 0 425px; padding:0px; }</style>" + tagScript);
     pw.close();
 	
 	String s = null;

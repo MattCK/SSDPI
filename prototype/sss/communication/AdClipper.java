@@ -14,18 +14,29 @@ import java.sql.*;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.TimeUnit;
+import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
+
+import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.internal.FindsByXPath;
+
+
 /**
  *
- * @author matt
+ * @author matt and juicio
  */
 public class AdClipper {
     
@@ -105,13 +116,37 @@ public class AdClipper {
         try
         {
         WebDriver driver = new RemoteWebDriver(
-        new URL("http://localhost:4444/wd/hub"), 
-        DesiredCapabilities.firefox());
+			new URL("http://localhost:4444/wd/hub"), 
+			DesiredCapabilities.firefox());
+        Dimension smallWindow = new Dimension(550, 300);
+		driver.manage().window().setSize(smallWindow);
 
+		// driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
+		
         driver.get(URL);
-        Dimension smallWindow = new Dimension(10,10);
-        driver.manage().window().setSize(smallWindow);
-        Thread.sleep(6000);
+		//driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
+        //Dimension smallWindow = new Dimension(425,200);
+		
+        // driver.manage().window().setSize(smallWindow);
+		
+		//IWait<IWebDriver> wait = new OpenQA.Selenium.Support.UI.WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
+		//wait.Until(driver1 => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
+
+		Thread.sleep(3000);
+		
+		//Mouse imageMouse = driver.getMouse();
+		Actions myMouse = new Actions(driver); 
+		//WebElement bodyElement = driver.find_element_by_xpath("/html/body");
+		WebElement bodyElement = driver.findElement(By.xpath("/html/body"));
+		//myMouse.moveToElement(bodyElement, 428, 78).click();
+		myMouse.click(bodyElement);
+		//myMouse.moveToElement(bodyElement);
+		//myMouse.dragAndDropBy(bodyElement, 5, 5);
+		myMouse.perform();
+		//myMouse.moveToElement(bodyElement, 428, 378);
+		//myMouse.moveByOffset(1, 1);
+        
+		Thread.sleep(6000);
         
         // RemoteWebDriver does not implement the TakesScreenshot class
         // if the driver does have the Capabilities to take a screenshot
@@ -129,14 +164,45 @@ public class AdClipper {
         return screenshot;
     }
 
+
+	public File cropAdClip(File adClip)
+    {	
+		BufferedImage sourceAdClip = null;
+		try {
+			sourceAdClip = ImageIO.read(adClip);
+		}
+		catch(IOException e)
+        {
+           this.dbgmsg("Unable to open adClip image - " + e);
+        }
+
+		int width = sourceAdClip.getWidth();
+		int height = sourceAdClip.getHeight();
+		//dbgmsg("width - " + width);
+		//dbgmsg("height - " + height);
+		BufferedImage croppedAdClip = sourceAdClip.getSubimage(425, 75, width - 425, height - 75);
+		
+		try {
+			ImageIO.write(croppedAdClip, "png", adClip);
+		}
+		catch(IOException e)
+        {
+           this.dbgmsg("Unable to open adClip image - " + e);
+        }
+
+		return adClip;
+    }
+	
+	
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
      
      AdClipper clipper = new AdClipper();
-     File clipped = clipper.grabAdClip(args[0]);
-     clipper.saveAdClip(clipped, args[1]);
+     File adClip = clipper.grabAdClip(args[0]);
+     adClip = clipper.cropAdClip(adClip);
+     clipper.saveAdClip(adClip, args[1]);
 	 clipper.insertImagePath(args[1]);
      
      

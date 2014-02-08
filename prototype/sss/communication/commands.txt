@@ -6,4 +6,4 @@ export JAVA_HOME="/usr/lib/jvm/java-7-oracle/"
 java -jar /var/lib/tomcat6/webapps/ROOT/adClipper/adClipper.jar http://10.1.1.50/scripts/29.html /var/lib/tomcat6/webapps/ROOT/tempClips/29.png
 
 
-java -jar /var/lib/tomcat6/webapps/ROOT/adClipper/adClipper.jar http://10.1.1.50/scripts/45.html 45
+java -jar /var/lib/tomcat6/webapps/ROOT/adClipper/adClipper.jar http://10.1.1.50/scripts/59.html 59
