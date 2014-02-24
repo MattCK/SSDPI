@@ -1,5 +1,27 @@
 <?PHP
 
+require_once('databaseSetup.php');
+
+$getTagQuery = "SELECT * FROM tagAdClips WHERE TGA_TGI_id = " . $_GET['tagID'];
+$getTagResult = dbQuery($getTagQuery);
+$tagInfo = mysql_fetch_array($getTagResult);
+
+//If no data was returned, return NULL.
+if (!$tagInfo) {exit(0);}
+
+echo 'adClips/' . $tagInfo['TGA_imageFile'];
+
+exit(0);
+
+$fileURI = '/var/www/adClips/' . $_GET['tagID'] . '.png';
+if (file_exists($fileURI)) {
+	echo '/adClips/' . $_GET['tagID'] . '.png';
+}
+else {
+	exit(0);
+}
+exit(0);
+
 $fileURI = 'http://10.1.1.50/tempClips/' . $_GET['tagID'] . '.png';
 if (checkurl($fileURI)) {
 	echo $fileURI;
@@ -59,13 +81,3 @@ else {
 	exit(0);
 }
 
-require_once('databaseSetup.php');
-
-$getTagQuery = "SELECT * FROM tagAdClips WHERE TGA_TGI_id = " . $_GET['tagID'];
-$getTagResult = dbQuery($getTagQuery);
-$tagInfo = mysql_fetch_array($getTagResult);
-
-//If no data was returned, return NULL.
-if (!$tagInfo) {exit(0);}
-
-echo $tagInfo['TGA_imageFile'];
