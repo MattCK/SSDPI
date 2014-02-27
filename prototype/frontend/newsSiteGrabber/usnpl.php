@@ -11,18 +11,10 @@ $stateAbbreviations = getStateAbbreviationsFromCSV();
 
 $results = getUSNPLNewsSites($stateAbbreviations);
 
-print_r($results);
-
-$csvArray = array();
-foreach($results as $curSite => $curInfo) {
-	$csvArray[$curSite] = $curInfo['siteLocation'] . "," . $curInfo['siteName'];
-}
-
-
-$filename = dirname(__FILE__) . '/results/usnplDomains-' . time() . '.csv';
+$filename = dirname(__FILE__) . '/results/newsTypesUsnplDomains-' . time() . '.csv';
 $fp = fopen($filename, 'w');
 foreach ($results as $curFieldURL => $curFieldInfo) {
-    fputcsv($fp, array($curFieldURL, $curFieldInfo['siteName'], $curFieldInfo['siteLocation']));
+    fputcsv($fp, array($curFieldURL, $curFieldInfo['siteName'], $curFieldInfo['siteLocation'], $curFieldInfo['type']));
 }
 fclose($fp);
 

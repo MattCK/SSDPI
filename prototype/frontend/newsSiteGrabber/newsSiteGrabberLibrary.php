@@ -6,7 +6,7 @@ function getNewsDomains($cityArray) {
 	foreach ($cityArray as $curCity) {
 		
 		//Grab the link domains from google for the city
-		sleep(60 + rand(0, 45));
+		sleep(70 + rand(0, 60));
 		$cityDomains = getCityDomains($curCity);
 		
 		//For each domain, either add it to the array or increment it
@@ -43,7 +43,7 @@ function getCityDomains($cityName) {
 	
 	//Get the html from google
 	$googleURL = 'https://ajax.googleapis.com/ajax/services/search/web?';
-	$googleQueryString = "v=1.0&q=" . htmlentities(str_replace(" ", "+", $cityName)) . "+News&rsz=8";
+	$googleQueryString = "v=1.0&q=News+" . htmlentities(str_replace(" ", "+", $cityName)) . "&rsz=8&userip=" . getRandomIP();
 	
 	$responseJSON = getPageHTML($googleURL . $googleQueryString);
 	$searchObject = json_decode($responseJSON);
@@ -51,17 +51,20 @@ function getCityDomains($cityName) {
 	//echo "$cityName: ";
 	//print_r($searchObject);
 	echo $responseString = "$cityName: " . $searchObject->responseStatus . " (" . $searchObject->responseDetails . ") \n";
-	//file_put_contents('responseList.txt', $responseString, FILE_APPEND);
+	echo "	URL: " . $googleURL . $googleQueryString . "  \n";
 	file_put_contents(dirname(__FILE__) . '/results/responseList.txt', $responseString, FILE_APPEND);
-	//echo dirname(__FILE__). '/results/relativeTest.txt' . "\n\n";
 		
-	//echo $responseHTML = getPageHTML($googleURL . $googleQueryString);
 	$foundLinks = array();
 	if ($searchObject->responseStatus == 200) {
 		foreach($searchObject->responseData->results as $curResult) {
 			$foundLinks[] = $curResult->url;
 		}
 	}
+	else {
+		echo 'Error detected. Stopping'; exit();
+	
+	}
+	
 	
 	//print_r($foundLinks);
 	
@@ -92,7 +95,7 @@ function getPageHTML($url, $postFields = null) {
 	curl_setopt($session, CURLOPT_COOKIESESSION, true);
 	curl_setopt($session, CURLOPT_COOKIEFILE, 'cookies.txt');
 	curl_setopt($session, CURLOPT_COOKIEJAR, 'cookies.txt');	
-	curl_setopt($session, CURLOPT_USERAGENT, 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)');
+	curl_setopt($session, CURLOPT_USERAGENT, 'Lynx/2.8.8dev.3 libwww-FM/2.14 SSL-MM/1.4.1');
 	//curl_setopt($session, CURLOPT_REFERER, "https://www.google.com");	
 	
 	//If post fields were passed, send them
@@ -142,6 +145,44 @@ function writeArrayToCSV($fileName, $arrayToWrite) {
 
 	fclose($fileHandler);
 
+}
+
+function getRandomIP() {
+	
+		$ipArray = array(
+			'22.81.19.74',
+			'180.67.230.10',
+			'101.8.96.251',
+			'112.3.229.152',
+			'155.60.162.118',
+			'81.145.61.41',
+			'83.171.29.254',
+			'110.29.36.132',
+			'109.54.206.35',
+			'120.181.45.221',
+			'188.141.217.45',
+			'143.191.197.44',
+			'251.105.162.77',
+			'249.222.117.77',
+			'139.145.76.248',
+			'173.111.126.28',
+			'165.77.63.31',
+			'3.107.251.191',
+			'247.213.235.135',
+			'150.178.179.146',
+			'28.86.222.22',
+			'53.84.98.191',
+			'229.174.185.148',
+			'31.56.176.195',
+			'132.238.225.135',
+			'90.222.71.83',
+			'180.52.218.76',
+			'229.142.222.2',
+			'227.189.23.26',
+			'19.121.216.248'
+		);
+		
+		return $ipArray[rand(0, (count($ipArray) - 1))];
 }
 
 ?>

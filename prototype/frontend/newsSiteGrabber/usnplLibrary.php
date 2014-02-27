@@ -9,75 +9,93 @@ function getUSNPLNewsSites($stateAbbreviations) {
 		$stateDomains = getStateSites($curAbbreviation);
 		
 		$finalDomainsList = array_merge($finalDomainsList, $stateDomains);
-		
-		//For each domain, either add it to the array or increment it
-		/*foreach ($stateDomains as $curDomain) {
-			if ($finalDomainsList[$curDomain]) {
-				$finalDomainsList[$curDomain] += 1;
-			}
-			else {
-				$finalDomainsList[$curDomain] = 1;
-			}
-		}*/
-		
-		//---------------------------------------
-		//writeArrayToCSV('runningWrite.csv', $finalDomainsList);
-		//---------------------------------------
 	}
 	
 	//Return the array of domain => count
 	return $finalDomainsList;
 }
 
-function getStateSites($stateName) {
+function getStateSites($stateAbbreviation) {
 
-	echo "Currenent state: $stateName \n";
+	echo "Currenent state: $stateAbbreviation \n";
 	
 	//Create the query string
 	$usnplSite = 'http://www.usnpl.com/';
-	$usnplQueryString = strtolower($stateName) . "news.php";
+	$newsQueryString = strtolower($stateAbbreviation) . "news.php";
+	$tvQueryString = "tv/" . strtolower($stateAbbreviation) . "tv.php";
+	$radioQueryString = "radio/" . strtolower($stateAbbreviation) . "radio.php";
+	$collegeQueryString = "college/" . strtolower($stateAbbreviation) . "coll.php";
 	
 	//Get the html from USNPL
-	$responseHTML = getPageHTML($usnplSite . $usnplQueryString);
-	//print_r(json_decode($responseHTML));
-		
+	$newsHTML = getPageHTML($usnplSite . $newsQueryString);
+	$tvHTML = getPageHTML($usnplSite . $tvQueryString);
+	$radioHTML = getPageHTML($usnplSite . $radioQueryString);
+	$collegeHTML = getPageHTML($usnplSite . $collegeQueryString);
+	
+	//-----------------------------------------------------------------------------------
+	//------------------------Too tired to do this right-----------------------
+	//-----------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+	
+	
 	//Find the news site URLs in the page
-	preg_match_all('@<b>(\w*?)</b>\s*?\&nbsp<a href="(.*?)">(.*?)</a>@s', $responseHTML, $sitesFound);
-	//print_r($siteMatches);exit();
-	
-
-	
-	//echo "$cityName: ";
-	//print_r($searchObject);
-	/*echo $responseString = "$cityName: " . $searchObject->responseStatus . " (" . $searchObject->responseDetails . ") \n";
-	file_put_contents('responseList.txt', $responseString, FILE_APPEND);
-	file_put_contents(dirname(__FILE__). 'results/relativeTest.txt', $responseString, FILE_APPEND);
-	//echo dirname(__FILE__). '/results/relativeTest.txt' . "\n\n";
+	preg_match_all('@<b>(\w*?)</b>\s*?\&nbsp\s*?<a href="(.*?)">(.*?)</a>@s', $newsHTML, $newsSites);
+	preg_match_all('@<b>(\w*?)</b>\s*?\&nbsp\s*?<a href="(.*?)">(.*?)</a>@s', $tvHTML, $tvSites);
+	preg_match_all('@<b>(\w*?)</b>\s*?\<a href="(.*?)">(.*?)</a>@s', $radioHTML, $radioSites);
+	preg_match_all('@<b>(\w*?)</b>\s*?\&nbsp\s*?<a href="(.*?)">(.*?)</a>@s', $collegeHTML, $collegeSites);
 		
-	//echo $responseHTML = getPageHTML($googleURL . $googleQueryString);
-	$foundLinks = array();
-	foreach($searchObject->responseData->results as $curResult) {
-		$foundLinks[] = $curResult->url;
-	}*/
-	
-	//print_r($foundLinks);
 	
 	//Create the array of domain => (siteLocation, siteName, siteURL)
 	$siteInfoArray = array();
-	foreach($sitesFound[2] as $curKey => $curSite) {
+	foreach($newsSites[2] as $curKey => $curSite) {
 		
 		//Cleane the link and if it works, add it to the array
 		$cleanLink = parse_url($curSite, PHP_URL_HOST);
 		if ($cleanLink) {
 			$siteInfoArray[$cleanLink] = array(
 											'siteDomain' => $cleanLink,
-											'siteLocation' => $sitesFound[1][$curKey],
-											'siteName' => $sitesFound[3][$curKey]);
+											'siteLocation' => $newsSites[1][$curKey],
+											'siteName' => $newsSites[3][$curKey],
+											'type' => 'news');
 		}
 	}
-	
-	//print_r($siteInfoArray); exit();
-	
+	foreach($tvSites[2] as $curKey => $curSite) {
+		
+		//Cleane the link and if it works, add it to the array
+		$cleanLink = parse_url($curSite, PHP_URL_HOST);
+		if ($cleanLink) {
+			$siteInfoArray[$cleanLink] = array(
+											'siteDomain' => $cleanLink,
+											'siteLocation' => $tvSites[1][$curKey],
+											'siteName' => $tvSites[3][$curKey],
+											'type' => 'tv');
+		}
+	}
+	foreach($radioSites[2] as $curKey => $curSite) {
+		
+		//Cleane the link and if it works, add it to the array
+		$cleanLink = parse_url($curSite, PHP_URL_HOST);
+		if ($cleanLink) {
+			$siteInfoArray[$cleanLink] = array(
+											'siteDomain' => $cleanLink,
+											'siteLocation' => $radioSites[1][$curKey],
+											'siteName' => $radioSites[3][$curKey],
+											'type' => 'radio');
+		}
+	}
+	foreach($collegeSites[2] as $curKey => $curSite) {
+		
+		//Cleane the link and if it works, add it to the array
+		$cleanLink = parse_url($curSite, PHP_URL_HOST);
+		if ($cleanLink) {
+			$siteInfoArray[$cleanLink] = array(
+											'siteDomain' => $cleanLink,
+											'siteLocation' => $collegeSites[1][$curKey],
+											'siteName' => $collegeSites[3][$curKey],
+											'type' => 'college');
+		}
+	}
+		
 	//Return the cleaned domains array
 	return $siteInfoArray;
 }

@@ -1,0 +1,2 @@
+New York: 403 (Suspected Terms of Service Abuse. Please see http://code.google.com/apis/errors) 
+Los Angeles: 403 (Suspected Terms of Service Abuse. Please see http://code.google.com/apis/errors) 

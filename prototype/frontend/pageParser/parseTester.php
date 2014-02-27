@@ -5,16 +5,28 @@ require_once('menuGrabLib.php');
 
 if ($_GET['url']) {
 
-	$unorderedLists = array();
-	if ($_GET['searchType'] == 'div') {$unorderedLists = getDivLists($_GET['url']);}
-	else {$unorderedLists = getUnorderedLists($_GET['url']);}
+	$foundLists = array();
+	//$foundLists = getLists($_GET['url']);
+	$manyFoundLists = getListsFromManyURLs(array($_GET['url'] => $_GET['url']), 5);
+	$foundLists = current($manyFoundLists);
+	//print_r(array_slice($foundLists, 0, 3));
+	//print_r(array_slice($foundLists2, 0, 3));
+	
+	//print_r($foundLists[0]);
+	//print_r($foundLists2);
+	//print_r($foundLists[1]);
+	
+	$listRankings = getListRankings($foundLists);
 
-	$listRankings = getUnorderedListRankings($unorderedLists);
-
+	//print_r($listRankings);
+	//print_r($listRankings2);
+	//$foundLists = $foundLists2;
+	//$listRankings = $listRankings2;
+	
 	$finalLists = array();
 	arsort($listRankings);
 	foreach($listRankings as $indexKey => $curRank) {
-		$finalLists[] = array('rank' => $curRank, 'menu' => $unorderedLists[$indexKey]);
+		$finalLists[] = array('rank' => $curRank, 'menu' => $foundLists[$indexKey]);
 	}
 }
 ?>
@@ -23,7 +35,6 @@ if ($_GET['url']) {
 
 	<form action="parseTester.php" id="urlSubmitForm" name="urlSubmitForm" method="GET" align="center">
 		<input type="text" id="url" name="url" maxlength="256" style="width:300px" value="<?PHP echo $_GET['url']?>">
-		<select name="searchType"><option value="ul">ULs</option><option value="div">Divs</option></select>
 		<input type="submit" name="urlSubmit" value="Go!">
 	</form><br><br>
 	<hr>
@@ -42,7 +53,7 @@ if ($_GET['url']) {
 			echo "Lists by Rankings: \n";
 			foreach($listRankings as $curKey => $curRank) {
 				echo "	Rank $curRank: \n";
-				foreach($unorderedLists[$curKey] as $curItem) {
+				foreach($foundLists[$curKey] as $curItem) {
 					echo "		- " . $curItem['title'] . " (" . $curItem['link'] . ")\n";
 				}
 			}
