@@ -1,0 +1,155 @@
+thePlatform PDK
+5.3.11.334931 (2014-02-25 12:06 PM)
+4:34:16.519 	WARN 	bootloader 	$pdk.shell.DefaultsPlayerImpl :: Could not find a preferred format for this browser. Player will not add formats to selector calls
+Unsafe JavaScript attempt to access frame with URL http://newpittsburghcourieronline.com/category/c43-lifestyle/ from frame with URL https://cdn3.doubleverify.com/t2tv2.html. Domains, protocols and ports must match.
+
+Unsafe JavaScript attempt to access frame with URL http://static.ak.facebook.com/connect/xd_arbiter/LEdxGgtB9cN.js?version=40#channel=f22bd10128&origin=http%3A%2F%2Fnewpittsburghcourieronline.com from frame with URL https://cdn3.doubleverify.com/t2tv2.html. Domains, protocols and ports must match.
+
+Unsafe JavaScript attempt to access frame with URL https://s-static.ak.facebook.com/connect/xd_arbiter/LEdxGgtB9cN.js?version=40#channel=f22bd10128&origin=http%3A%2F%2Fnewpittsburghcourieronline.com from frame with URL https://cdn3.doubleverify.com/t2tv2.html. Domains, protocols and ports must match.
+
+Unsafe JavaScript attempt to access frame with URL about:blank from frame with URL https://cdn3.doubleverify.com/t2tv2.html. Domains, protocols and ports must match.
+
+Unsafe JavaScript attempt to access frame with URL http://player.theplatform.com/p/BCY3OC/Rdy0h5l3Acse?form=html from frame with URL https://cdn3.doubleverify.com/t2tv2.html. Domains, protocols and ports must match.
+
+Unsafe JavaScript attempt to access frame with URL about:blank from frame with URL https://cdn3.doubleverify.com/t2tv2.html. Domains, protocols and ports must match.
+
+Unsafe JavaScript attempt to access frame with URL about:blank from frame with URL https://cdn3.doubleverify.com/t2tv2.html. Domains, protocols and ports must match.
+
+Given URL is not allowed by the Application configuration.: One or more of the given URLs is not allowed by the App's settings.  It must match the Website URL or Canvas URL, or the domain must be a subdomain of one of the App's domains.
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+something here
+'8','largelogo','http://newpittsburghcourieronline.com/','',' : over50Multi : shortString'
+'12','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-69928 has-children','http://newpittsburghcourieronline.com/category/news/','News',' : over50Multi : shortString : samePath'
+'-7018','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43878','http://newpittsburghcourieronline.com/category/metro/','Metro',' : under50Multi : shortString : samePath'
+'-7018','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-43879','http://newpittsburghcourieronline.com/category/national/','National',' : under50Multi : shortString : samePath'
+'-14049','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43880','http://newpittsburghcourieronline.com/category/national/atlanta/','Atlanta',' : under50Multi : shortString : samePath'
+'-14049','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43881','http://newpittsburghcourieronline.com/category/national/chicago/','Chicago',' : under50Multi : shortString : samePath'
+'-14049','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43882','http://newpittsburghcourieronline.com/category/national/c195-detroit/','Detroit',' : under50Multi : shortString : samePath'
+'-14049','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43883','http://newpittsburghcourieronline.com/category/national/c196-memphis/','Memphis',' : under50Multi : shortString : samePath'
+'-14018','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43884','http://newpittsburghcourieronline.com/category/national/news-one-newsroom/','News One Newsroom',' : under50Multi : longString : 2pSpaces : samePath'
+'-7008','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43885','http://newpittsburghcourieronline.com/category/international/','International',' : under50Multi : samePath'
+'25','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43890','http://newpittsburghcourieronline.com/category/c44-entertainment/','Entertainment',' : over50Multi : samePath'
+'20','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43888','http://newpittsburghcourieronline.com/category/c41-business/','Business',' : over50Multi : shortString : samePath'
+'21','menu-item menu-item-type-taxonomy menu-item-object-category current-menu-item menu-item-has-children menu-item-43891 has-children','http://newpittsburghcourieronline.com/category/c43-lifestyle/','Lifestyle',' : over50Multi : shortString : samePath'
+'-6977','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43892','http://newpittsburghcourieronline.com/category/bulletin-board/','Community Bulletin Board',' : under50Multi : longString : 2pSpaces : samePath'
+'17','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43887','http://newpittsburghcourieronline.com/category/opinion/','Opinion',' : over50Multi : shortString : samePath'
+'14','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43894','http://newpittsburghcourieronline.com/category/c46-health/','Health',' : over50Multi : shortString : samePath'
+'12','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43889','http://newpittsburghcourieronline.com/category/c42-sports/','Sport',' : under50Multi : shortString : samePath'
+'10','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43895','http://newpittsburghcourieronline.com/category/c45-generation-y/','Youth',' : under50Multi : shortString : samePath'
+'7','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-43896','http://newpittsburghcourieronline.com/category/people/','People',' : under50Multi : shortString : samePath'
+'14','menu-item menu-item-type-taxonomy menu-item-object-category menu-item-69916','http://newpittsburghcourieronline.com/category/classifieds/','Classifieds',' : under50Multi : samePath'
+'-6968','menu-item menu-item-type-post_type menu-item-object-page menu-item-71343','http://newpittsburghcourieronline.com/sign-up-for-our-newsletter/','Join NPC’s Email List',' : under50Multi : longString : 2pSpaces'
+'20','rss','http://newpittsburghcourieronline.com/category/c43-lifestyle/feed/','Lifestyle RSS',' : under50Multi : samePath'
+'-2','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/19/pittsburgh-federal-employees-celebrate-black-history/','',' : under50Multi : shortString'
+'29','entry-title','http://newpittsburghcourieronline.com/2014/03/19/pittsburgh-federal-employees-celebrate-black-history/','Pittsburgh Federal employees celebrate Black History',' : under50Multi : longString : 2pSpaces'
+'18','read-more','http://newpittsburghcourieronline.com/2014/03/19/pittsburgh-federal-employees-celebrate-black-history/','Full Story »',' : under50Multi : 2pSpaces'
+'9','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/19/in-my-travels-2014/','',' : over50Multi : shortString'
+'40','entry-title','http://newpittsburghcourieronline.com/2014/03/19/in-my-travels-2014/','In my travels 2014',' : over50Multi : longString : 2pSpaces'
+'29','read-more','http://newpittsburghcourieronline.com/2014/03/19/in-my-travels-2014/','Full Story »',' : over50Multi : 2pSpaces'
+'-2','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/19/friends-throw-bev-smith-a-surprise-birthday-party/','',' : under50Multi : shortString'
+'29','entry-title','http://newpittsburghcourieronline.com/2014/03/19/friends-throw-bev-smith-a-surprise-birthday-party/','Friends throw Bev Smith a surprise birthday party',' : under50Multi : longString : 2pSpaces'
+'18','read-more','http://newpittsburghcourieronline.com/2014/03/19/friends-throw-bev-smith-a-surprise-birthday-party/','Full Story »',' : under50Multi : 2pSpaces'
+'9','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/19/church-circuit-15/','',' : over50Multi : shortString'
+'19','entry-title','http://newpittsburghcourieronline.com/2014/03/19/church-circuit-15/','Church Circuit',' : over50Multi'
+'29','read-more','http://newpittsburghcourieronline.com/2014/03/19/church-circuit-15/','Full Story »',' : over50Multi : 2pSpaces'
+'-2','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/18/tracing-familys-roots-gives-a-broader-sense-of-self/','',' : under50Multi : shortString'
+'29','entry-title','http://newpittsburghcourieronline.com/2014/03/18/tracing-familys-roots-gives-a-broader-sense-of-self/','Tracing family’s roots gives a broader sense of self’',' : under50Multi : longString : 2pSpaces'
+'18','read-more','http://newpittsburghcourieronline.com/2014/03/18/tracing-familys-roots-gives-a-broader-sense-of-self/','Full Story »',' : under50Multi : 2pSpaces'
+'9','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/17/new-studies-shatter-myths-about-black-cohabitation-and-marriage/','',' : over50Multi : shortString'
+'40','entry-title','http://newpittsburghcourieronline.com/2014/03/17/new-studies-shatter-myths-about-black-cohabitation-and-marriage/','New studies shatter myths about Black cohabitation and marriage',' : over50Multi : longString : 2pSpaces'
+'29','read-more','http://newpittsburghcourieronline.com/2014/03/17/new-studies-shatter-myths-about-black-cohabitation-and-marriage/','Full Story »',' : over50Multi : 2pSpaces'
+'-2','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/17/on-the-media-buffet-people-still-seek-meaty-news/','',' : under50Multi : shortString'
+'29','entry-title','http://newpittsburghcourieronline.com/2014/03/17/on-the-media-buffet-people-still-seek-meaty-news/','On the media buffet, people still seek meaty news',' : under50Multi : longString : 2pSpaces'
+'18','read-more','http://newpittsburghcourieronline.com/2014/03/17/on-the-media-buffet-people-still-seek-meaty-news/','Full Story »',' : under50Multi : 2pSpaces'
+'9','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/17/the-wise-decision-nope-its-not-true/','',' : over50Multi : shortString'
+'40','entry-title','http://newpittsburghcourieronline.com/2014/03/17/the-wise-decision-nope-its-not-true/','The Wise Decision…Nope, it’s not true',' : over50Multi : longString : 2pSpaces'
+'29','read-more','http://newpittsburghcourieronline.com/2014/03/17/the-wise-decision-nope-its-not-true/','Full Story »',' : over50Multi : 2pSpaces'
+'-2','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/16/michelle-obama-cooking-at-home-has-its-advantages/','',' : under50Multi : shortString'
+'29','entry-title','http://newpittsburghcourieronline.com/2014/03/16/michelle-obama-cooking-at-home-has-its-advantages/','Michelle Obama: Cooking at home has its advantages',' : under50Multi : longString : 2pSpaces'
+'18','read-more','http://newpittsburghcourieronline.com/2014/03/16/michelle-obama-cooking-at-home-has-its-advantages/','Full Story »',' : under50Multi : 2pSpaces'
+'9','thumbnail ione-315','http://newpittsburghcourieronline.com/2014/03/16/in-praise-of-crazy/','',' : over50Multi : shortString'
+'40','entry-title','http://newpittsburghcourieronline.com/2014/03/16/in-praise-of-crazy/','In praise of crazy',' : over50Multi : longString : 2pSpaces'
+'29','read-more','http://newpittsburghcourieronline.com/2014/03/16/in-praise-of-crazy/','Full Story »',' : over50Multi : 2pSpaces'
+'30','nav-previous','http://newpittsburghcourieronline.com/category/c43-lifestyle/page/2/','« Earlier posts',' : under50Multi : 2pSpaces : samePath'
+'27','widgetcontainer widget_recent_entries','http://newpittsburghcourieronline.com/2014/03/19/review-minogues-album-goes-way-past-1st-base/','Review: Minogue’s album goes way past 1st base',' : under50Multi : longString : 2pSpaces'
+'27','widgetcontainer widget_recent_entries','http://newpittsburghcourieronline.com/2014/03/19/review-blood-ties-long-and-anemic/','Review: ‘Blood Ties’ long and anemic',' : under50Multi : longString : 2pSpaces'
+'27','widgetcontainer widget_recent_entries','http://newpittsburghcourieronline.com/2014/03/19/vigil-against-violence-calls-out-community/','Vigil against violence calls out community',' : under50Multi : longString : 2pSpaces'
+'27','widgetcontainer widget_recent_entries','http://newpittsburghcourieronline.com/2014/03/19/man-up-on-domestic-violence/','‘Man Up’ on domestic violence',' : under50Multi : longString : 2pSpaces'
+'27','widgetcontainer widget_recent_entries','http://newpittsburghcourieronline.com/2014/03/19/detroit-future-city-plan-grim-future-city-for-poor-neighborhoods/','Detroit Future City Plan…Grim ‘Future City’ for poor neighborhoods',' : under50Multi : longString : 2pSpaces'
+'-2','menu-item menu-item-type-post_type menu-item-object-page menu-item-56618','http://newpittsburghcourieronline.com/advertise/','Advertise',' : under50Multi : shortString'
+'8','menu-item menu-item-type-post_type menu-item-object-page menu-item-56634','http://newpittsburghcourieronline.com/new-pittsburgh-courier/','Contact',' : over50Multi : shortString'
+'16','menu-item menu-item-type-post_type menu-item-object-page menu-item-56641','http://newpittsburghcourieronline.com/privacy-policy/','Privacy Policy',' : over50Multi'
+'2','menu-item menu-item-type-post_type menu-item-object-page menu-item-56638','http://newpittsburghcourieronline.com/history/','History',' : over50Multi : shortString'
