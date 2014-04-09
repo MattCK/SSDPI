@@ -169,7 +169,7 @@ function removeLinksToOtherDomains(anchorListLocal){
 				}
 			}
 		}
-		//If there waws an error, delete the current anchor and set the domain to empty string to delete the rest
+		//If there was an error, delete the current anchor and set the domain to empty string to delete the rest
 		catch(err1){
 			delete anchorListLocal[key];
 			curDomain = "";
@@ -458,7 +458,7 @@ function getClassWithHighestScore(anchorListLocal){
 		}
 	}
 	
-	//Sort the array bu reverse score to get heighest class
+	//Sort the array by reverse score to get heighest class
 	classScores.sort(function(a,b) { return b.score - a.score } );
 	
 	//Return the highest scored class name
@@ -547,9 +547,6 @@ function rateClassNames(anchorListLocal, goodClassNamesLocal, badClassNamesLocal
   return anchorListLocal;
 }
 
-// print to html page
-
-
 
 
 //
@@ -582,10 +579,6 @@ if(classIndex < anchorListLocal.length){
  }
 }
 
-
-
-
-
 //insertion sort
 function insertionSort(items) {
 
@@ -613,6 +606,56 @@ function insertionSort(items) {
     
     return items;
 }
+
+/**
+* 	Sends the viewable interface HTML to standard out
+**/
+function printHTMLWTabs(anchorListLocal, url, shotPath){
+	var htmlOut = '<head><meta charset="utf-8" /><style>table, th,td{ border-collapse:collapse; border:1px solid black; } th, td{ padding:5px; }</style></head>';
+	
+	htmlOut += '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>';
+	htmlOut += '<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />';
+	htmlOut += '<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>';
+	htmlOut += '<link rel="stylesheet" href="style.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>';
+	htmlOut += '<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />';
+	htmlOut += '<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>';
+	htmlOut += '<link rel="stylesheet" href="style.css">';
+	htmlOut += '<script>';
+	htmlOut += '$(function() {';
+	htmlOut += '$( "#tabs" ).tabs();';
+	htmlOut += '});';
+	htmlOut += '</script>';
+	
+	htmlOut += '<body><table><tr> <td>  <p>Site Image: [[siteURL]]</p></td><td><p>Site Links</p> </td> </tr> <tr><td><img src="[[picPath]]" alt="SitePic" width="800" ></td><td>';
+	
+	htmlOut += '<div id="tabs">';
+	htmlOut += '<ul>';
+	htmlOut += '';
+	htmlOut += '';
+	htmlOut += '';
+	htmlOut += '';
+	htmlOut += '';
+	
+	htmlOut = htmlOut.replace('[[siteURL]]', url);
+	htmlOut = htmlOut.replace('[[picPath]]', shotPath);
+	htmlOut = htmlOut + "\n";
+	for (var key in anchorListLocal) {
+    if (anchorListLocal.hasOwnProperty(key)) {
+      var obj = anchorListLocal[key];
+	  htmlOut = htmlOut + "<b>" +  obj['text'] + "</b></br>";
+	  htmlOut = htmlOut + obj['href'] + "</br>";
+	  htmlOut = htmlOut + obj['reasons'] + "</br>";
+	  htmlOut = htmlOut + "\n";
+	  htmlOut = htmlOut + "<b>" +  obj['score'] + "</b></br>|: " + obj['class'] + " Location: " + obj['xPos'] + "x" + obj['yPos'] + "</br>";
+	  htmlOut = htmlOut + "\n";
+	  htmlOut = htmlOut + "<hr noshade>";
+	  htmlOut = htmlOut + "\n";
+	  }
+	 }
+	 htmlOut = htmlOut + '</td></tr></table></body>';
+	 console.log(htmlOut);
+}
+
 
 
 
