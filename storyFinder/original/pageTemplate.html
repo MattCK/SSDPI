@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Story Finder</title>
+	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>		
+	<style>
+		body {
+			font-size: 11px;
+		}
+		
+		.actionLink {
+			text-decoration: underline;
+			color: blue;
+			cursor: pointer;
+		}
+		
+		#highlightDiv, #highlightDiv a {
+			position: absolute; 
+			top: 0; 
+			left: 0; 
+			background-color: rgba(0, 255, 0, 0.4); 
+			width:15px; 
+			height:30px
+		}
+	</style>
+	<script>
+		$(function() {
+			$( "#classAccordion" ).accordion({
+				heightStyle: "content"
+			});
+		});
+		
+		function highlightStory(xPosition, yPosition) {
+			var screeshotPosition = $('#screenShot').offset();
+			$("#highlightDiv").css({ top: yPosition + screeshotPosition.top + 'px' });		
+			$("#highlightDiv").css({ left: xPosition + 'px' });	
+
+			//window.scrollBy(0, yPosition + screeshotPosition.top - 75);  
+			$("html, body").animate({ scrollTop: yPosition + screeshotPosition.top - 75 }, "fast");
+		}
+		
+		function scrollUp() {
+			$("html, body").animate({ scrollTop: 0 }, "fast");
+		}
+	</script>
+</head>
+
+<body>
+	<h1>nytimes.com/business</h1>
+
+	<div id="classAccordion">
+		<h3>story lipos-2 prm prm-story</h3>
+		<div>
+			<table border=1>
+				<tr>
+					<td>47</td>
+					<td>Macquarie to steer NZ float</td>
+					<td><a class="actionLink" onClick="highlightStory(354, 3482)">354x3482</a></td>
+					<td>: over50Multi : longString : 2pSpaces : samePath</td>
+				</tr>
+				<tr>
+					<td>34</td>
+					<td>Glaxo probes bribery allegations</td>
+					<td><a class="actionLink" onClick="highlightStory(688, 3482)">688x3482</a></td>
+					<td>: over50Multi : longString : 2pSpaces</td>
+				</tr>
+				<tr>
+					<td>23</td>
+					<td>Chevron boss bemoans gas wage hikes</td>
+					<td><a class="actionLink" onClick="highlightStory(20, 3853)">20x3853</a></td>
+					<td>: over50Multi : 2pSpaces : samePath</td>
+				</tr>
+				<tr>
+					<td>21</td>
+					<td>Society’s sharia ‘dabblers’ stir row</td>
+					<td><a class="actionLink" onClick="highlightStory(688, 4624)">688x4624</a></td>
+					<td>: longString : 2pSpaces : samePath</td>
+				</tr>
+			</table>
+		</div>
+		<h3>Section 2</h3>
+		<div>
+			<p>
+			Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+			purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+			velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+			suscipit faucibus urna.
+			</p>
+		</div>
+		<h3>Section 3</h3>
+		<div>
+			<p>
+			Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
+			Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
+			ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
+			lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
+			</p>
+			<ul>
+			<li>List item one</li>
+			<li>List item two</li>
+			<li>List item three</li>
+			</ul>
+		</div>
+	</div>
+	<div style="clear:both">
+	<div>
+		<a href="javascript: scrollUp();">
+			<img id="screenShot" src="pics/www.theaustralian.com.au-business1396910219112.png" alt="Site Screen Shot">
+		</a>
+	</div>
+	<div id="highlightDiv"></div>
+</body>
+</html>

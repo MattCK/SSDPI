@@ -1,4 +1,0 @@
-TypeError: 'undefined' is not a function (evaluating 'TR.saveBluekaiCookie(data)')
-
-  http://www.reuters.com/news/technology:1265 in saveCategories
-  http://tags.bluekai.com/site/4972?ret=js&phint=rch%3DFinance&phint=rco%3DBETAUS&phint=wcntn%3DFinance%20-%20Technology&phint=wcnts%3DTechnology&phint=z0%3Dus.reuters&phint=z1%3Dbizfinance&phint=z2%3Dtechnology&phint=cc%3DTechnology&phint=cnt%3DFinance%20Topic&phint=wtc%3De36b5097-95b2-4d92-8ad1-a69de337594d&phint=log%3Dnull&phint=soc%3D&phint=hsh%3Dnull&phint=ref%3D&phint=sea%3D&phint=__bk_t%3DTechnology%20News%20%7C%20Reuters.com&phint=__bk_k%3DTechnology%20news%2C%20IT%2C%20information%20technology%2C%20tech%2C%20industry%2C%20Rueters&phint=__bk_l%3Dhttp%3A%2F%2Fwww.reuters.com%2Fnews%2Ftechnology&jscb=saveCategories&bkrid=215034180&r=23383198:4

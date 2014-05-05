@@ -1,5 +1,3 @@
-
-
 //Create a driver webpage and set the viewport  
 var WINDOWWIDTH = 1024;
 var WINDOWHEIGHT = 768;
