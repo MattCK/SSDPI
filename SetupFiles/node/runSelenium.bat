@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Java\jre7\bin\java.exe" -jar "c:\selenium\selenium237.jar" -Dwebdriver.firefox.profile=Selenium -role node  -hub http://10.1.1.59:4444/grid/register
