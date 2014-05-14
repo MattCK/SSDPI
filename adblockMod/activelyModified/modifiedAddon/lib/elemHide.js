@@ -327,7 +327,7 @@ let ElemHide = exports.ElemHide =
     }
 
     // Return CSS data
-    let cssTemplate = "border: 4px red solid; flood-opacity:0.9898;";
+    let cssTemplate = "";
     for (let domain in domains)
     {
       let rules = [];

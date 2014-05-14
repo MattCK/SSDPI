@@ -8,6 +8,10 @@ package adinjecter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
@@ -20,6 +24,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 
+import org.openqa.selenium.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Dimension;
@@ -114,7 +119,7 @@ public class AdInjecter {
     public File grabAdClip(String URL)
     {
         File screenshot = null;
-        
+       
         try
         {
 			
@@ -127,19 +132,30 @@ public class AdInjecter {
 		WebDriver remoteDriver = new RemoteWebDriver(
 		new URL("http://localhost:4444/wd/hub"), 
 		DesiredCapabilities.firefox());
-
+		
+		remoteDriver.manage().window().setPosition(new Point(0, 0));
+		remoteDriver.manage().window().setSize(new Dimension(1920, 1080));
+		//selenium.windowMaximize();
 			
-			
-        Dimension smallWindow = new Dimension(550, 300);
-		remoteDriver.manage().window().setSize(smallWindow);
+        //Dimension normalWindow = new Dimension(1200, 900);
+		//remoteDriver.manage().window().setSize(normalWindow);
 
-		// driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
+		//remoteDriver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
 		
         remoteDriver.get(URL);
-		//driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
-        //Dimension smallWindow = new Dimension(425,200);
 		
-        // driver.manage().window().setSize(smallWindow);
+		String filePath = "/var/lib/tomcat6/webapps/ROOT/adInjecter/adInjecter.js";
+		
+		String adJavascript = "";
+		try {
+			adJavascript = new String(Files.readAllBytes(Paths.get(filePath)));
+		} catch (IOException e) {}
+		
+		((JavascriptExecutor) remoteDriver).executeScript(adJavascript);
+		/*driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
+        Dimension smallWindow = new Dimension(425,200);
+		
+        driver.manage().window().setSize(normalWindow);*/
 		
 		//IWait<IWebDriver> wait = new OpenQA.Selenium.Support.UI.WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
 		//wait.Until(driver1 => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
