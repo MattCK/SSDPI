@@ -22,7 +22,7 @@ else {
 }
 exit(0);
 
-$fileURI = 'http://10.1.1.50/tempClips/' . $_GET['tagID'] . '.png';
+$fileURI = 'http://10.1.1.59/tempClips/' . $_GET['tagID'] . '.png';
 if (checkurl($fileURI)) {
 	echo $fileURI;
 	exit(0);

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package adclipper;
+package adinjecter;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,13 +32,15 @@ import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.internal.FindsByXPath;
-
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.internal.ProfilesIni;
+import org.openqa.selenium.firefox.*;
 
 /**
  *
  * @author matt and juicio
  */
-public class AdClipper {
+public class AdInjecter {
     
     private final boolean debug = true;
     private void dbgmsg(String Msg)
@@ -57,7 +59,7 @@ public class AdClipper {
 		try {
 		Class.forName("com.mysql.jdbc.Driver");
 		conn =
-		   DriverManager.getConnection("jdbc:mysql://10.1.1.64:3306/ssPrototype?" +
+		   DriverManager.getConnection("jdbc:mysql://10.1.1.17:3306/ssPrototype?" +
 									   "user=root&password=qwas12");
 		
 		stmt = conn.createStatement();
@@ -115,16 +117,25 @@ public class AdClipper {
         
         try
         {
-        WebDriver driver = new RemoteWebDriver(
-			new URL("http://localhost:4444/wd/hub"), 
-			DesiredCapabilities.firefox());
-			//DesiredCapabilities.firefox());
+			
+		/*DesiredCapabilities capability = new DesiredCapabilities();
+		capability.setBrowserName(DesiredCapabilities.firefox().getBrowserName());
+		FirefoxProfile profile = new ProfilesIni().getProfile("Selenium");
+		capability.setCapability(FirefoxDriver.PROFILE, profile);
+		RemoteWebDriver remoteDriver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capability);*/
+		
+		WebDriver remoteDriver = new RemoteWebDriver(
+		new URL("http://localhost:4444/wd/hub"), 
+		DesiredCapabilities.firefox());
+
+			
+			
         Dimension smallWindow = new Dimension(550, 300);
-		driver.manage().window().setSize(smallWindow);
+		remoteDriver.manage().window().setSize(smallWindow);
 
 		// driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
 		
-        driver.get(URL);
+        remoteDriver.get(URL);
 		//driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
         //Dimension smallWindow = new Dimension(425,200);
 		
@@ -133,7 +144,7 @@ public class AdClipper {
 		//IWait<IWebDriver> wait = new OpenQA.Selenium.Support.UI.WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
 		//wait.Until(driver1 => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
 
-		Thread.sleep(3000);
+		/*Thread.sleep(3000);
 		
 		//Mouse imageMouse = driver.getMouse();
 		Actions myMouse = new Actions(driver); 
@@ -147,17 +158,18 @@ public class AdClipper {
 		//myMouse.moveToElement(bodyElement, 428, 378);
 		//myMouse.moveByOffset(1, 1);
         
-		Thread.sleep(6000);
+		Thread.sleep(6000);*/
         
         // RemoteWebDriver does not implement the TakesScreenshot class
         // if the driver does have the Capabilities to take a screenshot
         // then Augmenter will add the TakesScreenshot methods to the instance
         //WebDriver augmentedDriver = new Augmenter().augment(driver);
-        WebDriver augmentedDriver = new Augmenter().augment(driver);
+        WebDriver augmentedDriver = new Augmenter().augment(remoteDriver);
         screenshot = ((TakesScreenshot)augmentedDriver).getScreenshotAs(OutputType.FILE);
-        driver.close();
+        remoteDriver.close();
         }
-        catch(MalformedURLException | WebDriverException | InterruptedException e)
+        //catch(MalformedURLException | WebDriverException | InterruptedException e)
+        catch(MalformedURLException | WebDriverException e)
         {
             this.dbgmsg("Unable to grab ad clip - " + e);
         }
@@ -200,11 +212,11 @@ public class AdClipper {
      */
     public static void main(String[] args) {
      
-     AdClipper clipper = new AdClipper();
-     File adClip = clipper.grabAdClip(args[0]);
-     adClip = clipper.cropAdClip(adClip);
-     clipper.saveAdClip(adClip, args[1]);
-	 clipper.insertImagePath(args[1]);
+     AdInjecter injecter = new AdInjecter();
+     File adClip = injecter.grabAdClip(args[0]);
+     //adClip = clipper.cropAdClip(adClip);
+     injecter.saveAdClip(adClip, args[1]);
+	 //injecter.insertImagePath(args[1]);
      
      
         

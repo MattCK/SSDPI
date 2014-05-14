@@ -36,7 +36,7 @@ dbQuery($addURLsQuery);
 echo 'success';
 
 
-$session = curl_init('http://10.1.1.50/runCampaign.jsp?campaignID=' . $campaignID);
+$session = curl_init('http://10.1.1.59/runCampaign.jsp?campaignID=' . $campaignID);
 curl_setopt($session, CURLOPT_HEADER, false);
 curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($session, CURLOPT_FAILONERROR, false);

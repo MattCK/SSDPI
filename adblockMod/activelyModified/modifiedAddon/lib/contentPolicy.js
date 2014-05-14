@@ -19,6 +19,9 @@
  * @fileOverview Content policy implementation, responsible for blocking things.
  */
 
+ var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"].
+     getService(Components.interfaces.nsIConsoleService);
+	 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
@@ -162,7 +165,7 @@ let Policy = exports.Policy =
     let wndLocation = originWindow.location.href;
     let docDomain = getHostname(wndLocation);
     let match = null;
-    if (!match && Prefs.enabled)
+    /*if (!match && Prefs.enabled)
     {
       let testWnd = wnd;
       let parentWndLocation = getWindowLocation(testWnd);
@@ -184,7 +187,7 @@ let Policy = exports.Policy =
               // Website specifies a key that we know but is the signature valid?
               let uri = Services.io.newURI(testWndLocation, null, null);
               let params = [
-                uri.path.replace(/#.*/, ""),  // REQUEST_URI
+                uri.path.replace(/#.*//*, ""),  // REQUEST_URI
                 uri.asciiHost,                // HTTP_HOST
                 Utils.httpProtocol.userAgent  // HTTP_USER_AGENT
               ];
@@ -206,10 +209,10 @@ let Policy = exports.Policy =
         else
           testWnd = testWnd.parent;
       }
-    }
+    }*/
 
     // Data loaded by plugins should be attached to the document
-    if (contentType == Policy.type.OBJECT_SUBREQUEST && node instanceof Ci.nsIDOMElement)
+    /*if (contentType == Policy.type.OBJECT_SUBREQUEST && node instanceof Ci.nsIDOMElement)
       node = node.ownerDocument;
 
     // Fix type for objects misrepresented as frames or images
@@ -254,8 +257,8 @@ let Policy = exports.Policy =
         RequestNotifier.addNodeData(node, topWnd, contentType, docDomain, thirdParty, locationText, exception);
         return true;
       }
-    }
-
+    }*/
+	let locationText = location.spec;
     let thirdParty = (contentType == Policy.type.ELEMHIDE ? false : isThirdParty(location, docDomain));
 
     if (!match && Prefs.enabled)
@@ -277,7 +280,7 @@ let Policy = exports.Policy =
     }
 
     // Store node data
-    RequestNotifier.addNodeData(node, topWnd, contentType, docDomain, thirdParty, locationText, match);
+    //RequestNotifier.addNodeData(node, topWnd, contentType, docDomain, thirdParty, locationText, match);
     if (match)
       FilterStorage.increaseHitCount(match, wnd);
 
@@ -449,6 +452,7 @@ let PolicyImplementation =
       contentType = Policy.type.OTHER;
 
     let result = Policy.processNode(wnd, node, contentType, location, false);
+	aConsoleService.logStringMessage("process node: " + result);
     if (result)
     {
       // We didn't block this request so we will probably see it again in
@@ -456,6 +460,11 @@ let PolicyImplementation =
       // channel there - will be needed in case of redirect.
       this.previousRequest = [location, contentType];
     }
+	else {
+		node.style.border = '4px solid yellow';
+		aConsoleService.logStringMessage("Found ad");
+		result = true;
+	}
     return (result ? Ci.nsIContentPolicy.ACCEPT : Ci.nsIContentPolicy.REJECT_REQUEST);
   },
 
@@ -469,7 +478,7 @@ let PolicyImplementation =
   //
   observe: function(subject, topic, data, additional)
   {
-    switch (topic)
+    /*switch (topic)
     {
       case "content-document-global-created":
       {
@@ -538,7 +547,7 @@ let PolicyImplementation =
         catMan.addCategoryEntry(category, this.contractID, this.contractID, false, true);
         break;
       }
-    }
+    }*/
   },
 
   //
@@ -660,8 +669,8 @@ function postProcessNodes()
         parentNode[property] = weights.join(",");
       }
     }
-    else
-      //node.classList.add(collapsedClass);
+    else{}
+	//node.classList.add(collapsedClass);
   }
 }
 

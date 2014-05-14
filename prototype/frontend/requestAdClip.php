@@ -12,7 +12,7 @@ dbQuery($addTagQuery);
 
 $tagID = mysql_insert_id();
 
-$session = curl_init('http://10.1.1.50/?tagID=' . $tagID);
+$session = curl_init('http://10.1.1.59/?tagID=' . $tagID);
 curl_setopt($session, CURLOPT_HEADER, false);
 curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($session, CURLOPT_FAILONERROR, false);
