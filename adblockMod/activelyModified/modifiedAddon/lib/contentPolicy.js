@@ -1,4 +1,4 @@
-/*  
+/*
  * This file is part of Adblock Plus <http://adblockplus.org/>,
  * Copyright (C) 2006-2013 Eyeo GmbH
  *
