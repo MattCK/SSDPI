@@ -1,5 +1,4 @@
 <?PHP
-namespace AdShotRunner/Classes;
 
 /**
 * The MySQLDatabase class controls connecting to the database and executing queries on it. 
@@ -42,7 +41,7 @@ class MySQLDatabase {
 	* Instantiates class and creates connection to MySQL database.
 	*
 	* Creates connection to MySQL database based on the arguments passed. 
-
+	*
 	* On success, the connection occurred without error and the object is instantiated. 
 	* On failure, die() is called and the MySQL error outputted.
 	*
@@ -51,10 +50,10 @@ class MySQLDatabase {
 	* @param string $password  		The password of the MySQL user to use
 	* @param string $databaseName  	The name of the database to connect to
 	*/
-	function __construct($host, $username, $password, $databaseName){
+	function __construct($host, $username, $password, $databaseName) {
 		
 		//Attempt to connect to the database
-		$mysqlLink = mysqli_connect($host, $username, $password, $database);
+		$mysqlLink = mysqli_connect($host, $username, $password, $databaseName);
 		
 		//If the connection failed, output the reason and die
 		if ($mysqli->connect_error) {
@@ -186,4 +185,22 @@ class MySQLDatabase {
 //---------------------------------------------------------------------------------------
 //-------------------------- Helper Functions and Wrappers-------------------------------
 //---------------------------------------------------------------------------------------
+/**
+* Executes a query on the primary global database and returns the result.
+*
+* THIS IS A VERY LIMITED, NARROW, AND SPECIFIC FUNCTION. READ CAREFULLY!!!
+*
+* This function requires a database to be created and stored in the global variable
+* named $database. If there is no global $database, it simply returns NULL. Otherwise,
+* it will run the function on that global variable and return the result.
+*
+* @param 	string 	$query 	Query to run on the database stored at the global $database
+* @retval 	mysqli_result  	Result object on success, FALSE on failure
+*/
+function databaseQuery($query) {
+
+	global $database;
+	if (!$database) {return NULL;}
+	return $database->query($query);
+}
 
