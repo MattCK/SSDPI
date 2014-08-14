@@ -1,4 +1,11 @@
 <?PHP
+/*
+*
+* @package package
+* @section section
+* @page page
+*/
+
 
 require_once('class.WebCommunicator.php');
 
@@ -15,7 +22,6 @@ require_once('class.WebCommunicator.php');
 *
 * This class requires the MySQLDatabase global $database to be instantiated. 
 *
-* @package Classes
 */
 class MenuGrabber {
 
