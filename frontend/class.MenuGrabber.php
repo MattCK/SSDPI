@@ -34,7 +34,7 @@ require_once('class.WebCommunicator.php');
 *
 * This class requires the MySQLDatabase global $database to be instantiated. 
 *
-* @namespace namespace3/MenuGrabber
+* @namespace namespace4\MenuGrabber
 * @package package2
 * @section section2
 * @page page2
