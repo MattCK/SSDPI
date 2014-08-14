@@ -169,9 +169,7 @@ class WebPageCommunicator {
 		$urlsWithResponses = array();
 		foreach ($urlArray as $curKey => $curURL) {
 			$urlsWithResponses[$curURL] = $responsesArray[$curKey];
-			echo "Grabbed: $curURL \n";
 		}
-		echo "\nMemory usage: " . memory_get_usage() / (1024*1024) . " MB \n\n";
 
 		//Return the array of responses
 		return $urlsWithResponses;	

@@ -86,6 +86,28 @@ class MySQLDatabase {
 	}
 
 
+	/**
+	* Returns the last insert ID from the database, if one exists.
+	*
+	* @retval 	int  			Last insert ID from database query
+	*/
+	public function lastInsertID() {
+		$databaseLink = $this->getLink();
+		return mysqli_insert_id($databaseLink);
+	}
+
+	/**
+	* Escapes the passed string.
+	*
+	* @param 	string 	$unformattedString	 	String to escape
+	* @retval 	string  						Escaped string
+	*/
+	public function escape($unformattedString) {
+		$databaseLink = $this->getLink();
+		return mysqli_real_escape_string($databaseLink, $unformattedString);
+	}
+
+
 	//---------------------------------------------------------------------------------------
 	//----------------------------------- Accessors -----------------------------------------
 	//---------------------------------------------------------------------------------------
@@ -96,6 +118,7 @@ class MySQLDatabase {
 	* @retval string  Name/IP of the host
 	*/
 	public function getHost() {
+		$databaseLink = $this->getLink();
 		return $this->_host;
 	}
 	
@@ -202,5 +225,42 @@ function databaseQuery($query) {
 	global $database;
 	if (!$database) {return NULL;}
 	return $database->query($query);
+}
+
+/**
+* Returns the last insert ID from the database, if one exists.
+*
+* THIS IS A VERY LIMITED, NARROW, AND SPECIFIC FUNCTION. READ CAREFULLY!!!
+*
+* This function requires a database to be created and stored in the global variable
+* named $database. If there is no global $database, it simply returns NULL. Otherwise,
+* it will run the function on that global variable and return the result.
+*
+* @retval 	int  			Last insert ID from database query
+*/
+function lastInsertID() {
+
+	global $database;
+	if (!$database) {return NULL;}
+	return $database->lastInsertID();
+}
+
+/**
+* Cleanly escapes the passed string so it is safe for use in queries.
+*
+* THIS IS A VERY LIMITED, NARROW, AND SPECIFIC FUNCTION. READ CAREFULLY!!!
+*
+* This function requires a database to be created and stored in the global variable
+* named $database. If there is no global $database, it simply returns NULL. Otherwise,
+* it will run the function on that global variable and return the result.
+*
+* @param 	string 		$unformattedString 	String to be escaped
+* @retval 	string  						Escaped string
+*/
+function databaseEscape($unformattedString) {
+
+	global $database;
+	if (!$database) {return NULL;}
+	return $database->escape($unformattedString);
 }
 

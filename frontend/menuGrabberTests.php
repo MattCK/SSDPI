@@ -8,9 +8,45 @@ header("Content-Type: text/plain");
 
 $database = new MySQLDatabase('adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com', 'adshotrunner', 'xbSAb2G92E', 'adshotrunner');
 
+$menuGrabber = new MenuGrabber();
+$domains = $menuGrabber->getDomainMenus(['boston.com', 'nytimes.com', 'cnn.com']);
+//$domains = $menuGrabber->retrieveManyDomainMenusFromDatabase(['omahaworldherald.com', 'chicagotribune.com']);
+print_r($domains);
+exit;
+
+$domains['omahaworldherald.com'] = [];
+$domains['omahaworldherald.com'][] = ['score' => 12,
+									  'items' => [
+									 				['label' => 'label1', 'url' => '/sports'],
+									 				['label' => 'label2', 'url' => '/news'],
+									 				['label' => 'label3', 'url' => '/weather']
+									 			]];
+$domains['omahaworldherald.com'][] = ['score' => 10,
+									  'items' => [
+									 				['label' => 'label11', 'url' => '/sports2'],
+									 				['label' => 'label12', 'url' => '/news2'],
+									 				['label' => 'label13', 'url' => '/weather2']
+									 			]];
+
+$domains['chicagotribune.com'] = [];
+$domains['chicagotribune.com'][] =  ['score' => 22,
+									  'items' => [
+									 				['label' => 'label31', 'url' => '/sports3'],
+									 				['label' => 'label32', 'url' => '/news3'],
+									 				['label' => 'label33', 'url' => '/weather3']
+									 			]];
+$domains['chicagotribune.com'][] =  ['score' => 20,
+									  'items' => [
+									 				['label' => 'label311', 'url' => '/sports25'],
+									 				['label' => 'label312', 'url' => '/news25'],
+									 				['label' => 'label313', 'url' => '/weather25']
+									 			]];
+
+$menuGrabber->insertDomainsWithMenus($domains);
+exit();
+
 //$publishers = getAssociativeArrayFromCSV('hugePublisherList.csv');
 
-$menuGrabber = new MenuGrabber();
 print_r($menuGrabber->getRankedMenusFromManyURLs(['nytimes.com','boston.com']));
 /*print_r($menuGrabber->getRankedMenusFromManyURLs([
 			'nytimes.com', 
