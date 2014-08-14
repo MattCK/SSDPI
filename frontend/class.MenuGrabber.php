@@ -14,6 +14,8 @@ require_once('class.WebCommunicator.php');
 * applicable. 
 *
 * This class requires the MySQLDatabase global $database to be instantiated. 
+*
+* @package Classes
 */
 class MenuGrabber {
 
