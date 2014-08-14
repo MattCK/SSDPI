@@ -1,6 +1,6 @@
 <?PHP
 /*
-*
+* @namespace namespace
 * @package package
 * @section section
 * @page page
