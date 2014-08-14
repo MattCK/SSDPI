@@ -1,0 +1,171 @@
+\hypertarget{classMySQLDatabase}{\section{My\-S\-Q\-L\-Database Class Reference}
+\label{classMySQLDatabase}\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}}
+}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classMySQLDatabase_a2d88228d5495297835baad61c42c46e9}{\-\_\-\-\_\-construct} (\$host, \$username, \$password, \$database\-Name)
+\item 
+\hyperlink{classMySQLDatabase_a18589a16cc77b98eb42d04062d644525}{query} (\$query)
+\item 
+\hyperlink{classMySQLDatabase_ae3e08d527970ad668341774f00bae29d}{last\-Insert\-I\-D} ()
+\item 
+\hyperlink{classMySQLDatabase_a5cea1bd5e88ba4639c1f8d156d308b8b}{escape} (\$unformatted\-String)
+\item 
+\hyperlink{classMySQLDatabase_a2d5696203843406d814c0d143f13e5d8}{get\-Host} ()
+\item 
+\hyperlink{classMySQLDatabase_aa0074fc1de94affc807bd980450fab1f}{get\-Username} ()
+\item 
+\hyperlink{classMySQLDatabase_ab10a61ee32f4466ca56dedda14f22a98}{get\-Password} ()
+\item 
+\hyperlink{classMySQLDatabase_a557b32616d378fbd8f8b321120bd995f}{get\-Database\-Name} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \hyperlink{classMySQLDatabase}{My\-S\-Q\-L\-Database} class controls connecting to the database and executing queries on it. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classMySQLDatabase_a2d88228d5495297835baad61c42c46e9}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!\-\_\-\-\_\-construct@{\-\_\-\-\_\-construct}}
+\index{\-\_\-\-\_\-construct@{\-\_\-\-\_\-construct}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{\-\_\-\-\_\-construct}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::\-\_\-\-\_\-construct (
+\begin{DoxyParamCaption}
+\item[{}]{\$host, }
+\item[{}]{\$username, }
+\item[{}]{\$password, }
+\item[{}]{\$database\-Name}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_a2d88228d5495297835baad61c42c46e9}
+Instantiates class and creates connection to My\-S\-Q\-L database.
+
+Creates connection to My\-S\-Q\-L database based on the arguments passed.
+
+On success, the connection occurred without error and the object is instantiated. On failure, die() is called and the My\-S\-Q\-L error outputted.
+
+
+\begin{DoxyParams}[1]{Parameters}
+string & {\em \$host} & The name or I\-P of the host to connect to \\
+\hline
+string & {\em \$username} & The username of the My\-S\-Q\-L user to use \\
+\hline
+string & {\em \$password} & The password of the My\-S\-Q\-L user to use \\
+\hline
+string & {\em \$database\-Name} & The name of the database to connect to \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classMySQLDatabase_a5cea1bd5e88ba4639c1f8d156d308b8b}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!escape@{escape}}
+\index{escape@{escape}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{escape}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::escape (
+\begin{DoxyParamCaption}
+\item[{}]{\$unformatted\-String}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_a5cea1bd5e88ba4639c1f8d156d308b8b}
+Escapes the passed string.
+
+
+\begin{DoxyParams}[1]{Parameters}
+string & {\em \$unformatted\-String} & String to escape \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em string} & Escaped string \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classMySQLDatabase_a557b32616d378fbd8f8b321120bd995f}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!get\-Database\-Name@{get\-Database\-Name}}
+\index{get\-Database\-Name@{get\-Database\-Name}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{get\-Database\-Name}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::get\-Database\-Name (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_a557b32616d378fbd8f8b321120bd995f}
+Returns the database name
+
+
+\begin{DoxyRetVals}{Return values}
+{\em string} & Database name \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classMySQLDatabase_a2d5696203843406d814c0d143f13e5d8}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!get\-Host@{get\-Host}}
+\index{get\-Host@{get\-Host}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{get\-Host}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::get\-Host (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_a2d5696203843406d814c0d143f13e5d8}
+Returns the name/\-I\-P of the host
+
+
+\begin{DoxyRetVals}{Return values}
+{\em string} & Name/\-I\-P of the host \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classMySQLDatabase_ab10a61ee32f4466ca56dedda14f22a98}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!get\-Password@{get\-Password}}
+\index{get\-Password@{get\-Password}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{get\-Password}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::get\-Password (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_ab10a61ee32f4466ca56dedda14f22a98}
+Returns the password of the My\-S\-Q\-L login user
+
+
+\begin{DoxyRetVals}{Return values}
+{\em string} & Password of the My\-S\-Q\-L login user \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classMySQLDatabase_aa0074fc1de94affc807bd980450fab1f}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!get\-Username@{get\-Username}}
+\index{get\-Username@{get\-Username}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{get\-Username}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::get\-Username (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_aa0074fc1de94affc807bd980450fab1f}
+Returns the username of the My\-S\-Q\-L login user
+
+
+\begin{DoxyRetVals}{Return values}
+{\em string} & Username of the My\-S\-Q\-L login user \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classMySQLDatabase_ae3e08d527970ad668341774f00bae29d}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!last\-Insert\-I\-D@{last\-Insert\-I\-D}}
+\index{last\-Insert\-I\-D@{last\-Insert\-I\-D}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{last\-Insert\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::last\-Insert\-I\-D (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_ae3e08d527970ad668341774f00bae29d}
+Returns the last insert I\-D from the database, if one exists.
+
+
+\begin{DoxyRetVals}{Return values}
+{\em int} & Last insert I\-D from database query \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classMySQLDatabase_a18589a16cc77b98eb42d04062d644525}{\index{My\-S\-Q\-L\-Database@{My\-S\-Q\-L\-Database}!query@{query}}
+\index{query@{query}!MySQLDatabase@{My\-S\-Q\-L\-Database}}
+\subsubsection[{query}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Database\-::query (
+\begin{DoxyParamCaption}
+\item[{}]{\$query}
+\end{DoxyParamCaption}
+)}}\label{classMySQLDatabase_a18589a16cc77b98eb42d04062d644525}
+Executes a query and returns the result.
+
+
+\begin{DoxyParams}[1]{Parameters}
+string & {\em \$query} & Query to run \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em mysqli\-\_\-result} & Result object on success, F\-A\-L\-S\-E on failure \\
+\hline
+\end{DoxyRetVals}
+
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+frontend/class.\-My\-S\-Q\-L\-Database.\-php\end{DoxyCompactItemize}

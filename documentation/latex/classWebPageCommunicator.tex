@@ -1,0 +1,178 @@
+\hypertarget{classWebPageCommunicator}{\section{Web\-Page\-Communicator Class Reference}
+\label{classWebPageCommunicator}\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}}
+}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classWebPageCommunicator_a03133488c53e7aef84610984f9a09b80}{\-\_\-\-\_\-construct} ()
+\item 
+\hyperlink{classWebPageCommunicator_aeb0373b10290d08fd652a1ef480d1cbb}{get\-U\-R\-L\-Response} (\$url, \$post\-Fields=null, \$use\-Proxy=false, \$proxy=null)
+\item 
+\hyperlink{classWebPageCommunicator_ab3b44e3eda30bac41260c0751fe17abb}{get\-Many\-U\-R\-L\-Responses} (\$url\-Array)
+\item 
+\hyperlink{classWebPageCommunicator_ae0893fe0ea103718ac28707db16d0f1a}{retrieve\-Header} ()
+\item 
+\hyperlink{classWebPageCommunicator_a8f79dedba9cd3b2861d9605383983594}{return\-Transfer} ()
+\item 
+\hyperlink{classWebPageCommunicator_a179398b8f6324410aa7d774f3d9eba8b}{fail\-On\-Error} ()
+\item 
+\hyperlink{classWebPageCommunicator_a65e4483c027b47c9b2e56f2cc69aa95b}{follow\-Location} ()
+\item 
+\hyperlink{classWebPageCommunicator_a8a440917c9c489527e4de701a2897971}{socks5} ()
+\item 
+\hyperlink{classWebPageCommunicator_a6514e11423ef4939ca85061fe0a62378}{get\-Max\-Group\-Size} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \hyperlink{classWebPageCommunicator}{Web\-Page\-Communicator} class communicates with remote U\-R\-L resources.
+
+This class can be used to query a single resource or many. If many requests are made at the same time, the class is optimized to connect to multiple resources at once. The amount of simultaneous connections can be controlled for a given instance. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classWebPageCommunicator_a03133488c53e7aef84610984f9a09b80}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!\-\_\-\-\_\-construct@{\-\_\-\-\_\-construct}}
+\index{\-\_\-\-\_\-construct@{\-\_\-\-\_\-construct}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{\-\_\-\-\_\-construct}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::\-\_\-\-\_\-construct (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_a03133488c53e7aef84610984f9a09b80}
+Instantiates class and sets default values. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classWebPageCommunicator_a179398b8f6324410aa7d774f3d9eba8b}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!fail\-On\-Error@{fail\-On\-Error}}
+\index{fail\-On\-Error@{fail\-On\-Error}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{fail\-On\-Error}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::fail\-On\-Error (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_a179398b8f6324410aa7d774f3d9eba8b}
+Returns whether to fail verbosely if the H\-T\-T\-P code returned is greater than or equal to 400.
+
+
+\begin{DoxyRetVals}{Return values}
+{\em boolean} & Flag of whether to fail verbosely if the H\-T\-T\-P code returned is greater than or equal to 400 \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classWebPageCommunicator_a65e4483c027b47c9b2e56f2cc69aa95b}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!follow\-Location@{follow\-Location}}
+\index{follow\-Location@{follow\-Location}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{follow\-Location}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::follow\-Location (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_a65e4483c027b47c9b2e56f2cc69aa95b}
+Returns whether to follow any \char`\"{}\-Location\-: \char`\"{} header that the server sends as part of the H\-T\-T\-P header.
+
+
+\begin{DoxyRetVals}{Return values}
+{\em boolean} & Flag of whether to follow any \char`\"{}\-Location\-: \char`\"{} header that the server sends as part of the H\-T\-T\-P header \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classWebPageCommunicator_ab3b44e3eda30bac41260c0751fe17abb}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!get\-Many\-U\-R\-L\-Responses@{get\-Many\-U\-R\-L\-Responses}}
+\index{get\-Many\-U\-R\-L\-Responses@{get\-Many\-U\-R\-L\-Responses}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{get\-Many\-U\-R\-L\-Responses}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::get\-Many\-U\-R\-L\-Responses (
+\begin{DoxyParamCaption}
+\item[{}]{\$url\-Array}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_ab3b44e3eda30bac41260c0751fe17abb}
+Returns responses from multiple U\-R\-Ls. It returns the associative array of U\-R\-Ls pointing to their responses.
+
+
+\begin{DoxyParams}[1]{Parameters}
+mixed & {\em \$url\-Array} & Array of string U\-R\-Ls for which to connect \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em mixed} & Associative array of U\-R\-Ls pointing to their response \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classWebPageCommunicator_a6514e11423ef4939ca85061fe0a62378}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!get\-Max\-Group\-Size@{get\-Max\-Group\-Size}}
+\index{get\-Max\-Group\-Size@{get\-Max\-Group\-Size}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{get\-Max\-Group\-Size}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::get\-Max\-Group\-Size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_a6514e11423ef4939ca85061fe0a62378}
+Returns the max group size, the maximum amount of connections made at one time.
+
+
+\begin{DoxyRetVals}{Return values}
+{\em int} & Max group size, the maximum amount of connections made at one time. \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classWebPageCommunicator_aeb0373b10290d08fd652a1ef480d1cbb}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!get\-U\-R\-L\-Response@{get\-U\-R\-L\-Response}}
+\index{get\-U\-R\-L\-Response@{get\-U\-R\-L\-Response}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{get\-U\-R\-L\-Response}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::get\-U\-R\-L\-Response (
+\begin{DoxyParamCaption}
+\item[{}]{\$url, }
+\item[{}]{\$post\-Fields = {\ttfamily null}, }
+\item[{}]{\$use\-Proxy = {\ttfamily false}, }
+\item[{}]{\$proxy = {\ttfamily null}}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_aeb0373b10290d08fd652a1ef480d1cbb}
+Returns the response from a U\-R\-L resource connected to with passed parameters.
+
+
+\begin{DoxyParams}[1]{Parameters}
+string & {\em \$url} & U\-R\-L to connect to \\
+\hline
+mixed & {\em \$post\-Fields} & Optional associative array or query string to send as P\-O\-S\-T with request \\
+\hline
+boolean & {\em \$use\-Proxy} & Flags whether or not to use a proxy \\
+\hline
+string & {\em \$proxy} & Proxy address to use if \$use\-Proxy is set to T\-R\-U\-E \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em string} & String response from U\-R\-L resource \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classWebPageCommunicator_ae0893fe0ea103718ac28707db16d0f1a}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!retrieve\-Header@{retrieve\-Header}}
+\index{retrieve\-Header@{retrieve\-Header}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{retrieve\-Header}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::retrieve\-Header (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_ae0893fe0ea103718ac28707db16d0f1a}
+Returns whether or not the instance is to retrieve the header.
+
+
+\begin{DoxyRetVals}{Return values}
+{\em boolean} & Flag of whether or not to retrieve the header \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classWebPageCommunicator_a8f79dedba9cd3b2861d9605383983594}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!return\-Transfer@{return\-Transfer}}
+\index{return\-Transfer@{return\-Transfer}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{return\-Transfer}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::return\-Transfer (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_a8f79dedba9cd3b2861d9605383983594}
+Returns whether or not to return the transfer as a string instead of outputting it out directly.
+
+
+\begin{DoxyRetVals}{Return values}
+{\em boolean} & Flag of whether or not to transfer as a string instead of outputting it out directly \\
+\hline
+\end{DoxyRetVals}
+\hypertarget{classWebPageCommunicator_a8a440917c9c489527e4de701a2897971}{\index{Web\-Page\-Communicator@{Web\-Page\-Communicator}!socks5@{socks5}}
+\index{socks5@{socks5}!WebPageCommunicator@{Web\-Page\-Communicator}}
+\subsubsection[{socks5}]{\setlength{\rightskip}{0pt plus 5cm}Web\-Page\-Communicator\-::socks5 (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classWebPageCommunicator_a8a440917c9c489527e4de701a2897971}
+Returns whether or not to use S\-O\-C\-K\-S5 with a proxy, instead of simple H\-T\-T\-P.
+
+
+\begin{DoxyRetVals}{Return values}
+{\em boolean} & Flag of whether or not to use S\-O\-C\-K\-S5 with a proxy, instead of simple H\-T\-T\-P \\
+\hline
+\end{DoxyRetVals}
+
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+frontend/class.\-Web\-Communicator.\-php\end{DoxyCompactItemize}
