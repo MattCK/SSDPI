@@ -1,9 +1,9 @@
 cd ..
 git pull
-doxygen documentation/dox.config
+phpdoc -d frontend -t documentation/phpdoc
 git add --all
 git commit -m 'Updating Documentation'
 git push
 
-cp -r /root/SSDPI/documentation/html /var/www/doxygen/.
+cp -r /root/SSDPI/documentation/phpdoc /var/www/phpdoc/.
 
