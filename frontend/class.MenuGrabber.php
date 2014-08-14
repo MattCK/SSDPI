@@ -4,6 +4,10 @@
 * @package package
 * @section section
 * @page page
+* @category category
+* @name name
+* @subsection subsection
+* @see classes1
 */
 
 
@@ -26,6 +30,10 @@ require_once('class.WebCommunicator.php');
 * @package package2
 * @section section2
 * @page page2
+* @category cagetory2
+* @name name2
+* @subsection subsection2
+* @see classes2
 *
 */
 class MenuGrabber {
