@@ -1,4 +1,12 @@
 <?PHP
+/**
+* @namespace top
+*/
+$somecode = 'somecode';
+
+
+
+
 /*
 * @namespace namespace
 * @package package
