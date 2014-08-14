@@ -5,4 +5,4 @@ git add --all
 git commit -m 'Updating Documentation'
 git push
 
-cp -r html/ /var/www/doxygen
+cp -r html/* /var/www/doxygen/*
