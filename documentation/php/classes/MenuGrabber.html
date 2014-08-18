@@ -136,10 +136,10 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-984748969"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1428400713"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-984748969" class="accordion-body collapse in">
+            <div id="namespace-1428400713" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                     
@@ -164,11 +164,15 @@
                                             </nav>
                     <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
 
-                    <h1><small>\</small>WebPageCommunicator</h1>
-                    <p><em>The WebPageCommunicator class communicates with remote URL resources.</em></p>
-                    <p>This class can be used to query a single resource or many. If many requests are made at the same time, the class is
-optimized to connect to multiple resources at once. The amount of simultaneous connections can be controlled for a
-given instance.</p>
+                    <h1><small>\</small>MenuGrabber</h1>
+                    <p><em>The Menu Grabber attempts to grab possible menus from a given webpage or webpages.</em></p>
+                    <p>It then scores each possible menu according to the predefined label weights in the
+database. The results are returned to the caller.</p>
+<p>Menus are determined by two methods: 1) Unordered lists and 2) Elements that have an
+equal amount of anchors and divs in them.</p>
+<p>Results are automatically stored in the database and cached results given when
+applicable.</p>
+<p>This class requires the MySQLDatabase global $database to be instantiated.</p>
 
                     <section id="summary">
                         <h2>Summary</h2>
@@ -185,15 +189,11 @@ given instance.</p>
                         </section>
                         <section class="row-fluid public">
                             <section class="span4">
-                                                                    <a href="../classes/WebPageCommunicator.html#method___construct" class="">__construct()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_getURLResponse" class="">getURLResponse()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_getManyURLResponses" class="">getManyURLResponses()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_retrieveHeader" class="">retrieveHeader()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_returnTransfer" class="">returnTransfer()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_failOnError" class="">failOnError()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_followLocation" class="">followLocation()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_socks5" class="">socks5()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_getMaxGroupSize" class="">getMaxGroupSize()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method___construct" class="">__construct()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_getDomainMenus" class="">getDomainMenus()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_deleteDomain" class="">deleteDomain()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_deleteManyDomains" class="">deleteManyDomains()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_getMenuLabelWeights" class="">getMenuLabelWeights()</a><br />
                                                             </section>
                             <section class="span4">
                                                                     <em>No public properties found</em>
@@ -204,7 +204,11 @@ given instance.</p>
                         </section>
                         <section class="row-fluid protected">
                             <section class="span4">
-                                                                    <em>No protected methods found</em>
+                                                                    <a href="../classes/MenuGrabber.html#method_getRankedMenusFromURL" class="">getRankedMenusFromURL()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_getRankedMenusFromManyURLs" class="">getRankedMenusFromManyURLs()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_retrieveDomainMenusFromDatabase" class="">retrieveDomainMenusFromDatabase()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_retrieveManyDomainMenusFromDatabase" class="">retrieveManyDomainMenusFromDatabase()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_insertDomainsWithMenus" class="">insertDomainsWithMenus()</a><br />
                                                             </section>
                             <section class="span4">
                                                                     <em>No protected properties found</em>
@@ -215,22 +219,15 @@ given instance.</p>
                         </section>
                         <section class="row-fluid private">
                             <section class="span4">
-                                                                    <a href="../classes/WebPageCommunicator.html#method_getURLGroupResponses" class="">getURLGroupResponses()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_getCurlHandle" class="">getCurlHandle()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_setRetrieveHeader" class="">setRetrieveHeader()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_setReturnTransfer" class="">setReturnTransfer()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_setFailOnError" class="">setFailOnError()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_setFollowLocation" class="">setFollowLocation()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_setSocks5" class="">setSocks5()</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#method_setMaxGroupSize" class="">setMaxGroupSize()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_grabPossibleMenusFromHTML" class="">grabPossibleMenusFromHTML()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_grabPossibleULMenus" class="">grabPossibleULMenus()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_grabPossibleDIVMenus" class="">grabPossibleDIVMenus()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_retrieveMenuLabelWeightsFromDatabase" class="">retrieveMenuLabelWeightsFromDatabase()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_scoreMenu" class="">scoreMenu()</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#method_setMenuLabelWeights" class="">setMenuLabelWeights()</a><br />
                                                             </section>
                             <section class="span4">
-                                                                    <a href="../classes/WebPageCommunicator.html#property__header" class="">$_header</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#property__returnTransfer" class="">$_returnTransfer</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#property__failOnError" class="">$_failOnError</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#property__followLocation" class="">$_followLocation</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#property__useSocks5" class="">$_useSocks5</a><br />
-                                                                    <a href="../classes/WebPageCommunicator.html#property__maxGroupSize" class="">$_maxGroupSize</a><br />
+                                                                    <a href="../classes/MenuGrabber.html#property__menuWeights" class="">$_menuWeights</a><br />
                                                             </section>
                             <section class="span4">
                                 <em>N/A</em>
@@ -243,22 +240,71 @@ given instance.</p>
                     
                     <dl>
                         <dt>File</dt>
-                            <dd><a href="../files/class.WebCommunicator.html"><div class="path-wrapper">class.WebCommunicator.php</div></a></dd>
+                            <dd><a href="../files/class.MenuGrabber.html"><div class="path-wrapper">class.MenuGrabber.php</div></a></dd>
                                                 <dt>Package</dt>
-                            <dd><div class="namespace-wrapper">\Adshotrunner</div></dd>
+                            <dd><div class="namespace-wrapper">\package2</div></dd>
                                                 <dt>Class hierarchy</dt>
                             <dd class="hierarchy">
-                                                                                                                                                                    <div class="namespace-wrapper">\WebPageCommunicator</div>
+                                                                                                                                                                    <div class="namespace-wrapper">\MenuGrabber</div>
                             </dd>
 
                         
                         
                         
-                        
+                                                                            <dt>See also</dt>
+                                                                                    <dd><a href=""><div class="namespace-wrapper"></div></a></dd>
+                                                    
                                                                         </dl>
                     <h2>Tags</h2>
                     <table class="table table-condensed">
-                                            <tr><td colspan="2"><em>None found</em></td></tr>
+                                            <tr>
+                            <th>
+                                namespace
+                            </th>
+                            <td>
+                                                                    <p>namespace4\MenuGrabber</p>
+                                                            </td>
+                        </tr>
+                                            <tr>
+                            <th>
+                                section
+                            </th>
+                            <td>
+                                                                    <p>section2</p>
+                                                            </td>
+                        </tr>
+                                            <tr>
+                            <th>
+                                page
+                            </th>
+                            <td>
+                                                                    <p>page2</p>
+                                                            </td>
+                        </tr>
+                                            <tr>
+                            <th>
+                                category
+                            </th>
+                            <td>
+                                                                    <p>cagetory2</p>
+                                                            </td>
+                        </tr>
+                                            <tr>
+                            <th>
+                                name
+                            </th>
+                            <td>
+                                                                    <p>name2</p>
+                                                            </td>
+                        </tr>
+                                            <tr>
+                            <th>
+                                subsection
+                            </th>
+                            <td>
+                                                                    <p>subsection2</p>
+                                                            </td>
+                        </tr>
                                         </table>
                 </aside>
             </div>
@@ -274,136 +320,16 @@ given instance.</p>
 
                                                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="property__header" name="property__header" class="anchor"></a>
+            <a id="property__menuWeights" name="property__menuWeights" class="anchor"></a>
             <article class="property">
-                <h3 class="private ">$_header</h3>
-                <pre class="signature">$_header : boolean</pre>
+                <h3 class="private ">$_menuWeights</h3>
+                <pre class="signature">$_menuWeights : mixed</pre>
                 <p><em></em></p>
                 
 
                                 <h4>Type</h4>
-                boolean
-                &mdash; Flags whether or not to retrieve the header. DEFAULT: FALSE                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                        <dl>
-                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="property__returnTransfer" name="property__returnTransfer" class="anchor"></a>
-            <article class="property">
-                <h3 class="private ">$_returnTransfer</h3>
-                <pre class="signature">$_returnTransfer : boolean</pre>
-                <p><em></em></p>
-                
-
-                                <h4>Type</h4>
-                boolean
-                &mdash; Flags whether or not to return the transfer as a string instead of outputting it out directly. DEFAULT: TRUE                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                        <dl>
-                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="property__failOnError" name="property__failOnError" class="anchor"></a>
-            <article class="property">
-                <h3 class="private ">$_failOnError</h3>
-                <pre class="signature">$_failOnError : boolean</pre>
-                <p><em></em></p>
-                
-
-                                <h4>Type</h4>
-                boolean
-                &mdash; Flags whether to fail verbosely if the HTTP code returned is greater than or equal to 400. DEFAULT: FALSE                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                        <dl>
-                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="property__followLocation" name="property__followLocation" class="anchor"></a>
-            <article class="property">
-                <h3 class="private ">$_followLocation</h3>
-                <pre class="signature">$_followLocation : boolean</pre>
-                <p><em></em></p>
-                
-
-                                <h4>Type</h4>
-                boolean
-                &mdash; Flags whether to follow any &quot;Location: &quot; header that the server sends as part of the HTTP header. DEFAULT: TRUE                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                        <dl>
-                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="property__useSocks5" name="property__useSocks5" class="anchor"></a>
-            <article class="property">
-                <h3 class="private ">$_useSocks5</h3>
-                <pre class="signature">$_useSocks5 : boolean</pre>
-                <p><em></em></p>
-                
-
-                                <h4>Type</h4>
-                boolean
-                &mdash; Flags whether or not to use SOCKS5 with a proxy, instead of simple HTTP. DEFAULT: TRUE                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                        <dl>
-                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="property__maxGroupSize" name="property__maxGroupSize" class="anchor"></a>
-            <article class="property">
-                <h3 class="private ">$_maxGroupSize</h3>
-                <pre class="signature">$_maxGroupSize : integer</pre>
-                <p><em></em></p>
-                
-
-                                <h4>Type</h4>
-                integer
-                &mdash; Determines the maximum amount of connections made at one time. HTTP. DEFAULT: 8                            </article>
+                mixed
+                &mdash; Associative array of label =&gt; weight.                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -430,8 +356,8 @@ given instance.</p>
                 <h3 class="public ">__construct()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
                 <pre class="signature" style="margin-right: 54px;">__construct()</pre>
-                <p><em>Instantiates class and sets default values.</em></p>
-                
+                <p><em>Instantiates class and grabs the menu label weights from the database.</em></p>
+                <p>This class requires the MySQLDatabase global $database to be instantiated.</p>
 
                 
                 
@@ -450,35 +376,169 @@ given instance.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_getURLResponse" name="method_getURLResponse" class="anchor"></a>
+            <a id="method_getDomainMenus" name="method_getDomainMenus" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">getURLResponse()</h3>
+                <h3 class="public ">getDomainMenus()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getURLResponse(string <span class="argument">$url</span>, mixed <span class="argument">$postFields</span>, boolean <span class="argument">$useProxy</span>, string <span class="argument">$proxy</span>)</pre>
-                <p><em>Returns the response from a URL resource connected to with passed parameters.</em></p>
+                <pre class="signature" style="margin-right: 54px;">getDomainMenus(mixed <span class="argument">$domains</span>)</pre>
+                <p><em>Returns a list of ranked menus sorted from highest score to lowest.</em></p>
+                <p>The returned array consists for each key of associated arrays with two keys:
+'score' pointing to the numeric score of the menu and 'items' for the menu itself.
+The 'items' points to an array of items. Each item is an associative array as
+'label' pointing to an individual label and 'url' pointing to that label's link.</p>
+<p>The key of the top-most array is the URL string.</p>
+<p>Array[url] -> 'score' => 12</p>
+<pre><code>     -&gt; 'items' =&gt; Array -&gt; 'label'
+                         -&gt; 'url'</code></pre>
+<p>On failure, NULL is returned.</p>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>mixed</td>
+                                <td>$domains </td>
+                                <td><p>String or array of the domains to get menus for</p></td>
+                            </tr>
+                                            </table>
                 
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>mixed                      Array of ranked menus or NULL on failure</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_deleteDomain" name="method_deleteDomain" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">deleteDomain()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">deleteDomain(string <span class="argument">$domain</span>)</pre>
+                <p><em>Deletes the single domain, all of its menus, and all of the menu items.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$domain </td>
+                                <td><p>Domain to delete (with all its menus and menu items)</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_deleteManyDomains" name="method_deleteManyDomains" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">deleteManyDomains()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">deleteManyDomains(array <span class="argument">$domains</span>)</pre>
+                <p><em>Deletes the domains, all of their menus, and all of the menu items.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>array</td>
+                                <td>$domains </td>
+                                <td><p>Array of domains to delete (with all their menus and menu items)</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getMenuLabelWeights" name="method_getMenuLabelWeights" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getMenuLabelWeights()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getMenuLabelWeights() : mixed</pre>
+                <p><em>Returns the array of menu labels and their weights</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    mixed
+                                            &mdash; <p>Associative array of labels pointing to their weights</p>
+                                                </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getRankedMenusFromURL" name="method_getRankedMenusFromURL" class="anchor"></a>
+            <article class="method">
+                <h3 class="protected ">getRankedMenusFromURL()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getRankedMenusFromURL(string <span class="argument">$url</span>)</pre>
+                <p><em>Returns a list of ranked possible menus sorted from highest score to lowest.</em></p>
+                <p>The returned object consists of an array of associated arrays with two keys:
+'score' pointing to the numeric score of the menu and 'items' for the menu itself.
+The 'items' points to an array of items. Each item is an associative array as
+'label' pointing to an individual label and 'url' pointing to that label's link.</p>
+<p>Array-> 'score' => 12
+-> 'items' => Array -> 'label'</p>
+<pre><code>                    -&gt; 'url'</code></pre>
+<p>On failure, NULL is returned.</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
                                 <td>string</td>
                                 <td>$url </td>
-                                <td><p>URL to connect to</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>mixed</td>
-                                <td>$postFields </td>
-                                <td><p>Optional associative array or query string to send as POST with request</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>boolean</td>
-                                <td>$useProxy </td>
-                                <td><p>Flags whether or not to use a proxy</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>string</td>
-                                <td>$proxy </td>
-                                <td><p>Proxy address to use if $useProxy is set to TRUE</p></td>
+                                <td><p>URL to get menus from</p></td>
                             </tr>
                                             </table>
                 
@@ -496,7 +556,7 @@ given instance.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>string                          String response from URL resource</p>
+                                                                                            <p>mixed              Array of ranked menus or NULL on failure</p>
                                                     </td>
                     </tr>
                             </table>
@@ -505,20 +565,29 @@ given instance.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_getManyURLResponses" name="method_getManyURLResponses" class="anchor"></a>
+            <a id="method_getRankedMenusFromManyURLs" name="method_getRankedMenusFromManyURLs" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">getManyURLResponses()</h3>
+                <h3 class="protected ">getRankedMenusFromManyURLs()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getManyURLResponses(mixed <span class="argument">$urlArray</span>)</pre>
-                <p><em>Returns responses from multiple URLs. It returns the associative array of URLs pointing to their responses.</em></p>
-                
+                <pre class="signature" style="margin-right: 54px;">getRankedMenusFromManyURLs(array <span class="argument">$urls</span>)</pre>
+                <p><em>Returns a list of ranked menus sorted from highest score to lowest
+from many URLs.</em></p>
+                <p>The returned array consists for each key of associated arrays with two keys:
+'score' pointing to the numeric score of the menu and 'items' for the menu itself.
+The 'items' points to an array of items. Each item is an associative array as
+'label' pointing to an individual label and 'url' pointing to that label's link.</p>
+<p>The key of the top-most array is the URL string.</p>
+<p>Array[url] -> 'score' => 12</p>
+<pre><code>     -&gt; 'items' =&gt; Array -&gt; 'label'
+                         -&gt; 'url'</code></pre>
+<p>On failure, NULL is returned.</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td>mixed</td>
-                                <td>$urlArray </td>
-                                <td><p>Array of string URLs for which to connect</p></td>
+                                <td>array</td>
+                                <td>$urls </td>
+                                <td><p>URLs to get menus from</p></td>
                             </tr>
                                             </table>
                 
@@ -536,7 +605,7 @@ given instance.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>mixed                              Associative array of URLs pointing to their response</p>
+                                                                                            <p>mixed              Array of ranked menus or NULL on failure</p>
                                                     </td>
                     </tr>
                             </table>
@@ -545,212 +614,27 @@ given instance.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_retrieveHeader" name="method_retrieveHeader" class="anchor"></a>
+            <a id="method_retrieveDomainMenusFromDatabase" name="method_retrieveDomainMenusFromDatabase" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">retrieveHeader()</h3>
+                <h3 class="protected ">retrieveDomainMenusFromDatabase()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">retrieveHeader()</pre>
-                <p><em>Returns whether or not the instance is to retrieve the header.</em></p>
-                
-
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr>
-                        <th>
-                            retval
-                        </th>
-                        <td>
-                                                                                            <p>boolean  Flag of whether or not to retrieve the header</p>
-                                                    </td>
-                    </tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_returnTransfer" name="method_returnTransfer" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">returnTransfer()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">returnTransfer()</pre>
-                <p><em>Returns whether or not to return the transfer as a string instead of outputting it out directly.</em></p>
-                
-
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr>
-                        <th>
-                            retval
-                        </th>
-                        <td>
-                                                                                            <p>boolean  Flag of whether or not to transfer as a string instead of outputting it out directly</p>
-                                                    </td>
-                    </tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_failOnError" name="method_failOnError" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">failOnError()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">failOnError()</pre>
-                <p><em>Returns whether to fail verbosely if the HTTP code returned is greater than or equal to 400.</em></p>
-                
-
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr>
-                        <th>
-                            retval
-                        </th>
-                        <td>
-                                                                                            <p>boolean  Flag of whether to fail verbosely if the HTTP code returned is greater than or equal to 400</p>
-                                                    </td>
-                    </tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_followLocation" name="method_followLocation" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">followLocation()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">followLocation()</pre>
-                <p><em>Returns whether to follow any &quot;Location: &quot; header that the server sends as part of the HTTP header.</em></p>
-                
-
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr>
-                        <th>
-                            retval
-                        </th>
-                        <td>
-                                                                                            <p>boolean  Flag of whether to follow any "Location: " header that the server sends as part of the HTTP header</p>
-                                                    </td>
-                    </tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_socks5" name="method_socks5" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">socks5()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">socks5()</pre>
-                <p><em>Returns whether or not to use SOCKS5 with a proxy, instead of simple HTTP.</em></p>
-                
-
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr>
-                        <th>
-                            retval
-                        </th>
-                        <td>
-                                                                                            <p>boolean  Flag of whether or not to use SOCKS5 with a proxy, instead of simple HTTP</p>
-                                                    </td>
-                    </tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_getMaxGroupSize" name="method_getMaxGroupSize" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">getMaxGroupSize()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getMaxGroupSize()</pre>
-                <p><em>Returns the max group size, the maximum amount of connections made at one time.</em></p>
-                
-
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr>
-                        <th>
-                            retval
-                        </th>
-                        <td>
-                                                                                            <p>int  Max group size, the maximum amount of connections made at one time.</p>
-                                                    </td>
-                    </tr>
-                            </table>
-        </aside>
-    </div>
-
-                                                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_getURLGroupResponses" name="method_getURLGroupResponses" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">getURLGroupResponses()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getURLGroupResponses(mixed <span class="argument">$urlArray</span>)</pre>
-                <p><em>Returns responses from multiple URLs. It returns the associative array of URLs pointing to their responses.</em></p>
-                
+                <pre class="signature" style="margin-right: 54px;">retrieveDomainMenusFromDatabase( <span class="argument">$domain</span>)</pre>
+                <p><em>Returns a list of ranked possible menus sorted from highest score to lowest out of the database.</em></p>
+                <p>The returned object consists of an array of associated arrays with two keys:
+'score' pointing to the numeric score of the menu and 'items' for the menu itself.
+The 'items' points to an array of items. Each item is an associative array as
+'label' pointing to an individual label and 'url' pointing to that label's link.</p>
+<p>Array-> 'score' => 12
+-> 'items' => Array -> 'label'</p>
+<pre><code>                    -&gt; 'url'</code></pre>
+<p>On failure, NULL is returned.</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td>mixed</td>
-                                <td>$urlArray </td>
-                                <td><p>Array of string URLs for which to connect</p></td>
+                                <td></td>
+                                <td>$domain </td>
+                                <td></td>
                             </tr>
                                             </table>
                 
@@ -768,7 +652,7 @@ given instance.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>mixed                              Associative array of URLs pointing to their response</p>
+                                                                                            <p>mixed                      Array of ranked menus or empty array on failure</p>
                                                     </td>
                     </tr>
                             </table>
@@ -777,36 +661,112 @@ given instance.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_getCurlHandle" name="method_getCurlHandle" class="anchor"></a>
+            <a id="method_retrieveManyDomainMenusFromDatabase" name="method_retrieveManyDomainMenusFromDatabase" class="anchor"></a>
             <article class="method">
-                <h3 class="private ">getCurlHandle()</h3>
+                <h3 class="protected ">retrieveManyDomainMenusFromDatabase()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getCurlHandle(string <span class="argument">$url</span>, mixed <span class="argument">$postFields</span>, boolean <span class="argument">$useProxy</span>, string <span class="argument">$proxy</span>)</pre>
-                <p><em>Returns a CURL handle for connecting to a remote resource.</em></p>
-                <p>The following parameters are set from the class instance: CURLOPT_HEADER, CURLOPT_RETURNTRANSFER,
-CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
+                <pre class="signature" style="margin-right: 54px;">retrieveManyDomainMenusFromDatabase(array <span class="argument">$domains</span>)</pre>
+                <p><em>Returns a list of ranked menus sorted from highest score to lowest
+from multiple domains out of the database.</em></p>
+                <p>The returned array consists for each key of associated arrays with two keys:
+'score' pointing to the numeric score of the menu and 'items' for the menu itself.
+The 'items' points to an array of items. Each item is an associative array as
+'label' pointing to an individual label and 'url' pointing to that label's link.</p>
+<p>The key of the top-most array is the URL string.</p>
+<p>Array[url] -> 'score' => 12</p>
+<pre><code>     -&gt; 'items' =&gt; Array -&gt; 'label'
+                         -&gt; 'url'</code></pre>
+<p>On failure, an empty array is return.</p>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>array</td>
+                                <td>$domains </td>
+                                <td><p>Domains to get menus from</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>mixed                  Array of ranked menus or empty array on failure</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_insertDomainsWithMenus" name="method_insertDomainsWithMenus" class="anchor"></a>
+            <article class="method">
+                <h3 class="protected ">insertDomainsWithMenus()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">insertDomainsWithMenus(array <span class="argument">$domainInfo</span>)</pre>
+                <p><em>Inserts the domain into the database with its associated menus and menu items.</em></p>
+                <p>THIS WILL DELETE THE CURRENT DOMAIN AND CURRENT MENUS FROM THE DATABASE.</p>
+<p>The passed array is very specific. It is the structure as the returned array from getRankedMenusFromManyURLs(...).
+The follows as:</p>
+<p>Array[url] -> 'score' => 12</p>
+<pre><code>     -&gt; 'items' =&gt; Array -&gt; 'label'
+                         -&gt; 'url'</code></pre>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>array</td>
+                                <td>$domainInfo </td>
+                                <td><p>Array of domains and their associated menus. See main description for format.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_grabPossibleMenusFromHTML" name="method_grabPossibleMenusFromHTML" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">grabPossibleMenusFromHTML()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">grabPossibleMenusFromHTML(string <span class="argument">$pageHTML</span>)</pre>
+                <p><em>Returns an array of possible menus from the passed HTML.</em></p>
+                <p>The returned object is an array of menus. Each menu points to an array of items.
+Each item is an associative array as 'label' pointing to an individual label and
+'url' pointing to that label's link.</p>
+<p>Array => Array -> 'label'</p>
+<pre><code>         -&gt; 'url'</code></pre>
+<p>On failure, NULL is returned.</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
                                 <td>string</td>
-                                <td>$url </td>
-                                <td><p>Resource to connect to</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>mixed</td>
-                                <td>$postFields </td>
-                                <td><p>Optional associative array or query string to send with request. DEFAULT: null</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>boolean</td>
-                                <td>$useProxy </td>
-                                <td><p>Flags whether or not a proxy should be used. DEFAULT: false</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>string</td>
-                                <td>$proxy </td>
-                                <td><p>Proxy to use if $useProxy is set to TRUE. DEFAULT: 127.0.0.1:9050</p></td>
+                                <td>$pageHTML </td>
+                                <td><p>HTML to grab possible menus out of</p></td>
                             </tr>
                                             </table>
                 
@@ -824,7 +784,7 @@ CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>cURLHandle                       cURL handle used to connect to the remote resource.</p>
+                                                                                            <p>mixed                  Array of possible menus or NULL on failure</p>
                                                     </td>
                     </tr>
                             </table>
@@ -833,20 +793,31 @@ CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_setRetrieveHeader" name="method_setRetrieveHeader" class="anchor"></a>
+            <a id="method_grabPossibleULMenus" name="method_grabPossibleULMenus" class="anchor"></a>
             <article class="method">
-                <h3 class="private ">setRetrieveHeader()</h3>
+                <h3 class="private ">grabPossibleULMenus()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setRetrieveHeader(boolean <span class="argument">$retrieve</span>)</pre>
-                <p><em>Sets whether or not the instance is to retrieve the header.</em></p>
-                
+                <pre class="signature" style="margin-right: 54px;">grabPossibleULMenus(\DOMDocument <span class="argument">$htmlDocument</span>, \DOMXpath <span class="argument">$htmlXPath</span>)</pre>
+                <p><em>Returns an array of possible menus using the UL method from the passed HTML elements.</em></p>
+                <p>The UL method is very simple: return all ULs with lis that contain an Anchor.</p>
+<p>The returned object is an array of menus. Each menu points to an array of items.
+Each item is an associative array as 'label' pointing to an individual label and
+'url' pointing to that label's link.</p>
+<p>Array => Array -> 'label'</p>
+<pre><code>         -&gt; 'url'</code></pre>
+<p>On failure, NULL is returned.</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td>boolean</td>
-                                <td>$retrieve </td>
-                                <td><p>Flags whether or not the instance should retrieve the header</p></td>
+                                <td>\DOMDocument</td>
+                                <td>$htmlDocument </td>
+                                <td><p>DOMDocument to traverse in order to find elements</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>\DOMXpath</td>
+                                <td>$htmlXPath </td>
+                                <td><p>DOMXPath to search for groups of elements</p></td>
                             </tr>
                                             </table>
                 
@@ -859,27 +830,46 @@ CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
                                                                             </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>mixed                              Array of possible menus or NULL on failure</p>
+                                                    </td>
+                    </tr>
                             </table>
         </aside>
     </div>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_setReturnTransfer" name="method_setReturnTransfer" class="anchor"></a>
+            <a id="method_grabPossibleDIVMenus" name="method_grabPossibleDIVMenus" class="anchor"></a>
             <article class="method">
-                <h3 class="private ">setReturnTransfer()</h3>
+                <h3 class="private ">grabPossibleDIVMenus()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setReturnTransfer( <span class="argument">$useReturnTransfer</span>)</pre>
-                <p><em>Sets whether or not the instance is to return the transfer as a string instead of outputting it out directly.</em></p>
-                
+                <pre class="signature" style="margin-right: 54px;">grabPossibleDIVMenus(\DOMDocument <span class="argument">$htmlDocument</span>, \DOMXpath <span class="argument">$htmlXPath</span>)</pre>
+                <p><em>Returns an array of possible menus using the DIV method from the passed HTML elements.</em></p>
+                <p>The DIV method consists of returning the labels and links from any element that
+contains the same amount of DIVs and Anchors.</p>
+<p>The returned object is an array of menus. Each menu points to an array of items.
+Each item is an associative array as 'label' pointing to an individual label and
+'url' pointing to that label's link.</p>
+<p>Array => Array -> 'label'</p>
+<pre><code>         -&gt; 'url'</code></pre>
+<p>On failure, NULL is returned.</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td></td>
-                                <td>$useReturnTransfer </td>
-                                <td></td>
+                                <td>\DOMDocument</td>
+                                <td>$htmlDocument </td>
+                                <td><p>DOMDocument to traverse in order to find elements</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>\DOMXpath</td>
+                                <td>$htmlXPath </td>
+                                <td><p>DOMXPath to search for groups of elements</p></td>
                             </tr>
                                             </table>
                 
@@ -892,27 +882,67 @@ CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
                                                                             </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>mixed                              Array of possible menus or NULL on failure</p>
+                                                    </td>
+                    </tr>
                             </table>
         </aside>
     </div>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_setFailOnError" name="method_setFailOnError" class="anchor"></a>
+            <a id="method_retrieveMenuLabelWeightsFromDatabase" name="method_retrieveMenuLabelWeightsFromDatabase" class="anchor"></a>
             <article class="method">
-                <h3 class="private ">setFailOnError()</h3>
+                <h3 class="private ">retrieveMenuLabelWeightsFromDatabase()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setFailOnError(boolean <span class="argument">$setFail</span>)</pre>
-                <p><em>Sets whether to fail verbosely if the HTTP code returned is greater than or equal to 400.</em></p>
+                <pre class="signature" style="margin-right: 54px;">retrieveMenuLabelWeightsFromDatabase()</pre>
+                <p><em>Returns an associative array of the labels and weights in the database.</em></p>
+                <p>The associative array consists of labels and their weights as label => weight</p>
+
                 
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>mixed          Associative array of labels and their weights as label => weight</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_scoreMenu" name="method_scoreMenu" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">scoreMenu()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">scoreMenu(mixed <span class="argument">$menuItems</span>)</pre>
+                <p><em>Returns a score for a given menu.</em></p>
+                <p>The passed menu must be an array of menu items. Each item must be an associative array
+as 'label' => label and 'url' => Anchor.</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td>boolean</td>
-                                <td>$setFail </td>
-                                <td><p>Flags whether to fail verbosely if the HTTP code returned is greater than or equal to 400</p></td>
+                                <td>mixed</td>
+                                <td>$menuItems </td>
+                                <td><p>Array of menu items. See main description.</p></td>
                             </tr>
                                             </table>
                 
@@ -925,93 +955,34 @@ CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
                                                                             </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>int                      Weighted score for the passed menu</p>
+                                                    </td>
+                    </tr>
                             </table>
         </aside>
     </div>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_setFollowLocation" name="method_setFollowLocation" class="anchor"></a>
+            <a id="method_setMenuLabelWeights" name="method_setMenuLabelWeights" class="anchor"></a>
             <article class="method">
-                <h3 class="private ">setFollowLocation()</h3>
+                <h3 class="private ">setMenuLabelWeights()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setFollowLocation(boolean <span class="argument">$setFollow</span>)</pre>
-                <p><em>Sets whether to follow any &quot;Location: &quot; header that the server sends as part of the HTTP header.</em></p>
+                <pre class="signature" style="margin-right: 54px;">setMenuLabelWeights(mixed <span class="argument">$newMenuWeights</span>)</pre>
+                <p><em>Sets the array of menu labels and their weights</em></p>
                 
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td>boolean</td>
-                                <td>$setFollow </td>
-                                <td><p>Flags whether to follow any "Location: " header that the server sends as part of the HTTP header</p></td>
-                            </tr>
-                                            </table>
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_setSocks5" name="method_setSocks5" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">setSocks5()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setSocks5( <span class="argument">$useSocks5</span>)</pre>
-                <p><em>Sets whether or not to use SOCKS5 with a proxy, instead of simple HTTP.</em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td></td>
-                                <td>$useSocks5 </td>
-                                <td></td>
-                            </tr>
-                                            </table>
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_setMaxGroupSize" name="method_setMaxGroupSize" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">setMaxGroupSize()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setMaxGroupSize(integer <span class="argument">$newMaxGroupSize</span>)</pre>
-                <p><em>Sets the max group size, the maximum amount of connections made at one time.</em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td>integer</td>
-                                <td>$newMaxGroupSize </td>
-                                <td><p>Max group size, the maximum amount of connections made at one time.</p></td>
+                                <td>mixed</td>
+                                <td>$newMenuWeights </td>
+                                <td><p>New array of menu labels and their weights</p></td>
                             </tr>
                                             </table>
                 
@@ -1035,10 +1006,10 @@ CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
     <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="source-view-label">class.WebCommunicator.php</h3>
+            <h3 id="source-view-label">class.MenuGrabber.php</h3>
         </div>
         <div class="modal-body">
-            <pre data-src="../files/class.WebCommunicator.php.txt" class="language-php line-numbers"></pre>
+            <pre data-src="../files/class.MenuGrabber.php.txt" class="language-php line-numbers"></pre>
         </div>
     </div>
 
@@ -1078,7 +1049,7 @@ CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
                 <section class="span10 offset1">
                     <hr />
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
-                    on August 14th, 2014 at 21:30.
+                    on August 18th, 2014 at 20:14.
                 </section>
             </section>
         </section>

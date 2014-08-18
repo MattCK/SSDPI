@@ -136,10 +136,10 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1613598548"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1919722694"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-1613598548" class="accordion-body collapse in">
+            <div id="namespace-1919722694" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                     
@@ -164,9 +164,11 @@
                                             </nav>
                     <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
 
-                    <h1><small>\</small>MySQLDatabase</h1>
-                    <p><em>The MySQLDatabase class controls connecting to the database and executing queries on it.</em></p>
-                    
+                    <h1><small>\</small>WebPageCommunicator</h1>
+                    <p><em>The WebPageCommunicator class communicates with remote URL resources.</em></p>
+                    <p>This class can be used to query a single resource or many. If many requests are made at the same time, the class is
+optimized to connect to multiple resources at once. The amount of simultaneous connections can be controlled for a
+given instance.</p>
 
                     <section id="summary">
                         <h2>Summary</h2>
@@ -183,14 +185,15 @@
                         </section>
                         <section class="row-fluid public">
                             <section class="span4">
-                                                                    <a href="../classes/MySQLDatabase.html#method___construct" class="">__construct()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_query" class="">query()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_lastInsertID" class="">lastInsertID()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_escape" class="">escape()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_getHost" class="">getHost()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_getUsername" class="">getUsername()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_getPassword" class="">getPassword()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_getDatabaseName" class="">getDatabaseName()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method___construct" class="">__construct()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_getURLResponse" class="">getURLResponse()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_getManyURLResponses" class="">getManyURLResponses()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_retrieveHeader" class="">retrieveHeader()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_returnTransfer" class="">returnTransfer()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_failOnError" class="">failOnError()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_followLocation" class="">followLocation()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_socks5" class="">socks5()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_getMaxGroupSize" class="">getMaxGroupSize()</a><br />
                                                             </section>
                             <section class="span4">
                                                                     <em>No public properties found</em>
@@ -212,19 +215,22 @@
                         </section>
                         <section class="row-fluid private">
                             <section class="span4">
-                                                                    <a href="../classes/MySQLDatabase.html#method_setHost" class="">setHost()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_setUsername" class="">setUsername()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_setPassword" class="">setPassword()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_setDatabaseName" class="">setDatabaseName()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_getLink" class="">getLink()</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#method_setLink" class="">setLink()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_getURLGroupResponses" class="">getURLGroupResponses()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_getCurlHandle" class="">getCurlHandle()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_setRetrieveHeader" class="">setRetrieveHeader()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_setReturnTransfer" class="">setReturnTransfer()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_setFailOnError" class="">setFailOnError()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_setFollowLocation" class="">setFollowLocation()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_setSocks5" class="">setSocks5()</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#method_setMaxGroupSize" class="">setMaxGroupSize()</a><br />
                                                             </section>
                             <section class="span4">
-                                                                    <a href="../classes/MySQLDatabase.html#property__host" class="">$_host</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#property__username" class="">$_username</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#property__password" class="">$_password</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#property__databaseName" class="">$_databaseName</a><br />
-                                                                    <a href="../classes/MySQLDatabase.html#property__databaseLink" class="">$_databaseLink</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#property__header" class="">$_header</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#property__returnTransfer" class="">$_returnTransfer</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#property__failOnError" class="">$_failOnError</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#property__followLocation" class="">$_followLocation</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#property__useSocks5" class="">$_useSocks5</a><br />
+                                                                    <a href="../classes/WebPageCommunicator.html#property__maxGroupSize" class="">$_maxGroupSize</a><br />
                                                             </section>
                             <section class="span4">
                                 <em>N/A</em>
@@ -237,12 +243,12 @@
                     
                     <dl>
                         <dt>File</dt>
-                            <dd><a href="../files/class.MySQLDatabase.html"><div class="path-wrapper">class.MySQLDatabase.php</div></a></dd>
+                            <dd><a href="../files/class.WebCommunicator.html"><div class="path-wrapper">class.WebCommunicator.php</div></a></dd>
                                                 <dt>Package</dt>
-                            <dd><div class="namespace-wrapper">\Default</div></dd>
+                            <dd><div class="namespace-wrapper">\Adshotrunner</div></dd>
                                                 <dt>Class hierarchy</dt>
                             <dd class="hierarchy">
-                                                                                                                                                                    <div class="namespace-wrapper">\MySQLDatabase</div>
+                                                                                                                                                                    <div class="namespace-wrapper">\WebPageCommunicator</div>
                             </dd>
 
                         
@@ -268,16 +274,16 @@
 
                                                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="property__host" name="property__host" class="anchor"></a>
+            <a id="property__header" name="property__header" class="anchor"></a>
             <article class="property">
-                <h3 class="private ">$_host</h3>
-                <pre class="signature">$_host : string</pre>
+                <h3 class="private ">$_header</h3>
+                <pre class="signature">$_header : boolean</pre>
                 <p><em></em></p>
                 
 
                                 <h4>Type</h4>
-                string
-                &mdash; Host name or IP to connect to                            </article>
+                boolean
+                &mdash; Flags whether or not to retrieve the header. DEFAULT: FALSE                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -292,16 +298,16 @@
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="property__username" name="property__username" class="anchor"></a>
+            <a id="property__returnTransfer" name="property__returnTransfer" class="anchor"></a>
             <article class="property">
-                <h3 class="private ">$_username</h3>
-                <pre class="signature">$_username : string</pre>
+                <h3 class="private ">$_returnTransfer</h3>
+                <pre class="signature">$_returnTransfer : boolean</pre>
                 <p><em></em></p>
                 
 
                                 <h4>Type</h4>
-                string
-                &mdash; Username of the MySQL user used to login into the database                            </article>
+                boolean
+                &mdash; Flags whether or not to return the transfer as a string instead of outputting it out directly. DEFAULT: TRUE                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -316,16 +322,16 @@
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="property__password" name="property__password" class="anchor"></a>
+            <a id="property__failOnError" name="property__failOnError" class="anchor"></a>
             <article class="property">
-                <h3 class="private ">$_password</h3>
-                <pre class="signature">$_password : string</pre>
+                <h3 class="private ">$_failOnError</h3>
+                <pre class="signature">$_failOnError : boolean</pre>
                 <p><em></em></p>
                 
 
                                 <h4>Type</h4>
-                string
-                &mdash; Password of the MySQL user used to login into the database                            </article>
+                boolean
+                &mdash; Flags whether to fail verbosely if the HTTP code returned is greater than or equal to 400. DEFAULT: FALSE                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -340,16 +346,16 @@
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="property__databaseName" name="property__databaseName" class="anchor"></a>
+            <a id="property__followLocation" name="property__followLocation" class="anchor"></a>
             <article class="property">
-                <h3 class="private ">$_databaseName</h3>
-                <pre class="signature">$_databaseName : string</pre>
+                <h3 class="private ">$_followLocation</h3>
+                <pre class="signature">$_followLocation : boolean</pre>
                 <p><em></em></p>
                 
 
                                 <h4>Type</h4>
-                string
-                &mdash; Name of the database to connect to                            </article>
+                boolean
+                &mdash; Flags whether to follow any &quot;Location: &quot; header that the server sends as part of the HTTP header. DEFAULT: TRUE                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -364,16 +370,40 @@
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="property__databaseLink" name="property__databaseLink" class="anchor"></a>
+            <a id="property__useSocks5" name="property__useSocks5" class="anchor"></a>
             <article class="property">
-                <h3 class="private ">$_databaseLink</h3>
-                <pre class="signature">$_databaseLink : resource</pre>
+                <h3 class="private ">$_useSocks5</h3>
+                <pre class="signature">$_useSocks5 : boolean</pre>
                 <p><em></em></p>
                 
 
                                 <h4>Type</h4>
-                resource
-                &mdash; Link to the connected database                            </article>
+                boolean
+                &mdash; Flags whether or not to use SOCKS5 with a proxy, instead of simple HTTP. DEFAULT: TRUE                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property__maxGroupSize" name="property__maxGroupSize" class="anchor"></a>
+            <article class="property">
+                <h3 class="private ">$_maxGroupSize</h3>
+                <pre class="signature">$_maxGroupSize : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; Determines the maximum amount of connections made at one time. HTTP. DEFAULT: 8                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -399,35 +429,10 @@
             <article class="method">
                 <h3 class="public ">__construct()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">__construct(string <span class="argument">$host</span>, string <span class="argument">$username</span>, string <span class="argument">$password</span>, string <span class="argument">$databaseName</span>)</pre>
-                <p><em>Instantiates class and creates connection to MySQL database.</em></p>
-                <p>Creates connection to MySQL database based on the arguments passed.</p>
-<p>On success, the connection occurred without error and the object is instantiated.
-On failure, die() is called and the MySQL error outputted.</p>
+                <pre class="signature" style="margin-right: 54px;">__construct()</pre>
+                <p><em>Instantiates class and sets default values.</em></p>
+                
 
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td>string</td>
-                                <td>$host </td>
-                                <td><p>The name or IP of the host to connect to</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>string</td>
-                                <td>$username </td>
-                                <td><p>The username of the MySQL user to use</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>string</td>
-                                <td>$password </td>
-                                <td><p>The password of the MySQL user to use</p></td>
-                            </tr>
-                                                    <tr>
-                                <td>string</td>
-                                <td>$databaseName </td>
-                                <td><p>The name of the database to connect to</p></td>
-                            </tr>
-                                            </table>
                 
                 
                             </article>
@@ -445,20 +450,35 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_query" name="method_query" class="anchor"></a>
+            <a id="method_getURLResponse" name="method_getURLResponse" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">query()</h3>
+                <h3 class="public ">getURLResponse()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">query(string <span class="argument">$query</span>)</pre>
-                <p><em>Executes a query and returns the result.</em></p>
+                <pre class="signature" style="margin-right: 54px;">getURLResponse(string <span class="argument">$url</span>, mixed <span class="argument">$postFields</span>, boolean <span class="argument">$useProxy</span>, string <span class="argument">$proxy</span>)</pre>
+                <p><em>Returns the response from a URL resource connected to with passed parameters.</em></p>
                 
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
                                 <td>string</td>
-                                <td>$query </td>
-                                <td><p>Query to run</p></td>
+                                <td>$url </td>
+                                <td><p>URL to connect to</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>mixed</td>
+                                <td>$postFields </td>
+                                <td><p>Optional associative array or query string to send as POST with request</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>boolean</td>
+                                <td>$useProxy </td>
+                                <td><p>Flags whether or not to use a proxy</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$proxy </td>
+                                <td><p>Proxy address to use if $useProxy is set to TRUE</p></td>
                             </tr>
                                             </table>
                 
@@ -476,7 +496,7 @@ On failure, die() is called and the MySQL error outputted.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>mysqli_result      Result object on success, FALSE on failure</p>
+                                                                                            <p>string                          String response from URL resource</p>
                                                     </td>
                     </tr>
                             </table>
@@ -485,52 +505,20 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_lastInsertID" name="method_lastInsertID" class="anchor"></a>
+            <a id="method_getManyURLResponses" name="method_getManyURLResponses" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">lastInsertID()</h3>
+                <h3 class="public ">getManyURLResponses()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">lastInsertID()</pre>
-                <p><em>Returns the last insert ID from the database, if one exists.</em></p>
-                
-
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr>
-                        <th>
-                            retval
-                        </th>
-                        <td>
-                                                                                            <p>int              Last insert ID from database query</p>
-                                                    </td>
-                    </tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_escape" name="method_escape" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">escape()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">escape(string <span class="argument">$unformattedString</span>)</pre>
-                <p><em>Escapes the passed string.</em></p>
+                <pre class="signature" style="margin-right: 54px;">getManyURLResponses(mixed <span class="argument">$urlArray</span>)</pre>
+                <p><em>Returns responses from multiple URLs. It returns the associative array of URLs pointing to their responses.</em></p>
                 
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td>string</td>
-                                <td>$unformattedString </td>
-                                <td><p>String to escape</p></td>
+                                <td>mixed</td>
+                                <td>$urlArray </td>
+                                <td><p>Array of string URLs for which to connect</p></td>
                             </tr>
                                             </table>
                 
@@ -548,7 +536,7 @@ On failure, die() is called and the MySQL error outputted.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>string                          Escaped string</p>
+                                                                                            <p>mixed                              Associative array of URLs pointing to their response</p>
                                                     </td>
                     </tr>
                             </table>
@@ -557,12 +545,12 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_getHost" name="method_getHost" class="anchor"></a>
+            <a id="method_retrieveHeader" name="method_retrieveHeader" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">getHost()</h3>
+                <h3 class="public ">retrieveHeader()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getHost()</pre>
-                <p><em>Returns the name/IP of the host</em></p>
+                <pre class="signature" style="margin-right: 54px;">retrieveHeader()</pre>
+                <p><em>Returns whether or not the instance is to retrieve the header.</em></p>
                 
 
                 
@@ -580,7 +568,7 @@ On failure, die() is called and the MySQL error outputted.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>string  Name/IP of the host</p>
+                                                                                            <p>boolean  Flag of whether or not to retrieve the header</p>
                                                     </td>
                     </tr>
                             </table>
@@ -589,12 +577,12 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_getUsername" name="method_getUsername" class="anchor"></a>
+            <a id="method_returnTransfer" name="method_returnTransfer" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">getUsername()</h3>
+                <h3 class="public ">returnTransfer()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getUsername()</pre>
-                <p><em>Returns the username of the MySQL login user</em></p>
+                <pre class="signature" style="margin-right: 54px;">returnTransfer()</pre>
+                <p><em>Returns whether or not to return the transfer as a string instead of outputting it out directly.</em></p>
                 
 
                 
@@ -612,7 +600,7 @@ On failure, die() is called and the MySQL error outputted.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>string  Username of the MySQL login user</p>
+                                                                                            <p>boolean  Flag of whether or not to transfer as a string instead of outputting it out directly</p>
                                                     </td>
                     </tr>
                             </table>
@@ -621,12 +609,12 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_getPassword" name="method_getPassword" class="anchor"></a>
+            <a id="method_failOnError" name="method_failOnError" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">getPassword()</h3>
+                <h3 class="public ">failOnError()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getPassword()</pre>
-                <p><em>Returns the password of the MySQL login user</em></p>
+                <pre class="signature" style="margin-right: 54px;">failOnError()</pre>
+                <p><em>Returns whether to fail verbosely if the HTTP code returned is greater than or equal to 400.</em></p>
                 
 
                 
@@ -644,7 +632,7 @@ On failure, die() is called and the MySQL error outputted.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>string  Password of the MySQL login user</p>
+                                                                                            <p>boolean  Flag of whether to fail verbosely if the HTTP code returned is greater than or equal to 400</p>
                                                     </td>
                     </tr>
                             </table>
@@ -653,12 +641,12 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_getDatabaseName" name="method_getDatabaseName" class="anchor"></a>
+            <a id="method_followLocation" name="method_followLocation" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">getDatabaseName()</h3>
+                <h3 class="public ">followLocation()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getDatabaseName()</pre>
-                <p><em>Returns the database name</em></p>
+                <pre class="signature" style="margin-right: 54px;">followLocation()</pre>
+                <p><em>Returns whether to follow any &quot;Location: &quot; header that the server sends as part of the HTTP header.</em></p>
                 
 
                 
@@ -676,7 +664,71 @@ On failure, die() is called and the MySQL error outputted.</p>
                             retval
                         </th>
                         <td>
-                                                                                            <p>string  Database name</p>
+                                                                                            <p>boolean  Flag of whether to follow any "Location: " header that the server sends as part of the HTTP header</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_socks5" name="method_socks5" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">socks5()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">socks5()</pre>
+                <p><em>Returns whether or not to use SOCKS5 with a proxy, instead of simple HTTP.</em></p>
+                
+
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>boolean  Flag of whether or not to use SOCKS5 with a proxy, instead of simple HTTP</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getMaxGroupSize" name="method_getMaxGroupSize" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getMaxGroupSize()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getMaxGroupSize()</pre>
+                <p><em>Returns the max group size, the maximum amount of connections made at one time.</em></p>
+                
+
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>int  Max group size, the maximum amount of connections made at one time.</p>
                                                     </td>
                     </tr>
                             </table>
@@ -685,20 +737,116 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_setHost" name="method_setHost" class="anchor"></a>
+            <a id="method_getURLGroupResponses" name="method_getURLGroupResponses" class="anchor"></a>
             <article class="method">
-                <h3 class="private ">setHost()</h3>
+                <h3 class="private ">getURLGroupResponses()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setHost(string <span class="argument">$newHost</span>)</pre>
-                <p><em>Sets the name/IP of the host</em></p>
+                <pre class="signature" style="margin-right: 54px;">getURLGroupResponses(mixed <span class="argument">$urlArray</span>)</pre>
+                <p><em>Returns responses from multiple URLs. It returns the associative array of URLs pointing to their responses.</em></p>
                 
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
+                                <td>mixed</td>
+                                <td>$urlArray </td>
+                                <td><p>Array of string URLs for which to connect</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>mixed                              Associative array of URLs pointing to their response</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getCurlHandle" name="method_getCurlHandle" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">getCurlHandle()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getCurlHandle(string <span class="argument">$url</span>, mixed <span class="argument">$postFields</span>, boolean <span class="argument">$useProxy</span>, string <span class="argument">$proxy</span>)</pre>
+                <p><em>Returns a CURL handle for connecting to a remote resource.</em></p>
+                <p>The following parameters are set from the class instance: CURLOPT_HEADER, CURLOPT_RETURNTRANSFER,
+CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_PROXYTYPE.</p>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
                                 <td>string</td>
-                                <td>$newHost </td>
-                                <td><p>Name/IP of the host</p></td>
+                                <td>$url </td>
+                                <td><p>Resource to connect to</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>mixed</td>
+                                <td>$postFields </td>
+                                <td><p>Optional associative array or query string to send with request. DEFAULT: null</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>boolean</td>
+                                <td>$useProxy </td>
+                                <td><p>Flags whether or not a proxy should be used. DEFAULT: false</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$proxy </td>
+                                <td><p>Proxy to use if $useProxy is set to TRUE. DEFAULT: 127.0.0.1:9050</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            retval
+                        </th>
+                        <td>
+                                                                                            <p>cURLHandle                       cURL handle used to connect to the remote resource.</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setRetrieveHeader" name="method_setRetrieveHeader" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">setRetrieveHeader()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setRetrieveHeader(boolean <span class="argument">$retrieve</span>)</pre>
+                <p><em>Sets whether or not the instance is to retrieve the header.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>boolean</td>
+                                <td>$retrieve </td>
+                                <td><p>Flags whether or not the instance should retrieve the header</p></td>
                             </tr>
                                             </table>
                 
@@ -718,147 +866,152 @@ On failure, die() is called and the MySQL error outputted.</p>
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_setUsername" name="method_setUsername" class="anchor"></a>
+            <a id="method_setReturnTransfer" name="method_setReturnTransfer" class="anchor"></a>
             <article class="method">
-                <h3 class="private ">setUsername()</h3>
+                <h3 class="private ">setReturnTransfer()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setUsername(string <span class="argument">$newUsername</span>)</pre>
-                <p><em>Sets the username of the MySQL login user</em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td>string</td>
-                                <td>$newUsername </td>
-                                <td><p>Username of the MySQL login user</p></td>
-                            </tr>
-                                            </table>
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_setPassword" name="method_setPassword" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">setPassword()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setPassword(string <span class="argument">$newPassword</span>)</pre>
-                <p><em>Sets the password of the MySQL login user</em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td>string</td>
-                                <td>$newPassword </td>
-                                <td><p>Password of the MySQL login user</p></td>
-                            </tr>
-                                            </table>
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_setDatabaseName" name="method_setDatabaseName" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">setDatabaseName()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setDatabaseName(string <span class="argument">$newDatabaseName</span>)</pre>
-                <p><em>Sets the database name</em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td>string</td>
-                                <td>$newDatabaseName </td>
-                                <td><p>Database name</p></td>
-                            </tr>
-                                            </table>
-                
-                
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_getLink" name="method_getLink" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">getLink()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getLink() : resource</pre>
-                <p><em>Returns the link to the database</em></p>
-                
-
-                
-                
-                                    <h4>Returns</h4>
-                    resource
-                                            &mdash; <p>Link to the database</p>
-                                                </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_setLink" name="method_setLink" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">setLink()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">setLink( <span class="argument">$newLink</span>)</pre>
-                <p><em>Sets the link to the database</em></p>
+                <pre class="signature" style="margin-right: 54px;">setReturnTransfer( <span class="argument">$useReturnTransfer</span>)</pre>
+                <p><em>Sets whether or not the instance is to return the transfer as a string instead of outputting it out directly.</em></p>
                 
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
                                 <td></td>
-                                <td>$newLink </td>
+                                <td>$useReturnTransfer </td>
                                 <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setFailOnError" name="method_setFailOnError" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">setFailOnError()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setFailOnError(boolean <span class="argument">$setFail</span>)</pre>
+                <p><em>Sets whether to fail verbosely if the HTTP code returned is greater than or equal to 400.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>boolean</td>
+                                <td>$setFail </td>
+                                <td><p>Flags whether to fail verbosely if the HTTP code returned is greater than or equal to 400</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setFollowLocation" name="method_setFollowLocation" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">setFollowLocation()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setFollowLocation(boolean <span class="argument">$setFollow</span>)</pre>
+                <p><em>Sets whether to follow any &quot;Location: &quot; header that the server sends as part of the HTTP header.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>boolean</td>
+                                <td>$setFollow </td>
+                                <td><p>Flags whether to follow any "Location: " header that the server sends as part of the HTTP header</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setSocks5" name="method_setSocks5" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">setSocks5()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setSocks5( <span class="argument">$useSocks5</span>)</pre>
+                <p><em>Sets whether or not to use SOCKS5 with a proxy, instead of simple HTTP.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$useSocks5 </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setMaxGroupSize" name="method_setMaxGroupSize" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">setMaxGroupSize()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setMaxGroupSize(integer <span class="argument">$newMaxGroupSize</span>)</pre>
+                <p><em>Sets the max group size, the maximum amount of connections made at one time.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>integer</td>
+                                <td>$newMaxGroupSize </td>
+                                <td><p>Max group size, the maximum amount of connections made at one time.</p></td>
                             </tr>
                                             </table>
                 
@@ -882,10 +1035,10 @@ On failure, die() is called and the MySQL error outputted.</p>
     <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="source-view-label">class.MySQLDatabase.php</h3>
+            <h3 id="source-view-label">class.WebCommunicator.php</h3>
         </div>
         <div class="modal-body">
-            <pre data-src="../files/class.MySQLDatabase.php.txt" class="language-php line-numbers"></pre>
+            <pre data-src="../files/class.WebCommunicator.php.txt" class="language-php line-numbers"></pre>
         </div>
     </div>
 
@@ -925,7 +1078,7 @@ On failure, die() is called and the MySQL error outputted.</p>
                 <section class="span10 offset1">
                     <hr />
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
-                    on August 14th, 2014 at 21:30.
+                    on August 18th, 2014 at 20:14.
                 </section>
             </section>
         </section>
