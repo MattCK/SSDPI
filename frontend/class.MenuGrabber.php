@@ -1,25 +1,13 @@
 <?PHP
-/**
-* @namespace top
-*/
-$somecode = 'somecode';
-
-
-
-
-/*
-* @namespace namespace
-* @package package
-* @section section
-* @page page
-* @category category
-* @name name
-* @subsection subsection
-* @see classes1
-*/
-
 
 require_once('class.WebCommunicator.php');
+
+/**
+* Contains the class for communicating with  the web
+*
+* @package Adshotrunner
+* @subpackage Classes
+*/
 
 /**
 * The Menu Grabber attempts to grab possible menus from a given webpage or webpages.
@@ -33,16 +21,6 @@ require_once('class.WebCommunicator.php');
 * applicable. 
 *
 * This class requires the MySQLDatabase global $database to be instantiated. 
-*
-* @namespace namespace4\MenuGrabber
-* @package package2
-* @section section2
-* @page page2
-* @category cagetory2
-* @name name2
-* @subsection subsection2
-* @see classes2
-*
 */
 class MenuGrabber {
 

@@ -2,6 +2,9 @@
 
 /**
 * The MySQLDatabase class controls connecting to the database and executing queries on it. 
+*
+* @package Adshotrunner
+* @subpackage Classes
 */
 class MySQLDatabase {
 

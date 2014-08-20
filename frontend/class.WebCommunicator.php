@@ -323,7 +323,7 @@ class WebPageCommunicator {
 	*
 	* @param int $newMaxGroupSize  Max group size, the maximum amount of connections made at one time.
 	*/
-	private function setMaxGroupSize($newMaxGroupSize) {
+	public function setMaxGroupSize($newMaxGroupSize) {
 		$this->_maxGroupSize = $newMaxGroupSize;
 	}
 	
