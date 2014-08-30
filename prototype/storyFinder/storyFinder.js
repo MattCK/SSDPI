@@ -47,7 +47,7 @@ page.open(targetURL, function(status) {
 					var curClass = anchorElements[i].getAttribute('class');
 					var curParentNode = anchorElements[i].parentNode;
 					while ((!curClass) && (loopCount < 10)){
-						curClass = curParentNode.getAttribute('class');;
+						curClass = curParentNode.getAttribute('class');
 						curParentNode = curParentNode.parentNode;
 						++loopCount;
 					}

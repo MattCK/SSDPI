@@ -1,0 +1,17 @@
+package adshotrunner;
+
+import org.json.JSONException;
+
+import adshotrunner.StoryFinder.Calculator;
+
+public class ClassTester {
+
+	public static void main(String[] args) throws JSONException {
+		// TODO Auto-generated method stub
+		StoryFinder test = new StoryFinder("http://boston.com");
+		//int score = test.Calculator().score();
+		adshotrunner.StoryFinder.Calculator testCalc = test.new Calculator();
+		Calculator tester = new StoryFinder("http://boston.com").new Calculator();
+	}
+
+}

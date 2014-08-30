@@ -1,0 +1,116 @@
+package adshotrunner;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.*;
+
+/**
+ * Retrieves possible stories from a URL. The stories are ranked with a higher
+ * score being more likely to be a usable story of the subsection.
+ */
+public class StoryFinder {
+	
+	private final String targetURL;
+	private final JsonArray urlAnchors;
+	
+	/**
+	 * Returns a list of all possible stories with their scores, titles, and URLs
+	 * 
+	 * @param url	URL to retrieve stories from
+	 * @return		ArrayList of HashMaps with the keys 'score', 'title', and 
+	 * 				'url' pointing to their respective data, sorted ascending
+	 * 				by score
+	 */
+	public static ArrayList<HashMap<String, String>> getStories(String url) {
+		
+            
+            
+		return null;
+	}
+
+	private static String getAnchorsFromURL(String targetURL) {
+		
+		//Try to make the phantomjs call and return the JSON
+        String phantomJSResponse = null;
+        try {
+            
+        	//Run the retrieve anchors js file with phantomjs
+            Process p = Runtime.getRuntime().exec(new String[]{
+	            "/home/juicio/Documents/SSDPI/screenShotServer/eclipseWorkshop/Screen Shot Server/src/adshotrunner/phantomjs", 
+	            "/home/juicio/Documents/SSDPI/screenShotServer/eclipseWorkshop/Screen Shot Server/src/adshotrunner/retrievePossibleStoriesFromURL.js",
+	            targetURL            	
+            });
+            
+            //Get the string returned from phantomjs
+            BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            phantomJSResponse = commandLineInput.readLine();
+        }
+        catch (IOException e) {
+            System.out.println("exception happened - here's what I know: ");
+            e.printStackTrace();
+            System.exit(-1);
+        }
+		
+        //If the command was successful, return the phantomjs response
+		return phantomJSResponse;
+	}
+	
+	
+	StoryFinder(String url) {
+		
+		//Store the target URL for the class to get stories from
+		targetURL = url;
+		
+		//Get the possible story links using phantomjs
+		String anchorJSON = getAnchorsFromURL(targetURL);
+		//System.out.println(anchorJSON);
+        
+		//Turn the returned JSON into an array of objects
+		urlAnchors = new Gson().fromJson(anchorJSON, JsonArray.class);
+		
+		//Convert the data into an ArrayList of immutable anchor HashMaps
+        for(int i = 0; i < urlAnchors.size(); i++){
+        	
+        	//
+            JsonObject person = urlAnchors.get(i).getAsJsonObject();
+           
+            // Attribute ausgeben z.B.: name, alter und hobbies
+            System.out.println(person.get("href").getAsString());
+            System.out.println(person.get("text").getAsString());            
+			            
+            Set<Map.Entry<String,JsonElement>> objectSet = person.entrySet();
+			ArrayList<Integer> codes = new ArrayList<Integer>();
+			for (Map.Entry<String,JsonElement> entry : person.entrySet()) {
+				System.out.println(entry.getKey() + ": " + entry.getValue());
+			    //JsonArray array = entry.getValue().getAsJsonObject().getAsJsonArray("unterfeld");
+			    /*for (JsonElement codeHolder : array) {
+			        codes.add(codeHolder.getAsJsonObject().getAsJsonPrimitive("code").getAsInt());
+			    }*/
+			}
+			
+			
+			/*System.out.println(anchorJSON.trim());
+            JsonObject jObject = new JsonObject();
+            Iterator<?> keys = person.keys();
+
+            while( keys.hasNext() ){
+                String key = (String)keys.next();
+                if( jObject.get(key) instanceof JsonObject ){
+                	System.out.println(key + ", " + person.get(key));
+                }
+            }*/
+        }
+	}
+}
+

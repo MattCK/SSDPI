@@ -46,5 +46,6 @@
 	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sharedLibraries/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sharedLibraries/xercesImpl-2.10.0.jar"/>
 	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sharedLibraries/xml-apis-1.4.01.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sharedLibraries/gson-2.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

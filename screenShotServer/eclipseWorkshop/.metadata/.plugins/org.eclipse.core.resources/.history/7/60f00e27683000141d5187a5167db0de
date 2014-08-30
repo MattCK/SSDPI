@@ -1,0 +1,10 @@
+package adshotrunner;
+
+public class ClassTester {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		StoryFinder("http://boston.com");
+	}
+
+}

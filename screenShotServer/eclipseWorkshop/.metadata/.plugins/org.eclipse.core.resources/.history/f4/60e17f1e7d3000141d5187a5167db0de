@@ -1,0 +1,105 @@
+package adshotrunner;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.*;
+
+/**
+ * Retrieves possible stories from a URL. The stories are ranked with a higher
+ * score being more likely to be a usable story of the subsection.
+ */
+public class StoryFinder {
+	
+	private final String targetURL;
+	private final JsonArray urlAnchors;
+	
+	/**
+	 * Returns a list of all possible stories with their scores, titles, and URLs
+	 * 
+	 * @param url	URL to retrieve stories from
+	 * @return		ArrayList of HashMaps with the keys 'score', 'title', and 
+	 * 				'url' pointing to their respective data, sorted ascending
+	 * 				by score
+	 */
+	public static ArrayList<HashMap<String, String>> getStories(String url) {
+		
+            
+            
+		return null;
+	}
+
+	private static String getAnchorsFromURL(String targetURL) {
+		
+		//Try to make the phantomjs call and return the JSON
+        String phantomJSResponse = null;
+        try {
+            
+        	//Run the retrieve anchors js file with phantomjs
+            Process p = Runtime.getRuntime().exec(new String[]{
+	            "/home/juicio/Documents/SSDPI/screenShotServer/eclipseWorkshop/Screen Shot Server/src/adshotrunner/phantomjs", 
+	            "/home/juicio/Documents/SSDPI/screenShotServer/eclipseWorkshop/Screen Shot Server/src/adshotrunner/retrievePossibleStoriesFromURL.js",
+	            targetURL            	
+            });
+            
+            //Get the string returned from phantomjs
+            BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            phantomJSResponse = commandLineInput.readLine();
+        }
+        catch (IOException e) {
+            System.out.println("exception happened - here's what I know: ");
+            e.printStackTrace();
+            System.exit(-1);
+        }
+		
+        //If the command was successful, return the phantomjs response
+		return phantomJSResponse;
+	}
+	
+	
+	StoryFinder(String url) {
+		
+		//Store the target URL for the class to get stories from
+		targetURL = url;
+		
+		//Get the possible story links using phantomjs
+		String anchorJSON = getAnchorsFromURL(targetURL);
+		//System.out.println(anchorJSON);
+        
+		//Turn the returned JSON into an array of objects
+		JsonArray anchorsArray = new Gson().fromJson(anchorJSON, JsonArray.class);
+		
+		//Convert the data into an ArrayList of immutable anchor HashMaps
+		ArrayList<Map<String, String>> anchorsList = new ArrayList<Map<String, String>>();
+        for(int i = 0; i < anchorsArray.size(); i++){
+        	
+        	//Convert the current array item into an anchor object
+            JsonObject curAnchor = anchorsArray.get(i).getAsJsonObject();
+           
+            //Put all the anchor attributes into a map
+            HashMap<String, String> anchorMap = new HashMap<String, String>();
+			for (Map.Entry<String,JsonElement> anchorAttribute : curAnchor.entrySet()) {
+				anchorMap.put(anchorAttribute.getKey(), anchorAttribute.getValue().toString());
+			}
+			
+			//Make the map immutable and place it into the final arraylist
+			Map<String, String> immutableAnchorMap = Collections.unmodifiableMap(anchorMap); 
+			anchorsList.add(immutableAnchorMap);
+        }
+        
+        //Make the anchorsList immutable
+        System.out.println(anchorsList);
+	}
+}
+
