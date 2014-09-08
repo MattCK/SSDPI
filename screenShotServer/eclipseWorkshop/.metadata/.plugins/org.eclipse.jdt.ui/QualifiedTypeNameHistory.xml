@@ -12,4 +12,8 @@
 <fullyQualifiedTypeName name="java.util.List"/>
 <fullyQualifiedTypeName name="adshotrunner.StoryFinder"/>
 <fullyQualifiedTypeName name="adshotrunner.StoryFinder.Calculator"/>
+<fullyQualifiedTypeName name="com.google.common.net.InternetDomainName"/>
+<fullyQualifiedTypeName name="java.net.URL"/>
+<fullyQualifiedTypeName name="java.net.URI"/>
+<fullyQualifiedTypeName name="java.util.TreeMap"/>
 </qualifiedTypeNameHistroy>

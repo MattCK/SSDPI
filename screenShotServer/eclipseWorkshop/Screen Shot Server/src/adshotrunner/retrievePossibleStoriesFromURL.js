@@ -7,7 +7,6 @@
 //Constants used throughout script
 var WINDOWWIDTH = 1024;
 var WINDOWHEIGHT = 768;
-var MAXPARENTSEARCHHEIGHT = 10;
 
 //Grab the passed target URL to grab stories from
 var system = require('system');
@@ -31,7 +30,6 @@ page.open(targetURL, function(status) {
 
 	//Otherwise, get the stories
 	else {
-
 
 		//Inject the function to grab the list of anchor info
 		var anchorListJSON = page.evaluate(function() {
@@ -81,8 +79,8 @@ page.open(targetURL, function(status) {
 				var clientLeft = docElem.clientLeft || body.clientLeft || 0;
 				var top  = box.top +  scrollTop - clientTop;
 				var left = box.left + scrollLeft - clientLeft;
-				curAnchorInfo['yPos'] = Math.round(top);
-				curAnchorInfo['xPos'] = Math.round(left);
+				curAnchorInfo['yPosition'] = Math.round(top);
+				curAnchorInfo['xPosition'] = Math.round(left);
 				
 				//Finaly, add the info to the main list
 				anchorInfoList[curIndex] = curAnchorInfo;
@@ -93,8 +91,8 @@ page.open(targetURL, function(status) {
 			return JSON.stringify(anchorInfoList);
 		});
 		
+		//Print the final JSON to the command terminal
 		console.log(anchorListJSON);
-
 	}
 	
 	//Completely terminate this running script
