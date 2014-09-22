@@ -41,7 +41,12 @@ class WebPageCommunicator {
 	private $_followLocation;
 
 	/**
-	* @var boolean		Flags whether or not to use SOCKS5 with a proxy, instead of simple HTTP. DEFAULT: TRUE
+	* @var int			Connection timeout in seconds. DEFAULT: 30
+	*/
+	private $_timeout;
+
+	/**
+	* @var	boolean		Flags whether or not to use SOCKS5 with a proxy, instead of simple HTTP. DEFAULT: TRUE
 	*/
 	private $_useSocks5;
 
@@ -62,8 +67,9 @@ class WebPageCommunicator {
 		$this->setReturnTransfer(TRUE);
 		$this->setFailOnError(FALSE);
 		$this->setFollowLocation(TRUE);
+		$this->setTimeout(20);
 		$this->setSocks5(TRUE);
-		$this->setMaxGroupSize(24);
+		$this->setMaxGroupSize(35);
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -201,6 +207,7 @@ class WebPageCommunicator {
 		curl_setopt($session, CURLOPT_RETURNTRANSFER, $this->returnTransfer());
 		curl_setopt($session, CURLOPT_FAILONERROR, $this->failOnError());
 		curl_setopt($session, CURLOPT_FOLLOWLOCATION, $this->followLocation());
+		curl_setopt($session, CURLOPT_TIMEOUT, $this->getTimeout());
 		
 		//If going through a proxy, set it up
 		if ($useProxy) {
@@ -291,6 +298,23 @@ class WebPageCommunicator {
 	*/
 	private function setFollowLocation($setFollow) {
 		$this->_followLocation = $setFollow;
+	}
+
+	/**
+	* Returns the connection timeout in seconds
+	*
+	* @retval int  Connection timeout in seconds
+	*/
+	public function getTimeout() {
+		return $this->_timeout;
+	}
+	/**
+	* Sets the connection timeout in seconds
+	*
+	* @param int $newTimeout  Connection timeout in seconds
+	*/
+	public function setTimeout($newTimeout) {
+		$this->_timeout = $newTimeout;
 	}
 
 	/**

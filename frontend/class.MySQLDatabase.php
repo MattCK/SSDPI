@@ -59,8 +59,8 @@ class MySQLDatabase {
 		$mysqlLink = mysqli_connect($host, $username, $password, $databaseName);
 		
 		//If the connection failed, output the reason and die
-		if ($mysqli->connect_error) {
-			die('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
+		if ($mysqlLink->connect_error) {
+			die('Connect Error (' . $mysqlLink->connect_errno . ') ' . $mysqlLink->connect_error);
 		}
 		
 		//Finally, store the connection information
