@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <libraryInfos>
-<libraryInfo home="/usr/lib/jvm/java-7-openjdk-amd64" version="1.7.0_55">
+<libraryInfo home="/usr/lib/jvm/java-7-openjdk-amd64/jre" version="1.7.0_55">
 <bootpath>
 <entry path="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/resources.jar"/>
 <entry path="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar"/>
@@ -22,7 +22,26 @@
 <entry path="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/endorsed"/>
 </endorsedDirs>
 </libraryInfo>
-<libraryInfo home="/usr/lib/jvm/java-7-openjdk-amd64/jre" version="1.7.0_55">
+<libraryInfo home="C:\Program Files\Java\jre8" version="1.8.0_05">
+<bootpath>
+<entry path="C:\Program Files\Java\jre8\lib\resources.jar"/>
+<entry path="C:\Program Files\Java\jre8\lib\rt.jar"/>
+<entry path="C:\Program Files\Java\jre8\lib\sunrsasign.jar"/>
+<entry path="C:\Program Files\Java\jre8\lib\jsse.jar"/>
+<entry path="C:\Program Files\Java\jre8\lib\jce.jar"/>
+<entry path="C:\Program Files\Java\jre8\lib\charsets.jar"/>
+<entry path="C:\Program Files\Java\jre8\lib\jfr.jar"/>
+<entry path="C:\Program Files\Java\jre8\classes"/>
+</bootpath>
+<extensionDirs>
+<entry path="C:\Program Files\Java\jre8\lib\ext"/>
+<entry path="C:\Windows\Sun\Java\lib\ext"/>
+</extensionDirs>
+<endorsedDirs>
+<entry path="C:\Program Files\Java\jre8\lib\endorsed"/>
+</endorsedDirs>
+</libraryInfo>
+<libraryInfo home="/usr/lib/jvm/java-7-openjdk-amd64" version="1.7.0_55">
 <bootpath>
 <entry path="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/resources.jar"/>
 <entry path="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar"/>
