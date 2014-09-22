@@ -1,7 +1,0 @@
-package adshotrunner;
-
-import adshotrunner.StoryFinder.Calculator;
-
-public class ClassTester {
-
-}
