@@ -46,7 +46,7 @@ public class StoryFinder {
         String phantomJSResponse = null;
         try {
             
-        	//Run the retrieve anchors js file with phantomjs
+        	//Run the retrieve anchors js file with phantomjs.
             Process p = Runtime.getRuntime().exec(new String[]{
 	            "/home/juicio/Documents/SSDPI/screenShotServer/eclipseWorkshop/Screen Shot Server/src/adshotrunner/phantomjs", 
 	            "/home/juicio/Documents/SSDPI/screenShotServer/eclipseWorkshop/Screen Shot Server/src/adshotrunner/retrievePossibleStoriesFromURL.js",
