@@ -26,7 +26,7 @@ import com.google.gson.JsonObject;
  * The target URL is passed through the constructor. All anchors on the page and their info are retrieved.
  * The resulting object is immutable.
  * 
- * The story is retrieved through the nested class Calculator. Calculator has the option of
+ * The story is retrieved through the nested class Scorer. Scorer has the option of
  * setting the many variables used to calculate the best story. 
  */
 public class StoryFinder {
@@ -37,18 +37,32 @@ public class StoryFinder {
 	private final String targetURL;
 	
 	/**
-	 * All anchors on the target URL and their info (text, href, xPosition...) (immutable)
+	 * All anchors on the target URL and their info (id, href, name, onclick, text, style, title) (immutable)
 	 */
 	private final List<Map<String, String>> anchors;
 	
 	/**
-	 * Returns a JSON string of all the anchors and their info.
-	 * 
-	 * The info: 
-	 * @param url
-	 * @return
+	 * Width to set phantomjs screen to before grabbing anchors
 	 */
-	private static String getAnchorJSONFromURL(String url) {
+	private final int screenWidth;
+	
+	/**
+	 * Height to set phantomjs screen to before grabbing anchors
+	 */
+	private final int screenHeight;
+	
+	/**
+	 * Returns a JSON string of all the anchors and their info from the passed URL
+	 * 
+	 * Anchor info: id, href, name, onclick, text, style, title
+	 * 
+	 * @param url			URL to grab the anchors from
+	 * @param viewWidth		Width of the screen phantomjs should use
+	 * @param viewHeight	Height of the screen phantomjs should use
+	 * @param viewHeight	URL to grab the anchors from
+	 * @return		JSON string of anchors and their info
+	 */
+	private static String getAnchorJSONFromURL(String url, int viewWidth, int viewHeight) {
 		
 		//Try to make the phantomjs call and return the JSON
         String phantomJSResponse = null;
@@ -58,7 +72,7 @@ public class StoryFinder {
             Process p = Runtime.getRuntime().exec(new String[]{
 	            "/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/src/adshotrunner/phantomjs", 
 	            "/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/src/adshotrunner/retrievePossibleStoriesFromURL.js",
-	            url            	
+	            url, Integer.toString(viewWidth), Integer.toString(viewHeight)        	
             });
             
             //Get the string returned from phantomjs
@@ -71,10 +85,19 @@ public class StoryFinder {
             System.exit(-1);
         }
 		
+        System.out.println(phantomJSResponse);
         //If the command was successful, return the phantomjs response
 		return phantomJSResponse;
 	}
 	
+	/**
+	 * Returns an immutable list of anchors and their info (each anchor an immutable map)
+	 * 
+	 * @param anchorJSON	JSON string of anchors as their info in the form of an array of associative arrays
+	 * @return				Immutable list of immutable maps, each map a set of anchor info (text, href, xPosition, etc...)
+	 * @throws MalformedURLException
+	 * @throws URISyntaxException
+	 */
 	private List<Map<String, String>> getImmutableAnchorInfoFromJSON(String anchorJSON) throws MalformedURLException, URISyntaxException {
 		
 		//Turn the returned JSON into an array of objects
@@ -111,71 +134,184 @@ public class StoryFinder {
 		return immutableAnchorList;
 	}
 	
+	/**
+	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL
+	 * 
+	 * The screen is automatically set to 1024x768.
+	 * 
+	 * Instance is immutable
+	 * 
+	 * @param url	URL to retrieve stories from
+	 * @throws MalformedURLException
+	 * @throws URISyntaxException
+	 */
 	StoryFinder(String url) throws MalformedURLException, URISyntaxException {
+		
+		//Create the instance with the default 1024x768 phantomjs screen
+		this(url, 1024, 768);
+	}
+
+	/**
+	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL, utilizing the
+	 * screen size passed.
+	 * 
+	 * Instance is immutable
+	 * 
+	 * @param url			URL to retrieve stories from 
+	 * @param viewWidth		Width of the screen phantomjs should use
+	 * @param viewHeight	Height of the screen phantomjs should use
+	 * @throws MalformedURLException
+	 * @throws URISyntaxException
+	 */
+	StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException {
 		
 		//Store the target URL for the class to get stories from
 		targetURL = url;
 		
+		//Store the height and width to use for the phantomjs screen
+		screenWidth = viewWidth;
+		screenHeight = viewHeight;
+		
 		//Get the possible story links using phantomjs
-		String anchorJSON = getAnchorJSONFromURL(targetURL);
+		String anchorJSON = getAnchorJSONFromURL(targetURL, screenWidth, screenHeight);
                 
         //Get the immutable anchor info as array of maps
 		anchors = getImmutableAnchorInfoFromJSON(anchorJSON);
 	}
-	
+
+	/**
+	 * Returns the domain of the URI string. The domain does not include any subdomain or any protocol (i.e. http://)
+	 * 
+	 * @param URIString		URI to retrieve domain from
+	 * @return				Domain of URI
+	 * @throws URISyntaxException
+	 */
 	private String getURIDomain(String URIString) throws URISyntaxException {
 		URI uriObject = new URI(URIString.trim());
 		if (uriObject.getHost() == null) {return "";}
 		return InternetDomainName.from(uriObject.getHost()).topPrivateDomain().toString();
 	}
 	
-	public Calculator Calculator() {
-		return new Calculator();
+	/**
+	 * Simply returns a new Scorer attached to this StoryFinder instance.
+	 * 
+	 * Exists for code simplicity and clarity.
+	 * 
+	 * @return		New scorer object attached to this StoryFinder instance
+	 */
+	public Scorer Scorer() {
+		return new Scorer();
 	}
 	
-	class Calculator {		
-		private int SCREENWIDTH;
+	/**
+	 * Calculates scores for each of the containing StoryFinder's anchors and returns 
+	 * the most likely good story (highest score with highest class)
+	 * 
+	 * Each of the formula variables and scores can be set.
+	 */
+	class Scorer {		
 		
+		/**
+		 * Score of the left most width point (complete left side of page). DEFAULT: 0
+		 */
 		private int POSITIONLEFTMOSTXSCORE;
+		/**
+		 * Score of the one third point of the screen width. DEFAULT: 10
+		 */
 		private int POSITIONONETHIRDXSCORE;
+		/**
+		 * Score of the one half point of the screen width. DEFAULT: 19
+		 */
 		private int POSITIONONEHALFXSCORE;
+		/**
+		 * Score of the optimal point of the screen width. DEFAULT: 20
+		 */
 		private int POSITIONOPTIMALXSCORE;
+		/**
+		 * Score of two one third point of the screen width. DEFAULT: 19
+		 */
 		private int POSITIONTWOTHIRDXSCORE;
+		/**
+		 * Score of the right most width point (complete right side of page). DEFAULT: 0
+		 */
 		private int POSITIONRIGHTMOSTXSCORE;
 		
+		/**
+		 * Height in pixels of the topmost region (which begins at the very top, y=0, of the page). DEFAULT: 350
+		 */
 		private int TOPREGIONONEHEIGHT;
-		private int TOPREGIONTWOHEIGHT;
+		/**
+		 * Handicap for stories that lie in the topmost region (negative number). DEFAULT: -11
+		 */
 		private int TOPREGIONONEHANDICAP;
+		/**
+		 * Height in pixels of the second top region (which also begins at the very top, y=0, of the page). Must be greater than TOPREGIONSONEHEIGHT. DEFAULT: 475
+		 */
+		private int TOPREGIONTWOHEIGHT;
+		/**
+		 * Handicap for stories that lie in the second top region (negative number). DEFAULT: -6
+		 */
 		private int TOPREGIONTWOHANDICAP;
 		
+		/**
+		 * Minimum text length, in characters, an anchor's title must be to be scored. DEFAULT: 3
+		 */
 		private int MINIMUMTEXTLENGTH;
+		/**
+		 * The length, in characters, of a short title text (where the title is equal to or less than this number). DEFAULT: 9
+		 */
 		private int SHORTTEXTLENGTH;
+		/**
+		 * Handicap for stories with titles considered short (negative number). DEFAULT: -10
+		 */
 		private int SHORTTEXTHANDICAP;
+		/**
+		 * The length, in characters, of a long title text (where the title is equal to or more than this number). DEFAULT: 16
+		 */
 		private int LONGTEXTLENGTH;
+		/**
+		 * The score added to anchor's with titles considered to be long text. DEFAULT: 11
+		 */
 		private int LONGTEXTSCORE;
+		/**
+		 * Minimum word count an anchor title must have not to receive a handicap. DEFAULT: 3
+		 */
 		private int MINIMUMWORDCOUNT;
+		/**
+		 * Handicap anchor receieves if its title does not meet the minimum word count (negative number). DEFAULT: -10
+		 */
 		private int MINIMUMWORDHANDICAP;
 		
+		/**
+		 * The score added to anchor's where the first path part is the same as the target url (i.e. /entertainment, /sports). DEFAULT: 7
+		 */
 		private int SAMEPATHPARTSCORE;
 		
+		/**
+		 * Handicap anchor receives if the title only contains capital letters (negative number). DEFAULT: 12
+		 */
 		private int ALLCAPSHANDICAP;
 		
-		Calculator() {
+		/**
+		 * Creates the instance and sets all of the variables to their default values
+		 */
+		Scorer() {
 			
-			SCREENWIDTH = 1024;
-			
+			//Set page position defaults
 			POSITIONLEFTMOSTXSCORE = 0;
 			POSITIONONETHIRDXSCORE = 10;
 			POSITIONONEHALFXSCORE = 19;
 			POSITIONOPTIMALXSCORE = 20;
 			POSITIONTWOTHIRDXSCORE = 19;
 			POSITIONRIGHTMOSTXSCORE = 0;
-
+			
+			//Set top region defaults
 			TOPREGIONONEHEIGHT = 350;
 			TOPREGIONONEHANDICAP = -11;
 			TOPREGIONTWOHEIGHT = 475;
 			TOPREGIONTWOHANDICAP = -6;
 			
+			//Set text attribute defaults
 			MINIMUMTEXTLENGTH = 3;
 			SHORTTEXTLENGTH = 9;
 			SHORTTEXTHANDICAP = -10;
@@ -184,10 +320,11 @@ public class StoryFinder {
 			MINIMUMWORDCOUNT = 3;
 			MINIMUMWORDHANDICAP = -10;
 			
+			//Set same path score
 			SAMEPATHPARTSCORE = 7;
 			
+			//Set handicap for all caps
 			ALLCAPSHANDICAP = -12;
-
 		}
 		
 		
@@ -196,7 +333,7 @@ public class StoryFinder {
 		 * @param newValue	The new value of the leftmost position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator positionLeftmostXScore(int newValue) {
+		public Scorer positionLeftmostXScore(int newValue) {
 			POSITIONLEFTMOSTXSCORE = newValue; return this;
 		}
 		/**
@@ -204,7 +341,7 @@ public class StoryFinder {
 		 * @param newValue	The new value of the one-third position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator positionOneThirdXScore(int newValue) {
+		public Scorer positionOneThirdXScore(int newValue) {
 			POSITIONONETHIRDXSCORE = newValue; return this;
 		}
 		/**
@@ -212,7 +349,7 @@ public class StoryFinder {
 		 * @param newValue	The new value of the one-half position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator positionOneHalfXScore(int newValue) {
+		public Scorer positionOneHalfXScore(int newValue) {
 			POSITIONONEHALFXSCORE = newValue; return this;
 		}
 		/**
@@ -220,7 +357,7 @@ public class StoryFinder {
 		 * @param newValue	The new value of the optimal position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator positionOptimalXScore(int newValue) {
+		public Scorer positionOptimalXScore(int newValue) {
 			POSITIONOPTIMALXSCORE = newValue; return this;
 		}
 		/**
@@ -228,7 +365,7 @@ public class StoryFinder {
 		 * @param newValue	The new value of the two-third position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator positionTwoThirdXScore(int newValue) {
+		public Scorer positionTwoThirdXScore(int newValue) {
 			POSITIONTWOTHIRDXSCORE = newValue; return this;
 		}
 		/**
@@ -236,7 +373,7 @@ public class StoryFinder {
 		 * @param newValue	The new value of the rightmost position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator positionRightmostXScore(int newValue) {
+		public Scorer positionRightmostXScore(int newValue) {
 			POSITIONRIGHTMOSTXSCORE = newValue; return this;
 		}
 		
@@ -245,7 +382,7 @@ public class StoryFinder {
 		 * @param newValue	Height (in pixels) of topmost region
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator topRegionOneHeight(int newValue) {
+		public Scorer topRegionOneHeight(int newValue) {
 			TOPREGIONONEHEIGHT = newValue; return this;
 		}
 		/**
@@ -253,7 +390,7 @@ public class StoryFinder {
 		 * @param newValue	Negative handicap for stories in the topmost region
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator topRegionOneHandicap(int newValue) {
+		public Scorer topRegionOneHandicap(int newValue) {
 			TOPREGIONONEHANDICAP = newValue; return this;
 		}
 		/**
@@ -261,7 +398,7 @@ public class StoryFinder {
 		 * @param newValue	Height (in pixels) of second top region (must be greater than the topmost region height)
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator topRegionTwoHeight(int newValue) {
+		public Scorer topRegionTwoHeight(int newValue) {
 			TOPREGIONTWOHEIGHT = newValue; return this;
 		}
 		/**
@@ -269,7 +406,7 @@ public class StoryFinder {
 		 * @param newValue	Negative handicap for stories in the second top region
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator topRegionTwoHandicap(int newValue) {
+		public Scorer topRegionTwoHandicap(int newValue) {
 			TOPREGIONTWOHANDICAP = newValue; return this;
 		}
 
@@ -278,7 +415,7 @@ public class StoryFinder {
 		 * @param newValue	Minimum text length in characters that a url title must be
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator minimumTextLength(int newValue) {
+		public Scorer minimumTextLength(int newValue) {
 			MINIMUMTEXTLENGTH = newValue; return this;
 		}
 		/**
@@ -286,7 +423,7 @@ public class StoryFinder {
 		 * @param newValue	Text length in characters that defines a short title
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator shortTextLength(int newValue) {
+		public Scorer shortTextLength(int newValue) {
 			SHORTTEXTLENGTH = newValue; return this;
 		}
 		/**
@@ -294,7 +431,7 @@ public class StoryFinder {
 		 * @param newValue	Negative handicap to apply to url score if the url title is considered short text
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator shortTextHandicap(int newValue) {
+		public Scorer shortTextHandicap(int newValue) {
 			SHORTTEXTHANDICAP = newValue; return this;
 		}
 		/**
@@ -302,7 +439,7 @@ public class StoryFinder {
 		 * @param newValue	Text length in characters that defines a long title
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator longTextLength(int newValue) {
+		public Scorer longTextLength(int newValue) {
 			LONGTEXTLENGTH = newValue; return this;
 		}
 		/**
@@ -310,7 +447,7 @@ public class StoryFinder {
 		 * @param newValue	Score to apply to url score if the url title is considered long text
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator longTextScore(int newValue) {
+		public Scorer longTextScore(int newValue) {
 			LONGTEXTSCORE = newValue; return this;
 		}
 		/**
@@ -318,7 +455,7 @@ public class StoryFinder {
 		 * @param newValue	Minimum word count of a title 
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator minimumWordCount(int newValue) {
+		public Scorer minimumWordCount(int newValue) {
 			MINIMUMWORDCOUNT = newValue; return this;
 		}
 		/**
@@ -326,7 +463,7 @@ public class StoryFinder {
 		 * @param newValue	Negative handicap applied to urls with titles that don't meet the minimum word count 
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator minimumWordHandicap(int newValue) {
+		public Scorer minimumWordHandicap(int newValue) {
 			MINIMUMWORDHANDICAP = newValue; return this;
 		}
 
@@ -335,7 +472,7 @@ public class StoryFinder {
 		 * @param newValue	Score the url receives if its path's first part is the same as the target url
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator samePathPartsScore(int newValue) {
+		public Scorer samePathPartsScore(int newValue) {
 			SAMEPATHPARTSCORE = newValue; return this;
 		}
 
@@ -344,20 +481,27 @@ public class StoryFinder {
 		 * @param newValue	Negative handicap applied to urls with titles in call caps
 		 * @return 			Reference to the current class instance
 		 */
-		public Calculator allCapsHandicap(int newValue) {
+		public Scorer allCapsHandicap(int newValue) {
 			ALLCAPSHANDICAP = newValue; return this;
 		}
 
-		
+		/**
+		 * Returns the best story URL from the containing StoryFinder's anchors.
+		 * 
+		 * Calculates for each anchor a score and returns the 'href' of the highest in the best 'class' group.
+		 * (Determined by average score of anchors with that class.)
+		 * 
+		 * @return	URL of best story 
+		 */
 		public String getStory() {
 			
-			//Get all the anchor scores using the containing class anchors and the Calculators numbers
-			HashMap<Integer,Integer> anchorScores = getAnchorScores();
+			//Get all the anchor scores using the containing class anchors and the Scorer's numbers
+			HashMap<Integer, Integer> anchorScores = getAnchorScores();
 			
 			//Get a ranked list of the anchors' classes based off each classes anchors' averages
 			ArrayList<String> rankedClasses = getClassesRankedByAveragedAnchorScore(anchorScores);
 			
-			//Get the story with the highest score and with the ranked class
+			//Get the story with the highest score and with the highest ranked class
 			String storyURL = "";
 			int highestScore = 0;
 			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
@@ -369,46 +513,61 @@ public class StoryFinder {
 					highestScore = currentScore.getValue();
 				}				
 			}
-			
-			
-			//System.out.println(rankedClasses.toString());
-			//System.out.println(anchorScores.toString());
-			//System.out.println(highestScore);
-			//System.out.println(storyURL);
-			
+						
 			return storyURL;
 		}
 		
+		/**
+		 * Returns scores for each valid anchor based on their possibility to be a good story.
+		 * The returned map points each anchor list key to that anchor's score.
+		 * 
+		 * Not all anchors have a score.
+		 * 
+		 * @return		Map with key the same as the anchor key in 'anchors' and the anchor's score
+		 */
 		public HashMap<Integer, Integer> getAnchorScores() {
 			
 			//Create the score object. A map is used to maintain relation to the anchors object
-			HashMap<Integer,Integer> urlScores = new HashMap<Integer,Integer>(); 			
+			HashMap<Integer,Integer> anchorScores = new HashMap<Integer, Integer>(); 			
 			for (int anchorIndex = 0; anchorIndex < anchors.size(); ++anchorIndex) {
-				urlScores.put(anchorIndex, 0);
+				anchorScores.put(anchorIndex, 0);
 			}
 			
-			urlScores = adjustScoresByPageLocation(urlScores);
-			urlScores = adjustScoresByTitleLength(urlScores);
-			urlScores = adjustScoresBySimilarPaths(urlScores);
-			urlScores = adjustScoreIfAllCaps(urlScores);
+			//Score each anchor based on the following criteria
+			adjustScoresByPageLocation(anchorScores);
+			adjustScoresByTitleLength(anchorScores);
+			adjustScoresBySimilarPaths(anchorScores);
+			adjustScoreIfAllCaps(anchorScores);
 			
-			return urlScores;
+			//Return the scores of each valid anchor
+			return anchorScores;
 		}
 		
-		public HashMap<Integer, Integer> adjustScoresByPageLocation(HashMap<Integer,Integer> urlScores) {
+		/**
+		 * Adjusts the scores of the passed anchors object according to page location. This
+		 * includes height (y-position), width location (x-position), proximity to top of the page,
+		 * and visibility.
+		 * 
+		 * Anchors not on the visible region (x-position < 0) are removed from the anchorScores object.
+		 * 
+		 * See internal documentation for how x-position score is calculated.
+		 * 
+		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 */
+		public void adjustScoresByPageLocation(HashMap<Integer, Integer> anchorScores) {
 			
 			//First, lets loop through the urls and mark any that fall off the visible page
 			ArrayList<Integer> unseenURLs = new ArrayList<Integer>();
-			for (Map.Entry<Integer, Integer> currentScore : urlScores.entrySet()) {		
+			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
 				int currentAnchorXPosition = Integer.parseInt(anchors.get(currentScore.getKey()).get("xPosition"));
-			    if ((currentAnchorXPosition < 0) || (currentAnchorXPosition > SCREENWIDTH)) {
+			    if ((currentAnchorXPosition < 0) || (currentAnchorXPosition > screenWidth)) {
 			    	unseenURLs.add(currentScore.getKey());
 			    }
 			}
 			
 			//Delete from the score object the marked unseen urls
 			for (Integer currentKey: unseenURLs) {
-		    	urlScores.remove(currentKey);
+		    	anchorScores.remove(currentKey);
 			}
 			
 			/**
@@ -426,14 +585,14 @@ public class StoryFinder {
 			 */
 			//Set the points based on the screen size
 			int firstPoint = 0;  								//Named for simpler clarity
-			int secondPoint = SCREENWIDTH/3;					//One third mark
-			int thirdPoint = SCREENWIDTH/2;						//Halfway mark
-			int fourthPoint = SCREENWIDTH/3 + SCREENWIDTH/4;  	//Halfway to 
-			int fifthPoint = SCREENWIDTH*2/3;					//Two third mark
-			int sixthPoint = SCREENWIDTH;						//Also added for clarity
+			int secondPoint = screenWidth/3;					//One third mark
+			int thirdPoint = screenWidth/2;						//Halfway mark
+			int fourthPoint = screenWidth/3 + screenWidth/4;  	//Halfway to 
+			int fifthPoint = screenWidth*2/3;					//Two third mark
+			int sixthPoint = screenWidth;						//Also added for clarity
 			
 			//Loop through each remaining anchor and determine its score according to its place on the page
-			for (Map.Entry<Integer, Integer> currentScore : urlScores.entrySet()) {			    
+			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
 				
 				//Set the score offset to zero for starters
 				int scoreOffset = 0;
@@ -487,17 +646,21 @@ public class StoryFinder {
 				//Add the score offset to the anchor object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
-			
-			//Send back the modified url scores
-			return urlScores;
 		}
 		
-		
-		public HashMap<Integer, Integer> adjustScoresByTitleLength(HashMap<Integer,Integer> urlScores) {
+		/**
+		 * Adjusts the scores of the passed anchor scores based on title length. This includes being too short, somewhat short,
+		 * long, and meeting word counts or not.
+		 * 
+		 * Anchors with titles not meeting the minimum text length are removed from the passed anchor scores object.
+		 * 
+		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 */
+		public void adjustScoresByTitleLength(HashMap<Integer, Integer> anchorScores) {
 			
 			//First, lets loop through the urls and mark any that have no text or only a few characters
 			ArrayList<Integer> lowTextURLs = new ArrayList<Integer>();
-			for (Map.Entry<Integer, Integer> currentScore : urlScores.entrySet()) {		
+			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
 				String currentAnchorText = anchors.get(currentScore.getKey()).get("text");
 			    if (currentAnchorText.length() <= MINIMUMTEXTLENGTH) {
 			    	lowTextURLs.add(currentScore.getKey());
@@ -506,12 +669,11 @@ public class StoryFinder {
 			
 			//Delete from the score object the marked low text urls
 			for (Integer currentKey: lowTextURLs) {
-		    	urlScores.remove(currentKey);
+		    	anchorScores.remove(currentKey);
 			}
 			
-			
 			//Loop through the anchors and adjust scores by length and word count
-			for (Map.Entry<Integer, Integer> currentScore : urlScores.entrySet()) {			    
+			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
@@ -533,12 +695,17 @@ public class StoryFinder {
 				//Add the score offset to the anchor object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
-			
-			//Send back the modified url scores
-			return urlScores;
 		}
 		
-		public HashMap<Integer, Integer> adjustScoresBySimilarPaths(HashMap<Integer,Integer> urlScores) {
+		/**
+		 * Increases the score of an anchor that shares the same first path part of the target URL.
+		 * 
+		 * In other words, this is the path part right after the domain part. For example, the first path part of 
+		 * 'boston.com/entertainment' is 'entertainment'.
+		 * 
+		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 */
+		public void adjustScoresBySimilarPaths(HashMap<Integer, Integer> anchorScores) {
 			
 			//Grab the first path part of the target url for comparison
 			String targetURLPathPart = getFirstPartOfURIPath(targetURL);
@@ -547,7 +714,7 @@ public class StoryFinder {
 			if (targetURLPathPart.length() > 1) {
 				
 				//Loop through each anchor and adjust its score based on similar first path part
-				for (Map.Entry<Integer, Integer> currentScore : urlScores.entrySet()) {			    
+				for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
 					
 					//Set the score offset to zero
 					int scoreOffset = 0;
@@ -563,15 +730,17 @@ public class StoryFinder {
 					currentScore.setValue(currentScore.getValue() + scoreOffset);
 				}
 			}
-			
-			//Send back the modified url scores
-			return urlScores;
 		}
-				
-		public HashMap<Integer, Integer> adjustScoreIfAllCaps(HashMap<Integer,Integer> urlScores) {
+		
+		/**
+		 * Applies handicap to any anchor's score with a title consisting of all caps
+		 * 
+		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 */
+		public void adjustScoreIfAllCaps(HashMap<Integer, Integer> anchorScores) {
 							
 			//Loop through each anchor and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : urlScores.entrySet()) {			    
+			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
@@ -587,19 +756,26 @@ public class StoryFinder {
 				//Add the score offset to the anchor object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
-			
-			//Send back the modified url scores
-			return urlScores;
 		}
 		
-		private ArrayList<String> getClassesRankedByAveragedAnchorScore(HashMap<Integer,Integer> urlScores) {
+		/**
+		 * Returns array list of all the anchors' classes ranked by average anchor score. The first class (at 0)
+		 * has the highest average.
+		 * 
+		 * The average is calculated by taking the sum of the scores of all the anchors that have a class
+		 * and dividing by that number of anchors.
+		 * 
+		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 * @return
+		 */
+		private ArrayList<String> getClassesRankedByAveragedAnchorScore(HashMap<Integer, Integer> anchorScores) {
 			
 			//Prepare to store each class' use count and total score
 			HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
 			HashMap<String, Integer> classTotalScores = new HashMap<String, Integer>();
 			
 			//Loop through the urls and total up the classes with the urls' scores
-			for (Map.Entry<Integer, Integer> currentScore : urlScores.entrySet()) {		
+			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
 				
 				//Get the url's classes from the class attribute
 				String classString = anchors.get(currentScore.getKey()).get("class");
@@ -641,7 +817,15 @@ public class StoryFinder {
 			return rankedClasses;
 		}
 		
-		
+		/**
+		 * Returns the first path part of a URI.
+		 * 
+		 * In other words, the part right after the domain part. For example, 'boston.com/entertainment' would return
+		 * 'entertainment'.
+		 * 
+		 * @param URIString		URI to get first path part
+		 * @return				First path part (i.e. 'entertainment' of 'boston.com/entertainment' 
+		 */
 		private String getFirstPartOfURIPath(String URIString) {
 			
 			//Separate the string by slashes

@@ -13,6 +13,10 @@ var system = require('system');
 var targetURL = system.args[1];
 if (!targetURL) {console.log('FAILURE: No URL passed'); phantom.exit();}
 
+//Grab the screen height and width. If not available, use 1024 x 768
+var WINDOWWIDTH = (system.args[2]) ? system.args[2] : 1024;
+var WINDOWHEIGHT = (system.args[3]) ? system.args[3] : 768;
+
 //Create the phantomjs driver webpage and set the viewport to a standard monitor size 
 var page = require('webpage').create();
 page.viewportSize = {width: WINDOWWIDTH, height: WINDOWHEIGHT};
