@@ -42,7 +42,9 @@ public class StoryFinder {
 	private final List<Map<String, String>> anchors;
 	
 	/**
-	 * Returns a JSON string of all the anchors and their info 
+	 * Returns a JSON string of all the anchors and their info.
+	 * 
+	 * The info: 
 	 * @param url
 	 * @return
 	 */
