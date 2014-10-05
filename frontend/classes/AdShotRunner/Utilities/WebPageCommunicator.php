@@ -1,11 +1,12 @@
 <?PHP
-
 /**
 * Contains the class for communicating with  the web
 *
 * @package Adshotrunner
 * @subpackage Classes
 */
+
+namespace AdShotRunner\Utilities;
 
 /**
 * The WebPageCommunicator class communicates with remote URL resources. 

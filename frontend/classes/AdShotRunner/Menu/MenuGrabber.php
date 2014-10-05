@@ -1,13 +1,15 @@
 <?PHP
-
-require_once('class.WebCommunicator.php');
-
 /**
-* Contains the class for communicating with  the web
+* Contains the class for discerning and retrieving menus from URLs
 *
 * @package Adshotrunner
 * @subpackage Classes
 */
+
+namespace AdShotRunner\Menu;
+
+use AdShotRunner\Utilities\WebPageCommunicator;
+use AdShotRunner\Database\MySQLDatabase;
 
 /**
 * The Menu Grabber attempts to grab possible menus from a given webpage or webpages.
@@ -262,11 +264,11 @@ class MenuGrabber {
 
 		//Clean up the domains for the query
 		$cleanDomains = [];
-		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . databaseEscape($curDomain) . "'";}
+		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . \AdShotRunner\Database\databaseEscape($curDomain) . "'";}
 		$cleanDomainString = implode(',', $cleanDomains);
 
 		//Get the domains' menus from the database (if any exist)
-		$menuResults = databaseQuery("	SELECT *
+		$menuResults = \AdShotRunner\Database\databaseQuery("	SELECT *
 										FROM menuDomains
 										LEFT JOIN menus ON MNU_MND_id = MND_id
 										LEFT JOIN menuItems ON MNI_MNU_id = MNU_id
@@ -537,7 +539,7 @@ class MenuGrabber {
 	private function retrieveMenuLabelWeightsFromDatabase() {
 		
 		//Retrieve the labels and weights from the database table and return them in an associative array
-		$menuWeightsResult = databaseQuery("SELECT * FROM menuLabelWeights");
+		$menuWeightsResult = \AdShotRunner\Database\databaseQuery("SELECT * FROM menuLabelWeights");
 		$labelWeights = array();
 		while ($curRow = $menuWeightsResult->fetch_assoc()) {
 		    $labelWeights[$curRow['MLW_name']] = $curRow['MLW_weight'];

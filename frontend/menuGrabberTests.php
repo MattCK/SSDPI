@@ -1,7 +1,10 @@
 <?PHP 
 
-require_once('class.MySQLDatabase.php');
-require_once('class.MenuGrabber.php');
+require_once('classes/adShotRunnerAutoloader.php');
+
+use AdShotRunner\Database\MySQLDatabase;
+use AdShotRunner\Menu\MenuGrabber;
+
 
 header("Content-Type: text/plain");
 
