@@ -1,12 +1,11 @@
 <?PHP 
 
-require_once('class.MySQLDatabase.php');
-require_once('class.MenuGrabber.php');
+require_once('systemSetup.php');
+
+use AdShotRunner\Menu\MenuGrabber;
+
 
 header("Content-Type: text/plain");
-
-
-$database = new MySQLDatabase('adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com', 'adshotrunner', 'xbSAb2G92E', 'adshotrunner');
 
 $menuGrabber = new MenuGrabber();
 $domains = $menuGrabber->getDomainMenus(['boston.com', 'nytimes.com', 'cnn.com']);
