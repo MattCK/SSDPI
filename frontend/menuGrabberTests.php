@@ -1,6 +1,14 @@
 <?PHP 
 
+<<<<<<< HEAD
 require_once('systemSetup.php');
+=======
+require_once('classes/adShotRunnerAutoloader.php');
+
+use AdShotRunner\Database\MySQLDatabase;
+use AdShotRunner\Menu\MenuGrabber;
+
+>>>>>>> 1e8d904b282d87ad3f026e89d80c7e654adcd9b0
 
 use AdShotRunner\Menu\MenuGrabber;
 

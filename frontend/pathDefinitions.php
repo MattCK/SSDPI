@@ -14,7 +14,11 @@
 //---------------------------------------------------------------------------------------	
 
 //Base path
+<<<<<<< HEAD
 define('BASEPATH', __DIR__);
+=======
+define('BASEPATH', '/var/www/html/');
+>>>>>>> 1e8d904b282d87ad3f026e89d80c7e654adcd9b0
 
 //Path to restricted system files
 define('RESTRICTEDPATH', BASEPATH . '/restricted/');

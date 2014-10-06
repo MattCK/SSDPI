@@ -9,6 +9,9 @@
 namespace AdShotRunner\Database;
 
 
+namespace AdShotRunner\Database;
+
+
 /**
 * The MySQLDatabase class controls connecting to the database and executing queries on it. 
 *
