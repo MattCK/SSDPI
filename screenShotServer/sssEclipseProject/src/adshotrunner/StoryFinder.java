@@ -3,9 +3,11 @@ package adshotrunner;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,8 +72,8 @@ public class StoryFinder {
             
         	//Run the retrieve anchors js file with phantomjs
             Process p = Runtime.getRuntime().exec(new String[]{
-	            "/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/src/adshotrunner/phantomjs", 
-	            "/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/src/adshotrunner/retrievePossibleStoriesFromURL.js",
+	            "./phantomjs", 
+	            "retrievePossibleStoriesFromURL.js",
 	            url, Integer.toString(viewWidth), Integer.toString(viewHeight)        	
             });
             
@@ -97,8 +99,9 @@ public class StoryFinder {
 	 * @return				Immutable list of immutable maps, each map a set of anchor info (text, href, xPosition, etc...)
 	 * @throws MalformedURLException
 	 * @throws URISyntaxException
+	 * @throws UnsupportedEncodingException 
 	 */
-	private List<Map<String, String>> getImmutableAnchorInfoFromJSON(String anchorJSON) throws MalformedURLException, URISyntaxException {
+	private List<Map<String, String>> getImmutableAnchorInfoFromJSON(String anchorJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Turn the returned JSON into an array of objects
 		JsonArray anchorsArray = new Gson().fromJson(anchorJSON, JsonArray.class);
@@ -114,19 +117,22 @@ public class StoryFinder {
             JsonObject curAnchor = anchorsArray.get(i).getAsJsonObject();
            
             //As long as the href domain is the same as the target site, add the anchor info. Otherwise, ignore.
-            String currentDomain = getURIDomain(curAnchor.get("href").getAsString());
-            if ((currentDomain == "") || (urlDomain.equals(currentDomain))) {
+            if (!curAnchor.get("href").isJsonNull()){
+            	String currentDomain = getURIDomain(curAnchor.get("href").getAsString());
             
-	            //Put all the anchor attributes into a map
-	            HashMap<String, String> anchorMap = new HashMap<String, String>();
-				for (Map.Entry<String,JsonElement> anchorAttribute : curAnchor.entrySet()) {
-					anchorMap.put(anchorAttribute.getKey(), anchorAttribute.getValue().toString());
-				}
-				
-				//Make the map immutable and place it into the final arraylist
-				Map<String, String> immutableAnchorMap = Collections.unmodifiableMap(anchorMap); 
-				anchorsList.add(immutableAnchorMap);
-            }	
+	            if ((currentDomain == "") || (urlDomain.equals(currentDomain))) {
+	            
+		            //Put all the anchor attributes into a map
+		            HashMap<String, String> anchorMap = new HashMap<String, String>();
+					for (Map.Entry<String,JsonElement> anchorAttribute : curAnchor.entrySet()) {
+						anchorMap.put(anchorAttribute.getKey(), anchorAttribute.getValue().toString());
+					}
+					
+					//Make the map immutable and place it into the final arraylist
+					Map<String, String> immutableAnchorMap = Collections.unmodifiableMap(anchorMap); 
+					anchorsList.add(immutableAnchorMap);
+	            }
+            }
         }
         
         //Make the anchorsList immutable and return it
@@ -144,8 +150,9 @@ public class StoryFinder {
 	 * @param url	URL to retrieve stories from
 	 * @throws MalformedURLException
 	 * @throws URISyntaxException
+	 * @throws UnsupportedEncodingException 
 	 */
-	StoryFinder(String url) throws MalformedURLException, URISyntaxException {
+	StoryFinder(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Create the instance with the default 1024x768 phantomjs screen
 		this(url, 1024, 768);
@@ -162,8 +169,9 @@ public class StoryFinder {
 	 * @param viewHeight	Height of the screen phantomjs should use
 	 * @throws MalformedURLException
 	 * @throws URISyntaxException
+	 * @throws UnsupportedEncodingException 
 	 */
-	StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException {
+	StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Store the target URL for the class to get stories from
 		targetURL = url;
@@ -185,8 +193,10 @@ public class StoryFinder {
 	 * @param URIString		URI to retrieve domain from
 	 * @return				Domain of URI
 	 * @throws URISyntaxException
+	 * @throws UnsupportedEncodingException 
 	 */
-	private String getURIDomain(String URIString) throws URISyntaxException {
+	private String getURIDomain(String URIString) throws URISyntaxException, UnsupportedEncodingException {
+		URIString = URLEncoder.encode(URIString, "UTF-8");
 		URI uriObject = new URI(URIString.trim());
 		if (uriObject.getHost() == null) {return "";}
 		return InternetDomainName.from(uriObject.getHost()).topPrivateDomain().toString();

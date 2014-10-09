@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project ScreenShotServer with libraries in sub-folder">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1.jar">
+            <manifest>
+                <attribute name="Main-Class" value="adshotrunner.ClassTester"/>
+                <attribute name="Class-Path" value=". testStoryFinder1_lib/apache-mime4j-0.6.jar testStoryFinder1_lib/bsh-1.3.0.jar testStoryFinder1_lib/c3p0-0.9.1-pre6.jar testStoryFinder1_lib/cglib-nodep-2.1_3.jar testStoryFinder1_lib/commons-codec-1.8.jar testStoryFinder1_lib/commons-collections-3.2.1.jar testStoryFinder1_lib/commons-exec-1.1.jar testStoryFinder1_lib/commons-io-2.2.jar testStoryFinder1_lib/commons-jxpath-1.3.jar testStoryFinder1_lib/commons-lang3-3.1.jar testStoryFinder1_lib/commons-logging-1.1.1.jar testStoryFinder1_lib/cssparser-0.9.11.jar testStoryFinder1_lib/gson-2.3.jar testStoryFinder1_lib/guava-15.0.jar testStoryFinder1_lib/hamcrest-core-1.3.jar testStoryFinder1_lib/hamcrest-library-1.3.jar testStoryFinder1_lib/htmlunit-2.13.jar testStoryFinder1_lib/htmlunit-core-js-2.13.jar testStoryFinder1_lib/httpclient-4.3.1.jar testStoryFinder1_lib/httpcore-4.3.jar testStoryFinder1_lib/httpmime-4.3.1.jar testStoryFinder1_lib/ini4j-0.5.2.jar testStoryFinder1_lib/jboss-common-jdbc-wrapper-src.jar testStoryFinder1_lib/jboss-common-jdbc-wrapper.jar testStoryFinder1_lib/jcommander-1.29.jar testStoryFinder1_lib/jetty-websocket-8.1.8.jar testStoryFinder1_lib/jna-3.4.0.jar testStoryFinder1_lib/jna-platform-3.4.0.jar testStoryFinder1_lib/json-20080701.jar testStoryFinder1_lib/junit-dep-4.11.jar testStoryFinder1_lib/mysql-connector-java-5.1.28-bin.jar testStoryFinder1_lib/nekohtml-1.9.19.jar testStoryFinder1_lib/netty-3.5.7.Final.jar testStoryFinder1_lib/operadriver-1.5.jar testStoryFinder1_lib/phantomjsdriver-1.0.4.jar testStoryFinder1_lib/protobuf-java-2.4.1.jar testStoryFinder1_lib/sac-1.3.jar testStoryFinder1_lib/selenium-java-2.39.0-srcs.jar testStoryFinder1_lib/selenium-java-2.39.0.jar testStoryFinder1_lib/serializer-2.7.1.jar testStoryFinder1_lib/slf4j-api-1.6.1.jar testStoryFinder1_lib/testng-6.8.5.jar testStoryFinder1_lib/xalan-2.7.1.jar testStoryFinder1_lib/xercesImpl-2.10.0.jar testStoryFinder1_lib/xml-apis-1.4.01.jar"/>
+            </manifest>
+            <fileset dir="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/bin"/>
+        </jar>
+        <delete dir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <mkdir dir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/apache-mime4j-0.6.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/bsh-1.3.0.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/c3p0-0.9.1-pre6.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/cglib-nodep-2.1_3.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/commons-codec-1.8.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/commons-collections-3.2.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/commons-exec-1.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/commons-io-2.2.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/commons-jxpath-1.3.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/commons-lang3-3.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/commons-logging-1.1.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/cssparser-0.9.11.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/gson-2.3.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/guava-15.0.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/hamcrest-core-1.3.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/hamcrest-library-1.3.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/htmlunit-2.13.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/htmlunit-core-js-2.13.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/httpclient-4.3.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/httpcore-4.3.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/httpmime-4.3.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/ini4j-0.5.2.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/jboss-common-jdbc-wrapper-src.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/jboss-common-jdbc-wrapper.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/jcommander-1.29.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/jetty-websocket-8.1.8.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/jna-3.4.0.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/jna-platform-3.4.0.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/json-20080701.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/junit-dep-4.11.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/mysql-connector-java-5.1.28-bin.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/nekohtml-1.9.19.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/netty-3.5.7.Final.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/operadriver-1.5.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/phantomjsdriver-1.0.4.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/protobuf-java-2.4.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/sac-1.3.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/selenium-java-2.39.0-srcs.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/selenium-java-2.39.0.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/serializer-2.7.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/slf4j-api-1.6.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/testng-6.8.5.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/xalan-2.7.1.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/xercesImpl-2.10.0.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+        <copy file="D:/Work/github/SSDPI/screenShotServer/sssEclipseProject/lib/xml-apis-1.4.01.jar" todir="D:/Work/EclipseWorkspace7/jarOut/testStoryFinder1_lib"/>
+    </target>
+</project>

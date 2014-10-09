@@ -2,14 +2,16 @@ package adshotrunner;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.io.UnsupportedEncodingException;
 
 import org.json.JSONException;
 
 public class ClassTester {
 	
-	public static void main(String[] args) throws JSONException, MalformedURLException, URISyntaxException {
+	public static void main(String[] args) throws JSONException, MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		// TODO Auto-generated method stub
-		String storyURL = new StoryFinder("http://www.boston.com/entertainment")
+		System.out.println("This is a pre storyfinder message");
+		String storyURL = new StoryFinder(args[0])
 									 .Scorer()
 									 	.positionLeftmostXScore(1).positionOneThirdXScore(11).positionOneHalfXScore(20)
 									 	.positionOptimalXScore(21).positionTwoThirdXScore(20).positionRightmostXScore(1)
@@ -20,6 +22,7 @@ public class ClassTester {
 									 	.minimumWordCount(4).minimumWordHandicap(-9)
 									 	.samePathPartsScore(8).allCapsHandicap(-11)
 									 	.getStory();
+		System.out.println("This is the first output after the storyfinder runs");
 		System.out.println(storyURL);
 	}
 	
