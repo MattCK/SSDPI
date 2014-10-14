@@ -3,6 +3,8 @@
 $mapping = array(
     'AdShotRunner\Database\MySQLDatabase' => __DIR__ . '/AdShotRunner/Database/MySQLDatabase.php',
     'AdShotRunner\Menu\MenuGrabber' => __DIR__ . '/AdShotRunner/Menu/MenuGrabber.php',
+    'AdShotRunner\Utilities\EmailClient' => __DIR__ . '/AdShotRunner/Utilities/EmailClient.php',
+    'AdShotRunner\Utilities\NotificationClient' => __DIR__ . '/AdShotRunner/Utilities/NotificationClient.php',
     'AdShotRunner\Utilities\WebPageCommunicator' => __DIR__ . '/AdShotRunner/Utilities/WebPageCommunicator.php',
 );
 

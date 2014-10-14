@@ -9,10 +9,7 @@
 namespace AdShotRunner\Menu;
 
 use AdShotRunner\Utilities\WebPageCommunicator;
-<<<<<<< HEAD:frontend/classes/AdShotRunner/Menu/MenuGrabber.php
-=======
 use AdShotRunner\Database\MySQLDatabase;
->>>>>>> 1e8d904b282d87ad3f026e89d80c7e654adcd9b0:frontend/classes/AdShotRunner/Menu/MenuGrabber.php
 
 /**
 * The Menu Grabber attempts to grab possible menus from a given webpage or webpages.
