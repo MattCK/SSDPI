@@ -11,7 +11,7 @@ public class ClassTester {
 	public static void main(String[] args) throws JSONException, MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		// TODO Auto-generated method stub
 		System.out.println("This is a pre storyfinder message");
-		String storyURL = new StoryFinder(args[0])
+		String storyURL = new StoryFinderTuner(args[0])
 									 .Scorer()
 									 	.positionLeftmostXScore(1).positionOneThirdXScore(11).positionOneHalfXScore(20)
 									 	.positionOptimalXScore(21).positionTwoThirdXScore(20).positionRightmostXScore(1)
