@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,7 +88,6 @@ public class StoryFinder {
             System.exit(-1);
         }
 		
-        System.out.println(phantomJSResponse);
         //If the command was successful, return the phantomjs response
 		return phantomJSResponse;
 	}
@@ -194,12 +194,21 @@ public class StoryFinder {
 	 * @return				Domain of URI
 	 * @throws URISyntaxException
 	 * @throws UnsupportedEncodingException 
+	 * @throws MalformedURLException 
 	 */
-	private String getURIDomain(String URIString) throws URISyntaxException, UnsupportedEncodingException {
-		URIString = URLEncoder.encode(URIString, "UTF-8");
-		URI uriObject = new URI(URIString.trim());
-		if (uriObject.getHost() == null) {return "";}
-		return InternetDomainName.from(uriObject.getHost()).topPrivateDomain().toString();
+	private String getURIDomain(String URIString) throws URISyntaxException, UnsupportedEncodingException, MalformedURLException {
+		URIString = URIString.replace("\"", "");
+		if(URIString.contains("://") && ((URIString.contains("http") || URIString.contains("spdy"))) && (!URIString.startsWith("javascript"))){
+
+			URL urlObject = new URL(URIString);
+			String nullFragment = null;
+			URI uriObject = new URI(urlObject.getProtocol(), urlObject.getHost(), urlObject.getPath(), urlObject.getQuery(), nullFragment);
+			if (uriObject.getHost() == null) {return "";}
+			return InternetDomainName.from(uriObject.getHost()).topPrivateDomain().toString();
+		}
+		else{	
+			return "";
+		}
 	}
 	
 	/**
