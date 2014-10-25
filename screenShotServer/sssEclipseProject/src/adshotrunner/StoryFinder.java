@@ -8,7 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,26 +33,10 @@ import com.google.gson.JsonObject;
  */
 public class StoryFinder {
 	
-	/**
-	 * URL to find a story on
-	 */
-	private final String targetURL;
-	
-	/**
-	 * All anchors on the target URL and their info (id, href, name, onclick, text, style, title) (immutable)
-	 */
-	private final List<Map<String, String>> anchors;
-	
-	/**
-	 * Width to set phantomjs screen to before grabbing anchors
-	 */
-	private final int screenWidth;
-	
-	/**
-	 * Height to set phantomjs screen to before grabbing anchors
-	 */
-	private final int screenHeight;
-	
+	//---------------------------------------------------------------------------------------
+	//--------------------------------- Static Methods --------------------------------------
+	//---------------------------------------------------------------------------------------	
+	//***************************** Private Static Methods **********************************
 	/**
 	 * Returns a JSON string of all the anchors and their info from the passed URL
 	 * 
@@ -63,7 +46,7 @@ public class StoryFinder {
 	 * @param viewWidth		Width of the screen phantomjs should use
 	 * @param viewHeight	Height of the screen phantomjs should use
 	 * @param viewHeight	URL to grab the anchors from
-	 * @return		JSON string of anchors and their info
+	 * @return				JSON string of anchors and their info
 	 */
 	private static String getAnchorJSONFromURL(String url, int viewWidth, int viewHeight) {
 		
@@ -92,6 +75,85 @@ public class StoryFinder {
 		return phantomJSResponse;
 	}
 	
+	//---------------------------------------------------------------------------------------
+	//------------------------------------ Variables ----------------------------------------
+	//---------------------------------------------------------------------------------------	
+	//******************************** Private Variables ************************************
+	/**
+	 * URL to find a story on
+	 */
+	private final String _targetURL;
+	
+	/**
+	 * All anchors on the target URL and their info (id, href, name, onclick, text, style, title) (immutable)
+	 */
+	private final List<Map<String, String>> _anchors;
+	
+	/**
+	 * Width to set phantomjs screen to before grabbing anchors
+	 */
+	private final int _screenWidth;
+	
+	/**
+	 * Height to set phantomjs screen to before grabbing anchors
+	 */
+	private final int _screenHeight;
+	
+	//---------------------------------------------------------------------------------------
+	//------------------------ Constructors/Copiers/Destructors -----------------------------
+	//---------------------------------------------------------------------------------------
+	/**
+	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL
+	 * 
+	 * The screen is automatically set to 1024x768.
+	 * 
+	 * Instance is immutable
+	 * 
+	 * @param url	URL to retrieve stories from
+	 * 
+	 * @throws MalformedURLException
+	 * @throws URISyntaxException
+	 * @throws UnsupportedEncodingException 
+	 */
+	StoryFinder(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+		
+		//Create the instance with the default 1024x768 phantomjs screen
+		this(url, 1024, 768);
+	}
+
+	/**
+	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL, utilizing the
+	 * screen size passed.
+	 * 
+	 * Instance is immutable
+	 * 
+	 * @param url			URL to retrieve stories from 
+	 * @param viewWidth		Width of the screen phantomjs should use
+	 * @param viewHeight	Height of the screen phantomjs should use
+	 * @throws MalformedURLException
+	 * @throws URISyntaxException
+	 * @throws UnsupportedEncodingException 
+	 */
+	StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+		
+		//Store the target URL for the class to get stories from
+		_targetURL = url;
+		
+		//Store the height and width to use for the phantomjs screen
+		_screenWidth = viewWidth;
+		_screenHeight = viewHeight;
+		
+		//Get the possible story links using phantomjs
+		String anchorJSON = getAnchorJSONFromURL(_targetURL, _screenWidth, _screenHeight);
+                
+        //Get the immutable anchor info as array of maps
+		_anchors = getImmutableAnchorInfoFromJSON(anchorJSON);
+	}
+
+	//---------------------------------------------------------------------------------------
+	//------------------------------- Modification Methods ----------------------------------
+	//---------------------------------------------------------------------------------------
+	//********************************* Private Methods *************************************
 	/**
 	 * Returns an immutable list of anchors and their info (each anchor an immutable map)
 	 * 
@@ -107,7 +169,7 @@ public class StoryFinder {
 		JsonArray anchorsArray = new Gson().fromJson(anchorJSON, JsonArray.class);
 		
 		//Get the primary domain of the target URL
-		String urlDomain = getURIDomain(targetURL);
+		String urlDomain = getURIDomain(_targetURL);
 		
 		//Convert the data into an ArrayList of immutable anchor HashMaps
 		ArrayList<Map<String, String>> anchorsList = new ArrayList<Map<String, String>>();
@@ -140,53 +202,6 @@ public class StoryFinder {
 		return immutableAnchorList;
 	}
 	
-	/**
-	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL
-	 * 
-	 * The screen is automatically set to 1024x768.
-	 * 
-	 * Instance is immutable
-	 * 
-	 * @param url	URL to retrieve stories from
-	 * @throws MalformedURLException
-	 * @throws URISyntaxException
-	 * @throws UnsupportedEncodingException 
-	 */
-	StoryFinder(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
-		
-		//Create the instance with the default 1024x768 phantomjs screen
-		this(url, 1024, 768);
-	}
-
-	/**
-	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL, utilizing the
-	 * screen size passed.
-	 * 
-	 * Instance is immutable
-	 * 
-	 * @param url			URL to retrieve stories from 
-	 * @param viewWidth		Width of the screen phantomjs should use
-	 * @param viewHeight	Height of the screen phantomjs should use
-	 * @throws MalformedURLException
-	 * @throws URISyntaxException
-	 * @throws UnsupportedEncodingException 
-	 */
-	StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
-		
-		//Store the target URL for the class to get stories from
-		targetURL = url;
-		
-		//Store the height and width to use for the phantomjs screen
-		screenWidth = viewWidth;
-		screenHeight = viewHeight;
-		
-		//Get the possible story links using phantomjs
-		String anchorJSON = getAnchorJSONFromURL(targetURL, screenWidth, screenHeight);
-                
-        //Get the immutable anchor info as array of maps
-		anchors = getImmutableAnchorInfoFromJSON(anchorJSON);
-	}
-
 	/**
 	 * Returns the domain of the URI string. The domain does not include any subdomain or any protocol (i.e. http://)
 	 * 
@@ -526,9 +541,9 @@ public class StoryFinder {
 			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
 				
 				//If the current anchor has the class and a higher score, make it the current story URL
-				if ((anchors.get(currentScore.getKey()).get("class").contains(rankedClasses.get(0))) &&
+				if ((_anchors.get(currentScore.getKey()).get("class").contains(rankedClasses.get(0))) &&
 					(currentScore.getValue() > highestScore)) {
-					storyURL = anchors.get(currentScore.getKey()).get("href");
+					storyURL = _anchors.get(currentScore.getKey()).get("href");
 					highestScore = currentScore.getValue();
 				}				
 			}
@@ -548,7 +563,7 @@ public class StoryFinder {
 			
 			//Create the score object. A map is used to maintain relation to the anchors object
 			HashMap<Integer,Integer> anchorScores = new HashMap<Integer, Integer>(); 			
-			for (int anchorIndex = 0; anchorIndex < anchors.size(); ++anchorIndex) {
+			for (int anchorIndex = 0; anchorIndex < _anchors.size(); ++anchorIndex) {
 				anchorScores.put(anchorIndex, 0);
 			}
 			
@@ -578,8 +593,8 @@ public class StoryFinder {
 			//First, lets loop through the urls and mark any that fall off the visible page
 			ArrayList<Integer> unseenURLs = new ArrayList<Integer>();
 			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
-				int currentAnchorXPosition = Integer.parseInt(anchors.get(currentScore.getKey()).get("xPosition"));
-			    if ((currentAnchorXPosition < 0) || (currentAnchorXPosition > screenWidth)) {
+				int currentAnchorXPosition = Integer.parseInt(_anchors.get(currentScore.getKey()).get("xPosition"));
+			    if ((currentAnchorXPosition < 0) || (currentAnchorXPosition > _screenWidth)) {
 			    	unseenURLs.add(currentScore.getKey());
 			    }
 			}
@@ -604,11 +619,11 @@ public class StoryFinder {
 			 */
 			//Set the points based on the screen size
 			int firstPoint = 0;  								//Named for simpler clarity
-			int secondPoint = screenWidth/3;					//One third mark
-			int thirdPoint = screenWidth/2;						//Halfway mark
-			int fourthPoint = screenWidth/3 + screenWidth/4;  	//Halfway to 
-			int fifthPoint = screenWidth*2/3;					//Two third mark
-			int sixthPoint = screenWidth;						//Also added for clarity
+			int secondPoint = _screenWidth/3;					//One third mark
+			int thirdPoint = _screenWidth/2;						//Halfway mark
+			int fourthPoint = _screenWidth/3 + _screenWidth/4;  	//Halfway to 
+			int fifthPoint = _screenWidth*2/3;					//Two third mark
+			int sixthPoint = _screenWidth;						//Also added for clarity
 			
 			//Loop through each remaining anchor and determine its score according to its place on the page
 			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
@@ -617,8 +632,8 @@ public class StoryFinder {
 				int scoreOffset = 0;
 				
 				//Grab the current anchor's position
-				int anchorXPosition = Integer.parseInt(anchors.get(currentScore.getKey()).get("xPosition"));
-				int anchorYPosition = Integer.parseInt(anchors.get(currentScore.getKey()).get("yPosition"));
+				int anchorXPosition = Integer.parseInt(_anchors.get(currentScore.getKey()).get("xPosition"));
+				int anchorYPosition = Integer.parseInt(_anchors.get(currentScore.getKey()).get("yPosition"));
 				
 				//Based on the location of the anchor, determine the two points that it's between and their scores.
 				int leftPoint, leftScore, rightPoint, rightScore = 0;
@@ -680,7 +695,7 @@ public class StoryFinder {
 			//First, lets loop through the urls and mark any that have no text or only a few characters
 			ArrayList<Integer> lowTextURLs = new ArrayList<Integer>();
 			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
-				String currentAnchorText = anchors.get(currentScore.getKey()).get("text");
+				String currentAnchorText = _anchors.get(currentScore.getKey()).get("text");
 			    if (currentAnchorText.length() <= MINIMUMTEXTLENGTH) {
 			    	lowTextURLs.add(currentScore.getKey());
 			    }
@@ -698,7 +713,7 @@ public class StoryFinder {
 				int scoreOffset = 0;
 				
 				//Grab the current anchor's text and length
-				String urlText = anchors.get(currentScore.getKey()).get("text");
+				String urlText = _anchors.get(currentScore.getKey()).get("text");
 				int urlTextLength = urlText.length();
 				
 				//If the text is too short, give the url a handicap
@@ -727,7 +742,7 @@ public class StoryFinder {
 		public void adjustScoresBySimilarPaths(HashMap<Integer, Integer> anchorScores) {
 			
 			//Grab the first path part of the target url for comparison
-			String targetURLPathPart = getFirstPartOfURIPath(targetURL);
+			String targetURLPathPart = getFirstPartOfURIPath(_targetURL);
 				
 			//If we are not at the topmost domain (no path after domain), then score the urls
 			if (targetURLPathPart.length() > 1) {
@@ -739,7 +754,7 @@ public class StoryFinder {
 					int scoreOffset = 0;
 					
 					//Grab the current anchor's href and path part
-					String urlHref = anchors.get(currentScore.getKey()).get("href");
+					String urlHref = _anchors.get(currentScore.getKey()).get("href");
 					String urlPathPart = getFirstPartOfURIPath(urlHref);
 					
 					//If the targetURL and current anchor path parts are the same, increment the score
@@ -765,7 +780,7 @@ public class StoryFinder {
 				int scoreOffset = 0;
 				
 				//Get the url's text
-				String urlText = anchors.get(currentScore.getKey()).get("text");
+				String urlText = _anchors.get(currentScore.getKey()).get("text");
 				
 				//If the text is in all caps, apply the reduction
 				if (urlText.equals(urlText.toUpperCase())) {
@@ -797,7 +812,7 @@ public class StoryFinder {
 			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
 				
 				//Get the url's classes from the class attribute
-				String classString = anchors.get(currentScore.getKey()).get("class");
+				String classString = _anchors.get(currentScore.getKey()).get("class");
 				String[] urlClasses = classString.trim().split("\\s+");
 				
 				//Loop through each class if any exist

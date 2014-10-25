@@ -1,0 +1,11 @@
+Git Commands
+
+git add --all  .
+
+git commit -m 'Commit Message'
+
+git push
+
+
+
+git pull
