@@ -27,12 +27,12 @@ class NotificationClient {
 	/**
 	* Sends a message to the specified group
 	*
-	* @param string	 	$group  				Group ID to publish message to
+	* @param string	 	$groupID  				Group ID to publish message to
 	* @param string	 	$subject  				Message subject
 	* @param string	 	$message  				Message body
 	* @return boolean  		 					TRUE on success and FALSE on failure.
 	*/
-	function sendNotice($groupID, $subject, $message) {
+	static public function sendNotice($groupID, $subject, $message) {
 
 		//Verify all arguments were not empty
 		if (!$groupID || !$subject || !$message) {return FALSE;}

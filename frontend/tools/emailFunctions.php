@@ -11,8 +11,10 @@
 require_once('../systemSetup.php');
 
 use AdShotRunner\Utilities\EmailClient;
+use AdShotRunner\Utilities\MessageQueueClient;
 use AdShotRunner\Utilities\NotificationClient;
 
+header("Content-Type: text/plain");
 
 /*for ($i = 0; $i < 10; ++$i) {
 	$response = EmailClient::sendEmail(EmailClient::SCREENSHOTADDRESS, 'juicio@dangerouspenguins.com', 
@@ -25,9 +27,44 @@ use AdShotRunner\Utilities\NotificationClient;
 //$response = sendAdShotRunnerEmail('johann@dangerouspenguins.com', 'jbmk@mailinator.com', 
 //								 'Dangerous Penguins Text Test', 'test text body', 'test html body');
 
-$response = NotificationClient::sendNotice(NotificationClient::FRONTEND, 'Menu Grabber Event Occurred', 'This is the menu grabber event description');
-print_r($response);
+//$response = NotificationClient::sendNotice(NotificationClient::FRONTEND, 'Menu Grabber Event Occurred', 'This is the menu grabber event description');
 
+echo "Sending message...";
+$response = MessageQueueClient::sendMessage(MessageQueueClient::TAGIMAGEREQUESTS, 'This is the tag image request message');
+echo "Done!\n";
+
+echo "Polling for messages...";
+$messages = array();
+while (count($messages) < 1) {
+	echo " polling...";
+	$messages = MessageQueueClient::getMessages(MessageQueueClient::TAGIMAGEREQUESTS);
+}
+
+//Clean up the output
+/*$cleanMessages = array();
+foreach ($messages as $curMessage) {
+	$cleanMessages[$curMessage['MessageId']] = $curMessage['Body'];
+}
+
+//Clean up the output
+$receiptMessages = array();
+foreach ($messages as $curMessage) {
+	$receiptMessages[$curMessage['ReceiptHandle']] = $curMessage['Body'];
+}*/
+
+echo "Done!\n";
+
+print_r($messages);
+
+//echo "\n\nDeleting one message...";
+reset($messages);
+$receiptID = key($messages);
+//$response = MessageQueueClient::deleteMessage(MessageQueueClient::TAGIMAGEREQUESTS, $receiptID);
+echo "Done!\n";
+echo "Receipt: $receiptID \n\n";
+
+print_r($response);
+//var_export($response->getKeys());
 
 /**
 * Sends an email through the AdShotRunner system

@@ -26,7 +26,7 @@ class EmailClient {
 	//--------------------------------------------------------------------------------------
 	//***************************** Public Static Methods **********************************
 	/**
-	* Sends an email to the recipient via the passed from address, subjec, and body
+	* Sends an email to the recipient via the passed from address, subject, and body
 	*
 	* @param string	 	$fromAddress  			Originating email address (From: field).
 	* @param mixed	 	$toAddress  			Recipient email address(es) (To: field). String or array of strings.

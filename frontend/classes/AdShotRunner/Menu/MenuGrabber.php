@@ -260,11 +260,11 @@ class MenuGrabber {
 
 		//Clean up the domains for the query
 		$cleanDomains = [];
-		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . \AdShotRunner\Database\databaseEscape($curDomain) . "'";}
+		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . databaseEscape($curDomain) . "'";}
 		$cleanDomainString = implode(',', $cleanDomains);
 
 		//Get the domains' menus from the database (if any exist)
-		$menuResults = \AdShotRunner\Database\databaseQuery("	SELECT *
+		$menuResults = databaseQuery("	SELECT *
 										FROM menuDomains
 										LEFT JOIN menus ON MNU_MND_id = MND_id
 										LEFT JOIN menuItems ON MNI_MNU_id = MNU_id
@@ -383,9 +383,9 @@ class MenuGrabber {
 	private function grabPossibleMenusFromHTML($pageHTML) {
 		
 		//Parse the passed HTML into document objects for easy utilization.
-		$htmlDocument = new DOMDocument;
+		$htmlDocument = new \DOMDocument();
 		$htmlDocument->loadHTML($pageHTML);	
-		$htmlXPath = new DOMXpath($htmlDocument);
+		$htmlXPath = new \DOMXpath($htmlDocument);
 
 		//Grab all the possible menus from the unique patterns and return their merged array
 		$possibleULMenus = $this->grabPossibleULMenus($htmlDocument, $htmlXPath);
@@ -535,7 +535,7 @@ class MenuGrabber {
 	private function retrieveMenuLabelWeightsFromDatabase() {
 		
 		//Retrieve the labels and weights from the database table and return them in an associative array
-		$menuWeightsResult = \AdShotRunner\Database\databaseQuery("SELECT * FROM menuLabelWeights");
+		$menuWeightsResult = databaseQuery("SELECT * FROM menuLabelWeights");
 		$labelWeights = array();
 		while ($curRow = $menuWeightsResult->fetch_assoc()) {
 		    $labelWeights[$curRow['MLW_name']] = $curRow['MLW_weight'];

@@ -62,8 +62,8 @@ public class StoryChecker {
 
 			// Run the retrieve anchors js file with phantomjs
 			Process p = Runtime.getRuntime().exec(
-					new String[] { "./phantomjs",
-							"retrieveHTMLWithoutAnchorsFromURL.js", url });
+					new String[] { "phantomjs/phantomjs",
+							"javascript/retrieveHTMLWithoutAnchorsFromURL.js", url });
 
 			// Get the string returned from phantomjs
 			BufferedReader commandLineInput = new BufferedReader(

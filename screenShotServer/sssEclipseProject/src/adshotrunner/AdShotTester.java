@@ -12,24 +12,24 @@ public class AdShotTester {
 	public static void main(String[] args) throws IOException {
 		
 		ArrayList<String> tagURLs = new ArrayList<String>();
-		tagURLs.add("chicagotribune.com");
-		tagURLs.add("latimes.com");
-		tagURLs.add("omaha.com");
-		tagURLs.add("nydailynews.com");
-		tagURLs.add("nypost.com");
-		tagURLs.add("washingtonpost.com");
-		tagURLs.add("suntimes.com");
-		tagURLs.add("denverpost.com");
-		tagURLs.add("dallasnews.com");
-		tagURLs.add("nj.com");
+		//tagURLs.add("boston.com");
+		tagURLs.add("chicago.eater.com");
+		//tagURLs.add("chicagotribune.com");
+		//tagURLs.add("dallasnews.com");
+		//tagURLs.add("denverpost.com");
+		//tagURLs.add("latimes.com");
+		//tagURLs.add("nydailynews.com");
+		//tagURLs.add("nj.com");
+		//tagURLs.add("nypost.com");
+		//tagURLs.add("nytimes.com");
+		//tagURLs.add("omaha.com");
+		//tagURLs.add("online.wsj.com");
 		//tagURLs.add("philly.com");
 		//tagURLs.add("www.sfgate.com");
-		//tagURLs.add("xxxxxxxxxx.com");
-		//tagURLs.add("boston.com");
-		//tagURLs.add("www.usatoday.com");
-		//tagURLs.add("nytimes.com");
 		//tagURLs.add("slashdot.org");
-		//tagURLs.add("online.wsj.com");
+		//tagURLs.add("suntimes.com");
+		//tagURLs.add("www.usatoday.com");
+		//tagURLs.add("washingtonpost.com");
 		
 		ArrayList<String> fillerTags = getFillerTags();
 		
@@ -39,6 +39,12 @@ public class AdShotTester {
 			for(String currentTag: fillerTags) {
 				testRunner.addTag(currentURL, currentTag);
 			}
+			
+			testRunner.addTag(currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/filler-300x250-B.jpg", 2);
+			testRunner.addTag(currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/filler-300x250-C.jpg", 3);
+			
+			testRunner.addTag(currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/filler-728x90-B.jpg", 2);
+			testRunner.addTag(currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/filler-728x90-C.jpg", 3);
 		}
 
 		
@@ -98,9 +104,8 @@ public class AdShotTester {
 		tagList.add("https://s3.amazonaws.com/asr-tagimages/fillers/nsfiller-720x300.jpg");
 		tagList.add("https://s3.amazonaws.com/asr-tagimages/fillers/nsfiller-728x210.jpg");
 		tagList.add("https://s3.amazonaws.com/asr-tagimages/fillers/nsfiller-94x15.jpg");
-		
+				
 		return tagList;
-		
 	}
 	
 }

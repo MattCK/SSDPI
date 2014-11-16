@@ -15,9 +15,13 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -167,45 +171,103 @@ public class AdShotter {
 		return true;
 	}
 	
-	public HashMap<String, BufferedImage> getAdShots() throws IOException {
+	public HashMap<BufferedImage, HashMap<String, String>> getAdShots() throws IOException {
 		
 		//Create a web driver to connect with and set its dimensions
         WebDriver firefoxDriver = new RemoteWebDriver(
 			new URL("http://localhost:4444/wd/hub"), 
 			DesiredCapabilities.firefox());
         firefoxDriver.manage().window().setSize(new Dimension(1024,768));
-        //firefoxDriver.manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
+        //firefoxDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        firefoxDriver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
         
         //Loop through each URL
         int ssCount = 0;
         for(Map.Entry<String, Map<String, Integer>> currentURL: _urlTags.entrySet()) {
         	
+        	long startTime = System.nanoTime();
+
         	//Get the page
         	System.out.println(currentURL.getKey());
-        	firefoxDriver.get("http://" + currentURL.getKey());
+
+        	//Break out of the loading if the timeout is exceeded
+        	try {
+        		firefoxDriver.get("http://" + currentURL.getKey());
+        		//firefoxDriver.get(currentURL.getKey());
+			} catch (TimeoutException e) {
+				//This was just to break out from the perpetually loading page			
+	        }
         	
-        	/*try {
+        	//Let's wait to 10 seconds for ads to fully load
+        	int loadTime = (int) ((System.nanoTime() - startTime)/1000000);
+        	if (loadTime < 10000) {
+	        	try {
+					Thread.sleep(10000 - loadTime);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+
+        	
+        	//Send esc to stop any final loading and close possible popups
+        	boolean escapeSuccessful = false;
+        	while (!escapeSuccessful) {
+	        	try {
+					Actions builder = new Actions(firefoxDriver);
+		        	builder.sendKeys(Keys.ESCAPE).perform();
+		        	escapeSuccessful = true;
+	        	}
+	        	catch(WebDriverException e) {
+	        		escapeSuccessful = false;
+	        		System.out.println("Escape failed");
+	        	}
+        	}
+			
+        	//Execute the javascript
+        	System.out.print("Injecting JS...");
+        	String adInjecterJS = getInjecterJS(currentURL.getValue());
+			String returned = (String) ((JavascriptExecutor) firefoxDriver).executeScript(adInjecterJS);
+			System.out.println("Done");
+			System.out.println(returned);
+			
+			System.out.print("2 Second sleep...");
+        	try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}*/
-        	//Execute the javascript
-        	String adInjecterJS = getInjecterJS(currentURL.getValue());
-			//String adInjecterJS = new String(Files.readAllBytes(Paths.get("adInjecter.js")));
-			String returned = (String) ((JavascriptExecutor) firefoxDriver).executeScript(adInjecterJS);
-			System.out.println(returned);
+			}
+			System.out.println("Done");
 
         	//Take the screenshot 
-            WebDriver augmentedDriver = new Augmenter().augment(firefoxDriver);
-        	File scrFile = ((TakesScreenshot)augmentedDriver).getScreenshotAs(OutputType.FILE);
-        	FileUtils.copyFile(scrFile, new File("/home/juicio/Desktop/" + ssCount + ".png"));
+			System.out.print("Taking screenshot...");
+        	//WebDriver augmentedDriver = new Augmenter().augment(firefoxDriver);
+        	//File screenShot = ((TakesScreenshot)augmentedDriver).getScreenshotAs(OutputType.FILE);
+        	//WebDriver augmentedDriver = new Augmenter().augment(firefoxDriver);
+        	File screenShot = ((TakesScreenshot) firefoxDriver).getScreenshotAs(OutputType.FILE);
         	++ssCount;
+			System.out.println("Done");
+        				
+        	//Crop the image
+        	BufferedImage screenShotImage = ImageIO.read(screenShot);
+			//int cropHeight = (screenShotImage.getHeight() < 1000) ? screenShotImage.getHeight() : 1000;
+        	//BufferedImage croppedImage = screenShotImage.getSubimage(0, 0, 1009, cropHeight);
+        	
+        	//Save the image to a file
+            //ImageIO.write(croppedImage, "png", screenShot);
+        	//FileUtils.copyFile(screenShot, new File("/home/juicio/Desktop/" + ssCount + ".png"));
+        	FileUtils.copyFile(screenShot, new File("ScreenShot" + ssCount + ".png"));
+     	
+        	
+        	long endTime = System.nanoTime();
+        	System.out.println("Beginning to end: " + (endTime - startTime)/1000000);
+        	
         }
 		
     	
     	//Close the web driver
-    	firefoxDriver.close();
+    	//firefoxDriver.close();
         
 		return null;
 	}
@@ -256,7 +318,7 @@ public class AdShotter {
 	private String getInjecterJS(Map<String,Integer> tags) throws IOException {
 		
 		//Get the JS from the file
-		String adInjecterJS = new String(Files.readAllBytes(Paths.get("adInjecter.js")));
+		String adInjecterJS = new String(Files.readAllBytes(Paths.get("javascript/adInjecter.js")));
 		
 		//Create the tags object by looping through the tags
 		String tagsString = "tags = [";

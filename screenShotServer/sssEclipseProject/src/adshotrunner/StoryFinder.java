@@ -56,8 +56,8 @@ public class StoryFinder {
             
         	//Run the retrieve anchors js file with phantomjs
             Process p = Runtime.getRuntime().exec(new String[]{
-	            "./phantomjs", 
-	            "retrievePossibleStoriesFromURL.js",
+	            "phantomjs/phantomjs", 
+	            "javascript/retrievePossibleStoriesFromURL.js",
 	            url, Integer.toString(viewWidth), Integer.toString(viewHeight)        	
             });
             
