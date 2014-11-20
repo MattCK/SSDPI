@@ -12,24 +12,25 @@ public class AdShotTester {
 	public static void main(String[] args) throws IOException {
 		
 		ArrayList<String> tagURLs = new ArrayList<String>();
-		//tagURLs.add("boston.com");
+		tagURLs.add("slashdot.org");
+		/*tagURLs.add("boston.com");
 		tagURLs.add("chicago.eater.com");
-		//tagURLs.add("chicagotribune.com");
-		//tagURLs.add("dallasnews.com");
-		//tagURLs.add("denverpost.com");
-		//tagURLs.add("latimes.com");
-		//tagURLs.add("nydailynews.com");
-		//tagURLs.add("nj.com");
-		//tagURLs.add("nypost.com");
-		//tagURLs.add("nytimes.com");
-		//tagURLs.add("omaha.com");
-		//tagURLs.add("online.wsj.com");
-		//tagURLs.add("philly.com");
-		//tagURLs.add("www.sfgate.com");
-		//tagURLs.add("slashdot.org");
-		//tagURLs.add("suntimes.com");
-		//tagURLs.add("www.usatoday.com");
-		//tagURLs.add("washingtonpost.com");
+		tagURLs.add("chicagotribune.com");
+		tagURLs.add("dallasnews.com");
+		tagURLs.add("denverpost.com");
+		tagURLs.add("latimes.com");
+		tagURLs.add("nydailynews.com");
+		tagURLs.add("nj.com");
+		tagURLs.add("nypost.com");
+		///////tagURLs.add("nytimes.com");
+		tagURLs.add("omaha.com");
+		tagURLs.add("online.wsj.com");
+		tagURLs.add("philly.com");
+		tagURLs.add("www.sfgate.com");
+		tagURLs.add("slashdot.org");
+		//////tagURLs.add("suntimes.com");
+		tagURLs.add("www.usatoday.com");
+		tagURLs.add("washingtonpost.com");*/
 		
 		ArrayList<String> fillerTags = getFillerTags();
 		

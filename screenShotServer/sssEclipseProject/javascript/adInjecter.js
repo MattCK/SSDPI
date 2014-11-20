@@ -114,6 +114,13 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 						//Change parents' width/height if need be
 						if (currentAd.element.parentNode) {
 							adInjecter._expandParents(currentAd.element.parentNode, currentAd.width, currentAd.height);
+
+							var targetNode = currentAd.element;
+							targetNode.style.display = '';
+							while (targetNode = targetNode.parentNode) {
+								targetNode.style.display = '';
+							}
+
 						}
 					} 
 
@@ -143,12 +150,25 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 			if (!yOffset) {yOffset = 0;}
 
 			//Get all the tags in the passed document
-			var nodes = curDocument.body.getElementsByTagName("*");
+			//var headNodes = curDocument.head.getElementsByTagName("*");
+			//adInjecter.outputString += curDocument.head.getElementsByTagName("*") + "\n";
+
+			//var bodyNodes = curDocument.body.getElementsByTagName("*");
+			//var nodes = bodyNodes;
+
+			var headNodes = [].slice.call(curDocument.head.getElementsByTagName("*"));
+			var bodyNodes = [].slice.call(curDocument.body.getElementsByTagName("*"));
+			var nodes = headNodes.concat(bodyNodes);
+
+			adInjecter.outputString += "Default view: " + curDocument.defaultView.name + "\n";
+			if (curDocument.defaultView.name) {
+				adInjecter.outputString += parent.window.frames[curDocument.defaultView.name].nodeName + "\n";
+			}
 
 			//Loop through for each element
 			Array.prototype.forEach.call(nodes, function(curNode) {
 
-				//adInjecter.outputString += "Node Type: " + curNode.nodeName + "\n";
+				//adInjecter.outputString += "Node Type: " + curNode.nodeName + " (" + curNode.id + ")\n";
 
 				//Remove any border from the node
 				curNode.style.setProperty('border', 0);
@@ -171,7 +191,9 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 				curDocument.getElementsByTagName('html')[0].style.margin = 0;
 
 				//If the flood value is recognized, store the ad
-				if (floodOpacity == '0.9898') {
+				if ((floodOpacity == '0.9898') ||
+					((curNode.nodeName == "IFRAME") && (!curNode.contentDocument) && 
+					 (adInjecter._areDimensionsOfATag(nodeWidth, nodeHeight)))) {
 
 					adInjecter._ads.push({
 						element: curNode,
@@ -182,20 +204,47 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 						bottom: nodeBounds.bottom,
 					});
 
+					var sizes = getSize(curNode);
+					if ((nodeWidth > 5) && (nodeHeight > 5)) {
+						if ((nodeWidth != sizes.width) || (nodeHeight != sizes.height)) {
+							//adInjecter.outputString += "----Size Actual: " + sizes.width + "x" + sizes.height + "----\n";
+							//adInjecter.outputString += "----Size Original: " + nodeWidth + "x" + nodeHeight + "----\n";
+						}
+					}
+					nodeWidth = sizes.width;
+					nodeHeight = sizes.height;
+
+					if ((nodeWidth < 5) && (nodeHeight < 5)) {
+						/*if ((nodeWidth != sizes.width) || (nodeHeight != sizes.height)) {
+							adInjecter.outputString += "----Size Actual: " + sizes.width + "x" + sizes.height + "----\n";
+							adInjecter.outputString += "----Size Original: " + nodeWidth + "x" + nodeHeight + "----\n";
+						}*/
+						//adInjecter.outputString += "Small Ad Container: " + curNode.nodeName + " (" + curNode.id + ") " + nodeWidth + "x" + nodeHeight + "\n";		
+						//adInjecter.outputString += "--------" + curNode.ownerDocument.defaultView + "\n";			
+						//adInjecter.outputString += (curNode.ownerDocument.defaultView == top) ? "Not an iframe\n" : "Is an iframe\n";			
+						//adInjecter.outputString += curNode.ownerDocument.documentElement.nodeName + " (" + curNode.ownerDocument.documentElement.id + ") " + curNode.ownerDocument.documentElement.offsetWidth + "x" + curNode.ownerDocument.documentElement.offsetWidth + "\n";		
+					}
+
 					if ((nodeWidth > 5) && (nodeHeight > 5)) {
 						adInjecter.outputString += "Ad Position (" + nodeWidth + "x" + nodeHeight + "): " + Math.round(nodeBounds.left + xOffset) + ", " + Math.round(nodeBounds.top + yOffset) + ", " + curNode.nodeName + "\n";
 					}
 
 					//If it very large and not a tag dimension, hide it
 					if ((nodeWidth > adInjecter._LARGEADWIDTH) && (nodeHeight > adInjecter._LARGEADHEIGHT)) {
-						adInjecter.outputString += "--LARGE AD--\n";
-						if (!adInjecter._areDimensionsOfATag(nodeWidth, nodeHeight)) {adInjecter._hideAdElement(curNode);}
+						//adInjecter.outputString += "--LARGE AD--\n";
+						if (!adInjecter._areDimensionsOfATag(nodeWidth, nodeHeight)) {
+							adInjecter._hideAdElement(curNode);
+							if (curNode != sizes.node) {
+								//adInjecter.outputString += "Large Container: " + sizes.nodeName + " (" + sizes.node.id + ") " + sizes.width + "x" + sizes.height + "\n";
+								sizes.node.style.display = 'none';
+							}
+						}
 					}			
 				}
 
 				//If the node has a fixed position and is a screen stealer, hide it
 				if (adInjecter._isFixedPositionScreenStealer(curNode)) {
-					adInjecter.outputString += "--FIXED SCREEN STEALER--\n";
+					//adInjecter.outputString += "--FIXED SCREEN STEALER--\n";
 					adInjecter._hideAdElement(curNode);
 				}
 
@@ -208,6 +257,7 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 					iframeYOffset = Math.round(iframeBounds.top) + yOffset;
 
 					//Call the function on the new iframe with the new offsets
+					//adInjecter.outputString += "Iframe ID: " + curNode.id + "\n";
 					adInjecter._removeScreenStealersAndRetrieveAds(curNode.contentDocument, iframeXOffset, iframeYOffset);
 				}
 			});
@@ -237,6 +287,9 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 			//If the parent has the same dimensions, hide the parent too
 			if ((curNode.offsetWidth == curParent.offsetWidth) &&
 				(curNode.offsetHeight == curParent.offsetHeight)) {
+				adInjecter._hideAdElement(curParent);
+			}
+			else if ((curNode.nodeName == "A") || (curNode.nodeName == "OBJECT")) {
 				adInjecter._hideAdElement(curParent);
 			}
 
@@ -471,5 +524,34 @@ function getCoordinates(element) {
     return {
         top: top,
         left: left
+    };
+};
+
+function getSize(curNode) {
+	var nodeWidth = curNode.offsetWidth;
+	var nodeHeight = curNode.offsetHeight;
+	var sizeNode = curNode;
+
+	do {
+		var curWidth = curNode.offsetWidth;
+		var curHeight = curNode.offsetHeight;
+
+		if ((curNode.nodeName != "A") && (curNode.nodeName != "OBJECT")) {
+			if ((curWidth <= nodeWidth) && (curHeight <= nodeHeight)) {
+				if ((curWidth > 5) && (curHeight > 5)) {
+					nodeWidth = curWidth;
+					nodeHeight = curHeight;
+					sizeNode = curNode;
+				}
+			}
+		}
+
+        curNode = curNode.parentNode;
+    } while(curNode);
+
+    return {
+        width: nodeWidth,
+        height: nodeHeight,
+        node: sizeNode
     };
 };
