@@ -11,7 +11,7 @@ import org.apache.commons.io.IOUtils;
 
 public class ComponentTester {
 
-	public static void main(String[] args) throws IOException, URISyntaxException {
+	public static void main(String[] args) throws Exception {
 		
 		String newsSite = "latimes.com";
 		

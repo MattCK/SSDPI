@@ -1,6 +1,5 @@
 package adshotrunner;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -9,11 +8,11 @@ import java.util.ArrayList;
  */
 public class AdShotTester {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		
 		ArrayList<String> tagURLs = new ArrayList<String>();
-		tagURLs.add("slashdot.org");
-		/*tagURLs.add("boston.com");
+		tagURLs.add("www.newsweek.com/assange-google-not-what-it-seems-279447?piano_t=1");
+		tagURLs.add("boston.com");
 		tagURLs.add("chicago.eater.com");
 		tagURLs.add("chicagotribune.com");
 		tagURLs.add("dallasnews.com");
@@ -22,15 +21,16 @@ public class AdShotTester {
 		tagURLs.add("nydailynews.com");
 		tagURLs.add("nj.com");
 		tagURLs.add("nypost.com");
-		///////tagURLs.add("nytimes.com");
 		tagURLs.add("omaha.com");
 		tagURLs.add("online.wsj.com");
 		tagURLs.add("philly.com");
 		tagURLs.add("www.sfgate.com");
 		tagURLs.add("slashdot.org");
-		//////tagURLs.add("suntimes.com");
 		tagURLs.add("www.usatoday.com");
-		tagURLs.add("washingtonpost.com");*/
+		tagURLs.add("washingtonpost.com");
+		//*/
+		//////tagURLs.add("nytimes.com");
+		//////tagURLs.add("suntimes.com");
 		
 		ArrayList<String> fillerTags = getFillerTags();
 		
@@ -47,31 +47,6 @@ public class AdShotTester {
 			testRunner.addTag(currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/filler-728x90-B.jpg", 2);
 			testRunner.addTag(currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/filler-728x90-C.jpg", 3);
 		}
-
-		
-		/*testRunner.addTag("boston.com", "https://s3.amazonaws.com/asr-tagimages/184x90.jpg", 0);
-		testRunner.addTag("boston.com", "https://s3.amazonaws.com/asr-tagimages/728x90.gif", 0);
-		testRunner.addTag("latimes.com", "https://s3.amazonaws.com/asr-tagimages/728x90.gif", 0);
-		testRunner.addTag("omaha.com", "https://s3.amazonaws.com/asr-tagimages/300x250.gif", 0);
-		//testRunner.addTag("omaha.com", "https://s3.amazonaws.com/asr-tagimages/300x250-2.jpeg", 1);
-		testRunner.addTag("slashdot.org", "https://s3.amazonaws.com/asr-tagimages/300x250-2.jpeg", 1);*/
-
-		/*testRunner.addTag("boston.com", "https://s3.amazonaws.com/asr-tagimages/184x90.jpg", 0);
-		testRunner.addTag("boston.com", "https://s3.amazonaws.com/asr-tagimages/728x90.gif", 0);
-		testRunner.addTag("boston.com", "https://s3.amazonaws.com/asr-tagimages/300x250.gif", 0);
-		
-		testRunner.addTag("latimes.com", "https://s3.amazonaws.com/asr-tagimages/184x90.jpg", 0);
-		testRunner.addTag("latimes.com", "https://s3.amazonaws.com/asr-tagimages/728x90.gif", 0);
-		testRunner.addTag("latimes.com", "https://s3.amazonaws.com/asr-tagimages/300x250.gif", 0);
-		
-		testRunner.addTag("omaha.com", "https://s3.amazonaws.com/asr-tagimages/184x90.jpg", 0);
-		testRunner.addTag("omaha.com", "https://s3.amazonaws.com/asr-tagimages/728x90.gif", 0);
-		testRunner.addTag("omaha.com", "https://s3.amazonaws.com/asr-tagimages/300x250.gif", 0);
-		//testRunner.addTag("omaha.com", "https://s3.amazonaws.com/asr-tagimages/300x250-2.jpeg", 1)
-		;
-		testRunner.addTag("nytimes.com", "https://s3.amazonaws.com/asr-tagimages/184x90.jpg", 1);
-		testRunner.addTag("nytimes.com", "https://s3.amazonaws.com/asr-tagimages/728x90.gif", 1);
-		testRunner.addTag("nytimes.com", "https://s3.amazonaws.com/asr-tagimages/300x250.gif", 1);*/
 		
 		testRunner.getAdShots();
 		

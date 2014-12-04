@@ -1,7 +1,6 @@
 package adshotrunner.utilities;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import adshotrunner.errors.AdShotRunnerException;
