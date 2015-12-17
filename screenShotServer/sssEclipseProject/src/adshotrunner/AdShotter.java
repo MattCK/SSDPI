@@ -25,6 +25,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -129,7 +130,7 @@ public class AdShotter {
 	//********************************* Public Methods **************************************
 	/**
 	 * Adds a tag and its URL to the instance. A URL with its associated tags will be
-	 * processed through the adshotter.
+	 * processed through the AdInjecter.
 	 * 
 	 * The placement rank is automatically set to 0, the most prominent ranking
 	 * 
@@ -144,7 +145,7 @@ public class AdShotter {
 
 	/**
 	 * Adds a tag and its URL to the instance. A URL with its associated tags will be
-	 * processed through the adshotter.
+	 * processed through the AdInjecter.
 	 * 
 	 * @param targetURL			The URL the tags should be placed upon
 	 * @param tagPath			Path to the tag's image to be inserted into page
@@ -190,7 +191,7 @@ public class AdShotter {
 		return true;
 	}
 	
-	public HashMap<BufferedImage, HashMap<String, String>> getAdShots() throws Exception {
+	public HashMap<BufferedImage, HashMap<String, String>> getAdShots() {
 		        
 		//Create the final data structure to store ad shots within
 		HashMap<BufferedImage, HashMap<String, String>> adShots = new HashMap<BufferedImage, HashMap<String, String>>();
@@ -206,72 +207,95 @@ public class AdShotter {
 		}
         
         //Loop through each URL, inject the ads, and grab the screenshots
-        int ssCount = 0;
         for(Map.Entry<String, Map<String, Integer>> currentURL: _urlTags.entrySet()) {
         	
-        	//First, get the AdInjecter javascript with the current tags inserted
-        	String adInjecterJS = getInjecterJS(currentURL.getValue());
-        	
-        	//Open the current URL within the PAGELOADTIMEOUT time
-        	try {navigateSeleniumDriverToURL(firefoxDriver, currentURL.getKey());} 
-    		//On failure, throw runtime error
-    		catch (Exception e) {
-    			throw new AdShotRunnerException("Could not navigate Selenium driver to page: " + currentURL.getKey(), e);
-    		}
-        	        	
-        	//Send esc to stop any final loading and close possible popups
-        	boolean escapeSuccessful = sendSeleniumDriverEscapeCommand(firefoxDriver, ESCAPEATTEMPTTIME);
-			
-        	//Execute the javascript
-			String javascriptResponse = executeSeleniumDriverJavascript(firefoxDriver, adInjecterJS);
-			
-        	//Take the screenshot 
-        	//File screenShot = captureSeleniumDriverScreenshot(firefoxDriver);
-			
 			System.out.println(currentURL.getKey() + ":");
-			System.out.print("Taking screenshot...");
 			long startTime = System.nanoTime();
-        	File screenShot = ((TakesScreenshot) firefoxDriver).getScreenshotAs(OutputType.FILE);
+			
+			Exception adShotException = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());
+        	
+			System.out.print("Exception: ");
+			System.out.println(adShotException);			
+			
         	long endTime = System.nanoTime();
-			System.out.print("Done! - ");
+        	System.out.print("Running time: ");
 			System.out.println((endTime - startTime)/1000000 + " ms");
-
-			//Crop the image
-        	BufferedImage screenShotImage = cropAndConvertImageFile(screenShot, 1200);
-        	
-        	//Save the image to a file
-            //ImageIO.write(screenShotImage, "png", screenShot);
-        	++ssCount;
-        	BufferedImage newBufferedImage = new BufferedImage(screenShotImage.getWidth(),
-        			screenShotImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-        	newBufferedImage.createGraphics().drawImage(screenShotImage, 0, 0, Color.WHITE, null);
-            //ImageIO.write(newBufferedImage, "jpg", new File("ScreenShot" + ssCount + ".jpg"));
-            ImageIO.write(newBufferedImage, "png", new File("ScreenShot" + ssCount + ".png"));
-            
-        	//FileUtils.copyFile(screenShot, new File("ScreenShot" + ssCount + ".png"));
-        	//FileUtils.copyFile(screenShot, new File("ScreenShot" + ssCount + ".jpg"));
-        	
-        	Iterator<ImageWriter> i = ImageIO.getImageWritersByFormatName("jpeg");  
-        	  
-        	// Just get the first JPEG writer available  
-        	ImageWriter jpegWriter = i.next();  
-        	  
-        	// Set the compression quality to 0.8  
-        	ImageWriteParam param = jpegWriter.getDefaultWriteParam();  
-        	param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);  
-        	param.setCompressionQuality(1.0f);  
-        	  
-        	// Write the image to a file  
-        	FileImageOutputStream out = new FileImageOutputStream(new File("ScreenShot" + ssCount + ".jpg"));  
-        	jpegWriter.setOutput(out);  
-        	//jpegWriter.write(null, new IIOImage(newBufferedImage, null, null), param);  
-        	jpegWriter.dispose();  
-        	out.close();          	
+			
+			//If there was an error and we are not connected to a window, reconnect and try one more time.
+			System.out.println("Exception and not connected: " + ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))));
+			if ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))) {
+				
+				//Try to quit the current driver
+				/*System.out.print("Attempting to quit broken driver...");
+				try {firefoxDriver.quit();}
+				catch (Exception e) {
+					System.out.print(e + "...");
+				} //On error, do nothing
+				System.out.println("Done.");*/
+				quitWebdriver(firefoxDriver);
+				
+				//Try to get a new driver
+				System.out.print("Attempting to get new driver...");
+				try {firefoxDriver = getSeleniumDriver();}
+				catch (Exception e) {
+					System.out.print(e + "...");
+				} //Still ignore any new error
+				System.out.println("Done.");
+				
+				//If we were able to get a new working driver, try one more time to get the AdShot
+				System.out.println("Working Driver: " + (webdriverIsConnectedToWindow(firefoxDriver)));
+				if (webdriverIsConnectedToWindow(firefoxDriver)) {
+					adShotException = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());
+					
+					//On fail, just try to restart the webdriver again
+					System.out.println("Exception and not connected again: " + ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))));
+					if ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))) {
+						
+						//Try to quit the current driver
+						/*System.out.print("Attempting to quit broken driver...");
+						try {firefoxDriver.quit();}
+						catch (Exception e) {
+							System.out.print(e + "...");
+						} //On error, do nothing
+						System.out.println("Done.");*/
+						quitWebdriver(firefoxDriver);
+						
+						//Try to get a new driver
+						System.out.print("Attempting to get new driver...");
+						try {firefoxDriver = getSeleniumDriver();}
+						catch (Exception e) {
+							System.out.print(e + "...");
+						} //Still ignore any new error
+						System.out.println("Done.");
+					}
+				}
+			}
+			else if (adShotException != null) {
+				System.out.println("Attempting AdShot again...");
+				adShotException = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());
+			}
         }
 		
     	
-    	//Close the web driver
-    	//firefoxDriver.close();
+    	//Quit the driver
+        quitWebdriver(firefoxDriver);
+    	//firefoxDriver.quit();
+    	
+		/*System.out.print("Final webdriver quit...");
+    	final WebDriver finalDriver = firefoxDriver;
+    	TimeLimiter timeoutLimiter = new SimpleTimeLimiter();
+		try {
+		timeoutLimiter.callWithTimeout(new Callable<File>() {
+					    public File call() {
+					    	finalDriver.quit();
+					    	return null;
+					    }
+					  }, 5000, TimeUnit.MILLISECONDS, false); 
+		}
+		catch (Exception e) {
+			System.out.print(e + "...");
+		}
+		System.out.println("Done.");*/
         
 		return null;
 	}
@@ -317,6 +341,89 @@ public class AdShotter {
 		}
 	
 		return true;
+	}
+	
+	/**
+	 * Takes and returns an AdShot for the passed URL with the passed tags.
+	 * 
+	 * Navigates driver to URL, stops page loading (if needed), executes AdInjecter
+	 * javascript, and takes a final screenshot.
+	 * 
+	 * @param activeSeleniumWebDriver	Selenium web driver to navigate
+	 * @param URL						URL to navigate to and use for AdShot
+	 * @param tags						Tags to attempt to inject into URL page
+	 * @return							True on success and false on failure
+	 */
+	public Exception takeAdShot(WebDriver activeSeleniumWebDriver, String URL, Map<String,Integer> tags) {
+		
+		//Create an empty Exception to store any errors
+		Exception adShotException = null;
+		
+    	//First, get the AdInjecter javascript with the current tags inserted
+		String adInjecterJS = "";
+		try {adInjecterJS = getInjecterJS(tags);}
+		catch (Exception e) {
+			adShotException = new AdShotRunnerException("Could not create AdInjecter javascript", e);
+		}
+    	
+    	//Open the current URL within the PAGELOADTIMEOUT time (if we haven't had an error)
+		if (adShotException == null) {
+        	try {navigateSeleniumDriverToURL(activeSeleniumWebDriver, URL);} 
+    		catch (Exception e) {
+    			adShotException = new AdShotRunnerException("Could not navigate Selenium driver to page: " + URL, e);
+    		}
+		}
+    	        	
+    	//Send esc to stop any final loading and close possible popups (if we haven't had an error)
+		if (adShotException == null) {
+			try {boolean escapeSuccessful = sendSeleniumDriverEscapeCommand(activeSeleniumWebDriver, ESCAPEATTEMPTTIME);}
+    		catch (Exception e) {
+    			adShotException = new AdShotRunnerException("Could not perform escape key press", e);
+    		}
+		}
+		
+    	//Execute the javascript
+		if (adShotException == null) {
+			try {String javascriptResponse = executeSeleniumDriverJavascript(activeSeleniumWebDriver, adInjecterJS);}
+			catch (Exception e) {
+    			adShotException = new AdShotRunnerException("Could not execute AdInjecter in page", e);
+			}
+		}
+		
+    	//Take the screenshot 
+		System.out.print("Taking screenshot...");
+		long screenShotStartTime = System.nanoTime();
+		
+    	File screenShot = null;
+		if (adShotException == null) {
+        	try {screenShot = captureSeleniumDriverScreenshot(activeSeleniumWebDriver);}
+			catch (Exception e) {
+				adShotException = new AdShotRunnerException("Could not take screenshot", e);
+			}
+		}
+		
+    	long screenShotEndTime = System.nanoTime();
+		System.out.print("Done! - ");
+		System.out.println((screenShotEndTime - screenShotStartTime)/1000000 + " ms");
+		
+		//Crop the image
+		BufferedImage screenShotImage = null;
+		if (adShotException == null) {
+			try {screenShotImage = cropAndConvertImageFile(screenShot, 1200);}
+			catch (Exception e) {
+				adShotException = new AdShotRunnerException("Could not crop screenshot", e);
+			}
+		}
+    	
+		//Save the image
+		if (adShotException == null) {
+			try {saveImageAsPNG(screenShotImage, "ScreenShot" + System.nanoTime() + ".png");}
+			catch (Exception e) {
+				adShotException = new AdShotRunnerException("Could not save screenshot", e);
+			}
+		}
+		
+		return adShotException;
 	}
 	
 	/**
@@ -366,10 +473,12 @@ public class AdShotter {
     	//Attempt to load the passed page
     	try {activeSeleniumWebDriver.get("http://" + pageURL);} 
     	
-    	//If the page seem to load before the load time, give it the difference as extra time through sleep
-    	catch (Exception e) {
+    	//If the timeout is reached, just keep moving
+    	catch (TimeoutException e) {
     		//Just keep moving if the timeout is reached
-    	}	
+    	}
+    	
+    	//If the page seem to load before the load time, give it the difference as extra time through sleep
     	finally {
     		
         	//If the current load time is less that maximum load time, sleep the difference
@@ -424,6 +533,7 @@ public class AdShotter {
 	        	builder.sendKeys(Keys.ESCAPE).perform();
 	        	escapeCommandSuccessful = true;
         	}
+
     		//Either way, let's sleep for the escape pause time
     		finally {
 	        	try {
@@ -524,7 +634,9 @@ public class AdShotter {
 						    }
 						  }, SCREENSHOTTIMEOUT, TimeUnit.MILLISECONDS, false); 
     		}
-    		catch (Exception e) {}
+    		catch (Exception e) {
+    			//Ignore any error and try another attempt (if any are left)
+    		}
     		++currentAttempt;
     	}
     	
@@ -550,10 +662,114 @@ public class AdShotter {
 		int cropWidth = (originalImage.getWidth() < 1009) ? originalImage.getWidth() : 1009;
     	BufferedImage croppedImage = originalImage.getSubimage(0, 0, cropWidth, cropHeight);
     	
+    	//Make BufferedImage generic so it can be written as png or jpg
+    	BufferedImage cleanedImage = new BufferedImage(croppedImage.getWidth(),
+    												   croppedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+    	cleanedImage.createGraphics().drawImage(croppedImage, 0, 0, Color.WHITE, null);
+    	
     	//Return the modified image
         return croppedImage;
 	}
 	
+	/**
+	 * Saves the passed image to the passed filepath as a PNG
+	 * 
+	 * @param imageToSave		Image to save as PNG
+	 * @param filepath			File the image should be saved as
+	 * @throws IOException 
+	 */
+	private void saveImageAsPNG(BufferedImage imageToSave, String filepath) throws IOException {
+		
+		//Write the image as a PNG
+		ImageIO.write(imageToSave, "png", new File(filepath));         	
+	}
+
+	/**
+	 * Saves the passed image to the passed filepath as a JPG
+	 * 
+	 * @param imageToSave		Image to save as JPG
+	 * @param filepath			File the image should be saved as
+	 * @throws IOException 
+	 */
+	private void saveImageAsJPG(BufferedImage imageToSave, String filepath) throws IOException {
+		
+		//Create a writer iterator for 
+    	Iterator<ImageWriter> writerIterator = ImageIO.getImageWritersByFormatName("jpeg");  
+  	  
+    	//Just get the first JPEG writer available  
+    	ImageWriter jpegWriter = writerIterator.next();  
+    	  
+    	//Set the compression quality  
+    	ImageWriteParam param = jpegWriter.getDefaultWriteParam();  
+    	param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);  
+    	param.setCompressionQuality(1.0f);  
+    	  
+    	//Write the image to the file  
+    	FileImageOutputStream outputStream = new FileImageOutputStream(new File(filepath));  
+    	jpegWriter.setOutput(outputStream);  
+    	jpegWriter.write(null, new IIOImage(imageToSave, null, null), param);  
+    	jpegWriter.dispose();  
+    	outputStream.close();          	
+	}
+
+	/**
+	 * Returns TRUE if the passed webdriver is connected to a window and FALSE if not
+	 * 
+	 * @param activeSeleniumWebDriver		Selenium driver to check
+	 */
+	private boolean webdriverIsConnectedToWindow(final WebDriver activeSeleniumWebDriver) {
+		
+		//Try to get the current URL. 
+		System.out.print("Trying to get the current URL to test state...");
+		try {
+			
+	    	TimeLimiter timeoutLimiter = new SimpleTimeLimiter();
+			try {
+			timeoutLimiter.callWithTimeout(new Callable<File>() {
+						    public File call() {
+						    	activeSeleniumWebDriver.getCurrentUrl();
+						    	return null;
+						    }
+						  }, 5000, TimeUnit.MILLISECONDS, false); 
+			}
+			catch (Exception e) {
+				System.out.println("Failed! - " + e);
+				return false;
+			}
+
+			
+			//activeSeleniumWebDriver.getCurrentUrl();
+			System.out.println("Worked!");
+			return true;
+		}
+		
+		//If we couldn't connect, then return FALSE
+		catch (Exception e) {
+			System.out.println("Failed! - " + e);
+			return false;
+		}
+	}
+	
+	private void quitWebdriver(WebDriver activeSeleniumWebDriver) {
+		
+		System.out.print("Webdriver quit...");
+    	final WebDriver finalDriver = activeSeleniumWebDriver;
+    	TimeLimiter timeoutLimiter = new SimpleTimeLimiter();
+		try {
+		timeoutLimiter.callWithTimeout(new Callable<File>() {
+					    public File call() {
+					    	finalDriver.quit();
+					    	return null;
+					    }
+					  }, 5000, TimeUnit.MILLISECONDS, false); 
+		}
+		catch (Exception e) {
+			System.out.print(e + "...");
+		}
+		System.out.println("Done.");
+
+	}
+
 	//---------------------------------------------------------------------------------------
 	//----------------------------------- Accessors -----------------------------------------
 	//---------------------------------------------------------------------------------------

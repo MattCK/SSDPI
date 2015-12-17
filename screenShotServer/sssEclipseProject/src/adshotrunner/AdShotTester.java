@@ -12,7 +12,10 @@ public class AdShotTester {
 		
 		ArrayList<String> tagURLs = new ArrayList<String>();
 		tagURLs.add("www.newsweek.com/assange-google-not-what-it-seems-279447?piano_t=1");
-		tagURLs.add("boston.com");
+		tagURLs.add("www.desmoinesregister.com/story/news/politics/2014/12/08/iowa-digital-smartphone-drivers-license/20114979/");
+		tagURLs.add("www.wired.com/2014/12/nokia-here-autonomous-car-maps/");
+		//tagURLs.add("nydailynews.com");
+		/*tagURLs.add("boston.com");
 		tagURLs.add("chicago.eater.com");
 		tagURLs.add("chicagotribune.com");
 		tagURLs.add("dallasnews.com");
