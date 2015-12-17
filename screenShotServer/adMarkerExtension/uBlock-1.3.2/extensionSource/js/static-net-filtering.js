@@ -2051,47 +2051,47 @@ FilterContainer.prototype.fromCompiledContent = function(text, lineBeg) {
 
         this.acceptedCount += 1;
 
-        bucket = this.categories[fields[0]];
-        if ( bucket === undefined ) {
-            bucket = this.categories[fields[0]] = Object.create(null);
-        }
-        entry = bucket[fields[1]];
+        // bucket = this.categories[fields[0]];
+        // if ( bucket === undefined ) {
+        //     bucket = this.categories[fields[0]] = Object.create(null);
+        // }
+        // entry = bucket[fields[1]];
 
-        if ( fields[1] === '.' ) {
-            if ( entry === undefined ) {
-                entry = bucket['.'] = new FilterHostnameDict();
-            }
-            if ( entry.add(fields[2]) === false ) {
-                this.duplicateCount += 1;
-            }
-            continue;
-        }
+        // if ( fields[1] === '.' ) {
+        //     if ( entry === undefined ) {
+        //         entry = bucket['.'] = new FilterHostnameDict();
+        //     }
+        //     if ( entry.add(fields[2]) === false ) {
+        //         this.duplicateCount += 1;
+        //     }
+        //     continue;
+        // }
 
-        if ( this.duplicateBuster.hasOwnProperty(line) ) {
-            this.duplicateCount += 1;
-            continue;
-        }
-        this.duplicateBuster[line] = true;
+        // if ( this.duplicateBuster.hasOwnProperty(line) ) {
+        //     this.duplicateCount += 1;
+        //     continue;
+        // }
+        // this.duplicateBuster[line] = true;
 
-        factory = this.factories[fields[2]];
+        // factory = this.factories[fields[2]];
 
-        // For development purpose
-        //if ( this.filterCounts.hasOwnProperty(fields[2]) === false ) {
-        //    this.filterCounts[fields[2]] = 1;
-        //} else {
-        //    this.filterCounts[fields[2]]++;
-        //}
+        // // For development purpose
+        // //if ( this.filterCounts.hasOwnProperty(fields[2]) === false ) {
+        // //    this.filterCounts[fields[2]] = 1;
+        // //} else {
+        // //    this.filterCounts[fields[2]]++;
+        // //}
 
-        filter = factory.fromSelfie(fields[3]);
-        if ( entry === undefined ) {
-            bucket[fields[1]] = filter;
-            continue;
-        }
-        if ( entry.fid === '[]' ) {
-            entry.add(filter);
-            continue;
-        }
-        bucket[fields[1]] = new FilterBucket(entry, filter);
+        // filter = factory.fromSelfie(fields[3]);
+        // if ( entry === undefined ) {
+        //     bucket[fields[1]] = filter;
+        //     continue;
+        // }
+        // if ( entry.fid === '[]' ) {
+        //     entry.add(filter);
+        //     continue;
+        // }
+        // bucket[fields[1]] = new FilterBucket(entry, filter);
     }
     return textEnd;
 };

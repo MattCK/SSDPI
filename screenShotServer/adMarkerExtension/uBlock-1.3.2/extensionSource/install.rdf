@@ -3,7 +3,7 @@
     <r:Description about="urn:mozilla:install-manifest">
         <id>uBlock0@raymondhill.net</id>
         <version>1.3.2</version>
-        <name>uBlock Origin</name>
+        <name>AdMarker</name>
         <description>Finally, an efficient blocker. Easy on CPU and memory.</description>
         <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
         <creator>All uBlock Origin contributors</creator>

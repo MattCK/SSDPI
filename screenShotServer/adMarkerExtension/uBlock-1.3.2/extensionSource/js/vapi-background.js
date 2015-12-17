@@ -45,7 +45,7 @@ vAPI.thunderbird = Services.appinfo.ID === '{3550f703-e582-4d05-9a08-453d09bdfdc
 /******************************************************************************/
 
 vAPI.app = {
-    name: 'uBlock Origin',
+    name: 'AdMarker',
     version: location.hash.slice(1)
 };
 
