@@ -1,11 +1,12 @@
 <?PHP
-
 /**
-* Contains the class for accessing and modifying users in the database.
+* Contains the class for inserting, modifying, archiving, and retrieving users in the database
 *
-* @package bracket
+* @package Adshotrunner
 * @subpackage Classes
 */
+
+namespace AdShotRunner\Users;
 
 /**
 * The User class controls the flow of information between the system and the database concerning user information. 
@@ -45,8 +46,8 @@ class User {
 		
 		//Get the info from the users table
 		$getUserQuery = "SELECT * FROM users WHERE USR_id = $userID";
-		$getUserResult = dbQuery($getUserQuery);
-		$userInfo = mysql_fetch_array($getUserResult);
+		$userResult = databaseQuery($getUserQuery);
+		$userInfo = $userResult->fetch_assoc();
 
 		//If no data was returned, return NULL.
 		if (!$userInfo) {return NULL;}
@@ -74,9 +75,9 @@ class User {
 		if (!$username) {return NULL;}
 		
 		//Get the info from the users table
-		$getUserQuery = "SELECT * FROM users WHERE USR_username LIKE '" . mysql_real_escape_string($username) . "'";
-		$getUserResult = dbQuery($getUserQuery);
-		$userInfo = mysql_fetch_array($getUserResult);
+		$getUserQuery = "SELECT * FROM users WHERE USR_username LIKE '" . databaseEscape($username) . "'";
+		$userResult = databaseQuery($getUserQuery);
+		$userInfo = $userResult->fetch_assoc();
 
 		//If no data was returned, return NULL.
 		if (!$userInfo) {return NULL;}
@@ -113,18 +114,18 @@ class User {
 											USR_verified,
 											USR_tieBreaker,
 											USR_transactionData)
-						 VALUES ('" . mysql_real_escape_string($newUser->getUsername()) . "',
-								'" . mysql_real_escape_string($newUser->getPassword()) . "',
-								'" . mysql_real_escape_string($newUser->getFirstName()) . "',
-								'" . mysql_real_escape_string($newUser->getLastName()) . "',
-								'" . mysql_real_escape_string($newUser->getEmail()) . "',
-								'" . mysql_real_escape_string($newUser->isVerified()) . "',
-								'" . mysql_real_escape_string($newUser->getTieBreaker()) . "',
-								'" . mysql_real_escape_string($newUser->getEncodedTransactionData()) . "')";
-		dbQuery($addUserQuery);
+						 VALUES ('" . databaseEscape($newUser->getUsername()) . "',
+								'" . databaseEscape($newUser->getPassword()) . "',
+								'" . databaseEscape($newUser->getFirstName()) . "',
+								'" . databaseEscape($newUser->getLastName()) . "',
+								'" . databaseEscape($newUser->getEmail()) . "',
+								'" . databaseEscape($newUser->isVerified()) . "',
+								'" . databaseEscape($newUser->getTieBreaker()) . "',
+								'" . databaseEscape($newUser->getEncodedTransactionData()) . "')";
+		databaseQuery($addUserQuery);
 		
 		//Set the id in the User and return it
-		$newUser->setID(mysql_insert_id());
+		$newUser->setID(databaseLastInsertID());
 		return $newUser;
 
 	}
@@ -157,16 +158,16 @@ class User {
 
 		//Update the info in the table
 		$updateUserQuery = "UPDATE users 
-							SET USR_username = '" . mysql_real_escape_string($modifiedUser->getUsername()) . "',
-								USR_password = '" . mysql_real_escape_string($modifiedUser->getPassword()) . "',
-								USR_firstName = '" . mysql_real_escape_string($modifiedUser->getFirstName()) . "',
-								USR_lastName = '" . mysql_real_escape_string($modifiedUser->getLastName()) . "',
-								USR_email = '" . mysql_real_escape_string($modifiedUser->getEmail()) . "',
-								USR_verified = '" . mysql_real_escape_string($modifiedUser->isVerified()) . "',
-								USR_tieBreaker = '" . mysql_real_escape_string($modifiedUser->getTieBreaker()) . "',
-								USR_transactionData = '" . mysql_real_escape_string($modifiedUser->getEncodedTransactionData()) . "'
+							SET USR_username = '" . databaseEscape($modifiedUser->getUsername()) . "',
+								USR_password = '" . databaseEscape($modifiedUser->getPassword()) . "',
+								USR_firstName = '" . databaseEscape($modifiedUser->getFirstName()) . "',
+								USR_lastName = '" . databaseEscape($modifiedUser->getLastName()) . "',
+								USR_email = '" . databaseEscape($modifiedUser->getEmail()) . "',
+								USR_verified = '" . databaseEscape($modifiedUser->isVerified()) . "',
+								USR_tieBreaker = '" . databaseEscape($modifiedUser->getTieBreaker()) . "',
+								USR_transactionData = '" . databaseEscape($modifiedUser->getEncodedTransactionData()) . "'
 							WHERE USR_id = " . $modifiedUser->getID();
-		dbQuery($updateUserQuery);
+		databaseQuery($updateUserQuery);
 		
 		//Return the user
 		return $modifiedUser;
@@ -198,7 +199,7 @@ class User {
 							 SET USR_archived = 1,
 							 	 USR_USR_id = '" . CURUSERID . "'
 							 WHERE USR_id = " . $userID;
-		dbQuery($archiveUserQuery);
+		databaseQuery($archiveUserQuery);
 		
 		//Send the archived user
 		$curUser = User::getUser($userID);
@@ -224,8 +225,8 @@ class User {
 		//Set the login info in the the userLogins table
 		$userLoginDeleteQuery = "DELETE FROM userLogins WHERE LGN_USR_id = " . $userID;
 		$userLoginQuery = "INSERT INTO userLogins (LGN_USR_id) VALUES ('$userID')"; 
-		dbQuery($userLoginDeleteQuery);
-		dbQuery($userLoginQuery);
+		databaseQuery($userLoginDeleteQuery);
+		databaseQuery($userLoginQuery);
 		
 		//Send success if we made it this far
 		return TRUE;
@@ -251,11 +252,11 @@ class User {
 		
 		//Look for the user and password in the database
 		$searchQuery = "SELECT * FROM users
-					    WHERE USR_username LIKE '" . mysql_real_escape_string($username) . "' AND 
-							  USR_password = '" . mysql_real_escape_string($password) . "' AND
+					    WHERE USR_username LIKE '" . databaseEscape($username) . "' AND 
+							  USR_password = '" . databaseEscape($password) . "' AND
 							  USR_archived = 0";
-		$searchResult = dbQuery($searchQuery); 
-		$userInfo = mysql_fetch_array($searchResult);
+		$userResult = databaseQuery($searchQuery);
+		$userInfo = $userResult->fetch_assoc();
 		
 		//If no data was returned, return NULL.
 		if (!$userInfo) {return NULL;}
@@ -288,8 +289,8 @@ class User {
 		//Set the login info in the the userlogins table
 		$userLoginDeleteQuery = "DELETE FROM userlogins WHERE LGN_USR_id = " . $userID;
 		$userLoginQuery = "INSERT INTO userlogins (LGN_USR_id) VALUES ('$userID')"; 
-		dbQuery($userLoginDeleteQuery);
-		dbQuery($userLoginQuery);
+		databaseQuery($userLoginDeleteQuery);
+		databaseQuery($userLoginQuery);
 		
 		//Send success if we made it this far
 		return TRUE;

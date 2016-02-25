@@ -6,22 +6,31 @@
 * @subpackage Pages
 */
 /**
-* File to define all the system paths and the tournament data
+* Define paths to use throughout the system
 */
-require_once('systemDefininitions.php');
+require_once('pathDefinitions.php');
 
 /**
-* File to connect to database
+* Load AWS classes
 */
-require_once(SYSTEMPATH . 'databaseSetup.php');
+require_once(THIRDPARTYPATH . 'aws/aws-autoloader.php');
+
+/**
+* Load AdShotRunner classes
+*/
+require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
+
+/**
+* Connect to the database
+*/
+require_once(RESTRICTEDPATH . 'databaseSetup.php');
 
 /**
 * Function library used to login a user
 */
-require_once(FUNCTIONPATH . 'loginFunctionsLib.php');
+require_once(FUNCTIONPATH . 'loginFunctions.php');
 
-//If the tournament info is not available, send the user to the admin section
-if (!$_TOURNAMENT) {header("Location: " . ADMINURL);}
+use AdShotRunner\Users\User;
 
 //Verify the information passed.
 $passwordResetError = "";

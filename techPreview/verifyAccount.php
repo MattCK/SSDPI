@@ -2,26 +2,35 @@
 /**
 * Attempts to verify an account with the passed information. On success, the user account verified status is set to true.
 *
-* @package bracket
+* @package adshotrunner
 * @subpackage Pages
 */
 /**
-* File to define all the system paths and the tournament data
+* Define paths to use throughout the system
 */
-require_once('systemDefininitions.php');
+require_once('pathDefinitions.php');
 
 /**
-* File to connect to database
+* Load AWS classes
 */
-require_once(SYSTEMPATH . 'databaseSetup.php');
+require_once(THIRDPARTYPATH . 'aws/aws-autoloader.php');
+
+/**
+* Load AdShotRunner classes
+*/
+require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
+
+/**
+* Connect to the database
+*/
+require_once(RESTRICTEDPATH . 'databaseSetup.php');
 
 /**
 * Function library used to login a user
 */
-require_once(FUNCTIONPATH . 'loginFunctionsLib.php');
+require_once(FUNCTIONPATH . 'loginFunctions.php');
 
-//If the tournament info is not available, send the user to the admin section
-if (!$_TOURNAMENT) {header("Location: " . ADMINURL);}
+use AdShotRunner\Users\User;
 
 //Verify the information passed.
 $finalMessage = "";
@@ -40,7 +49,7 @@ else if ($_GET['v'] != md5('ver1f1c@t10n' . $curUser->getUsername() . $curUser->
 else {
 	$curUser->setVerifiedStatus(true);
 	$curUser = User::update($curUser);
-	$finalMessage = "Thank you for verifying your account! You can now log into the 2015 NCAA March Madness Championship Bracket!";
+	$finalMessage = "Thank you for verifying your account! You can now log into the AdShotRunner Tech Preview!";
 }
 
 ?>

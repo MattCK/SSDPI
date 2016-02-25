@@ -1,9 +1,37 @@
 <?PHP 
 
-require_once('class.MySQLDatabase.php');
-require_once('class.MenuGrabber.php');
+//require_once('class.MySQLDatabase.php');
+//require_once('class.MenuGrabber.php');
+/**
+* Define paths to use throughout the system
+*/
+require_once('../pathDefinitions.php');
 
-Class menuGrabberProxy Extends menuGrabber {
+/**
+* Load AWS classes
+*/
+require_once(THIRDPARTYPATH . 'aws/aws-autoloader.php');
+
+/**
+* Load AdShotRunner classes
+*/
+require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
+
+/**
+* Connect to the database
+*/
+require_once(RESTRICTEDPATH . 'databaseSetup.php');
+
+use Aws\Common\Aws;
+
+function getAWSFactory() {
+	return Aws::factory(RESTRICTEDPATH . 'awsFrontendProfile.php');
+}
+
+use AdShotRunner\Menu\MenuGrabber;
+
+
+Class menuGrabberProxyProxy Extends menuGrabberProxy {
 
 	public function getRankedMenusFromURLList($urlList) {
 		
@@ -33,10 +61,10 @@ Class menuGrabberProxy Extends menuGrabber {
 header("Content-Type: text/plain");
 $database = new MySQLDatabase('adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com', 'adshotrunner', 'xbSAb2G92E', 'adshotrunner');
 
-$menuGrabber = new MenuGrabberProxy();
+$menuGrabberProxy = new MenuGrabberProxy();
 
 //$domainArray = array();
-$domainAndTimeArray = $menuGrabber->retrieveDomainListFromDatabase();
+$domainAndTimeArray = $menuGrabberProxy->retrieveDomainListFromDatabase();
 //print_r($domainAndTimeArray);
 asort($domainAndTimeArray);
 //$domainAndTimeArray = array_reverse($domainAndTimeArray);
@@ -50,7 +78,7 @@ $targetDomains = array_slice($domainAndTimeArray,0,  $thirdOfDomainLength);
 //print_r($targetDomains);
 
 $domainArray = array_keys($targetDomains);
-$menuGrabber->InsertDomainsWithMenusFromList($menuGrabber->getRankedMenusFromURLList($domainArray));
+$menuGrabberProxy->InsertDomainsWithMenusFromList($menuGrabberProxy->getRankedMenusFromURLList($domainArray));
 print("Done with the oldest third of the domain list");
 		
 exit();

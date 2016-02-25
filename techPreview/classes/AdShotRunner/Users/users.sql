@@ -33,24 +33,24 @@ CREATE TABLE IF NOT EXISTS `_usershist` (
 --
 -- Triggers `users`
 --
-DROP TRIGGER IF EXISTS `juiciobracket`.`usersInsertHist`;
+DROP TRIGGER IF EXISTS `adshotrunner`.`usersInsertHist`;
 DELIMITER //
-CREATE TRIGGER `juiciobracket`.`usersInsertHist` AFTER INSERT ON `juiciobracket`.`users`
+CREATE TRIGGER `adshotrunner`.`usersInsertHist` AFTER INSERT ON `adshotrunner`.`users`
  FOR EACH ROW INSERT INTO 
  _usershist SELECT * FROM users WHERE USR_id = NEW.USR_id
 //
 DELIMITER ;
-DROP TRIGGER IF EXISTS `juiciobracket`.`usersUpdateVersion`;
+DROP TRIGGER IF EXISTS `adshotrunner`.`usersUpdateVersion`;
 DELIMITER //
-CREATE TRIGGER `juiciobracket`.`usersUpdateVersion` BEFORE UPDATE ON `juiciobracket`.`users`
+CREATE TRIGGER `adshotrunner`.`usersUpdateVersion` BEFORE UPDATE ON `adshotrunner`.`users`
  FOR EACH ROW BEGIN
 	SET NEW.USR_version = OLD.USR_version + 1;
 END
 //
 DELIMITER ;
-DROP TRIGGER IF EXISTS `juiciobracket`.`usersUpdateHist`;
+DROP TRIGGER IF EXISTS `adshotrunner`.`usersUpdateHist`;
 DELIMITER //
-CREATE TRIGGER `juiciobracket`.`usersUpdateHist` AFTER UPDATE ON `juiciobracket`.`users`
+CREATE TRIGGER `adshotrunner`.`usersUpdateHist` AFTER UPDATE ON `adshotrunner`.`users`
  FOR EACH ROW INSERT INTO _usershist SELECT * FROM users WHERE USR_id = NEW.USR_id
 //
 DELIMITER ;

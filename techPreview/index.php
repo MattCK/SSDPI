@@ -1,27 +1,41 @@
 <?PHP
 /**
-* Primary index page of the bracket system. Contains main interface for logging a user into the system or registering a new user.
+* Index page of AdShotRunner system. Contains main interface for logging a user into the system or registering a new user.
 *
-* @package bracket
+* @package AdShotRunner
 * @subpackage Pages
 */
 /**
-* File to define all the system paths and the tournament data
+* File to define all the system paths
 */
-require_once('systemDefininitions.php');
+require_once('pathDefinitions.php');
 
 /**
-* File to connect to database
+* Load AWS classes
 */
-//require_once(SYSTEMPATH . 'databaseSetup.php');
+require_once(THIRDPARTYPATH . 'aws/aws-autoloader.php');
+
+/**
+* Load AdShotRunner classes
+*/
+require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
+
+/**
+* Connect to the database
+*/
+require_once(RESTRICTEDPATH . 'databaseSetup.php');
 
 /**
 * Function library used to login a user
 */
 require_once(FUNCTIONPATH . 'loginFunctions.php');
 
-//If the tournament info is not available, send the user to the admin section
-if (!$_TOURNAMENT) {header("Location: " . ADMINURL); exit;}
+use Aws\Common\Aws;
+
+function getAWSFactory() {
+	return Aws::factory(RESTRICTEDPATH . 'awsFrontendProfile.php');
+}
+
 
 //If the login form was submitted, attempt to login using those credentials.
 $loginError = false;
@@ -39,7 +53,7 @@ if ($_POST['loginSubmit']) {
 	
 	//If the user logged in successfully, go to the main app page.
 	if ($successfullyLoggedIn) {
-		header("Location: bracket.php");
+		header("Location: techPreview.php");
 		exit;
 	}
 	
@@ -119,11 +133,8 @@ else if ($_POST['resetPasswordSubmit']) {
 else {
 	session_start();
 	header("Cache-control: private"); 
-	if (($_SESSION['userID']) && (!$_TOURNAMENT['submissionsClosed'])){
-		header("Location: bracket.php");
-	}
-	else if ($_TOURNAMENT['submissionsClosed']) {
-		header("Location: results.php");
+	if ($_SESSION['userID']){
+		header("Location: techPreview.php");
 	}
 }
 
@@ -149,7 +160,7 @@ $(function() {
 <body>
 	<div align="center">
 		
-		<h1><?PHP echo $_TOURNAMENT['championshipName'];?></h1>
+		<h1>AdShotRunner: Free Tech Preview</h1>
 		
 		<div id="tabsDiv" align="center" style="padding-top: 20px">
 			 <ul>
@@ -222,11 +233,6 @@ $(function() {
 									<input type="submit" name="registerSubmit"  value="register">
 								</td>
 							</tr>
-							<tr>
-								<td colspan="2">
-									<span style="font-size:14px">* First and last name will be used as your display name</span>
-								</td>
-							</tr>
 						</table>
 					</form>
 				</div>
@@ -254,18 +260,7 @@ $(function() {
 					</form>
 				</div>
 			</div>
-		</div>
-		
-		<div style="font-size:24px;padding-top:10px"><a onclick='$( "#explanationDiv" ).dialog( "open" );'>Why such a minimalistic design?</a></div>
-		<div id="explanationDiv" style="display:none">
-			To make the site as intuitive and robust as possible.<br><br>
-			
-			Graphic design takes time - a lot of time. Instead, I focused on
-			creating a secure payment system and simple but understandable interfaces.<br><br>
-			
-			Perhaps in the future a more advanced design will come about, but for now: minimalist.
-		</div>
-		
+		</div>		
 	</div>
 </body>
 </html>

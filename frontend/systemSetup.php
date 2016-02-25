@@ -3,7 +3,7 @@
 * This page setups the system's connection to the database, defines its paths, loads autoloaders, 
 * and verifies/defines session data.
 *
-* @package QDROP
+* @package AdShotRunner
 * @subpackage System
 */
 /**
@@ -25,11 +25,6 @@ require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
 * Connect to the database
 */
 require_once(RESTRICTEDPATH . 'databaseSetup.php');
-
-/**
-* Verify the session is valid and set the session constants
-*/
-//require_once(RESTRICTEDPATH . 'validateSession.php');
 
 use Aws\Common\Aws;
 

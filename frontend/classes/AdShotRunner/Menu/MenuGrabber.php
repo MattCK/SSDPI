@@ -9,7 +9,7 @@
 namespace AdShotRunner\Menu;
 
 use AdShotRunner\Utilities\WebPageCommunicator;
-use AdShotRunner\Database\MySQLDatabase;
+//use AdShotRunner\Database\MySQLDatabase;
 
 /**
 * The Menu Grabber attempts to grab possible menus from a given webpage or webpages.
@@ -45,10 +45,6 @@ class MenuGrabber {
 	private $_menuWeights;
 
 
-
-
-
-
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
@@ -60,10 +56,6 @@ class MenuGrabber {
 		//Retrieve and store the menu label weight information
 		$this->setMenuLabelWeights($this->retrieveMenuLabelWeightsFromDatabase());
 	}
-
-
-
-
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
@@ -176,7 +168,7 @@ class MenuGrabber {
 	*/
 	protected function getRankedMenusFromManyURLs($urls) {
 		
-		//Get the HTML response from the passed URL
+		//Get the HTML responses from the passed URL
 		$URLCommunicator = new WebPageCommunicator();
 		$urlResponses = $URLCommunicator->getManyURLResponses($urls);
 
@@ -332,7 +324,7 @@ class MenuGrabber {
 			databaseQuery("INSERT INTO menuDomains (MND_domain) VALUES ($cleanDomainString)");
 
 			//Get the domain insert ID
-			$domainID = lastInsertID();
+			$domainID = databaseLastInsertID();
 
 			//Loop through the menus, adding each to the database with their items
 			foreach ($domainMenus as $curMenu) {
@@ -342,7 +334,7 @@ class MenuGrabber {
 				databaseQuery("INSERT INTO menus (MNU_MND_id, MNU_score) VALUES ($domainID, $cleanScoreString)");
 
 				//Get the menu insert ID
-				$menuID = lastInsertID();
+				$menuID = databaseLastInsertID();
 
 				//Create the value string of menu items
 				$cleanMenuItems = [];

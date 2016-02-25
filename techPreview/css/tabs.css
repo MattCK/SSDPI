@@ -1,0 +1,29 @@
+#tabsDiv { 
+    padding: 0px; 
+    background: none; 
+    border-width: 0px;
+	width: 600px;
+} 
+#tabsDiv .ui-tabs-nav { 
+    padding-left: 0px; 
+    background: transparent; 
+    border-width: 0px 0px 1px 0px; 
+    -moz-border-radius: 0px; 
+    -webkit-border-radius: 0px; 
+    border-radius: 0px; 
+} 
+#tabsDiv .ui-tabs-panel { 
+    border-width: 0px 1px 1px 1px; 
+}
+
+#leadersBoardTable {
+	border: 1px solid gray;
+}
+
+#leadersBoardTable  .nameCell {
+	text-align: left;
+}
+
+#leadersBoardTable  .scoreCell {
+	text-align: center;
+}

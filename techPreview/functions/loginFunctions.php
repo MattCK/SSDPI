@@ -6,9 +6,11 @@
 * @subpackage Functions
 */
 /**
-* File to include User class
+* 
 */
-require_once(CLASSPATH . 'user.php');
+
+use AdShotRunner\Utilities\EmailClient;
+use AdShotRunner\Users\User;
 
 /**
 * Attempts to log a user into the bracket system with the passed username and password.
@@ -138,13 +140,20 @@ function sendVerificationEmail($username) {
 	//Create the verification code specific for this user.
 	$verificationCode = md5('ver1f1c@t10n' . $curUser->getUsername() . $curUser->getEmail());
 	
-	//Create the email headers/subject/body
-	$subject = "Welcome to the 2015 NCAA March Madness Championship Bracket"; 
-	$header = "From: Championship <donotreply@juiciobrennan.com>\r\n"; 
-	$mailBody = "Thank you for registering for the 2015 NCAA March Madness Championship Bracket. In order to verify your account, please click the following link or copy and paste it into your browser:\n\n";
-	$mailBody .= "http://championship.juiciobrennan.com/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
-	$mailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
-	mail($curUser->getEmail(), $subject, $mailBody, $header); 
+	//Create the email subject
+	$emailSubject = "Welcome to the AdShotRunner Tech Preview!"; 
+
+	//Create the email body
+	$emailBody = "Thank you for registering for the AdShotRunner Tech Preview. In order to verify your account, please click the following link or copy and paste it into your browser:\n\n";
+	$emailBody .= "http://adshotrunnertechbeta.elasticbeanstalk.com/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
+	$emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
+
+	//Set the email addresses
+	$fromEmailAddress = "donotreply@adshotrunner.com";
+	$toEmailAddress = $curUser->getEmail();
+
+	//Send the email
+	EmailClient::sendEmail($fromEmailAddress, $toEmailAddress, $emailSubject, $emailBody);
 	
 	//Return successful.
 	return true;
@@ -169,14 +178,21 @@ function sendPasswordResetEmail($username) {
 	//Create the reset verification code specific for this user.
 	$resetVerificationCode = md5('r3s3TP@55' . $curUser->getUsername() . $curUser->getPassword());
 	
-	//Create the email headers/subject/body
-	$subject = "Password Reset"; 
-	$header = "From: Championship <donotreply@juiciobrennan.com>\r\n"; 
-	$mailBody = "You have requested to reset your password. In order to proceed, please click the following link or copy and paste it into your browser:\n\n";
-	$mailBody .= "http://championship.juiciobrennan.com/resetPassword.php?id=" . $curUser->getID() . "&v=" . $resetVerificationCode;
-	$mailBody .= "\n\nIf you believe you received this email in error, you can simply ignore it.";
-	mail($curUser->getEmail(), $subject, $mailBody, $header); 
-	
+	//Create the email subject
+	$emailSubject = "AdShotRunner Tech Preview: Password Reset"; 
+
+	//Create the email body
+	$emailBody = "You have requested to reset your password. In order to proceed, please click the following link or copy and paste it into your browser:\n\n";
+	$emailBody .= "http://adshotrunnertechbeta.elasticbeanstalk.com/resetPassword.php?id=" . $curUser->getID() . "&v=" . $resetVerificationCode;
+	$emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
+
+	//Set the email addresses
+	$fromEmailAddress = "donotreply@adshotrunner.com";
+	$toEmailAddress = $curUser->getEmail();
+
+	//Send the email
+	EmailClient::sendEmail($fromEmailAddress, $toEmailAddress, $emailSubject, $emailBody);
+
 	//Return successful.
 	return true;
 }

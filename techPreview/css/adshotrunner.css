@@ -1,0 +1,19 @@
+body {
+	margin: 0px;
+}
+
+#infoDiv {
+	float:left; 
+	width:200px;
+	height:100%;
+	border-right: 1px solid black;
+}
+
+#contentDiv {
+	margin-left:200px;
+	height:100%;
+	overflow:scroll;
+}
+
+
+

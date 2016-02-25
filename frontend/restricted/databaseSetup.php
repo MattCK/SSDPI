@@ -15,7 +15,7 @@ $password = 'xbSAb2G92E';
 $database = 'adshotrunner';
 
 //Connect to the server
-$database = new MySQLDatabase($host, $username, $password, $database);
+$asrDatabase = new MySQLDatabase($host, $username, $password, $database);
 
 //The server should be set to GMT, but this confirms it will be by manually setting the environmental variable
 putenv("TZ=GMT");
@@ -28,14 +28,14 @@ putenv("TZ=GMT");
 /**
 * Executes a query on the primary global database and returns the result.
 *
-* @param 	string 	$query 	Query to run on the database stored at the global $database
+* @param 	string 	$query 	Query to run on the database stored at the global $asrDatabase
 * @retval 	mysqli_result  	Result object on success, FALSE on failure
 */
 function databaseQuery($query) {
 
-	global $database;
-	if (!$database) {return NULL;}
-	return $database->query($query);
+	global $asrDatabase;
+	if (!$asrDatabase) {return NULL;}
+	return $asrDatabase->query($query);
 }
 
 /**
@@ -43,11 +43,11 @@ function databaseQuery($query) {
 *
 * @retval 	int  			Last insert ID from database query
 */
-function lastInsertID() {
+function databaseLastInsertID() {
 
-	global $database;
-	if (!$database) {return NULL;}
-	return $database->lastInsertID();
+	global $asrDatabase;
+	if (!$asrDatabase) {return NULL;}
+	return $asrDatabase->lastInsertID();
 }
 
 /**
@@ -58,11 +58,21 @@ function lastInsertID() {
 */
 function databaseEscape($unformattedString) {
 
-	global $database;
-	if (!$database) {return NULL;}
-	return $database->escape($unformattedString);
+	global $asrDatabase;
+	if (!$asrDatabase) {return NULL;}
+	return $asrDatabase->escape($unformattedString);
 }
 
+/**
+* Returns the primary AdShotRunner database object.
+*
+* @retval 	MySQLDatabase  	Global AdShotRunner database object
+*/
+function getASRDatabase() {
+
+	if (!$asrDatabase) {return NULL;}
+	return $asrDatabase;
+}
 
 
 ?>
