@@ -1,0 +1,17 @@
+Name: Targeted to sports and racing lovers 300x250
+Site Name: Centro - 247RealMedia.com 
+Start Date: 11/26/2012 12:00:00 AM
+End Date: 12/9/2012 11:59:00 PM
+Dimensions: 300X250
+
+---
+
+<!-- Standard -->
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=5823742&PluID=0&w=300&h=250&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=5823742&Page=&PluID=0&Pos=5687" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=5823742&Page=&PluID=0&Pos=5687" border=0 width=300 height=250></a>
+</noscript>
+

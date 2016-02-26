@@ -1,0 +1,44 @@
+Placement Details: 
+Placement ID: 5823024 
+Agency: Centro 
+Campaign: REMAX - REMAX070 
+Campaign ID: 211328 
+Site: Centro - Realtor.com 
+Placement Name: RDC Home Search Path Top Medium Rectangle 300x250
+Placement Format Type: In Banner
+Banner Size: 300X250
+Booked Impressions: 1450936 
+Placement Dates:
+11/21/2012 12:00:00 AM - 1/31/2013 11:59:59 PM
+
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=5823024&PluID=0&w=300&h=250&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=5823024&Page=&PluID=0&Pos=9484" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=5823024&Page=&PluID=0&Pos=9484" border=0 width=300 height=250></a>
+</noscript>
+
+====================================================
+Placement Details: 
+Placement ID: 5823030 
+Agency: Centro 
+Campaign: REMAX - REMAX070 
+Campaign ID: 211328 
+Site: Centro - Realtor.com 
+Placement Name: RDC Home Search Path Top Leaderboard 728x90
+Placement Format Type: In Banner
+Banner Size: 728X90
+Booked Impressions: 1450936 
+Placement Dates:
+4/2/2012 12:00:00 AM - 1/31/2013 11:59:59 PM
+
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=5823030&PluID=0&w=728&h=90&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=5823030&Page=&PluID=0&Pos=6104" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=5823030&Page=&PluID=0&Pos=6104" border=0 width=728 height=90></a>
+</noscript>
+
+====================================================

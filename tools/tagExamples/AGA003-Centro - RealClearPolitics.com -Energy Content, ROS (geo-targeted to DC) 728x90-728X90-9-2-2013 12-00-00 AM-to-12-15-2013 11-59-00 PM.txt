@@ -1,0 +1,17 @@
+Name: Energy Content, ROS (geo-targeted to DC) 728x90
+Site Name: Centro - RealClearPolitics.com 
+Start Date: 9/2/2013 12:00:00 AM
+End Date: 12/15/2013 11:59:00 PM
+Dimensions: 728X90
+
+---
+
+<!-- Standard -->
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=6124367&PluID=0&w=728&h=90&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=6124367&Page=&PluID=0&Pos=4507" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=6124367&Page=&PluID=0&Pos=4507" border=0 width=728 height=90></a>
+</noscript>
+

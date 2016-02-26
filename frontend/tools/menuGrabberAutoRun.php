@@ -31,7 +31,7 @@ function getAWSFactory() {
 use AdShotRunner\Menu\MenuGrabber;
 
 
-Class menuGrabberProxyProxy Extends menuGrabberProxy {
+Class menuGrabberProxy Extends menuGrabber {
 
 	public function getRankedMenusFromURLList($urlList) {
 		
@@ -59,7 +59,7 @@ Class menuGrabberProxyProxy Extends menuGrabberProxy {
 }
 
 header("Content-Type: text/plain");
-$database = new MySQLDatabase('adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com', 'adshotrunner', 'xbSAb2G92E', 'adshotrunner');
+//$database = new MySQLDatabase('adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com', 'adshotrunner', 'xbSAb2G92E', 'adshotrunner');
 
 $menuGrabberProxy = new MenuGrabberProxy();
 
