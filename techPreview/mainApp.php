@@ -16,11 +16,12 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 
 ?>
 
+<?PHP include_once(BASEPATH . "header.php");?>
 
 <body>
 	<div id="container">
 		Site Domain: <input id="adSiteDomain" type="text">
-		<input type="button" value"Go!">
+		<input type="button" value="Go!">
 	</div>
 </body>
 </html>

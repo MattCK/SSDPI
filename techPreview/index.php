@@ -53,7 +53,7 @@ if ($_POST['loginSubmit']) {
 	
 	//If the user logged in successfully, go to the main app page.
 	if ($successfullyLoggedIn) {
-		header("Location: techPreview.php");
+		header("Location: mainApp.php");
 		exit;
 	}
 	
@@ -134,7 +134,7 @@ else {
 	session_start();
 	header("Cache-control: private"); 
 	if ($_SESSION['userID']){
-		header("Location: techPreview.php");
+		header("Location: mainApp.php");
 	}
 }
 

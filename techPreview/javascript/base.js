@@ -6,7 +6,7 @@
 */
 
 //Base object for all system functions and variables
-var g = {
+var base = {
 
 	/**
 	* Returns the node in the DOM with the passed ID. Returns NULL on failure.
@@ -353,7 +353,7 @@ var g = {
 		var targetElement = (evt.target) ? evt.target : evt.srcElement;
 		
 		//Insert today's date into the target
-		targetElement.value = g.getTodaysDate();	
+		targetElement.value = base.getTodaysDate();	
 	},
 
 	getTodaysDate: function() {
@@ -475,7 +475,7 @@ var g = {
 			var errorHTML = '<strong>An error has occurred.</strong><br><br>';
 			errorHTML += 'Error: ' + errorThrown + '<br><br>';
 			errorHTML += 'Response: ' + jqXHR.responseText + '<br><br>';
-			g.showMessage(errorHTML);
+			base.showMessage(errorHTML);
 		});	
 	},
 
@@ -513,7 +513,7 @@ var g = {
 					var errorHTML = '<strong>An error has occurred.</strong><br><br>';
 					errorHTML += 'Error: ' + errorThrown + '<br><br>';
 					errorHTML += 'Response: ' + jqXHR.responseText + '<br><br>';
-					g.showMessage(errorHTML);
+					base.showMessage(errorHTML);
 				 });
 			}	
 		};
@@ -568,9 +568,9 @@ var g = {
 	},
 	
 	/**
-	* Turns the passed node into a dialog.
+	* Turns the passed node into a dialobase.
 	*
-	* Returns an object with the member functions 'show' and 'hide' which display or hide the dialog.
+	* Returns an object with the member functions 'show' and 'hide' which display or hide the dialobase.
 	*
 	* @param {String} nodeID				ID of node to turn into dialog
 	* @param {String} title  				Title of dialog
@@ -635,8 +635,8 @@ var g = {
 					<div align="center"> \
 						<div id="messageDiv" style="font-weight:bolder">.</div> \
 						<br> \
-						<input id="messageButtonOne" type="button" value="Continue" onclick="g.messageDialog.close()"> \
-						<input id="messageButtonTwo" type="button" value="Cancel" onclick="g.messageDialog.close()" style="margin-left:50px;"> \
+						<input id="messageButtonOne" type="button" value="Continue" onclick="base.messageDialobase.close()"> \
+						<input id="messageButtonTwo" type="button" value="Cancel" onclick="base.messageDialobase.close()" style="margin-left:50px;"> \
 					</div> \
 				</div>');
 			
@@ -653,7 +653,7 @@ var g = {
 		//Setup the first button
 		this.nodeFromID('messageButtonOne').value = buttonOneLabel;
 		this.nodeFromID('messageButtonOne').onclick = function() {
-			g.messageDialog.close();
+			base.messageDialobase.close();
 			if (buttonOneCallback) {setTimeout(buttonOneCallback, 350);}
 		}
 		
@@ -661,7 +661,7 @@ var g = {
 		if (buttonTwoLabel) {
 			this.nodeFromID('messageButtonTwo').value = buttonTwoLabel;
 			this.nodeFromID('messageButtonTwo').onclick = function() {
-				g.messageDialog.close();
+				base.messageDialobase.close();
 				if (buttonTwoCallback) {setTimeout(buttonTwoCallback, 350);}
 			}
 			this.show('messageButtonTwo');
@@ -671,7 +671,7 @@ var g = {
 		else {this.hide('messageButtonTwo');}
 
 		//Show the panel
-		this.messageDialog.open();
+		this.messageDialobase.open();
 		
 		//Set the focus on the first button
 		this.focus('messageButtonOne');
@@ -697,9 +697,9 @@ var g = {
 					parentCallback(response.data.city, response.data.state);
 				}
 				
-				//If failure, for now do nothing. 
+				//If failure, for now do nothinbase. 
 				else {
-					//g.showMessage(response.message, null, function() {focusAndSelect(response.focus);});
+					//base.showMessage(response.message, null, function() {focusAndSelect(response.focus);});
 				}
 			}
 				

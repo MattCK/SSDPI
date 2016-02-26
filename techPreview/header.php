@@ -11,6 +11,6 @@
 	<link href="<?PHP echo CSSURL;?>tabs.css" rel="stylesheet" type="text/css">
 	<script src="<?PHP echo JAVASCRIPTURL;?>jquery-2.1.4.min.js" language="javascript" type="text/javascript"></script>
 	<script src="<?PHP echo JAVASCRIPTURL;?>jquery-ui-1.11.4.min.js" language="javascript" type="text/javascript"></script>	
-	<script src="<?PHP echo JAVASCRIPTURL;?>asr.js" language="javascript" type="text/javascript"></script>	
+	<script src="<?PHP echo JAVASCRIPTURL;?>base.js" language="javascript" type="text/javascript"></script>	
 </head>
 

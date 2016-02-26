@@ -339,9 +339,11 @@ class MenuGrabber {
 				//Create the value string of menu items
 				$cleanMenuItems = [];
 				foreach ($curMenu['items'] as $curItem) {
-					$cleanMenuItems[] = "($menuID, '" . 
-										  databaseEscape($curItem['label']) . "', '" . 
-										  databaseEscape($curItem['url']) . "')";
+					if (!array_key_exists($curItem, $cleanMenuItems)) {
+						$cleanMenuItems[$curItem] = "($menuID, '" . 
+											  		 databaseEscape($curItem['label']) . "', '" . 
+											  		 databaseEscape($curItem['url']) . "')";
+					}
 				}
 				$cleanMenuItemString = implode(',', $cleanMenuItems);
 
