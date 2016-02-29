@@ -340,7 +340,7 @@ class MenuGrabber {
 				$cleanMenuItems = [];
 				foreach ($curMenu['items'] as $curItem) {
 					if (!array_key_exists($curItem['label'], $cleanMenuItems)) {
-						$cleanMenuItems[] = "($menuID, '" . 
+						$cleanMenuItems[$curItem['label']] = "($menuID, '" . 
 											  		 databaseEscape($curItem['label']) . "', '" . 
 											  		 databaseEscape($curItem['url']) . "')";
 					}

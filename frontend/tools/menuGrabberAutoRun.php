@@ -72,7 +72,7 @@ asort($domainAndTimeArray);
 $domainAndTimeArrayLength = count($domainAndTimeArray);
 //since we'll be grabbing 1/3 of the list every 3 days we need to slice the array
 // the plus one ensures we always get at least 1/3 of the domain list when it doesn't divide evenly
-$thirdOfDomainLength = floor($domainAndTimeArrayLength/200) + 1;
+$thirdOfDomainLength = floor($domainAndTimeArrayLength/3) + 1;
 
 $targetDomains = array_slice($domainAndTimeArray,0,  $thirdOfDomainLength);
 //print_r($targetDomains);
