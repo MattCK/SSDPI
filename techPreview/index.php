@@ -6,24 +6,9 @@
 * @subpackage Pages
 */
 /**
-* File to define all the system paths
+* File to define paths, setup dependencies, and connect to database
 */
-require_once('pathDefinitions.php');
-
-/**
-* Load AWS classes
-*/
-require_once(THIRDPARTYPATH . 'aws/aws-autoloader.php');
-
-/**
-* Load AdShotRunner classes
-*/
-require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
-
-/**
-* Connect to the database
-*/
-require_once(RESTRICTEDPATH . 'databaseSetup.php');
+require_once('systemSetup.php');
 
 /**
 * Function library used to login a user

@@ -9,7 +9,6 @@
 namespace AdShotRunner\Menu;
 
 use AdShotRunner\Utilities\WebPageCommunicator;
-//use AdShotRunner\Database\MySQLDatabase;
 
 /**
 * The Menu Grabber attempts to grab possible menus from a given webpage or webpages.
@@ -62,6 +61,38 @@ class MenuGrabber {
 	//---------------------------------------------------------------------------------------
 	//********************************* Public Methods *************************************
 	/**
+	* Returns the most likely top menu for the passed domain.
+	*
+	* The returned associative array consists of the menu label as the key and URL as value.
+	*
+	* @param 	string 		$domains 	Domain to get best menu for
+	* @retval 	mixed  					Associative array consisting of the menu label as key and URL as value.
+	*/
+	public function getBestDomainMenu($domain) {
+
+		//Get the list of menus
+		$domainMenus = $this->getDomainMenus($domain);
+
+		//If no menus were returned, return an empty array.
+		if (count($domainMenus) == 0) {return [];}
+
+		//Grab the top most menu items
+		$menuList = reset($domainMenus);
+		$topMenu = reset($menuList);
+		$menuItems = $topMenu['items'];
+
+		//Put the top menu items into the final array
+		$bestMenuItems = [];
+		foreach($menuItems as $currentSet) {
+			if ($currentSet['label']) {
+				$bestMenuItems[$currentSet['label']] = $currentSet['url'];
+			}
+		}
+
+		return $bestMenuItems;
+	}
+
+	/**
 	* Returns a list of ranked menus sorted from highest score to lowest.
 	*
 	* The returned array consists for each key of associated arrays with two keys:
@@ -71,9 +102,9 @@ class MenuGrabber {
 	*
 	* The key of the top-most array is the URL string.
 	*
-	* Array[url] -> 'score' => 12
-	*		     -> 'items' => Array -> 'label'
-	*			        			 -> 'url'
+	* Array[url] -> MenuID -> 'score' => 12
+	*		               -> 'items' => Array -> 'label'
+	*			        	  				   -> 'url'
 	*	
 	* On failure, NULL is returned.
 	*
@@ -339,17 +370,15 @@ class MenuGrabber {
 				//Create the value string of menu items
 				$cleanMenuItems = [];
 				foreach ($curMenu['items'] as $curItem) {
-					if (!array_key_exists($curItem['label'], $cleanMenuItems)) {
-						$cleanMenuItems[$curItem['label']] = "($menuID, '" . 
-											  		 databaseEscape($curItem['label']) . "', '" . 
-											  		 databaseEscape($curItem['url']) . "')";
-					}
+					$cleanMenuItems[] = "($menuID, '" . 
+								  		  databaseEscape($curItem['label']) . "', '" . 
+								  		  databaseEscape($curItem['url']) . "')";
 				}
 				$cleanMenuItemString = implode(',', $cleanMenuItems);
 
 				//Insert the items into the database
 				if ($cleanMenuItemString) {
-					databaseQuery("INSERT INTO menuItems (MNI_MNU_id, MNI_label, MNI_url) 
+					databaseQuery("INSERT IGNORE INTO menuItems (MNI_MNU_id, MNI_label, MNI_url) 
 								   VALUES $cleanMenuItemString");
 				}
 			}

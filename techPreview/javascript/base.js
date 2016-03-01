@@ -475,7 +475,8 @@ var base = {
 			var errorHTML = '<strong>An error has occurred.</strong><br><br>';
 			errorHTML += 'Error: ' + errorThrown + '<br><br>';
 			errorHTML += 'Response: ' + jqXHR.responseText + '<br><br>';
-			base.showMessage(errorHTML);
+			alert(errorHTML);
+			//base.showMessage(errorHTML);
 		});	
 	},
 
