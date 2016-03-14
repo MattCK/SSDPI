@@ -1,0 +1,90 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+  <!<link rel="stylesheet" href="styles.css">
+  <style>
+  	#holder { border: 10px dashed #ccc; width: 300px; height: 300px; margin: 20px auto;}
+	#holder.hover { border: 10px dashed #333; }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+</head>
+<body>
+
+  <p>Javascript Tag Reader</p>
+
+  <article>
+  <div id="holder"></div> 
+  <p id="status">File API & FileReader API not supported</p>
+  <p>Drag a text file from your desktop on to the drop zone above to see the browser read the contents of the file - without uploading the file to any servers.</p>
+  </article>
+
+  <script>
+    //alert('Just testing out this JS thing')
+    // modified from http://html5demos.com/file-api
+	var holder = document.getElementById('holder'),
+	    state = document.getElementById('status');
+
+	function  grabHTMLFromText(textBody){
+		//return "Changed It!" + textBody;
+		var scriptRegEx = /<script src\b[^>]*>([\s\S]*?)<\/script>/gmi;
+		//var scriptRegEx = /<script\b[^>]*>(.*?)<\/script>/i;
+		var scriptTags;
+		//var currentMatch;
+		
+		scriptTags = textBody.match(scriptRegEx);
+		//var currentMatchLength = currentMatch.length;
+		//for (var i = 0; i < currentMatchLength; i++) {
+			//alert(i + currentMatch[i]);
+			//scriptTag = scriptTag + currentMatch[i];
+		//}
+		
+		//alert(scriptTag);
+		return scriptTags;
+	}
+
+	if (typeof window.FileReader === 'undefined') {
+	    state.className = 'fail';
+	} else {
+	    state.className = 'success';
+	    state.innerHTML = 'File API & FileReader available';
+	}
+	holder.ondragover = function() {
+	    this.className = 'hover';
+	    return false;
+	};
+	holder.ondragend = function() {
+	    this.className = '';
+	    return false;
+	};
+	holder.ondrop = function(e) {
+	    this.className = '';
+	    e.preventDefault();
+
+	    var file = e.dataTransfer.files[0],
+	        reader = new FileReader();
+	    reader.onload = function(event) {
+	        console.log(event.target);
+	        //holder.innerText = event.target.result;
+	        var scripts = grabHTMLFromText(event.target.result);
+	        var tagHolder = "";
+	        var scriptsArrayLength = scripts.length;
+			for (var i = 0; i < scriptsArrayLength; i++) {
+				//alert(i + currentMatch[i]);
+				tagHolder = tagHolder + "\n" + scripts[i];
+			}
+	        holder.innerText= tagHolder;
+	    };
+	    console.log(file);
+	    reader.readAsText(file);
+
+	    return false;
+	};
+	
+	
+  </script>
+
+
+
+</body>
+</html>

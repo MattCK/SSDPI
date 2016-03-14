@@ -1,0 +1,17 @@
+Name: RON Added Value - Tier 1 - 60x600
+Site Name: Centro - AlcanceMG.com 
+Start Date: 11/7/2012 12:00:00 AM
+End Date: 11/25/2012 11:59:00 PM
+Dimensions: 160X600
+
+---
+
+<!-- Standard -->
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=5823788&PluID=0&w=160&h=600&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=5823788&Page=&PluID=0&Pos=5246" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=5823788&Page=&PluID=0&Pos=5246" border=0 width=160 height=600></a>
+</noscript>
+

@@ -77,8 +77,29 @@ $thirdOfDomainLength = floor($domainAndTimeArrayLength/3) + 1;
 $targetDomains = array_slice($domainAndTimeArray,0,  $thirdOfDomainLength);
 //print_r($targetDomains);
 
-$domainArray = array_keys($targetDomains);
-$menuGrabberProxy->InsertDomainsWithMenusFromList($menuGrabberProxy->getRankedMenusFromURLList($domainArray));
+//loop through these domains 50 at a time so we can see progress being made
+While(!empty($targetDomains)){
+
+	$chunkSize = 50;
+	$currentDomainChunk = array();
+	if(count($targetDomains) > $chunkSize){
+
+		$currentDomainChunk = array_slice($targetDomains,0,$chunkSize);
+		$targetDomains = array_slice($targetDomains, $chunkSize);
+	}
+	else {
+
+		$currentDomainChunk = $targetDomains;
+		$targetDomains = array();
+	}
+
+	$domainArray = array_keys($currentDomainChunk);
+	print("Grabbing menus for " . $chunkSize . " domains. " . (($thirdOfDomainLength-count($targetDomains))/$thirdOfDomainLength) * 100 . "% submitted" . PHP_EOL);
+	$menuGrabberProxy->InsertDomainsWithMenusFromList($menuGrabberProxy->getRankedMenusFromURLList($domainArray));
+
+}
+
+
 print("Done with the oldest third of the domain list");
 		
 exit();

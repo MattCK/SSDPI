@@ -1,0 +1,66 @@
+Placement Details: 
+Placement ID: 5823709 
+Agency: Centro 
+Campaign: Carpet Corner - LIFTKCSCARPETCORNER001 
+Campaign ID: 271938 
+Site: Centro - Affiliate Premium News Network 
+Placement Name: ROS: Geo Targeted: Kansas City DMA 728x90
+Placement Format Type: In Banner
+Banner Size: 728X90
+Booked Impressions: 250000 
+Placement Dates:
+11/23/2012 12:00:00 AM - 12/10/2012 11:59:00 PM
+
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=5823709&PluID=0&w=728&h=90&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=5823709&Page=&PluID=0&Pos=1456" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=5823709&Page=&PluID=0&Pos=1456" border=0 width=728 height=90></a>
+</noscript>
+
+====================================================
+Placement Details: 
+Placement ID: 5823710 
+Agency: Centro 
+Campaign: Carpet Corner - LIFTKCSCARPETCORNER001 
+Campaign ID: 271938 
+Site: Centro - Affiliate Premium News Network 
+Placement Name: ROS: Geo Targeted: Kansas City DMA 300x250
+Placement Format Type: In Banner
+Banner Size: 300X250
+Booked Impressions: 250000 
+Placement Dates:
+11/23/2012 12:00:00 AM - 12/10/2012 11:59:00 PM
+
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=5823710&PluID=0&w=300&h=250&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=5823710&Page=&PluID=0&Pos=376" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=5823710&Page=&PluID=0&Pos=376" border=0 width=300 height=250></a>
+</noscript>
+
+====================================================
+Placement Details: 
+Placement ID: 5823711 
+Agency: Centro 
+Campaign: Carpet Corner - LIFTKCSCARPETCORNER001 
+Campaign ID: 271938 
+Site: Centro - Affiliate Premium News Network 
+Placement Name: ROS: Geo Targeted: Kansas City DMA 160x600
+Placement Format Type: In Banner
+Banner Size: 160X600
+Booked Impressions: 250000 
+Placement Dates:
+11/23/2012 12:00:00 AM - 12/10/2012 11:59:00 PM
+
+<script>
+var gfEbForceStreaming  =  1;
+
+</script><script src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=rsb&c=28&pli=5823711&PluID=0&w=160&h=600&ord=[timestamp]&ucm=true"></script>
+<noscript>
+<a href="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=brd&FlightID=5823711&Page=&PluID=0&Pos=9296" target="_blank"><img src="http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=bsr&FlightID=5823711&Page=&PluID=0&Pos=9296" border=0 width=160 height=600></a>
+</noscript>
+
+====================================================
