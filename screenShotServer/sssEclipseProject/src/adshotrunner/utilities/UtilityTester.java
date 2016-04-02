@@ -7,12 +7,23 @@ public class UtilityTester {
 
 	public static void main(String[] args) {
 		/*try {
-		EmailClient.sendEmail(EmailClient.SCREENSHOTADDRESS, "asr@juiciobrennan.com", "email test", "text body", "html body");
-		System.out.println("Email sent");
+			String[] emailAddresses = {"asr@juiciobrennan.com", "asr2@juiciobrennan.com"};
+			EmailClient.sendEmail(EmailClient.SCREENSHOTADDRESS, "asr@juiciobrennan.com", "email test", "text body", "html body");
+			System.out.println("Email sent");
 		}
 		catch(Exception e) {
 			System.out.println(e);
 		}*/
+		try {
+			FileStorageClient.saveFile(FileStorageClient.TAGIMAGESCONTAINER, "ScreenShot1109332778578.png", "testUpload.png");
+			System.out.println("Image uploaded");
+			FileStorageClient.deleteFile(FileStorageClient.TAGIMAGESCONTAINER, "testUpload.png");
+			System.out.println("Image deleted");
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+
 		/*try {
 			NotificationClient.sendNotice(NotificationClient.FRONTEND, "TESTER", "Message text");
 			System.out.println("Notice sent");
@@ -27,7 +38,7 @@ public class UtilityTester {
 		catch(Exception e) {
 			System.out.println(e);
 		}
-		try {
+		/*try {
 			HashMap<String, String> receivedMessages = MessageQueueClient.getMessages(MessageQueueClient.TAGIMAGEREQUESTS);
 			boolean deletedOne = false;
 			for (Map.Entry<String, String> entry : receivedMessages.entrySet()) {
@@ -43,7 +54,7 @@ public class UtilityTester {
 		}
 		catch(Exception e) {
 			System.out.println(e);
-		}
+		}*/
 	}
 
 }

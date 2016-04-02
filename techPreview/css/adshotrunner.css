@@ -15,5 +15,27 @@ body {
 	overflow:scroll;
 }
 
+#container {
+    position :relative;
+    margin: 0 auto;
+    border: 1px solid black;
+    width:960px;
+    height:600px;
+    overflow:hidden
+}
+#inner {
+    position: relative;
+    width: 1920px; 
+}
+#home {
+    position: absolute;
+    width: 960px;
+    height: 600px;
+}
 
-
+#member-home {
+    position: absolute;
+    left: 960px;
+    width: 960px;
+    height: 600px;
+}

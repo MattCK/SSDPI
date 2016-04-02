@@ -8,11 +8,13 @@
 /**
 * File to setup all the path definitions
 */
-require_once('../systemSetup.php');
+//error_reporting(E_ALL);
+//ini_set('display_errors', 1);
+require_once('systemSetup.php');
 
 use AdShotRunner\Utilities\EmailClient;
 use AdShotRunner\Utilities\NotificationClient;
-
+use AdShotRunner\Utilities\FileStorageClient;
 
 /*for ($i = 0; $i < 10; ++$i) {
 	$response = EmailClient::sendEmail(EmailClient::SCREENSHOTADDRESS, 'juicio@dangerouspenguins.com', 
@@ -25,9 +27,10 @@ use AdShotRunner\Utilities\NotificationClient;
 //$response = sendAdShotRunnerEmail('johann@dangerouspenguins.com', 'jbmk@mailinator.com', 
 //								 'Dangerous Penguins Text Test', 'test text body', 'test html body');
 
-$response = NotificationClient::sendNotice(NotificationClient::FRONTEND, 'Menu Grabber Event Occurred', 'This is the menu grabber event description');
-print_r($response);
-
+//$response = NotificationClient::sendNotice(NotificationClient::FRONTEND, 'Menu Grabber Event Occurred', 'This is the menu grabber event description');
+//print_r($response);
+FileStorageClient::saveFile(FileStorageClient::TAGIMAGESCONTAINER, 'pathDefinitions.php', 'pathDefinitions.txt');
+FileStorageClient::deleteFile(FileStorageClient::TAGIMAGESCONTAINER, 'pathDefinitions.txt');
 
 /**
 * Sends an email through the AdShotRunner system
