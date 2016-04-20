@@ -1,0 +1,147 @@
+<span style="font-size: 16px; font-weight: bold">Tag Text Parser</span><br>
+
+<input type="button" onclick="getAdTags(document.getElementById('scriptTextarea').value)" value="Parse">
+<br>
+Script Text:<br>
+<textarea id="scriptTextarea" rows="10" cols="100"></textarea><br>
+Result: <br>
+<textarea id="scriptResults" rows="10" cols="100"></textarea>
+
+<script>
+
+function getAdTags(adTagText) {
+
+	//Loop through the ad tag text and grab the HTML parts along with their type
+	var adTagRegularExpression = /<(\w*)\b[^>]*>[\s\S]*?<\/\1>/gmi;
+	var textHTMLParts = [];
+	var currentHTMLPart = [];
+	while ((currentHTMLPart = adTagRegularExpression.exec(adTagText)) !== null) {
+
+		//For now, output what was found
+		console.log("Type: " + currentHTMLPart[1]);
+		console.log(currentHTMLPart[0] + '----' + currentHTMLPart[1]);
+
+		//Store the parts named variables for clarity
+		var htmlPart = currentHTMLPart[0];
+		var htmlPartType = currentHTMLPart[1].toLowerCase();
+
+		//If it is an HTML script part, determine if it includes a source
+		var isSourceScript = false;
+		if (htmlPartType == "script") {
+			isSourceScript = scriptHasSource(htmlPart);
+		}		
+
+		//Store the results 
+		textHTMLParts.push({
+			html: htmlPart,
+			type: htmlPartType,
+			isSource: isSourceScript,
+		});
+	}
+
+	//If no parts were found, return an empty array
+	if (textHTMLParts.length == 0) {return [];}
+	
+	//To simplify code below, let's see what HTML tags we are working with
+	var hasHTMLScriptTag, hasHTMLIFrameTag, hasHTMLNoscriptTag, hasHTMLAnchorTag, hasHTMLIMGTag;
+	for (var htmlPartIndex = 0; htmlPartIndex < textHTMLParts.length; ++htmlPartIndex) {
+		switch (textHTMLParts[htmlPartIndex].type) {
+			case 'script': hasHTMLScriptTag = true; break;
+			case 'iframe': hasHTMLIFrameTag = true; break;
+			case 'noscript': hasHTMLNoscriptTag = true; break;
+			case 'a': hasHTMLAnchorTag = true; break;
+			case 'img': hasHTMLIMGTag = true; break;
+		}
+	}
+
+	//Grab the tags depending on what html elements are present
+	var adTags = [];
+
+	//If script tags are present, only return them. If a non-sourced script element appears before a
+	//sourced one, concatenate them together
+	var currentScriptTag = "";
+	for (var htmlPartIndex = 0; htmlPartIndex < textHTMLParts.length; ++htmlPartIndex) {
+
+		//If the set of HTML parts has a script tag, only store script tags
+		if (hasHTMLScriptTag) {
+			if (textHTMLParts[htmlPartIndex].type == 'script') {
+
+				//If it is a script part without a source (generally used to set variables),
+				//simply concatenate it to the existing tag
+				if (!textHTMLParts[htmlPartIndex].isSource) {
+					currentScriptTag += textHTMLParts[htmlPartIndex].html;
+				}
+
+				//Otherwise, concatenate it and store it as a tag then clear the current tag string
+				else {
+					currentScriptTag += textHTMLParts[htmlPartIndex].html;
+					adTags.push(currentScriptTag);
+					currentScriptTag = "";			
+				}
+			}
+		}
+
+		//Otherwise, if it has no script tags but an iframe tag, only store iframe tags
+		else if (hasHTMLIFrameTag) {
+			if (textHTMLParts[htmlPartIndex].type == 'iframe') {
+				adTags.push(textHTMLParts[htmlPartIndex].html);
+			}
+		}
+
+		//Otherwise, if no script or iframe tags but a noscript, only store noscript tags
+		else if (hasHTMLNoscriptTag) {
+			if (textHTMLParts[htmlPartIndex].type == 'noscript') {
+				adTags.push(textHTMLParts[htmlPartIndex].html);
+			}
+		}
+
+		//Otherwise, if no script, iframe, or noscript tags but an anchor, only store anchor tags
+		else if (hasHTMLAnchorTag) {
+			if (textHTMLParts[htmlPartIndex].type == 'a') {
+				adTags.push(textHTMLParts[htmlPartIndex].html);
+			}
+		}
+
+		//Finally, if no other tags but an image, only store image tags
+		else if (hasHTMLAnchorTag) {
+			if (textHTMLParts[htmlPartIndex].type == 'img') {
+				adTags.push(textHTMLParts[htmlPartIndex].html);
+			}
+		}
+
+		//And if no correct tag types are found, simply do nothing
+	}
+
+	//-------------------------------------------------------------------------
+	//----------------- Temp code to display results --------------------------
+	//-------------------------------------------------------------------------
+	var resultsString = "";
+	if (adTags.length > 0) {
+		for (var adTagIndex = 0; adTagIndex < adTags.length; ++ adTagIndex) {
+			resultsString += "Tag " + (adTagIndex + 1) + ": \n\n";
+			resultsString += adTags[adTagIndex];
+			resultsString += "\n\n";
+		}
+		document.getElementById("scriptResults").value = resultsString;
+
+	}
+
+
+	//-------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
+
+	//Return all tags
+	console.log(adTags);
+	return adTags;
+}
+
+function scriptHasSource(scriptHTML) {
+
+	var hasSource = false;
+	if (scriptHTML.toLowerCase().indexOf('src=') > -1) {hasSource = true;}
+	if (scriptHTML.toLowerCase().indexOf('document.write') > -1) {hasSource = true;}
+	return hasSource;
+}
+
+
+</script>
