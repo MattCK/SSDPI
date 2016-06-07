@@ -215,63 +215,6 @@ public class PowerPointXMLGenerator {
         return screenShotAdded;
     }
     private static final String BACKGROUND="<p:bg xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\"><p:bgPr><a:blipFill dpi=\"0\" rotWithShape=\"1\"><a:blip r:embed=\"${rID}\" cstate=\"print\"><a:lum/></a:blip><a:srcRect/><a:stretch><a:fillRect/></a:stretch></a:blipFill><a:effectLst/></p:bgPr></p:bg>";
-    private static final String SAMPLE_PICTURE = 			
-          "<p:pic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\"> "
-            + "<p:nvPicPr>"
-              + "<p:cNvPr id=\"${id1}\" name=\"${name}\" descr=\"${descr}\"/>"
-              + "<p:cNvPicPr>"
-                + "<a:picLocks noChangeAspect=\"1\"/>"
-              + "</p:cNvPicPr>"
-              + "<p:nvPr/>"
-            + "</p:nvPicPr>"
-            + "<p:blipFill>"
-              + "<a:blip r:embed=\"${rEmbedId}\" cstate=\"print\"/>"
-              + "<a:stretch>"
-                + "<a:fillRect/>"
-              + "</a:stretch>"
-            + "</p:blipFill>"
-            + "<p:spPr>"
-              + "<a:xfrm>"
-                + "<a:off x=\"${offx}\" y=\"${offy}\"/>"
-                + "<a:ext cx=\"${extcx}\" cy=\"${extcy}\"/>"
-              + "</a:xfrm>"
-              + "<a:prstGeom prst=\"rect\">"
-                + "<a:avLst/>"
-              + "</a:prstGeom>"
-            + "</p:spPr>"
-          + "</p:pic>";
-        private static String SAMPLE_SHAPE = 
-        "<p:sp   xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\">" +
-        "<p:nvSpPr>" +
-        "<p:cNvPr id=\"34\" name=\"TextShape 1\"/>" +
-        "<p:cNvSpPr txBox=\"1\"/>" +
-        "<p:nvPr/>" +
-        "</p:nvSpPr>" +
-        "<p:spPr>" +
-        "<a:xfrm>" +
-        "<a:off x=\"8890000\" y=\"4953000\"/>" +
-        "<a:ext cx=\"5303520\" cy=\"346680\"/>" +
-        "</a:xfrm>" +
-        "<a:prstGeom prst=\"rect\">" +
-        "<a:avLst/>" +
-        "</a:prstGeom>" +
-        "</p:spPr>" +
-        "<p:txBody>" +
-        "<a:bodyPr bIns=\"45000\" lIns=\"90000\" rIns=\"90000\" tIns=\"45000\" wrap=\"none\"/>" +
-        "<a:p>" +
-        "<a:r>" +
-        "<a:rPr lang=\"en-US\" sz=\"3600\">" +
-        "<a:solidFill>" +
-	"<a:srgbClr val=\"dc2300\"/>" +
-	"</a:solidFill>" +
-	"<a:latin typeface=\"Blackoak Std\"/>" +
-        "</a:rPr>" +
-        "<a:t>TextBox1</a:t>" +
-        "</a:r>" +
-        "<a:endParaRPr/>" +
-        "</a:p>" +
-        "</p:txBody>" +
-        "</p:sp>";
-    
-
+        
+   
 }
