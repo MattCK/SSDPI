@@ -21,20 +21,20 @@ if (!$_POST['tags']) {echo "{}"; return;}
 
 $fileID = uniqid();
 $filePages = [];
-for ($tagIndex = 0; $tagIndex < count($_POST["tags"]); ++$tagIndex) {
+//for ($tagIndex = 0; $tagIndex < count($_POST["tags"]); ++$tagIndex) {
+//	$currentTag = $_POST["tags"][$tagIndex];
+foreach ($_POST['tags'] as $currentID => $currentTag) {
 
-	$currentTag = $_POST["tags"][$tagIndex];
-	$fileName = USERID . "-" . $tagIndex . "-" . $fileID . ".html";
-	$styleString = "<style>body { margin:0px; padding:0px; }</style>";
+	$fileName = USERID . "-" . $currentID . ".html";
+	$styleString = "<style>body { margin: 75px 0 0 425px; padding:0px;}</style>";
 	file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $styleString . $currentTag);
 	FileStorageClient::saveFile(FileStorageClient::TAGPAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
 	unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
-	$filePages[] = $fileName;
+	$filePages[$currentID] = $fileName;
 }
 
 //Create the queue request and add it
-$requestObject = ['id' => $fileID,
-				  'urls' => $filePages];
+$requestObject = $filePages;
 MessageQueueClient::sendMessage(MessageQueueClient::TAGIMAGEREQUESTS, json_encode($requestObject));
 
 

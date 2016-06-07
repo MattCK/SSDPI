@@ -141,6 +141,14 @@ let asr = {
 		//If no tags were passed, do nothing
 		if (!newTags.length) {return;}
 
+		//Generate a unique ID for each tag
+		let tagsByID = {};
+		for (let tagIndex = 0; tagIndex < newTags.length; ++tagIndex) {
+			let newUUID = getUUID();
+			tagsByID[newUUID] = newTags[tagIndex];
+			loadImage("https://s3.amazonaws.com/asr-tagimages/" + newUUID + ".png");
+		}	
+
 		//Create the callback function that will show the table
 		let callback = function(response) {
 			
@@ -158,7 +166,8 @@ let asr = {
 		}
 		
 		//Make the request
-		base.asyncRequest(asr._getTagImagesURL, {tags: newTags}, callback);
+		console.log(tagsByID);
+		base.asyncRequest(asr._getTagImagesURL, {'tags': tagsByID}, callback);
 	},
 
 	storeTagText: function(tagText) {
@@ -173,11 +182,38 @@ let asr = {
 		//Make the request
 		base.asyncRequest(asr._storeTagTextURL, {tagText: tagText}, callback);
 	},
+	
+}
 
 
+function loadImage(imageURL) {
+	console.log("Checking: " + imageURL);
 
+	var img = new Image();
+	img.onload = function() {
+    	console.log("FOUND: " + imageURL);
+        let imagesDiv = base.nodeFromID("loadedImagesDiv");
+        imagesDiv.innerHTML += '<img src="' + imageURL + '" /><br><br>';
+	};
+	img.onerror = function() {
+		setTimeout(function() {
+			loadImage(imageURL);
+		}, 3000);
+	};
 
+	img.src = imageURL; // fires off loading of image
 
+	/*$.get(imageURL)
+    .done(function() { 
+    	console.log("FOUND: " + imageURL);
+        let imagesDiv = base.nodeFromID("loadedImagesDiv");
+        imagesDiv.innerHTML += '<img src="' + imageURL + '" />';
+
+    }).fail(function() { 
+		setTimeout(function() {
+			loadImage(imageURL);
+		}, 3000)
+    });*/
 }
 
 let tagParser = {
@@ -402,6 +438,19 @@ let tagParser = {
 	},
 }
 
+//From: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+function getUUID(){
+    var d = new Date().getTime();
+    if(window.performance && typeof window.performance.now === "function"){
+        d += performance.now(); //use high-precision timer if available
+    }
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
 
 </script>
 
@@ -429,6 +478,7 @@ let tagParser = {
         	<textarea id="tagTextTextbox" rows="10" cols="100"></textarea><br><br>
 			<input id="tagTextTextboxButton" type="button" value="Add Tags">
 			<input type="button" value="Back to Page Selection" onclick="asr.toggleDivs()">
+			<div id="loadedImagesDiv"></div>
         </div>
     </div> 
 </div>

@@ -8,8 +8,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -55,8 +57,8 @@ public class AdShotter {
 	final private static int JAVASCRIPTWAITTIME = 2000;		//in miliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 12000;		//in miliseconds
-	final private static int VIEWWIDTH = 1024;				//in pixels
-	final private static int VIEWHEIGHT = 768;				//in pixels
+	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
+	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
 
 
 	//---------------------------------------------------------------------------------------
@@ -110,6 +112,16 @@ public class AdShotter {
 	 * The inner map is for each tag path with its placement ranking.
 	 */
 	private HashMap<String, Map<String, Integer>> _urlTags;
+	
+	/**
+	 * View width to set the browser. If not specified in constructor, set to DEFAULTVIEWWIDTH.
+	 */
+	private int _browserViewWidth;
+	
+	/**
+	 * View height to set the browser. If not specified in constructor, set to DEFAULTVIEWHEIGHT.
+	 */
+	private int _browserViewHeight;
 
 
 	//---------------------------------------------------------------------------------------
@@ -120,8 +132,16 @@ public class AdShotter {
 	 */
 	public AdShotter() {
 		
+		this(DEFAULTVIEWWIDTH, DEFAULTVIEWHEIGHT);		
+	}
+
+	public AdShotter(int viewWidth, int viewHeight) {
+		
 		_tagDimensions = new HashMap<String, Map<String, Integer>>();
 		_urlTags = new HashMap<String, Map<String, Integer>>();
+		_browserViewWidth = viewWidth;
+		_browserViewHeight = viewHeight;
+		
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -191,7 +211,8 @@ public class AdShotter {
 		return true;
 	}
 	
-	public HashMap<BufferedImage, HashMap<String, String>> getAdShots() {
+	public Map<String, BufferedImage> getAdShots() {
+		//public HashMap<BufferedImage, HashMap<String, String>> getAdShots() {
 		        
 		//Create the final data structure to store ad shots within
 		HashMap<BufferedImage, HashMap<String, String>> adShots = new HashMap<BufferedImage, HashMap<String, String>>();
@@ -207,12 +228,16 @@ public class AdShotter {
 		}
         
         //Loop through each URL, inject the ads, and grab the screenshots
+		Map<String, BufferedImage> finalAdShots = new HashMap<String, BufferedImage>();
         for(Map.Entry<String, Map<String, Integer>> currentURL: _urlTags.entrySet()) {
         	
 			System.out.println(currentURL.getKey() + ":");
 			long startTime = System.nanoTime();
+			Exception adShotException = null;
+			BufferedImage adShotImage = null;
 			
-			Exception adShotException = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());
+			try {adShotImage = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());}
+			catch(Exception e) {adShotException = e;}
         	
 			System.out.print("Exception: ");
 			System.out.println(adShotException);			
@@ -245,19 +270,14 @@ public class AdShotter {
 				//If we were able to get a new working driver, try one more time to get the AdShot
 				System.out.println("Working Driver: " + (webdriverIsConnectedToWindow(firefoxDriver)));
 				if (webdriverIsConnectedToWindow(firefoxDriver)) {
-					adShotException = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());
+					try {adShotImage = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());}
+					catch(Exception e) {adShotException = e;}
 					
 					//On fail, just try to restart the webdriver again
 					System.out.println("Exception and not connected again: " + ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))));
 					if ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))) {
 						
 						//Try to quit the current driver
-						/*System.out.print("Attempting to quit broken driver...");
-						try {firefoxDriver.quit();}
-						catch (Exception e) {
-							System.out.print(e + "...");
-						} //On error, do nothing
-						System.out.println("Done.");*/
 						quitWebdriver(firefoxDriver);
 						
 						//Try to get a new driver
@@ -272,8 +292,16 @@ public class AdShotter {
 			}
 			else if (adShotException != null) {
 				System.out.println("Attempting AdShot again...");
-				adShotException = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());
+				try {adShotImage = takeAdShot(firefoxDriver, currentURL.getKey(), currentURL.getValue());}
+				catch(Exception e) {adShotException = e;}
 			}
+			
+			//If a screenshot was taken without error, keep it to return
+			if ((adShotException == null) && (adShotImage != null)) {
+				finalAdShots.put(currentURL.getKey(), adShotImage);
+			}
+			
+			
         }
 		
     	
@@ -297,7 +325,7 @@ public class AdShotter {
 		}
 		System.out.println("Done.");*/
         
-		return null;
+		return finalAdShots;
 	}
 
 	//******************************** Protected Methods ************************************
@@ -352,12 +380,13 @@ public class AdShotter {
 	 * @param activeSeleniumWebDriver	Selenium web driver to navigate
 	 * @param URL						URL to navigate to and use for AdShot
 	 * @param tags						Tags to attempt to inject into URL page
-	 * @return							True on success and false on failure
+	 * @return							Screenshot of URL with tags injected in JPG format
+	 * @throws AdShotRunnerException 	Error and description if taking the ad screenshot failed
 	 */
-	public Exception takeAdShot(WebDriver activeSeleniumWebDriver, String URL, Map<String,Integer> tags) {
+	private BufferedImage takeAdShot(WebDriver activeSeleniumWebDriver, String URL, Map<String,Integer> tags) throws AdShotRunnerException {
 		
 		//Create an empty Exception to store any errors
-		Exception adShotException = null;
+		AdShotRunnerException adShotException = null;
 		
     	//First, get the AdInjecter javascript with the current tags inserted
 		String adInjecterJS = "";
@@ -416,14 +445,19 @@ public class AdShotter {
 		}
     	
 		//Save the image
-		if (adShotException == null) {
+		/*if (adShotException == null) {
 			try {saveImageAsPNG(screenShotImage, "ScreenShot" + System.nanoTime() + ".png");}
 			catch (Exception e) {
 				adShotException = new AdShotRunnerException("Could not save screenshot", e);
 			}
-		}
+		}*/
 		
-		return adShotException;
+		//I am unsure why I built the error-checking originally using if-thens instead of
+		//try-catchs. In case there was a reason, I am keeping the code as is and throwing
+		//the error here.
+		if (adShotException != null) {throw adShotException;}
+		
+		return screenShotImage;
 	}
 	
 	/**
@@ -444,7 +478,7 @@ public class AdShotter {
 		    			DesiredCapabilities.firefox());
         
         //Set the viewport size and the time to load before sending an error
-        firefoxDriver.manage().window().setSize(new Dimension(VIEWWIDTH,VIEWHEIGHT));
+        firefoxDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));
         firefoxDriver.manage().timeouts().pageLoadTimeout(PAGELOADTIME, TimeUnit.MILLISECONDS);
         
         //Return the initialized remote firefox web driver
@@ -752,22 +786,21 @@ public class AdShotter {
 	
 	private void quitWebdriver(WebDriver activeSeleniumWebDriver) {
 		
-		System.out.print("Webdriver quit...");
+		System.out.print("Quitting web driver...");
     	final WebDriver finalDriver = activeSeleniumWebDriver;
     	TimeLimiter timeoutLimiter = new SimpleTimeLimiter();
 		try {
-		timeoutLimiter.callWithTimeout(new Callable<File>() {
-					    public File call() {
-					    	finalDriver.quit();
-					    	return null;
-					    }
-					  }, 5000, TimeUnit.MILLISECONDS, false); 
+			timeoutLimiter.callWithTimeout(new Callable<File>() {
+						    public File call() {
+						    	finalDriver.quit();
+						    	return null;
+						    }
+						  }, 5000, TimeUnit.MILLISECONDS, false); 
 		}
 		catch (Exception e) {
-			System.out.print(e + "...");
+			System.out.print(e + " - Attemp to quit webdriver timed out");
 		}
-		System.out.println("Done.");
-
+		System.out.println("Done quitting web driver.");
 	}
 
 	//---------------------------------------------------------------------------------------
