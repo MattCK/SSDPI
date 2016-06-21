@@ -2,6 +2,7 @@ package adshotrunner;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Map;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,14 +58,16 @@ public class AdShotTester {
 			testRunner.addTag(currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/filler-728x90-C.jpg", 3);
 		}
 		
-		List<BufferedImage> adShots = testRunner.getAdShots();
-		for(BufferedImage currentAdShot : adShots) {
+		Map<String, BufferedImage> adShots = testRunner.getAdShots();
+		
+		for(BufferedImage currentAdShot : adShots.values()) {
 			System.out.println("Saving a screenshot");
 			try {saveImageAsPNG(currentAdShot, "ScreenShot" + System.nanoTime() + ".png");}
 			catch (Exception e) {
 				System.out.println("Could not save screenshot");
 			}
 		}
+		
 	}
 	
 	public static ArrayList<String> getFillerTags() {

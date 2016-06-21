@@ -32,6 +32,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.firefox.*;
+import org.openqa.selenium.firefox.internal.ProfilesIni;
 
 import adshotrunner.errors.AdShotRunnerException;
 
@@ -50,7 +52,9 @@ public class AdShotter {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
+	final private static String SELENIUMPROFILE = "SeleniumDPI";
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
+	final private static String FirefoxProfilePath = "/home/ec2-user/seleniumdpi";
 	final private static int PAGELOADTIME = 10000;			//in miliseconds
 	final private static int ESCAPEATTEMPTTIME = 2000;		//in miliseconds
 	final private static int ESCAPEPAUSETIME = 100;			//in miliseconds
@@ -472,14 +476,58 @@ public class AdShotter {
 	private WebDriver getSeleniumDriver() throws MalformedURLException {
 		
 		//Attempt to create the actual web driver used to connect to selenium
+		
+        //added by matt to test proxy settings and authentication issues
+		//FirefoxProfile ffProfile = new FirefoxProfile(new File(FirefoxProfilePath));
+		FirefoxProfile ffProfile = new FirefoxProfile();
+        
+		//proxy
+        // Direct = 0, Manual = 1, PAC = 2, AUTODETECT = 4, SYSTEM = 5
+        ffProfile.setPreference("network.proxy.type", 1);
+        ffProfile.setPreference("network.proxy.http", "192.210.148.231");
+        ffProfile.setPreference("network.proxy.http_port", 3128);
+        ffProfile.setPreference("network.proxy.socks_remote_dns", false);
+        
+        //profile data
+        ffProfile.setPreference("app.update.auto", false);
+        ffProfile.setPreference("app.update.enabled", false);
+        ffProfile.setPreference("browser.privatebrowsing.autostart", true);
+        ffProfile.setPreference("browser.shell.checkDefaultBrowser", false);
+        ffProfile.setPreference("browser.tabs.warnOnClose", false);
+        ffProfile.setPreference("privacy.trackingprotection.pbmode.enabled", false);
+        ffProfile.setPreference("extensions.blocklist.enabled", false);
+        //these are to make the screenshots look pretty
+        ffProfile.setPreference("gfx.direct2d.disabled", true);
+        ffProfile.setPreference("layers.acceleration.disabled", true);
+        ffProfile.setPreference("gfx.font_rendering.cleartype_params.cleartype_level", 2);
+        ffProfile.setPreference("gfx.font_rendering.cleartype_params.enhanced_contrast", 2);
+        ffProfile.setPreference("gfx.font_rendering.cleartype_params.gamma", 2);
+        ffProfile.setPreference("gfx.font_rendering.cleartype_params.pixel_structure", 2);
+        ffProfile.setPreference("gfx.font_rendering.cleartype_params.rendering_mode", 2);
+        
+        //install extension
+        String AdMarkerPath = "/home/ec2-user/ffExtensions/adMarker.xpi";
+        
+        try {
+			ffProfile.addExtension(new File(AdMarkerPath));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        //set new firefox profile to be used in selenium
+        DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+        capabilities.setCapability(FirefoxDriver.PROFILE, ffProfile);
+		
 		WebDriver firefoxDriver = null;
         firefoxDriver = new RemoteWebDriver(
 		    			new URL(SELENIUMHUBADDRESS), 
-		    			DesiredCapabilities.firefox());
+		    			capabilities);
         
         //Set the viewport size and the time to load before sending an error
         firefoxDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));
         firefoxDriver.manage().timeouts().pageLoadTimeout(PAGELOADTIME, TimeUnit.MILLISECONDS);
+        
         
         //Return the initialized remote firefox web driver
         return firefoxDriver;
@@ -669,6 +717,7 @@ public class AdShotter {
 						  }, SCREENSHOTTIMEOUT, TimeUnit.MILLISECONDS, false); 
     		}
     		catch (Exception e) {
+    			System.out.println("Error getting screenshot. -" + e.toString() );
     			//Ignore any error and try another attempt (if any are left)
     		}
     		++currentAttempt;
@@ -693,7 +742,8 @@ public class AdShotter {
 		//Get the image from the file and determine the height and width
 		BufferedImage originalImage = ImageIO.read(originalImageFile);
 		int cropHeight = (originalImage.getHeight() < maximumBottom) ? originalImage.getHeight() : maximumBottom;
-		int cropWidth = (originalImage.getWidth() < 1009) ? originalImage.getWidth() : 1009;
+		//mk: changed to DEFAULTVIEWWIDTH from static 1009
+		int cropWidth = (originalImage.getWidth() < DEFAULTVIEWWIDTH) ? originalImage.getWidth() : DEFAULTVIEWWIDTH;
     	BufferedImage croppedImage = originalImage.getSubimage(0, 0, cropWidth, cropHeight);
     	
     	//Make BufferedImage generic so it can be written as png or jpg
