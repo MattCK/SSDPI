@@ -19,28 +19,14 @@ public class RequestResponder {
 			for (Map.Entry<String, String> entry : receivedMessages.entrySet()) {
 				String requestID = "";
 				List<String> requestURLs = new ArrayList<String>();
-				/*try {
-					JSONObject messageObject = new JSONObject(entry.getValue());
-					requestID = messageObject.getString("id");
-	
-					JSONArray urlArray = messageObject.getJSONArray("urls");
-					for (int i = 0; i < urlArray.length(); i++) {
-						requestURLs.add(urlArray.getString(i));
-					}
-
-					System.out.println("ID is: " + requestID);
-					System.out.println("URLS: " + requestURLs);
-					
-					new TagImager(requestID, requestURLs);
-				} catch (Exception e) {}*/
 				
 				System.out.println("before try");
 				try {
 					System.out.println("in try");
 					Gson gson = new Gson();
 					System.out.println("made GSON");
-					Type stringStringMap = new TypeToken<HashMap<String, String>>(){}.getType();
-					Map<String,String> urlsWithIDs = gson.fromJson(entry.getValue(), stringStringMap);
+					Type stringStringMapToken = new TypeToken<HashMap<String, String>>(){}.getType();
+					Map<String,String> urlsWithIDs = gson.fromJson(entry.getValue(), stringStringMapToken);
 					System.out.println("got map");
 					requestURLs = new ArrayList<String>(urlsWithIDs.values());
 					System.out.println("URLS: " + requestURLs);
@@ -53,6 +39,24 @@ public class RequestResponder {
 				
 				MessageQueueClient.deleteMessage(MessageQueueClient.TAGIMAGEREQUESTS, entry.getKey());
 			}
+
+			receivedMessages = MessageQueueClient.getMessages(MessageQueueClient.SCREENSHOTREQUESTS);
+			for (Map.Entry<String, String> entry : receivedMessages.entrySet()) {
+				List<String> requestURLs = new ArrayList<String>();
+				
+				try {
+					ScreenshotRequest request = ScreenshotRequest.fromJSON(entry.getValue());
+					//new TagImager(urlsWithIDs);
+				} catch (Exception e) {System.out.println(e);}
+				
+				
+				System.out.println("Message: " + entry.getValue());
+				
+				MessageQueueClient.deleteMessage(MessageQueueClient.TAGIMAGEREQUESTS, entry.getKey());
+			}
+
+			
+			//Request request = Request.fromJSON(jsonText);
 			
         	try {
 				Thread.sleep(2000);

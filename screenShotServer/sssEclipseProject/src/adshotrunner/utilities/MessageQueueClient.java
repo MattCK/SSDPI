@@ -20,6 +20,7 @@ public class MessageQueueClient {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	final public static String TAGIMAGEREQUESTS = "https://sqs.us-east-1.amazonaws.com/469658404108/TagImageRequests";
+	final public static String SCREENSHOTREQUESTS = "https://sqs.us-east-1.amazonaws.com/469658404108/ScreenShotRequests";
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------

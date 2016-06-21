@@ -36,11 +36,15 @@ let asr = {
 	_getMenuURL: 'getMenu.php',
 	_storeTagTextURL: 'storeTagText.php',
 	_getTagImagesURL: 'getTagImages.php',
+	_requestScreenshotsURL: 'requestScreenshots.php',
 	_menuItems: [],
 	_menuOptions: "",
 	_rowIndex: 0,
 
 	getMenu: function() {
+
+		//Remove the http/https from the domain if present
+		base.nodeFromID('adSiteDomain').value = base.nodeFromID('adSiteDomain').value.replace(/^https?\:\/\//i, "");
 
 		//Create the callback function that will show the table
 		let callback = function(response) {
@@ -84,8 +88,8 @@ let asr = {
 
 		newRow.id = "pageRow" + asr._rowIndex;
 
-		rowCells = "<td><select name='pageMenuItem[" + asr._rowIndex + "]'>" + asr._menuOptions + "</select></td>";
-		rowCells += "<td><select name='pageStoryType[" + asr._rowIndex + "]'><option value='front'>Front Page</option><option value='find'>Find me a story</option></select></td>";
+		rowCells = "<td><select name='pages[" + asr._rowIndex + "]'>" + asr._menuOptions + "</select></td>";
+		rowCells += "<td><select name='findStory[" + asr._rowIndex + "]'><option value=0>Front Page</option><option value=1>Find me a story</option></select></td>";
 		rowCells += "<td><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Take screenshot without inserting tags</td>";
 		rowCells += "<td><input type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
@@ -103,7 +107,7 @@ let asr = {
 		newRow.id = "pageRow" + asr._rowIndex;
 
 		rowCells = "<td>Page URL: </td>";
-		rowCells += "<td><input type='text' name='pageURL[" + asr._rowIndex + "]'></td>";
+		rowCells += "<td><input type='text' name='pages[" + asr._rowIndex + "]'></td>";
 		rowCells += "<td><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Take screenshot without inserting tags</td>";
 		rowCells += "<td><input type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
@@ -146,7 +150,12 @@ let asr = {
 		for (let tagIndex = 0; tagIndex < newTags.length; ++tagIndex) {
 			let newUUID = getUUID();
 			tagsByID[newUUID] = newTags[tagIndex];
-			loadImage("https://s3.amazonaws.com/asr-tagimages/" + newUUID + ".png");
+
+		    let $li = $("<li class='ui-state-default' id='tagLI" + newUUID + "' />").text('Queued...');
+		    $("#sortable").append($li);
+		    $("#sortable").sortable('refresh');
+
+			loadImage("https://s3.amazonaws.com/asr-tagimages/" + newUUID + ".png", "tagLI" + newUUID);
 		}	
 
 		//Create the callback function that will show the table
@@ -170,6 +179,43 @@ let asr = {
 		base.asyncRequest(asr._getTagImagesURL, {'tags': tagsByID}, callback);
 	},
 
+	requestScreenshots: function() {
+
+		//Generate a unique ID for the screenshots
+		let jobID = getUUID();
+
+		//Create the header of images in proper sort order
+		let tagHeader = "";
+		let sortedIDList = $("#sortable").sortable('toArray');
+		for (let sortedIndex = 0; sortedIndex < sortedIDList.length; ++sortedIndex) {
+
+			//Remove the http/https from the image src if present
+			let currentImage = $("#" + sortedIDList[sortedIndex] + " img").attr('src').replace(/^https?\:\/\//i, "");
+
+			//Add the tag image to the final header string
+			tagHeader += "tagImages[" + sortedIndex + "]=" + currentImage + "&";
+		}
+
+		//Create the callback function that will show the table
+		let callback = function(response) {
+			
+			//If successful, clear and hide the plan form, show the new table, and highlight the new table row
+			if (response.success) {
+				
+				//Store the menu items and create the menu options
+				console.log(response.data);
+			}
+						
+			//If failure, show us the message returned from the server and focus on the selected element if returned. Also, re-enable the submit button.
+			else {
+				console.log(response.data);
+			}
+		}
+		
+		//Make the request
+		base.asyncRequest(asr._requestScreenshotsURL, 'jobID=' + jobID + '&' + tagHeader + '&' + base.serializeForm('pagesForm'), callback);
+	},
+
 	storeTagText: function(tagText) {
 
 		//Create the callback function that will show the table
@@ -186,35 +232,45 @@ let asr = {
 }
 
 
-function loadImage(imageURL) {
+function loadImage(imageURL, tagLIID) {
 	console.log("Checking: " + imageURL);
 
-	var img = new Image();
+	let img = new Image();
 	img.onload = function() {
     	console.log("FOUND: " + imageURL);
         let imagesDiv = base.nodeFromID("loadedImagesDiv");
-        imagesDiv.innerHTML += '<img src="' + imageURL + '" /><br><br>';
+        //imagesDiv.innerHTML += '<img src="' + imageURL + '" /><br><br>';
+
+        $("#" + tagLIID).html('<img rowTag="" style="max-height: 120px;" src="' + imageURL + '" />');
+        //console.log($("#" + tagLIID + " img").attr('src'));
+
 	};
 	img.onerror = function() {
 		setTimeout(function() {
-			loadImage(imageURL);
+			loadImage(imageURL, tagLIID);
 		}, 3000);
 	};
 
 	img.src = imageURL; // fires off loading of image
 
-	/*$.get(imageURL)
-    .done(function() { 
-    	console.log("FOUND: " + imageURL);
-        let imagesDiv = base.nodeFromID("loadedImagesDiv");
-        imagesDiv.innerHTML += '<img src="' + imageURL + '" />';
-
-    }).fail(function() { 
-		setTimeout(function() {
-			loadImage(imageURL);
-		}, 3000)
-    });*/
 }
+
+$.fn.serializeObject = function()
+{
+    let o = {};
+    let a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
 
 let tagParser = {
 
@@ -395,7 +451,7 @@ let tagParser = {
 				if (entries.length) {
 
 					//Loop through each entry and try to read it as text
-					for (var i = 0, entry; entry = entries[i]; i++) {
+					for (let i = 0, entry; entry = entries[i]; i++) {
 
 						//Get and store entry content as text
 						entry.getData(new zip.TextWriter(), function(text) {
@@ -440,12 +496,12 @@ let tagParser = {
 
 //From: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 function getUUID(){
-    var d = new Date().getTime();
+    let d = new Date().getTime();
     if(window.performance && typeof window.performance.now === "function"){
         d += performance.now(); //use high-precision timer if available
     }
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = (d + Math.random()*16)%16 | 0;
+    let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        let r = (d + Math.random()*16)%16 | 0;
         d = Math.floor(d/16);
         return (c=='x' ? r : (r&0x3|0x8)).toString(16);
     });
@@ -458,18 +514,20 @@ function getUUID(){
 <div id="container">
     <div id="inner">
         <div id="home">
-			<div id="domainInputDiv">
-				Site Domain: <input id="adSiteDomain" type="text">
-				<input type="button" value="Go!" onclick="asr.getMenu()">
-				<input id="addTagsButton" type="button" value="Skip" onclick="asr.toggleDivs()">
-			</div>
-			<div id="domainNameDiv"></div>
-			<div id="pagesTableDiv" style="display: none;">
-				<input type="button" value="Add page" onclick="asr.addPageRow()">
-				<input type="button" value="Add URL" onclick="asr.addURLRow()"><br>
-				<table id="pagesTable"></table><br><br>
-				<input id="addTagsButton" type="button" value="Add Tags" onclick="asr.toggleDivs()" disabled>
-			</div>
+        	<form id="pagesForm">
+				<div id="domainInputDiv">
+					Site Domain: <input id="adSiteDomain" type="text">
+					<input type="button" value="Go!" onclick="asr.getMenu()">
+					<input id="skipButton" type="button" value="Skip" onclick="asr.toggleDivs()">
+				</div>
+				<div id="domainNameDiv"></div>
+				<div id="pagesTableDiv" style="display: none;">
+					<input type="button" value="Add page" onclick="asr.addPageRow()">
+					<input type="button" value="Add URL" onclick="asr.addURLRow()"><br>
+					<table id="pagesTable"></table><br><br>
+					<input id="addTagsButton" type="button" value="Add Tags" onclick="asr.toggleDivs()" disabled>
+				</div>
+			</form>
         </div>
         <div id="member-home">
 			<div id="textFileDropZone" class="dropBox">Drop Text File(s)</div>
@@ -479,6 +537,9 @@ function getUUID(){
 			<input id="tagTextTextboxButton" type="button" value="Add Tags">
 			<input type="button" value="Back to Page Selection" onclick="asr.toggleDivs()">
 			<div id="loadedImagesDiv"></div>
+			<ul id="sortable"></ul>
+			<br>
+			<input type="button" value="Make screenshots" onclick="asr.requestScreenshots()">
         </div>
     </div> 
 </div>
@@ -495,5 +556,26 @@ zipFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
 zipFileDropZone.addEventListener('drop', tagParser.handleZipFileDrop, false);
 let tagTextTextboxButton = base.nodeFromID("tagTextTextboxButton");
 tagTextTextboxButton.addEventListener('click', tagParser.handleTextboxInput, false);
+$(function() {
+	$( "#sortable" ).sortable();
+	$( "#sortable" ).disableSelection();
+
+	$( document ).tooltip({
+		items: "img, [data-geo], [title]",
+		content: function() {
+			let element = $( this );
+			/*if ( element.is( "[data-geo]" ) ) {
+				let text = element.text();
+				return "<img class='map' alt='" + text +
+				"' src='http://maps.google.com/maps/api/staticmap?" +
+				"zoom=11&size=350x350&maptype=terrain&sensor=false&center=" +
+				text + "'>";
+			}*/
+			if ( element.is( "[rowTag]" ) ) {
+				return "<img src='" + element.attr( "src" ) + "'/>";
+			}
+		}
+	});
+});
 
 </script>

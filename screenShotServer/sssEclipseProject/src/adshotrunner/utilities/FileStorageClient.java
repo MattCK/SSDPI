@@ -18,6 +18,9 @@ public class FileStorageClient {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	final public static String TAGIMAGESCONTAINER = "asr-tagimages";
+	final public static String TAGTEXTSCONTAINER = "asr-tagtexts";
+	final public static String TAGPAGESCONTAINER = "asr-tagpages";
+	final public static String SCREENSHOTSCONTAINER = "asr-screenshots";
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------

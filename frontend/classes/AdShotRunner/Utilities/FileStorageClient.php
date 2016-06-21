@@ -19,6 +19,7 @@ class FileStorageClient {
 	const TAGIMAGESCONTAINER = "asr-tagimages";
 	const TAGTEXTSCONTAINER = "asr-tagtexts";
 	const TAGPAGESCONTAINER = "asr-tagpages";
+	const SCREENSHOTSCONTAINER = "asr-screenshots";
 
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------

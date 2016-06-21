@@ -17,6 +17,7 @@ class MessageQueueClient {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	const TAGIMAGEREQUESTS = 'https://sqs.us-east-1.amazonaws.com/469658404108/TagImageRequests';
+	const SCREENSHOTREQUESTS = 'https://sqs.us-east-1.amazonaws.com/469658404108/ScreenShotRequests';
 	
 
 	//--------------------------------------------------------------------------------------

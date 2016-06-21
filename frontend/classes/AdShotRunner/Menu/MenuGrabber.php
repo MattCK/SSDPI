@@ -116,6 +116,11 @@ class MenuGrabber {
 		//If necessary, make the passed variable an array
 		if (!is_array($domains)) {$domains = [$domains];}
 
+		//Remove any http/https from the domains
+		foreach ($domains as $curKey => $rawDomain) {
+			$domains[$curKey] = preg_replace('#^https?://#', '', $rawDomain);
+		}
+
 		//Check the database to see if the menus exist there
 		$databaseDomainMenus = $this->retrieveManyDomainMenusFromDatabase($domains);
 
@@ -370,9 +375,25 @@ class MenuGrabber {
 				//Create the value string of menu items
 				$cleanMenuItems = [];
 				foreach ($curMenu['items'] as $curItem) {
+
+					//Either remove the http/https or add the domain to the menu item URL
+					$curURL = $curItem['url'];
+					if (substr($curURL, 0, 4) == "http") {
+						$curURL = preg_replace('#^https?://#', '', $curURL);
+					}
+
+					//Some sites put a double slash before the subdomain
+					else if (substr($curURL, 0, 2) == "//") {
+						$curURL = substr($curURL, 2);
+					}
+					else {
+						if (substr($curURL, 0, 1) != "/") {$curURL = "/" . $curURL;}
+						$curURL = $curDomain . $curURL;
+					}
+
 					$cleanMenuItems[] = "($menuID, '" . 
 								  		  databaseEscape($curItem['label']) . "', '" . 
-								  		  databaseEscape($curItem['url']) . "')";
+								  		  databaseEscape($curURL) . "')";
 				}
 				$cleanMenuItemString = implode(',', $cleanMenuItems);
 

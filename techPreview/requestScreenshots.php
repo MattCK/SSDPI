@@ -1,6 +1,6 @@
 <?PHP
 /**
-* Stores a tag text
+* Requests screenshots
 *
 * @package AdShotRunner
 */
@@ -17,27 +17,35 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 use AdShotRunner\Utilities\FileStorageClient;
 use AdShotRunner\Utilities\MessageQueueClient;
 
-if (!$_POST['tags']) {echo "{}"; return;}
-
-$filePages = [];
-foreach ($_POST['tags'] as $currentID => $currentTag) {
-
-	$fileName = USERID . "-" . $currentID . ".html";
-	$styleString = "<style>body { margin: 75px 0 0 425px; padding:0px;}</style>";
-	file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $styleString . $currentTag);
-	FileStorageClient::saveFile(FileStorageClient::TAGPAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
-	unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
-	$filePages[$currentID] = $fileName;
+if (!$_POST['jobID']) {
+	echo createJSONResponse(false, "No Job ID passed.");
 }
 
-//Create the queue request and add it
-$requestObject = $filePages;
-MessageQueueClient::sendMessage(MessageQueueClient::TAGIMAGEREQUESTS, json_encode($requestObject));
+if (!$_POST['tagImages']) {
+	echo createJSONResponse(false, "No tags passed.");
+}
 
+if (!$_POST['pages']) {
+	echo createJSONResponse(false, "No pages passed.");
+}
 
-echo "{}"; return;
+//Create the final object of data to turn into JSON
+$screenshotRequestObject = ['jobID' => $_POST['jobID'], 
+							'tagImages' => $_POST['tagImages'],
+							'pages' => []];
 
-//echo createJSONResponse(true, "Menu not found.", array());
+//Add the pages to the final request object
+foreach ($_POST['pages'] as $currentID => $currentPage) {
+	$pageInfo = ['url' => $currentPage];
+	$pageInfo['findStory'] = ($_POST['findStory'][$currentID] && ($_POST['findStory'][$currentID] == 1)) ? 1 : 0;
+	$pageInfo['onlyScreenshot'] = ($_POST['onlyScreenshot'][$currentID]) ? 1 : 0;
+	$screenshotRequestObject['pages'][] = $pageInfo;
+}
+
+//Create the queue request
+MessageQueueClient::sendMessage(MessageQueueClient::SCREENSHOTREQUESTS, json_encode($screenshotRequestObject));
+
+echo json_encode($screenshotRequestObject); return;
 
 /**
 * Creates a standard JSON response object to return to the client.
