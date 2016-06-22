@@ -63,7 +63,7 @@ public class CampaignPowerPointGenerator {
 		CampaignPowerPoint.setBackgroundOfFirstSlide(PathToBackgroundImage);
 		
 	}
-	public boolean AddScreenshotSlide(String ScreenshotURL, String ScreenshotPath){
+	public boolean AddScreenshotSlide(String ScreenshotURL, BufferedImage ScreenshotImage){
 		//add the new slide and insert the title and screenshot
 		CampaignPowerPoint.addnewslide();
 		TextBoxDetails textTitle = new TextBoxDetails();
@@ -80,35 +80,25 @@ public class CampaignPowerPointGenerator {
 		CampaignPowerPoint.setBackgroundOfCurrentSlide();
 		//now add the screenshot
 		//get screenshot dimensions
-		BufferedImage tagImage = null;
-		try {
-			this.dbgmsg("About to set the url to the path");
-			URL tagURL = new URL("file:///" + ScreenshotPath);
-			this.dbgmsg("About to set read image");
-			tagImage = ImageIO.read(tagURL);
-			//Get the image's width and height
-			this.dbgmsg("About to set get width ahd height");
-			int ScreenshotWidth = tagImage.getWidth();
-			int ScreenshotHeight = tagImage.getHeight();
-			this.dbgmsg("About to add to the slide");
-			this.dbgmsg("image width: " + Integer.toString(ScreenshotWidth));
-			this.dbgmsg("image height: " + Integer.toString(ScreenshotHeight));
-			int TopLeftAndResolution[];
-			TopLeftAndResolution = this.CalculatePositionAndSizeOfScreenshot(ScreenshotWidth, ScreenshotHeight, this.AspectRatio);
-			
-			this.dbgmsg("Left: " + Integer.toString(TopLeftAndResolution[0]));
-			this.dbgmsg("Top: " + Integer.toString(TopLeftAndResolution[1]));
-			this.dbgmsg("wide: " + Integer.toString(TopLeftAndResolution[2]) + " - Converted : " + (TopLeftAndResolution[2] * 9525));
-			this.dbgmsg("height: " + Integer.toString(TopLeftAndResolution[3])+ " - Converted : " + (TopLeftAndResolution[3] * 9525));
-			
-			CampaignPowerPoint.addScreenShotToCurrentSlide(ScreenshotPath, TopLeftAndResolution[0], TopLeftAndResolution[1], TopLeftAndResolution[3], TopLeftAndResolution[2]);
-			//CampaignPowerPoint.addScreenShotToCurrentSlide(ScreenshotPath, 80, 50, ScreenshotWidth, ScreenshotHeight);
-		}
-        catch (IOException e) {
-        	//Add before production
-        	this.dbgmsg("IO Exception on the screenshot");
-        	return false;
-        }
+
+		//Get the image's width and height
+		this.dbgmsg("About to set get width and height");
+		int ScreenshotWidth = ScreenshotImage.getWidth();
+		int ScreenshotHeight = ScreenshotImage.getHeight();
+		this.dbgmsg("About to add to the slide");
+		this.dbgmsg("image width: " + Integer.toString(ScreenshotWidth));
+		this.dbgmsg("image height: " + Integer.toString(ScreenshotHeight));
+		int TopLeftAndResolution[];
+		TopLeftAndResolution = this.CalculatePositionAndSizeOfScreenshot(ScreenshotWidth, ScreenshotHeight, this.AspectRatio);
+		
+		this.dbgmsg("Left: " + Integer.toString(TopLeftAndResolution[0]));
+		this.dbgmsg("Top: " + Integer.toString(TopLeftAndResolution[1]));
+		this.dbgmsg("width: " + Integer.toString(TopLeftAndResolution[2]) + " - Converted : " + (TopLeftAndResolution[2] * 9525));
+		this.dbgmsg("height: " + Integer.toString(TopLeftAndResolution[3])+ " - Converted : " + (TopLeftAndResolution[3] * 9525));
+		
+		CampaignPowerPoint.addScreenShotToCurrentSlide(ScreenshotImage, TopLeftAndResolution[0], TopLeftAndResolution[1], TopLeftAndResolution[3], TopLeftAndResolution[2]);
+		//CampaignPowerPoint.addScreenShotToCurrentSlide(ScreenshotPath, 80, 50, ScreenshotWidth, ScreenshotHeight);
+
 		return true;
 	}
 	public void SaveCampaignPowerPoint(String OutputFilePath){

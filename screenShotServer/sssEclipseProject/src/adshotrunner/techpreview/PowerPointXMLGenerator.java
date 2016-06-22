@@ -6,12 +6,20 @@
 
 package adshotrunner.techpreview;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 /**
  *
  * @author matt
  */
 import java.io.File;
 import javax.xml.bind.JAXBException;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
 
 //import org.apache.log4j.Logger;
 import org.slf4j.Logger;
@@ -185,12 +193,32 @@ public class PowerPointXMLGenerator {
         }
         return textBoxAdded;
     }
-    public boolean addScreenShotToCurrentSlide(String filePath, int x, int y, int height, int width)
+    // this expects a png as input
+    public boolean addScreenShotToCurrentSlide(BufferedImage ScreenshotImg, int x, int y, int height, int width)
     {
         boolean screenShotAdded = false;
+        
+        //byte[] ScreenshotBytes = ((DataBufferByte) ScreenshotImg.getData().getDataBuffer()).getData();
+        ByteArrayOutputStream ScreenshotBuffer = null;
+        try {
+        	ScreenshotBuffer = new ByteArrayOutputStream();
+            try {
+				ImageIO.write(ScreenshotImg, "png", ScreenshotBuffer);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        } finally {
+            try {
+            	
+            	ScreenshotBuffer.close();
+            } catch (Exception e) {
+            }
+        }
+        byte[] ScreenshotBytes = ScreenshotBuffer.toByteArray();
+
         try{
-        File picFile = new File(filePath);
-        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(presentationPackage, currentSlide, picFile);
+        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(presentationPackage, currentSlide, ScreenshotBytes);
         this.dbgmsg("After creatingImagePart");
         PictureDetails picture1 = new PictureDetails();
         picture1.relationshipID = imagePart.getSourceRelationship().getId();
