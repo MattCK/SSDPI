@@ -18,15 +18,15 @@ use AdShotRunner\Utilities\FileStorageClient;
 use AdShotRunner\Utilities\MessageQueueClient;
 
 if (!$_POST['jobID']) {
-	echo createJSONResponse(false, "No Job ID passed.");
+	echo createJSONResponse(false, "No Job ID passed."); return;
 }
 
 if (!$_POST['tagImages']) {
-	echo createJSONResponse(false, "No tags passed.");
+	echo createJSONResponse(false, "No tags passed."); return;
 }
 
 if (!$_POST['pages']) {
-	echo createJSONResponse(false, "No pages passed.");
+	echo createJSONResponse(false, "No pages passed."); return;
 }
 
 //Create the final object of data to turn into JSON
@@ -45,8 +45,13 @@ foreach ($_POST['pages'] as $currentID => $currentPage) {
 //Create the queue request
 MessageQueueClient::sendMessage(MessageQueueClient::SCREENSHOTREQUESTS, json_encode($screenshotRequestObject));
 
-echo json_encode($screenshotRequestObject); return;
+//Store the job status
+$jobStatus = ['jobID' => $_POST['jobID'], 
+			  'queued' => true];
+file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $_POST['jobID'], json_encode($jobStatus));
+FileStorageClient::saveFile(FileStorageClient::CAMPAIGNJOBS, RESTRICTEDPATH . 'temporaryFiles/' . $_POST['jobID'], $_POST['jobID']);
 
+echo createJSONResponse(true, "", json_encode($screenshotRequestObject)); return;
 /**
 * Creates a standard JSON response object to return to the client.
 *

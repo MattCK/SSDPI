@@ -54,7 +54,7 @@ public class AdShotter {
 	final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
 	final private static String SELENIUMPROFILE = "SeleniumDPI";
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
-	final private static String FirefoxProfilePath = "/home/ec2-user/seleniumdpi";
+	final private static String FIREFOXPROFILEFATH = "/home/ec2-user/seleniumdpi";
 	final private static int PAGELOADTIME = 10000;			//in miliseconds
 	final private static int ESCAPEATTEMPTTIME = 2000;		//in miliseconds
 	final private static int ESCAPEPAUSETIME = 100;			//in miliseconds
@@ -251,7 +251,7 @@ public class AdShotter {
 			System.out.println((endTime - startTime)/1000000 + " ms");
 			
 			//If there was an error and we are not connected to a window, reconnect and try one more time.
-			System.out.println("Exception and not connected: " + ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))));
+			//System.out.println("Exception and not connected: " + ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))));
 			if ((adShotException != null) && (!webdriverIsConnectedToWindow(firefoxDriver))) {
 				
 				//Try to quit the current driver
@@ -478,7 +478,7 @@ public class AdShotter {
 		//Attempt to create the actual web driver used to connect to selenium
 		
         //added by matt to test proxy settings and authentication issues
-		//FirefoxProfile ffProfile = new FirefoxProfile(new File(FirefoxProfilePath));
+		//FirefoxProfile ffProfile = new FirefoxProfile(new File(FIREFOXPROFILEFATH));
 		FirefoxProfile ffProfile = new FirefoxProfile();
         
 		//proxy
@@ -648,7 +648,7 @@ public class AdShotter {
         	
         	//Get the tag's dimensions
         	Map<String, Integer> currentDimensions = _tagDimensions.get(currentTag.getKey());
-        	
+
         	//build the current tag object and add it to overall object
         	tagsString +=  "{tag: '" + currentTag.getKey() + "', " +
 							"placement: " + currentTag.getValue() + ", " +

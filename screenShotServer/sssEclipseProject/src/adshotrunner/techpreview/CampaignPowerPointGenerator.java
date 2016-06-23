@@ -15,7 +15,7 @@ public class CampaignPowerPointGenerator {
 	//private String Name;
 	private PowerPointXMLGenerator CampaignPowerPoint;
 	
-    private boolean debug = true;
+    private boolean debug = false;
     private String AspectRatio;
     private void dbgmsg(String Msg)
     {

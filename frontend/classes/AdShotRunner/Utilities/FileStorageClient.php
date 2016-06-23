@@ -16,10 +16,12 @@ class FileStorageClient {
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
+	const CAMPAIGNJOBS = "asr-campaignjobs";
+	const POWERPOINTS = "asr-powerpoints";
+	const SCREENSHOTSCONTAINER = "asr-screenshots";
 	const TAGIMAGESCONTAINER = "asr-tagimages";
 	const TAGTEXTSCONTAINER = "asr-tagtexts";
 	const TAGPAGESCONTAINER = "asr-tagpages";
-	const SCREENSHOTSCONTAINER = "asr-screenshots";
 
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------

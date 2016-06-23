@@ -70,8 +70,8 @@ page.open(targetURL, function(status) {
 				}
 				
 				//If a class was found, add it to the info object. Otherwise, leave an empty string.
-				if (curClass) {curAnchorInfo['class'] = curClass;}
-				else {curAnchorInfo['class'] = "";}
+				if (curClass) {curAnchorInfo['className'] = curClass;}
+				else {curAnchorInfo['className'] = "";}
 				
 				//Determine the anchor's location and add it to the info object
 				var box = anchorElements[curIndex].getBoundingClientRect();

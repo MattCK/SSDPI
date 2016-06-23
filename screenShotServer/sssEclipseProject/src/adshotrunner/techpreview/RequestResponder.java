@@ -4,7 +4,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Map; 
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -20,7 +20,7 @@ public class RequestResponder {
 				String requestID = "";
 				List<String> requestURLs = new ArrayList<String>();
 				
-				System.out.println("before try");
+				System.out.println("before all of it");
 				try {
 					System.out.println("in try");
 					Gson gson = new Gson();
@@ -45,14 +45,17 @@ public class RequestResponder {
 				List<String> requestURLs = new ArrayList<String>();
 				
 				try {
-					ScreenshotRequest request = ScreenshotRequest.fromJSON(entry.getValue());
-					//new TagImager(urlsWithIDs);
+					System.out.println("Creating request object");
+					CampaignRequest request = CampaignRequest.fromJSON(entry.getValue());
+					System.out.println("Running campaign runner thread");
+					new CampaignRunner(request);
+					System.out.println("Ran campaign runner");
 				} catch (Exception e) {System.out.println(e);}
 				
 				
 				System.out.println("Message: " + entry.getValue());
 				
-				MessageQueueClient.deleteMessage(MessageQueueClient.TAGIMAGEREQUESTS, entry.getKey());
+				MessageQueueClient.deleteMessage(MessageQueueClient.SCREENSHOTREQUESTS, entry.getKey());
 			}
 
 			

@@ -1,31 +1,41 @@
 package adshotrunner;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.apache.commons.io.FileUtils;
+
+import adshotrunner.errors.AdShotRunnerException;
+import adshotrunner.utilities.URLTool;
 
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * The StoryFinder class attempts to retrieve a feature story from the passed URL. This story
  * must be prominent on the page and not focus on a negative topic such as a murder.
  * 
- * The target URL is passed through the constructor. All anchors on the page and their info are retrieved.
+ * The target URL is passed through the constructor. All links on the page and their info are retrieved.
  * The resulting object is immutable.
  * 
  * The story is retrieved through the nested class Scorer. Scorer has the option of
@@ -38,23 +48,23 @@ public class StoryFinder {
 	//---------------------------------------------------------------------------------------	
 	//***************************** Private Static Methods **********************************
 	/**
-	 * Returns a JSON string of all the anchors and their info from the passed URL
+	 * Returns a JSON string of all the links and their info from the passed URL
 	 * 
-	 * Anchor info: id, href, name, onclick, text, style, title
+	 * Link info: id, href, name, onclick, text, style, title
 	 * 
-	 * @param url			URL to grab the anchors from
+	 * @param url			URL to grab the links from
 	 * @param viewWidth		Width of the screen phantomjs should use
 	 * @param viewHeight	Height of the screen phantomjs should use
-	 * @param viewHeight	URL to grab the anchors from
-	 * @return				JSON string of anchors and their info
+	 * @param viewHeight	URL to grab the links from
+	 * @return				JSON string of links and their info
 	 */
-	private static String getAnchorJSONFromURL(String url, int viewWidth, int viewHeight) {
+	private static String getLinkJSONFromURL(String url, int viewWidth, int viewHeight) {
 		
 		//Try to make the phantomjs call and return the JSON
         String phantomJSResponse = null;
         try {
             
-        	//Run the retrieve anchors js file with phantomjs
+        	//Run the retrieve links js file with phantomjs
             Process p = Runtime.getRuntime().exec(new String[]{
 	            "phantomjs/phantomjs", 
 	            "javascript/retrievePossibleStoriesFromURL.js",
@@ -66,9 +76,7 @@ public class StoryFinder {
             phantomJSResponse = commandLineInput.readLine();
         }
         catch (IOException e) {
-            System.out.println("exception happened - here's what I know: ");
-            e.printStackTrace();
-            System.exit(-1);
+			throw new AdShotRunnerException("Could not execute phantomjs", e);
         }
 		
         //If the command was successful, return the phantomjs response
@@ -85,17 +93,17 @@ public class StoryFinder {
 	private final String _targetURL;
 	
 	/**
-	 * All anchors on the target URL and their info (id, href, name, onclick, text, style, title) (immutable)
+	 * All links on the target URL and their info (id, href, name, onclick, text, style, title) (immutable)
 	 */
-	private final List<Map<String, String>> _anchors;
+	private final List<StoryLink> _links;
 	
 	/**
-	 * Width to set phantomjs screen to before grabbing anchors
+	 * Width to set phantomjs screen to before grabbing links
 	 */
 	private final int _screenWidth;
 	
 	/**
-	 * Height to set phantomjs screen to before grabbing anchors
+	 * Height to set phantomjs screen to before grabbing links
 	 */
 	private final int _screenHeight;
 	
@@ -103,7 +111,7 @@ public class StoryFinder {
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
 	/**
-	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL
+	 * Returns a StoryFinder instance with the links retrieved from the passed URL
 	 * 
 	 * The screen is automatically set to 1024x768.
 	 * 
@@ -115,14 +123,14 @@ public class StoryFinder {
 	 * @throws URISyntaxException
 	 * @throws UnsupportedEncodingException 
 	 */
-	StoryFinder(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+	public StoryFinder(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Create the instance with the default 1024x768 phantomjs screen
 		this(url, 1024, 768);
 	}
 
 	/**
-	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL, utilizing the
+	 * Returns a StoryFinder instance with the links retrieved from the passed URL, utilizing the
 	 * screen size passed.
 	 * 
 	 * Instance is immutable
@@ -134,7 +142,7 @@ public class StoryFinder {
 	 * @throws URISyntaxException
 	 * @throws UnsupportedEncodingException 
 	 */
-	StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+	public StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Store the target URL for the class to get stories from
 		_targetURL = url;
@@ -144,10 +152,10 @@ public class StoryFinder {
 		_screenHeight = viewHeight;
 		
 		//Get the possible story links using phantomjs
-		String anchorJSON = getAnchorJSONFromURL(_targetURL, _screenWidth, _screenHeight);
+		String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight);
                 
-        //Get the immutable anchor info as array of maps
-		_anchors = getImmutableAnchorInfoFromJSON(anchorJSON);
+        //Get the immutable link info as array of maps
+		_links = getLinkInfoFromJSON(linkJSON);
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -155,51 +163,73 @@ public class StoryFinder {
 	//---------------------------------------------------------------------------------------
 	//********************************* Private Methods *************************************
 	/**
-	 * Returns an immutable list of anchors and their info (each anchor an immutable map)
+	 * Returns an immutable list of links and their info (each link an immutable map)
 	 * 
-	 * @param anchorJSON	JSON string of anchors as their info in the form of an array of associative arrays
-	 * @return				Immutable list of immutable maps, each map a set of anchor info (text, href, xPosition, etc...)
+	 * @param linkJSON	JSON string of links as their info in the form of an array of associative arrays
+	 * @return				Immutable list of immutable maps, each map a set of link info (text, href, xPosition, etc...)
 	 * @throws MalformedURLException
 	 * @throws URISyntaxException
 	 * @throws UnsupportedEncodingException 
 	 */
-	private List<Map<String, String>> getImmutableAnchorInfoFromJSON(String anchorJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+	private List<StoryLink> getLinkInfoFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Turn the returned JSON into an array of objects
-		JsonArray anchorsArray = new Gson().fromJson(anchorJSON, JsonArray.class);
+		try {
+			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".txt"), linkJSON);
+			System.out.println("Saved StoryFinder JSON");
+		} catch (IOException e) {
+			System.out.println("Could not save StoryFinder JSON");
+		}
+		//JsonArray linksArray = new Gson().fromJson(linkJSON, JsonArray.class);
+		Gson gson = new Gson();
+		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
+		ArrayList<StoryLink> storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
+
+		//Loop through the list removing null and empty href elements and setting null class to empty string
+		Iterator<StoryLink> linksIterator = storyLinkList.iterator();
+		while(linksIterator.hasNext()){
+			
+			StoryLink currentLink = linksIterator.next();
+			if (currentLink.href == null || currentLink.href.isEmpty()) {
+				linksIterator.remove();
+			}
+			else {
+				if (currentLink.className == null) {currentLink.className = "";}
+			}
+		}
 		
 		//Get the primary domain of the target URL
-		String urlDomain = getURIDomain(_targetURL);
+		//String urlDomain = getURIDomain(_targetURL);
 		
-		//Convert the data into an ArrayList of immutable anchor HashMaps
-		ArrayList<Map<String, String>> anchorsList = new ArrayList<Map<String, String>>();
-        for(int i = 0; i < anchorsArray.size(); i++){
+		//Convert the data into an ArrayList of immutable link HashMaps
+		/*ArrayList<Map<String, String>> linksList = new ArrayList<Map<String, String>>();
+        for(int i = 0; i < linksArray.size(); i++){
         	
-        	//Convert the current array item into an anchor object
-            JsonObject curAnchor = anchorsArray.get(i).getAsJsonObject();
+        	//Convert the current array item into an link object
+            JsonObject curLink = linksArray.get(i).getAsJsonObject();
            
-            //As long as the href domain is the same as the target site, add the anchor info. Otherwise, ignore.
-            if (!curAnchor.get("href").isJsonNull()){
-            	String currentDomain = getURIDomain(curAnchor.get("href").getAsString());
+            //As long as the href domain is the same as the target site, add the link info. Otherwise, ignore.
+            if (!curLink.href.isJsonNull()){
+            	String currentDomain = getURIDomain(curLink.href.getAsString());
             
 	            if ((currentDomain == "") || (urlDomain.equals(currentDomain))) {
 	            
-		            //Put all the anchor attributes into a map
-		            HashMap<String, String> anchorMap = new HashMap<String, String>();
-					for (Map.Entry<String,JsonElement> anchorAttribute : curAnchor.entrySet()) {
-						anchorMap.put(anchorAttribute.getKey(), anchorAttribute.getValue().toString());
-					}
+		            //Put all the link attributes into a map
+		            HashMap<String, String> linkMap = new HashMap<String, String>();
+					for (Map.Entry<String,JsonElement> linkAttribute : curLink.entrySet()) {
+						linkMap.put(linkAttribute.getKey(), linkAttribute.getValue().toString());
+					}+0
 					
 					//Make the map immutable and place it into the final arraylist
-					Map<String, String> immutableAnchorMap = Collections.unmodifiableMap(anchorMap); 
-					anchorsList.add(immutableAnchorMap);
+					Map<String, String> immutableLinkMap = Collections.unmodifiableMap(linkMap); 
+					linksList.add(immutableLinkMap);
 	            }
             }
-        }
+        }*/
         
-        //Make the anchorsList immutable and return it
-		List<Map<String, String>> immutableAnchorList = Collections.unmodifiableList(anchorsList);  
-		return immutableAnchorList;
+        //Make the linksList immutable and return it
+		//List<Map<String, String>> immutableLinkList = Collections.unmodifiableList(linksList);  
+		return storyLinkList;
 	}
 	
 	/**
@@ -238,12 +268,12 @@ public class StoryFinder {
 	}
 	
 	/**
-	 * Calculates scores for each of the containing StoryFinder's anchors and returns 
+	 * Calculates scores for each of the containing StoryFinder's links and returns 
 	 * the most likely good story (highest score with highest class)
 	 * 
 	 * Each of the formula variables and scores can be set.
 	 */
-	class Scorer {		
+	public class Scorer {		
 		
 		/**
 		 * Score of the left most width point (complete left side of page). DEFAULT: 0
@@ -288,7 +318,7 @@ public class StoryFinder {
 		private int TOPREGIONTWOHANDICAP;
 		
 		/**
-		 * Minimum text length, in characters, an anchor's title must be to be scored. DEFAULT: 3
+		 * Minimum text length, in characters, an link's title must be to be scored. DEFAULT: 3
 		 */
 		private int MINIMUMTEXTLENGTH;
 		/**
@@ -304,32 +334,32 @@ public class StoryFinder {
 		 */
 		private int LONGTEXTLENGTH;
 		/**
-		 * The score added to anchor's with titles considered to be long text. DEFAULT: 11
+		 * The score added to link's with titles considered to be long text. DEFAULT: 11
 		 */
 		private int LONGTEXTSCORE;
 		/**
-		 * Minimum word count an anchor title must have not to receive a handicap. DEFAULT: 3
+		 * Minimum word count an link title must have not to receive a handicap. DEFAULT: 3
 		 */
 		private int MINIMUMWORDCOUNT;
 		/**
-		 * Handicap anchor receieves if its title does not meet the minimum word count (negative number). DEFAULT: -10
+		 * Handicap link receieves if its title does not meet the minimum word count (negative number). DEFAULT: -10
 		 */
 		private int MINIMUMWORDHANDICAP;
 		
 		/**
-		 * The score added to anchor's where the first path part is the same as the target url (i.e. /entertainment, /sports). DEFAULT: 7
+		 * The score added to link's where the first path part is the same as the target url (i.e. /entertainment, /sports). DEFAULT: 7
 		 */
 		private int SAMEPATHPARTSCORE;
 		
 		/**
-		 * Handicap anchor receives if the title only contains capital letters (negative number). DEFAULT: 12
+		 * Handicap link receives if the title only contains capital letters (negative number). DEFAULT: 12
 		 */
 		private int ALLCAPSHANDICAP;
 		
 		/**
 		 * Creates the instance and sets all of the variables to their default values
 		 */
-		Scorer() {
+		public Scorer() {
 			
 			//Set page position defaults
 			POSITIONLEFTMOSTXSCORE = 0;
@@ -520,88 +550,111 @@ public class StoryFinder {
 		}
 
 		/**
-		 * Returns the best story URL from the containing StoryFinder's anchors.
+		 * Returns the best story URL from the containing StoryFinder's links.
 		 * 
-		 * Calculates for each anchor a score and returns the 'href' of the highest in the best 'class' group.
-		 * (Determined by average score of anchors with that class.)
+		 * Calculates for each link a score and returns the 'href' of the highest in the best 'class' group.
+		 * (Determined by average score of links with that class.)
 		 * 
 		 * @return	URL of best story 
 		 */
 		public String getStory() {
 			
-			//Get all the anchor scores using the containing class anchors and the Scorer's numbers
-			HashMap<Integer, Integer> anchorScores = getAnchorScores();
+			//Get all the link scores using the containing class links and the Scorer's numbers
+			HashMap<Integer, Integer> linkScores = getLinkScores();
 			
-			//Get a ranked list of the anchors' classes based off each classes anchors' averages
-			ArrayList<String> rankedClasses = getClassesRankedByAveragedAnchorScore(anchorScores);
+			//Get a ranked list of the links' classes based off each classes links' averages
+			ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(linkScores);
 			
 			//Get the story with the highest score and with the highest ranked class
 			String storyURL = "";
 			int highestScore = 0;
-			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
 				
-				//If the current anchor has the class and a higher score, make it the current story URL
-				if ((_anchors.get(currentScore.getKey()).get("class").contains(rankedClasses.get(0))) &&
+				//If the current link has the class and a higher score, make it the current story URL
+				if ((_links.get(currentScore.getKey()).className.contains(rankedClasses.get(0))) &&
 					(currentScore.getValue() > highestScore)) {
-					storyURL = _anchors.get(currentScore.getKey()).get("href");
+					storyURL = _links.get(currentScore.getKey()).href;
 					highestScore = currentScore.getValue();
 				}				
 			}
-						
+			
+			//Clean up the URL
+			//If it begins with http, do nothing
+			if (storyURL.substring(0, 4).equals("http")) {}
+			
+			//Some sites put // before the substring to keep protocol
+			//Since we don't care about protocol at the moment (due to redirects) just remove it
+			else if (storyURL.substring(0, 2).equals("//")) {
+				storyURL = storyURL.substring(2);
+			}
+			
+			//Otherwise, add the domain
+			else {
+				
+				//Add a slash before the URL if none exists
+				if (!storyURL.substring(0, 1).equals("/")) {
+					storyURL = "/" + storyURL;
+				}
+				
+				//Add the domain and set protocol to http
+				String targetDomain = URLTool.getDomain(_targetURL);
+				storyURL = URLTool.setProtocol("http", targetDomain + storyURL);
+			}
+			
 			return storyURL;
 		}
 		
 		/**
-		 * Returns scores for each valid anchor based on their possibility to be a good story.
-		 * The returned map points each anchor list key to that anchor's score.
+		 * Returns scores for each valid link based on their possibility to be a good story.
+		 * The returned map points each link list key to that link's score.
 		 * 
-		 * Not all anchors have a score.
+		 * Not all links have a score.
 		 * 
-		 * @return		Map with key the same as the anchor key in 'anchors' and the anchor's score
+		 * @return		Map with key the same as the link key in 'links' and the link's score
 		 */
-		public HashMap<Integer, Integer> getAnchorScores() {
+		public HashMap<Integer, Integer> getLinkScores() {
 			
-			//Create the score object. A map is used to maintain relation to the anchors object
-			HashMap<Integer,Integer> anchorScores = new HashMap<Integer, Integer>(); 			
-			for (int anchorIndex = 0; anchorIndex < _anchors.size(); ++anchorIndex) {
-				anchorScores.put(anchorIndex, 0);
+			//Create the score object. A map is used to maintain relation to the links object
+			HashMap<Integer,Integer> linkScores = new HashMap<Integer, Integer>(); 			
+			for (int linkIndex = 0; linkIndex < _links.size(); ++linkIndex) {
+				linkScores.put(linkIndex, 0);
 			}
 			
-			//Score each anchor based on the following criteria
-			adjustScoresByPageLocation(anchorScores);
-			adjustScoresByTitleLength(anchorScores);
-			adjustScoresBySimilarPaths(anchorScores);
-			adjustScoreIfAllCaps(anchorScores);
+			//Score each link based on the following criteria
+			adjustScoresByPageLocation(linkScores);
+			adjustScoresByTitleLength(linkScores);
+			adjustScoresBySimilarPaths(linkScores);
+			adjustScoreIfAllCaps(linkScores);
 			
-			//Return the scores of each valid anchor
-			return anchorScores;
+			//Return the scores of each valid link
+			return linkScores;
 		}
 		
 		/**
-		 * Adjusts the scores of the passed anchors object according to page location. This
+		 * Adjusts the scores of the passed links object according to page location. This
 		 * includes height (y-position), width location (x-position), proximity to top of the page,
 		 * and visibility.
 		 * 
-		 * Anchors not on the visible region (x-position < 0) are removed from the anchorScores object.
+		 * Links not on the visible region (x-position < 0) are removed from the linkScores object.
 		 * 
 		 * See internal documentation for how x-position score is calculated.
 		 * 
-		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 * @param linkScores	Map of link keys associated with their individual scores
 		 */
-		public void adjustScoresByPageLocation(HashMap<Integer, Integer> anchorScores) {
+		public void adjustScoresByPageLocation(HashMap<Integer, Integer> linkScores) {
 			
 			//First, lets loop through the urls and mark any that fall off the visible page
 			ArrayList<Integer> unseenURLs = new ArrayList<Integer>();
-			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
-				int currentAnchorXPosition = Integer.parseInt(_anchors.get(currentScore.getKey()).get("xPosition"));
-			    if ((currentAnchorXPosition < 0) || (currentAnchorXPosition > _screenWidth)) {
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
+				int currentLinkXPosition = _links.get(currentScore.getKey()).xPosition;
+			    if ((currentLinkXPosition < 0) || (currentLinkXPosition > _screenWidth)) {
 			    	unseenURLs.add(currentScore.getKey());
 			    }
 			}
 			
 			//Delete from the score object the marked unseen urls
 			for (Integer currentKey: unseenURLs) {
-		    	anchorScores.remove(currentKey);
+		    	linkScores.remove(currentKey);
 			}
 			
 			/**
@@ -625,31 +678,31 @@ public class StoryFinder {
 			int fifthPoint = _screenWidth*2/3;					//Two third mark
 			int sixthPoint = _screenWidth;						//Also added for clarity
 			
-			//Loop through each remaining anchor and determine its score according to its place on the page
-			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
+			//Loop through each remaining link and determine its score according to its place on the page
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
 				
 				//Set the score offset to zero for starters
 				int scoreOffset = 0;
 				
-				//Grab the current anchor's position
-				int anchorXPosition = Integer.parseInt(_anchors.get(currentScore.getKey()).get("xPosition"));
-				int anchorYPosition = Integer.parseInt(_anchors.get(currentScore.getKey()).get("yPosition"));
+				//Grab the current link's position
+				int linkXPosition = _links.get(currentScore.getKey()).xPosition;
+				int linkYPosition = _links.get(currentScore.getKey()).yPosition;
 				
-				//Based on the location of the anchor, determine the two points that it's between and their scores.
+				//Based on the location of the link, determine the two points that it's between and their scores.
 				int leftPoint, leftScore, rightPoint, rightScore = 0;
-				if (anchorXPosition < secondPoint) {
+				if (linkXPosition < secondPoint) {
 					leftPoint = firstPoint; leftScore = POSITIONLEFTMOSTXSCORE;
 					rightPoint = secondPoint; rightScore = POSITIONONETHIRDXSCORE;
 				}
-				else if (anchorXPosition < thirdPoint) {
+				else if (linkXPosition < thirdPoint) {
 					leftPoint = secondPoint; leftScore = POSITIONONETHIRDXSCORE;
 					rightPoint = thirdPoint; rightScore = POSITIONONEHALFXSCORE;
 				}
-				else if (anchorXPosition < fourthPoint) {
+				else if (linkXPosition < fourthPoint) {
 					leftPoint = thirdPoint; leftScore = POSITIONONEHALFXSCORE;
 					rightPoint = fourthPoint; rightScore = POSITIONOPTIMALXSCORE;
 				}
-				else if (anchorXPosition < fifthPoint) {
+				else if (linkXPosition < fifthPoint) {
 					leftPoint = fourthPoint; leftScore = POSITIONOPTIMALXSCORE;
 					rightPoint = fifthPoint; rightScore = POSITIONTWOTHIRDXSCORE;
 				}
@@ -664,56 +717,56 @@ public class StoryFinder {
 				//Get the y-intercept
 				int yIntercept = (int) (leftScore - regionSlope*leftPoint);
 				
-				//Finally, get the score for the anchor location
-				scoreOffset += (int) (anchorXPosition * regionSlope) + yIntercept;
+				//Finally, get the score for the link location
+				scoreOffset += (int) (linkXPosition * regionSlope) + yIntercept;
 				
-				//--------Check to see if anchor is too high------------
-				//Apply handicap if anchor lies in page top regions. 
+				//--------Check to see if link is too high------------
+				//Apply handicap if link lies in page top regions. 
 				//The second regions encompasses the first.
-				if (anchorYPosition < TOPREGIONONEHEIGHT) {
+				if (linkYPosition < TOPREGIONONEHEIGHT) {
 					scoreOffset += TOPREGIONONEHANDICAP;
 				}
-				else if (anchorYPosition < TOPREGIONTWOHEIGHT) {
+				else if (linkYPosition < TOPREGIONTWOHEIGHT) {
 					scoreOffset += TOPREGIONTWOHANDICAP;
 				}
 				
-				//Add the score offset to the anchor object
+				//Add the score offset to the link object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
 		}
 		
 		/**
-		 * Adjusts the scores of the passed anchor scores based on title length. This includes being too short, somewhat short,
+		 * Adjusts the scores of the passed link scores based on title length. This includes being too short, somewhat short,
 		 * long, and meeting word counts or not.
 		 * 
-		 * Anchors with titles not meeting the minimum text length are removed from the passed anchor scores object.
+		 * Links with titles not meeting the minimum text length are removed from the passed link scores object.
 		 * 
-		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 * @param linkScores	Map of link keys associated with their individual scores
 		 */
-		public void adjustScoresByTitleLength(HashMap<Integer, Integer> anchorScores) {
+		public void adjustScoresByTitleLength(HashMap<Integer, Integer> linkScores) {
 			
 			//First, lets loop through the urls and mark any that have no text or only a few characters
 			ArrayList<Integer> lowTextURLs = new ArrayList<Integer>();
-			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
-				String currentAnchorText = _anchors.get(currentScore.getKey()).get("text");
-			    if (currentAnchorText.length() <= MINIMUMTEXTLENGTH) {
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
+				String currentLinkText = _links.get(currentScore.getKey()).text;
+			    if (currentLinkText.length() <= MINIMUMTEXTLENGTH) {
 			    	lowTextURLs.add(currentScore.getKey());
 			    }
 			}
 			
 			//Delete from the score object the marked low text urls
 			for (Integer currentKey: lowTextURLs) {
-		    	anchorScores.remove(currentKey);
+		    	linkScores.remove(currentKey);
 			}
 			
-			//Loop through the anchors and adjust scores by length and word count
-			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
+			//Loop through the links and adjust scores by length and word count
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
-				//Grab the current anchor's text and length
-				String urlText = _anchors.get(currentScore.getKey()).get("text");
+				//Grab the current link's text and length
+				String urlText = _links.get(currentScore.getKey()).text;
 				int urlTextLength = urlText.length();
 				
 				//If the text is too short, give the url a handicap
@@ -726,20 +779,20 @@ public class StoryFinder {
 				int wordCount = urlText.trim().split("\\s+").length;
 				if (wordCount < MINIMUMWORDCOUNT) {scoreOffset += MINIMUMWORDHANDICAP;}
 
-				//Add the score offset to the anchor object
+				//Add the score offset to the link object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
 		}
 		
 		/**
-		 * Increases the score of an anchor that shares the same first path part of the target URL.
+		 * Increases the score of an link that shares the same first path part of the target URL.
 		 * 
 		 * In other words, this is the path part right after the domain part. For example, the first path part of 
 		 * 'boston.com/entertainment' is 'entertainment'.
 		 * 
-		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 * @param linkScores	Map of link keys associated with their individual scores
 		 */
-		public void adjustScoresBySimilarPaths(HashMap<Integer, Integer> anchorScores) {
+		public void adjustScoresBySimilarPaths(HashMap<Integer, Integer> linkScores) {
 			
 			//Grab the first path part of the target url for comparison
 			String targetURLPathPart = getFirstPartOfURIPath(_targetURL);
@@ -747,72 +800,72 @@ public class StoryFinder {
 			//If we are not at the topmost domain (no path after domain), then score the urls
 			if (targetURLPathPart.length() > 1) {
 				
-				//Loop through each anchor and adjust its score based on similar first path part
-				for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
+				//Loop through each link and adjust its score based on similar first path part
+				for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
 					
 					//Set the score offset to zero
 					int scoreOffset = 0;
 					
-					//Grab the current anchor's href and path part
-					String urlHref = _anchors.get(currentScore.getKey()).get("href");
+					//Grab the current link's href and path part
+					String urlHref = _links.get(currentScore.getKey()).href;
 					String urlPathPart = getFirstPartOfURIPath(urlHref);
 					
-					//If the targetURL and current anchor path parts are the same, increment the score
+					//If the targetURL and current link path parts are the same, increment the score
 					if (targetURLPathPart.equals(urlPathPart)) {scoreOffset += SAMEPATHPARTSCORE;}
 					
-					//Add the score offset to the anchor object
+					//Add the score offset to the link object
 					currentScore.setValue(currentScore.getValue() + scoreOffset);
 				}
 			}
 		}
 		
 		/**
-		 * Applies handicap to any anchor's score with a title consisting of all caps
+		 * Applies handicap to any link's score with a title consisting of all caps
 		 * 
-		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 * @param linkScores	Map of link keys associated with their individual scores
 		 */
-		public void adjustScoreIfAllCaps(HashMap<Integer, Integer> anchorScores) {
+		public void adjustScoreIfAllCaps(HashMap<Integer, Integer> linkScores) {
 							
-			//Loop through each anchor and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {			    
+			//Loop through each link and handicap its score if it is in all capital letters
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's text
-				String urlText = _anchors.get(currentScore.getKey()).get("text");
+				String urlText = _links.get(currentScore.getKey()).text;
 				
 				//If the text is in all caps, apply the reduction
 				if (urlText.equals(urlText.toUpperCase())) {
 					scoreOffset += ALLCAPSHANDICAP;
 				}
 				
-				//Add the score offset to the anchor object
+				//Add the score offset to the link object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
 		}
 		
 		/**
-		 * Returns array list of all the anchors' classes ranked by average anchor score. The first class (at 0)
+		 * Returns array list of all the links' classes ranked by average link score. The first class (at 0)
 		 * has the highest average.
 		 * 
-		 * The average is calculated by taking the sum of the scores of all the anchors that have a class
-		 * and dividing by that number of anchors.
+		 * The average is calculated by taking the sum of the scores of all the links that have a class
+		 * and dividing by that number of links.
 		 * 
-		 * @param anchorScores	Map of anchor keys associated with their individual scores
+		 * @param linkScores	Map of link keys associated with their individual scores
 		 * @return
 		 */
-		private ArrayList<String> getClassesRankedByAveragedAnchorScore(HashMap<Integer, Integer> anchorScores) {
+		private ArrayList<String> getClassesRankedByAveragedLinkScore(HashMap<Integer, Integer> linkScores) {
 			
 			//Prepare to store each class' use count and total score
 			HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
 			HashMap<String, Integer> classTotalScores = new HashMap<String, Integer>();
 			
 			//Loop through the urls and total up the classes with the urls' scores
-			for (Map.Entry<Integer, Integer> currentScore : anchorScores.entrySet()) {		
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
 				
 				//Get the url's classes from the class attribute
-				String classString = _anchors.get(currentScore.getKey()).get("class");
+				String classString = _links.get(currentScore.getKey()).className;
 				String[] urlClasses = classString.trim().split("\\s+");
 				
 				//Loop through each class if any exist

@@ -201,13 +201,15 @@ let asr = {
 			
 			//If successful, clear and hide the plan form, show the new table, and highlight the new table row
 			if (response.success) {
-				
+				console.log('in success');
 				//Store the menu items and create the menu options
 				console.log(response.data);
+				window.open('/campaignResults.php?jobID=' + jobID, '_blank');
 			}
 						
 			//If failure, show us the message returned from the server and focus on the selected element if returned. Also, re-enable the submit button.
 			else {
+				console.log('in failure');
 				console.log(response.data);
 			}
 		}
