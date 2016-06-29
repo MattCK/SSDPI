@@ -585,11 +585,19 @@ public class AdShotter {
         ffProfile.setPreference("gfx.font_rendering.cleartype_params.pixel_structure", 2);
         ffProfile.setPreference("gfx.font_rendering.cleartype_params.rendering_mode", 2);
         
-        //install extension
+        //install Ad Marker extension
         String AdMarkerPath = "/home/ec2-user/ffExtensions/adMarker.xpi";
         
         try {
 			ffProfile.addExtension(new File(AdMarkerPath));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        //install Do Not Disturb extension
+        String DoNotDisturbPath = "/home/ec2-user/ffExtensions/donotdisturb-1.4.2.xpi";
+        try {
+			ffProfile.addExtension(new File(DoNotDisturbPath));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
