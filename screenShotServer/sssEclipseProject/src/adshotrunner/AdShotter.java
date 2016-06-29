@@ -10,9 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +24,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -51,11 +54,12 @@ public class AdShotter {
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
+	//final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
+	final private static String SELENIUMHUBADDRESS = "http://ec2-54-172-131-29.compute-1.amazonaws.com:4444/wd/hub";
 	final private static String SELENIUMPROFILE = "SeleniumDPI";
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
 	final private static String FIREFOXPROFILEFATH = "/home/ec2-user/seleniumdpi";
-	final private static int PAGELOADTIME = 10000;			//in miliseconds
+	final private static int PAGELOADTIME = 300;			//in miliseconds
 	final private static int ESCAPEATTEMPTTIME = 2000;		//in miliseconds
 	final private static int ESCAPEPAUSETIME = 100;			//in miliseconds
 	final private static int JAVASCRIPTWAITTIME = 2000;		//in miliseconds
@@ -332,6 +336,82 @@ public class AdShotter {
 		return finalAdShots;
 	}
 
+	public Map<String, BufferedImage> getTagShots() {
+		
+		//Try to create a web driver to connect with
+		WebDriver firefoxDriver = null;
+		try {
+			firefoxDriver = getSeleniumDriver();
+		}
+		//On failure, throw runtime error
+		catch (Exception e) {
+			throw new AdShotRunnerException("Could not connect with Selenium server", e);
+		}
+        
+		//Open each tag into its own tab
+		Set<String> listOfURLs = _urlTags.keySet();
+		Iterator<String> urlIterator = listOfURLs.iterator();
+		while (urlIterator.hasNext()) {
+			String currentURL = urlIterator.next();
+			
+        	//Open the current URL within the PAGELOADTIMEOUT time (if we haven't had an error)
+        	try {navigateSeleniumDriverToURL(firefoxDriver, currentURL);} 
+    		catch (Exception e) {
+    			System.out.println("Couldn't navigate to page: " + currentURL);
+    		}
+        	
+        	//If there is another URL after this one, open a new tab
+        	if (urlIterator.hasNext()) { 
+	        	firefoxDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"t");
+        	}
+		}	
+		
+		//Go to the first tab
+		firefoxDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"\t");
+				
+		Map<String, BufferedImage> finalAdShots = new HashMap<String, BufferedImage>();
+		urlIterator = listOfURLs.iterator();
+		while (urlIterator.hasNext()) {
+			
+			String currentURL = urlIterator.next();
+						
+	    	//Send esc to stop any final loading and close possible popups (if we haven't had an error)
+			try {sendSeleniumDriverEscapeCommand(firefoxDriver, ESCAPEATTEMPTTIME);}
+    		catch (Exception e) {
+    			System.out.println("Couldn't send escape command");
+    		}
+			
+	    	//Take the screenshot 
+			System.out.print("Taking screenshot...");
+			long screenShotStartTime = System.nanoTime();
+			
+	    	File screenShot = null;
+        	try {screenShot = captureSeleniumDriverScreenshot(firefoxDriver);}
+			catch (Exception e) {
+				System.out.println("Could not take screenshot");
+			}
+			
+	    	long screenShotEndTime = System.nanoTime();
+			System.out.print("Done! - ");
+			System.out.println((screenShotEndTime - screenShotStartTime)/1000000 + " ms");
+
+			BufferedImage originalImage = null;
+			try {
+				originalImage = ImageIO.read(screenShot);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.out.println("Couldn't convert screenshot file to image");
+			}
+			
+			finalAdShots.put(currentURL, originalImage);
+			firefoxDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"\t");
+
+		}
+        quitWebdriver(firefoxDriver);
+
+		return finalAdShots;
+	}
+
 	//******************************** Protected Methods ************************************
 
 
@@ -517,7 +597,7 @@ public class AdShotter {
         
         //set new firefox profile to be used in selenium
         DesiredCapabilities capabilities = DesiredCapabilities.firefox();
-        capabilities.setCapability(FirefoxDriver.PROFILE, ffProfile);
+        //capabilities.setCapability(FirefoxDriver.PROFILE, ffProfile);
 		
 		WebDriver firefoxDriver = null;
         firefoxDriver = new RemoteWebDriver(
@@ -575,6 +655,7 @@ public class AdShotter {
         	}
     	}
 	}
+	
 	/**
 	 * Navigates the passed selenium driver to the passed URL.
 	 * 

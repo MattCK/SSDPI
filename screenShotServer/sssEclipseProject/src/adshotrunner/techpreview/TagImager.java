@@ -35,7 +35,7 @@ public class TagImager implements Runnable {
 			tagShotter.addTag("s3.amazonaws.com/asr-tagpages/" + currentURL, "https://s3.amazonaws.com/asr-tagimages/fillers/nsfiller-1x1.jpg");
 		}
 		
-		Map<String, BufferedImage> tagShots = tagShotter.getAdShots();	
+		Map<String, BufferedImage> tagShots = tagShotter.getTagShots();	
 		System.out.println("AdShot URLS - \n\n");
 		System.out.println(tagShots.keySet());
 		System.out.println();
