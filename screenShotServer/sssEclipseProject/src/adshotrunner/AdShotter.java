@@ -594,14 +594,6 @@ public class AdShotter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        //install Do Not Disturb extension
-        String DoNotDisturbPath = "/home/ec2-user/ffExtensions/donotdisturb-1.4.2.xpi";
-        try {
-			ffProfile.addExtension(new File(DoNotDisturbPath));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         
         //set new firefox profile to be used in selenium
         DesiredCapabilities capabilities = DesiredCapabilities.firefox();
