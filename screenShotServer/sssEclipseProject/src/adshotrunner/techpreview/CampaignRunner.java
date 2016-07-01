@@ -15,8 +15,11 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 
+import adshotrunner.AdShot;
 import adshotrunner.AdShotter;
+import adshotrunner.AdShotter2;
 import adshotrunner.StoryFinder;
+import adshotrunner.TagImage;
 import adshotrunner.utilities.FileStorageClient;
 import adshotrunner.utilities.URLTool;
 
@@ -24,12 +27,9 @@ public class CampaignRunner implements Runnable {
 	
 	Thread imagerThread;
 	CampaignRequest requestInfo;
-	int testInt;
 	
 	CampaignRunner(CampaignRequest passedRequest) {
 		requestInfo = passedRequest;
-		String temp = requestInfo.jobID;
-		testInt = 3;
 		imagerThread = new Thread(this);
 		imagerThread.start();
 	}
@@ -37,13 +37,18 @@ public class CampaignRunner implements Runnable {
 	@Override
 	public void run() {
 		
-		//Create the AdShotter to use
-		AdShotter campaignShotter = new AdShotter();
-		System.out.println(testInt);
-		System.out.println(requestInfo);
-		System.out.println(requestInfo.jobID);
+		//Put the tag images into a list
+		ArrayList<TagImage> tagImages = new ArrayList<TagImage>();
+		for (String tagURL: requestInfo.tagImages) {
+			tagImages.add(TagImage.create(tagURL));
+		}
 		
-		//Loop through each page, adding the tags and finding stories as necessary
+		//Create the AdShotter to use
+		AdShotter2 campaignShotter = new AdShotter2();
+		System.out.println(requestInfo);
+		
+		//Loop through each page, preparing the adshots and finding stories as necessary
+		ArrayList<AdShot> adShotList = new ArrayList<AdShot>();
 		for (Map<String, String> currentPage : requestInfo.pages) {
 			
 			//Put the values into easier to understand variables
@@ -73,40 +78,37 @@ public class CampaignRunner implements Runnable {
 				}
 			}
 			
-			//Add the pages and tags to the ScreenShotter
-			//If only a screenshot needs to be taken, add the URL with a stud tag image
 			if (onlyScreenshot) {
-				campaignShotter.addTag(pageURL, "https://s3.amazonaws.com/asr-tagimages/fillers/nsfiller-1x1.jpg");
+				adShotList.add(AdShot.create(pageURL));
 			}
 			
-			//Otherwise, loop through the tags and add them
 			else {
-				for (int tagIndex = 0; tagIndex < requestInfo.tagImages.size(); tagIndex++) {
-					campaignShotter.addTag(pageURL, URLTool.setProtocol("https", requestInfo.tagImages.get(tagIndex)), tagIndex);
-				}
+				adShotList.add(AdShot.create(pageURL, tagImages));
 			}
 		}
 	
 		//Get the screenshots
-		Map<String, BufferedImage> screenshots = campaignShotter.getAdShots();	
+		campaignShotter.takeAdShots(adShotList);	
 		
 		//Upload them
 		int imageIndex = 1;
 		HashMap<String, String>  pageAndScreenshotURLs = new HashMap<String, String>();
-		for (Map.Entry<String, BufferedImage> currentScreenshot : screenshots.entrySet()) {
+		for (AdShot currentAdShot : adShotList) {
 			System.out.println("Saving a screenshot");
-			System.out.println("URL: " + currentScreenshot.getKey());
+			System.out.println("URL: " + currentAdShot.url());
 			String imageFilename = requestInfo.jobID + "-" + imageIndex + ".png";		
 			
 			try {
-				saveImageAsPNG(currentScreenshot.getValue(), "screenshots/" + imageFilename);
+				saveImageAsPNG(currentAdShot.image(), "screenshots/" + imageFilename);
 				FileStorageClient.saveFile(FileStorageClient.SCREENSHOTSCONTAINER, "screenshots/" + imageFilename, imageFilename);
 			}
 			catch (Exception e) {
 				System.out.println("Could not save screenshot");
+				System.out.println(e);
+				//e.printStackTrace();
 			}
 			++imageIndex;
-			pageAndScreenshotURLs.put(currentScreenshot.getKey(), "https://s3.amazonaws.com/asr-screenshots/" + imageFilename);
+			pageAndScreenshotURLs.put(currentAdShot.url(), "https://s3.amazonaws.com/asr-screenshots/" + imageFilename);
 		}
 		
 		//Create the powerpoint

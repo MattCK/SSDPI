@@ -89,29 +89,33 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 						var currentAd = currentAdArray[adIndex];
 						var currentTag = currentTagArray[currentTagIterator];
 
-						//Remove all the child nodes of the ad element
-						while (currentAd.element.firstChild) {
-							currentAd.element.removeChild(currentAd.element.firstChild);
-						}
-						currentAd.element.innerHTML = "";
+						//If the current ad has a valid element
+						if (currentAd.element) {
 
-						//Replace the ad with the tag
-						var tagImage = document.createElement('img');
-						tagImage.src = currentTag.tag;
-						tagImage.style.floodOpacity = "0.9898";
-						currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
-
-						//Change parents' width/height if need be
-						//-------------------Seems possibly broken-------------------------
-						if (currentAd.element.parentNode) {
-							adInjecter._expandParents(currentAd.element.parentNode, currentAd.width, currentAd.height);
-
-							var targetNode = currentAd.element;
-							targetNode.style.display = '';
-							while (targetNode = targetNode.parentNode) {
-								targetNode.style.display = '';
+							//Remove all the child nodes of the ad element
+							while (currentAd.element.firstChild) {
+								currentAd.element.removeChild(currentAd.element.firstChild);
 							}
+							currentAd.element.innerHTML = "";
 
+							//Replace the ad with the tag
+							var tagImage = document.createElement('img');
+							tagImage.src = currentTag.tag;
+							tagImage.style.floodOpacity = "0.9898";
+							currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
+
+							//Change parents' width/height if need be
+							//-------------------Seems possibly broken-------------------------
+							if (currentAd.element.parentNode) {
+								adInjecter._expandParents(currentAd.element.parentNode, currentAd.width, currentAd.height);
+
+								var targetNode = currentAd.element;
+								targetNode.style.display = '';
+								while (targetNode = targetNode.parentNode) {
+									targetNode.style.display = '';
+								}
+
+							}
 						}
 					} 
 

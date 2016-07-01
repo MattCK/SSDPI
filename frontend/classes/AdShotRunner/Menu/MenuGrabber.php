@@ -344,29 +344,29 @@ class MenuGrabber {
 	*
 	* @param 	array  	$domainInfo 		Array of domains and their associated menus. See main description for format.
 	*/
-	protected function insertDomainsWithMenus($domainInfo) {
+	protected function insertDomainsWithMenus(&$domainInfo) {
 		
 		//Verify domain info was passed
 		if ((!$domainInfo) || (count($domainInfo) < 1)) {return;}
 
 		//Loop through each domain: run the delete command on it, add the domain, add the domain menus, add the menu items.
-		foreach ($domainInfo as $curDomain => $domainMenus) {
+		foreach ($domainInfo as $domain => $domainMenus) {
 
 			//Delete the domain, if it exists, in the database.
-			$this->deleteDomain($curDomain);
+			$this->deleteDomain($domain);
 
 			//Add the domain to the database
-			$cleanDomainString = "'" . databaseEscape($curDomain) . "'";
+			$cleanDomainString = "'" . databaseEscape($domain) . "'";
 			databaseQuery("INSERT INTO menuDomains (MND_domain) VALUES ($cleanDomainString)");
 
 			//Get the domain insert ID
 			$domainID = databaseLastInsertID();
 
 			//Loop through the menus, adding each to the database with their items
-			foreach ($domainMenus as $curMenu) {
+			foreach ($domainMenus as $menuKey => $menu) {
 
 				//Insert the menu and its score
-				$cleanScoreString = "'" . databaseEscape($curMenu['score']) . "'";
+				$cleanScoreString = "'" . databaseEscape($menu['score']) . "'";
 				databaseQuery("INSERT INTO menus (MNU_MND_id, MNU_score) VALUES ($domainID, $cleanScoreString)");
 
 				//Get the menu insert ID
@@ -374,10 +374,10 @@ class MenuGrabber {
 
 				//Create the value string of menu items
 				$cleanMenuItems = [];
-				foreach ($curMenu['items'] as $curItem) {
+				foreach ($menu['items'] as $itemKey => $item) {
 
 					//Either remove the http/https or add the domain to the menu item URL
-					$curURL = $curItem['url'];
+					$curURL = $item['url'];
 					if (substr($curURL, 0, 4) == "http") {
 						$curURL = preg_replace('#^https?://#', '', $curURL);
 					}
@@ -388,11 +388,13 @@ class MenuGrabber {
 					}
 					else {
 						if (substr($curURL, 0, 1) != "/") {$curURL = "/" . $curURL;}
-						$curURL = $curDomain . $curURL;
+						$curURL = $domain . $curURL;
 					}
 
+					$domainInfo[$domain][$menuKey]['items'][$itemKey]['url'] = $curURL;
+
 					$cleanMenuItems[] = "($menuID, '" . 
-								  		  databaseEscape($curItem['label']) . "', '" . 
+								  		  databaseEscape($item['label']) . "', '" . 
 								  		  databaseEscape($curURL) . "')";
 				}
 				$cleanMenuItemString = implode(',', $cleanMenuItems);
@@ -403,6 +405,9 @@ class MenuGrabber {
 								   VALUES $cleanMenuItemString");
 				}
 			}
+
+			//THIS IS FOR TESTING ONLY. PREVENTS DATABASE ENTRY.
+			//$this->deleteDomain($domain);
 		}
 	}
 
@@ -485,6 +490,11 @@ class MenuGrabber {
 							$anchorLabel = $imageList->item(0)->getAttribute('alt');
 						}
 					}
+
+					//If the anchor's link begins with "javascript:", attempt to extract the URL if it exists
+					if (substr($anchorHREF, 0, 11) == "javascript:") {
+						$anchorHREF = $this->getURLFromJavascriptLink($anchorHREF);
+					}
 					
 					//Insert the label and anchor information to return
 					$anchorLabel = trim(str_replace("\n", ' ', $anchorLabel)); 
@@ -552,6 +562,11 @@ class MenuGrabber {
 						}
 					}
 					
+					//If the anchor's link begins with "javascript:", attempt to extract the URL if it exists
+					if (substr($anchorHREF, 0, 11) == "javascript:") {
+						$anchorHREF = $this->getURLFromJavascriptLink($anchorHREF);
+					}
+					
 					//Insert the label and anchor information to return
 					$anchorLabel = trim(str_replace("\n", ' ', $anchorLabel)); 
 					if (($anchorLabel != "") && ($anchorHREF != "")) {
@@ -568,6 +583,10 @@ class MenuGrabber {
 		return $possibleDIVMenus;
 	}
 
+	private function getURLFromJavascriptLink($javascriptLink) {
+		preg_match_all('!https?://\S+!', $javascriptLink, $matches);
+		return ($matches[0] && $matches[0][0]) ? $matches[0][0] : "";	
+	}
 
 	/**
 	* Returns an associative array of the labels and weights in the database.

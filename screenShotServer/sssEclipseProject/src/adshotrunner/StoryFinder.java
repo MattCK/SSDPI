@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 
@@ -185,16 +187,34 @@ public class StoryFinder {
 		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
 		ArrayList<StoryLink> storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
 
+		//Get the primary domain of the StoryFinder URL
+		String primaryDomain = getURIDomain(_targetURL);
+		
 		//Loop through the list removing null and empty href elements and setting null class to empty string
 		Iterator<StoryLink> linksIterator = storyLinkList.iterator();
 		while(linksIterator.hasNext()){
 			
 			StoryLink currentLink = linksIterator.next();
+			
+			String currentDomain = (currentLink.href != null) ? getURIDomain(currentLink.href) : null;
+			
 			if (currentLink.href == null || currentLink.href.isEmpty()) {
+				linksIterator.remove();
+			}
+			else if ((currentDomain != "") && (!primaryDomain.equals(currentDomain))) {
 				linksIterator.remove();
 			}
 			else {
 				if (currentLink.className == null) {currentLink.className = "";}
+				
+				//If the link begins with javascript, try to get the URL
+				if ((currentLink.href.length() >= 11) && currentLink.href.substring(0, 11).equals("javascript:")) {
+			        String urlPattern = "((https?|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
+			        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
+			        Matcher m = p.matcher(currentLink.href);
+			        if (m.find()) {currentLink.href = m.group(0);}
+			        else {currentLink.href = "";}
+			    }
 			}
 		}
 		

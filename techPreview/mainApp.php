@@ -55,7 +55,7 @@ let asr = {
 				//Store the menu items and create the menu options
 				//console.log(response.data);
 				asr._menuItems = response.data;
-				asr._menuOptions = "<option value='/'>Main</option>";
+				//asr._menuOptions = "<option value='/'>Main</option>";
 				for (let menuTitle in asr._menuItems) {
 					if (asr._menuItems.hasOwnProperty(menuTitle)) {
 						asr._menuOptions += "<option value='" + asr._menuItems[menuTitle] + "'>" + menuTitle + "</option>";

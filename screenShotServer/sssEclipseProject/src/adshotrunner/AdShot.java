@@ -30,40 +30,9 @@ public class AdShot {
 	 * @return
 	 */
 	public static AdShot create(String pageURL) {
-		return AdShot.create(pageURL, new ArrayList<TagImage>(), false);
+		return AdShot.create(pageURL, new ArrayList<TagImage>());
 	}
 
-	/**
-	 * Creates an instance of an AdShot using the passed URL and list of tag images.
-	 * 
-	 * If no protocol precedes the URL, "http" is added.
-	 * 
-	 * If the URL is null or empty, an AdShotRunnerException is thrown.
-	 * 
-	 * @param pageURL			URL where the screenshot should be taken
-	 * @param pageTagImages		List of tag images to be inserted into the page
-	 * @return
-	 */
-	public static AdShot create(String pageURL, List<TagImage> pageTagImages) {
-		return AdShot.create(pageURL, pageTagImages, false);
-	}
-	
-	/**
-	 * Creates an instance of an AdShot using the passed URL and flags it as a tag.
-	 * Tags receive less page load time and no javascript is injected.
-	 * 
-	 * If no protocol precedes the URL, "http" is added.
-	 * 
-	 * If the URL is null or empty, an AdShotRunnerException is thrown.
-	 * 
-	 * TagImages cannot be added to this instance.
-	 * 
-	 * @param pageURL			URL where the screenshot should be taken
-	 * @return
-	 */
-	public static AdShot createForTag(String pageURL) {
-		return AdShot.create(pageURL, new ArrayList<TagImage>(), true);
-	}
 	
 	/**
 	 * Creates an instance of an AdShot using the passed URL, list of tag images, and
@@ -75,10 +44,9 @@ public class AdShot {
 	 * 
 	 * @param pageURL			URL where the screenshot should be taken
 	 * @param pageTagImages		List of tag images to be inserted into the page
-	 * @param isTag				If set to true, the AdShot is flagged as a tag. Tags are given less load time and no javascript is injected.
 	 * @return
 	 */
-	private static AdShot create(String pageURL, List<TagImage> pageTagImages, boolean isTag) {
+	public static AdShot create(String pageURL, List<TagImage> pageTagImages) {
 		
 		//Verify the URL is not null and not an empty string
 		if (pageURL == null || pageURL.isEmpty()) {throw new AdShotRunnerException("URL empty or null");}
@@ -92,7 +60,7 @@ public class AdShot {
 		if (pageTagImages == null) {pageTagImages = new ArrayList<TagImage>();}
 		
 		//Create and return the AdShot
-		return new AdShot(pageURL, pageTagImages, isTag);
+		return new AdShot(pageURL, pageTagImages);
 	}
 	
 	/**
@@ -104,12 +72,6 @@ public class AdShot {
 	 * List of TagImages to be inserted into the page
 	 */
 	private final List<TagImage> _tagImages;
-	
-	/**
-	 * Flags whether or not the AdShot should be treated as a tag. Tags receive less page load time and no
-	 * javascript is injected. If TRUE, TagImages cannot be added to the instance.
-	 */
-	private final boolean _treatAsTag;
 	
 	/**
 	 * Image of the final screenshot.
@@ -125,25 +87,19 @@ public class AdShot {
 	 * Sets private variables of instance. Parameter verification should be done in static factory.
 	 * @param pageURL			URL for the screenshot
 	 * @param pageTagImages		List of TagImages to be inserted into the page
-	 * @param isTag				Flags whether the AdShot should be treated like a tag
 	 */
-	private AdShot(String pageURL, List<TagImage> pageTagImages, boolean isTag) {
+	private AdShot(String pageURL, List<TagImage> pageTagImages) {
 		_url = pageURL;
 		_tagImages = pageTagImages;
-		_treatAsTag = isTag;
 	}
 	
 	/**
 	 * Adds a new tag image to be inserted into the page.
 	 * 
-	 * The TagImage is NOT added if the instance has been flagged as a tag.
-	 * 
-	 * @param newTagImage	New tag image to be inserted into the pate
+	 * @param newTagImage	New tag image to be inserted into the page
 	 */
 	public void addTagImage(TagImage newTagImage) {
-		if (!_treatAsTag) {
-			_tagImages.add(newTagImage);
-		}
+		_tagImages.add(newTagImage);
 	}
 	
 	/**
@@ -155,11 +111,6 @@ public class AdShot {
 	 * @return	List of tag images to insert into the page (unmodifiable)
 	 */
 	public List<TagImage> tagImages() {return Collections.unmodifiableList(_tagImages);}
-	
-	/**
-	 * @return	Whether or not to treat the instance as a tag. Tags receive less page load time and no javascript is injected.
-	 */
-	public boolean treatAsTag() {return _treatAsTag;}
 	
 	/**
 	 * @return	Image of the final screenshot. Default: null
