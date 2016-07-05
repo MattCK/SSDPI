@@ -1,0 +1,48 @@
+static-net-filter.js:
+
+	Function - FilterContainer.prototype.fromCompiledContent :
+		comment out everything from "bucket = this.categories[fields[0]];" to "bucket[fields[1]] = new FilterBucket(entry, filter);"
+
+traffic.js:
+
+	Variable - var foilInlineScripts = function
+		comment out everything inside the function
+
+contentscript-start.js
+
+	Variable - var cosmeticFilters = function
+		change 	"style.appendChild(document.createTextNode(text + '\n{display:none !important;}'));"
+		to 	   	"style.appendChild(document.createTextNode(text + '\n{flood-opacity:0.9898 !important;}'));"
+
+	Variable - var netFilters = function
+		change 	"var css = details.netCollapse ?
+		         '\n{display:none !important;}' :
+		         '\n{visibility:hidden !important;}';"
+		to 	   	"var css = '\n{flood-opacity:0.9898 !important;}';"
+
+contentscript-end.js
+
+	Variable - var onProcessed = function
+		change	"target.style.setProperty('display', 'none', 'important');"
+		to 		"target.style.setProperty('flood-opacity', '0.9898', 'important');"
+
+	Variable - var addStyleTag = function
+		change 	"style.appendChild(document.createTextNode(selectorStr + '\n{display:none !important;}'));"
+		to 		"style.appendChild(document.createTextNode(selectorStr + '\n{flood-opacity:0.9898 !important;}'));"
+
+	Variable - var hideElements = (function
+		change 	"elems[i].style.setProperty('display', 'none', 'important');"
+		to 		"elems[i].style.setProperty('flood-opacity', '0.9898', 'important');"
+
+		change 	"elem.style.setProperty('display', 'none', 'important');"
+		to 		"elem.style.setProperty('flood-opacity', '0.9898', 'important');"
+
+		change	"elem.style.setProperty('display', 'none', 'important');"
+		to 		"elem.style.setProperty('flood-opacity', '0.9898', 'important');"
+
+vapi-background.js
+	change	"vAPI.app = {
+    			name: 'uBlock Origin',"
+
+   	to 		"vAPI.app = {
+				name: 'AdMarker',"

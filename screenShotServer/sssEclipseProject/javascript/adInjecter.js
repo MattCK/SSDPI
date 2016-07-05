@@ -102,7 +102,9 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 							var tagImage = document.createElement('img');
 							tagImage.src = currentTag.tag;
 							tagImage.style.floodOpacity = "0.9898";
-							currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
+							if (currentAd.element && currentAd.element.parentNode) {
+								currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
+							}
 
 							//Change parents' width/height if need be
 							//-------------------Seems possibly broken-------------------------

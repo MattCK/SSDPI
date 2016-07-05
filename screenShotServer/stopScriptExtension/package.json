@@ -1,0 +1,16 @@
+{
+  "title": "ASR Script Stopper",
+  "name": "asrscriptstopperextension",
+  "version": "0.0.1",
+  "description": "Stops all running script after set time",
+  "main": "index.js",
+  "author": "Juicio",
+  "engines": {
+    "firefox": ">=38.0a1",
+    "fennec": ">=38.0a1"
+  },
+  "license": "Private",
+  "keywords": [
+    "jetpack"
+  ]
+}
