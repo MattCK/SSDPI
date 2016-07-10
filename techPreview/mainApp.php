@@ -125,15 +125,20 @@ let asr = {
 	},
 
 	toggleDivs: function() {
+    	console.log("In toggleDivs");
     	let $inner = $("#inner");
+    	console.log("#inner: " + $inner);
+    	console.log("#inner.position().left: " + $inner.position().left);
 
 	    // See which <divs> should be animated in/out.
 	    if ($inner.position().left == 0) {
+            console.log("Animating to the right");
 	        $inner.animate({
 	            left: "-960px"
 	        });
 	    }
 	    else {
+            console.log("Animating to the left");
 	        $inner.animate({
 	            left: "0px"
 	        });

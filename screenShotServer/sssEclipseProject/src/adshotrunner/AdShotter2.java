@@ -59,7 +59,7 @@ public class AdShotter2 {
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
 	final private static boolean VERBOSE = true;
-	final private static int MAXOPENTABS = 4;
+	final private static int MAXOPENTABS = 3;
 
 
 	//---------------------------------------------------------------------------------------
@@ -153,10 +153,17 @@ public class AdShotter2 {
     			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
     		}
 			
-			
+			//If there are still adShots to be opened and we are less than max tabs, create a new tab
 			++openTabIndex;
+			if ((openTabIndex < adShots.size()) && (openTabIndex < MAXOPENTABS)) {
+				openNewTab(firefoxDriver);
+			}
+			
+			//Otherwise, loop back to the front
+			else {navigateToNextTab(firefoxDriver);}			
 		}
 		
+		/*
 		Iterator<AdShot> adShotIterator = adShots.iterator();
 		while (adShotIterator.hasNext()) {
 			AdShot currentAdShot = adShotIterator.next();
@@ -175,6 +182,7 @@ public class AdShotter2 {
         	//Otherwise, return to the first tab
         	else {navigateToNextTab(firefoxDriver);}
 		}
+		*/
 		
 		//Pause if still in the load time frame
 		int maxLoadTime = (treatAsTags) ? 7000 : 7000;
@@ -184,6 +192,32 @@ public class AdShotter2 {
     	}
 		
 		//Loop through each AdShot and take the screenshot
+		for (int adShotIndex = 0; adShotIndex < adShots.size(); ++ adShotIndex) {
+			long startTime = System.nanoTime();
+			AdShot currentAdShot = adShots.get(adShotIndex);
+			takeAdShot(firefoxDriver, currentAdShot, treatAsTags);
+			
+			//If there is an AdShot that needs to be loaded still,
+			//put it in the current tab and navigate to the next
+			if ((adShotIndex + MAXOPENTABS) < adShots.size()) {
+				int pageLoadTime = (treatAsTags) ? 500 : PAGELOADTIME;
+				try {navigateSeleniumDriverToURL(firefoxDriver, adShots.get(adShotIndex + MAXOPENTABS).url(), pageLoadTime);} 
+	    		catch (Exception e) {
+	    			consoleLog("Couldn't navigate to page: " + adShots.get(adShotIndex).url());
+	    			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
+	    		}	
+			}
+			navigateToNextTab(firefoxDriver);				
+			
+			//Otherwise, close the current tab
+			//else {closeTab(firefoxDriver);}
+			
+			
+        	long endTime = System.nanoTime();
+			consoleLog("AdShot time: " + (endTime - startTime)/1000000 + " ms");
+		}
+		/*
+		Iterator<AdShot> adShotIterator = adShots.iterator();
 		adShotIterator = adShots.iterator();
 		while (adShotIterator.hasNext()) {
 			long startTime = System.nanoTime();
@@ -194,7 +228,7 @@ public class AdShotter2 {
         	long endTime = System.nanoTime();
 			consoleLog("AdShot time: " + (endTime - startTime)/1000000 + " ms");
 		}
-		
+		*/
     	
     	//Quit the driver
         quitWebdriver(firefoxDriver);
@@ -436,9 +470,11 @@ public class AdShotter2 {
 		while (!succeeded && (attempts < 3)) {
 			try {
 				//activeSeleniumDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"t");
+				pause(1000);
 				new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "t")).perform();
 				activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
 				activeSeleniumDriver.switchTo().defaultContent();
+				pause(1500);
 				succeeded = true;
 			}
 			catch (Exception e) {
@@ -591,7 +627,6 @@ public class AdShotter2 {
 	private File captureSeleniumDriverScreenshot(final WebDriver activeSeleniumWebDriver) {
 		
 		consoleLog("\nAdShot: Send stop scripts key");	        	
-		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
 		consoleLog("Pausing for .5 seconds");
 		pause(500);
 		
@@ -615,7 +650,8 @@ public class AdShotter2 {
     		}
     		++currentAttempt;
     	}
-    	
+		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
+   	
     	return screenShot;
 	}
 	
