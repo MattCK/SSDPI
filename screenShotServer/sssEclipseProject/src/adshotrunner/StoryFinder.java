@@ -941,7 +941,8 @@ public class StoryFinder {
 				int scoreOffset = 0;
 				
 				//Get the url's classname
-				String classNameText = _links.get(currentScore.getKey()).className;
+				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
+				String unwantedClassNames[] = new String [] {"story",""};
 				
 				if (classNameText.contains("story")) {
 					scoreOffset += PREFERREDCLASSNAMESCORE;
@@ -962,7 +963,7 @@ public class StoryFinder {
 				int scoreOffset = 0;
 				
 				//Get the url's classname
-				String classNameText = _links.get(currentScore.getKey()).className;
+				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
 				
 				if (classNameText.contains("nav")) {
 					scoreOffset += UNWANTEDCLASSNAMEHANDICAP;
