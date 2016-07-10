@@ -145,7 +145,7 @@ public class StoryFinderTuner {
 	/**
 	 * Returns a StoryFinder instance with the anchors retrieved from the passed URL
 	 * 
-	 * The screen is automatically set to 1024x768.
+	 * The screen is automatically set to 1366x768.
 	 * 
 	 * Instance is immutable
 	 * 
@@ -156,8 +156,8 @@ public class StoryFinderTuner {
 	 */
 	public StoryFinderTuner(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
-		//Create the instance with the default 1024x768 phantomjs screen
-		this(url, 1024, 768);
+		//Create the instance with the default 1366x768 phantomjs screen
+		this(url, 1366, 768);
 	}
 
 	/**

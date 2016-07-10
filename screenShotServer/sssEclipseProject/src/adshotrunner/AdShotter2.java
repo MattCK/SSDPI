@@ -163,7 +163,7 @@ public class AdShotter2 {
 			
         	//Open the current URL within the PAGELOADTIMEOUT time (if we haven't had an error)
 			consoleLog("Navigating to: " + currentAdShot.url());
-			try {navigateSeleniumDriverToURL(firefoxDriver, currentAdShot.url(), pageLoadTime);} 
+			try {navigateSeleniumDriverToURL(firefoxDriver, currentAdShot.url(), PAGELOADTIME);} 
     		catch (Exception e) {
     			consoleLog("Couldn't navigate to page: " + currentAdShot.url());
     			currentAdShot.setError(new AdShotRunnerException("Could not navigate to URL", e));

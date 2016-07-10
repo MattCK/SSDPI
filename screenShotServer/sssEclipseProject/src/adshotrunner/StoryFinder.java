@@ -45,6 +45,12 @@ import com.google.gson.reflect.TypeToken;
  */
 public class StoryFinder {
 	
+	final private static boolean VERBOSE = true;
+	
+	private static void consoleLog(String message) {
+		if (VERBOSE) {System.out.println(message);}
+	}
+	
 	//---------------------------------------------------------------------------------------
 	//--------------------------------- Static Methods --------------------------------------
 	//---------------------------------------------------------------------------------------	
@@ -115,7 +121,7 @@ public class StoryFinder {
 	/**
 	 * Returns a StoryFinder instance with the links retrieved from the passed URL
 	 * 
-	 * The screen is automatically set to 1024x768.
+	 * The screen is automatically set to 1366x768.
 	 * 
 	 * Instance is immutable
 	 * 
@@ -127,8 +133,8 @@ public class StoryFinder {
 	 */
 	public StoryFinder(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
-		//Create the instance with the default 1024x768 phantomjs screen
-		this(url, 1024, 768);
+		//Create the instance with the default 1366x768 phantomjs screen
+		this(url, 1366, 768);
 	}
 
 	/**
@@ -367,6 +373,16 @@ public class StoryFinder {
 		private int MINIMUMWORDHANDICAP;
 		
 		/**
+		 * The score added to link's when containing one of the preferred classnames. Default: 5
+		 */ 
+		private int PREFERREDCLASSNAMESCORE;
+		
+		/**
+		 * The score added to link's when containing one of the unwanted classnames. Default: -4
+		 */ 
+		private int UNWANTEDCLASSNAMEHANDICAP;
+		
+		/**
 		 * The score added to link's where the first path part is the same as the target url (i.e. /entertainment, /sports). DEFAULT: 7
 		 */
 		private int SAMEPATHPARTSCORE;
@@ -406,6 +422,10 @@ public class StoryFinder {
 			
 			//Set same path score
 			SAMEPATHPARTSCORE = 7;
+			
+			//Set class name score
+			PREFERREDCLASSNAMESCORE = 5;
+			UNWANTEDCLASSNAMEHANDICAP = -4;
 			
 			//Set handicap for all caps
 			ALLCAPSHANDICAP = -12;
@@ -587,8 +607,30 @@ public class StoryFinder {
 			
 			//Get the story with the highest score and with the highest ranked class
 			String storyURL = "";
+			String storyScoringCSV = "";
+			String CSVSeparator = "|";
+			storyScoringCSV += "URL" + CSVSeparator;
+			storyScoringCSV += "className" + CSVSeparator;
+			storyScoringCSV += "Score" + CSVSeparator;
+			storyScoringCSV += "ScoreExplanation" + CSVSeparator;
+			storyScoringCSV += System.getProperty("line.separator");
+			
 			int highestScore = 0;
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {
+				
+				StoryFinder.consoleLog("Story: " + _links.get(currentScore.getKey()).href + "");
+				StoryFinder.consoleLog("ClassName: " + _links.get(currentScore.getKey()).className + "");
+				StoryFinder.consoleLog("Score: " + currentScore.getValue() + "");
+				StoryFinder.consoleLog("Score Explanation: ");
+				StoryFinder.consoleLog(_links.get(currentScore.getKey()).scoreExplanationLog);
+				StoryFinder.consoleLog("------------------------");
+				
+				//this is to build a sortable and useful CSV file
+				storyScoringCSV += _links.get(currentScore.getKey()).href + CSVSeparator;
+				storyScoringCSV += _links.get(currentScore.getKey()).className + CSVSeparator;
+				storyScoringCSV += currentScore.getValue() + CSVSeparator;
+				storyScoringCSV += _links.get(currentScore.getKey()).scoreExplanationLog + CSVSeparator;
+				storyScoringCSV += System.getProperty("line.separator");
 				
 				//If the current link has the class and a higher score, make it the current story URL
 				if ((_links.get(currentScore.getKey()).className.contains(rankedClasses.get(0))) &&
@@ -596,6 +638,13 @@ public class StoryFinder {
 					storyURL = _links.get(currentScore.getKey()).href;
 					highestScore = currentScore.getValue();
 				}				
+			}
+			//write the completed CSV file to disk
+			try {
+				FileUtils.writeStringToFile(new File("StoryScores.csv"), storyScoringCSV);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			
 			//Clean up the URL
@@ -739,15 +788,20 @@ public class StoryFinder {
 				
 				//Finally, get the score for the link location
 				scoreOffset += (int) (linkXPosition * regionSlope) + yIntercept;
+				//log the xy score adjustment
+				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + ((int) (linkXPosition * regionSlope) + yIntercept));
 				
 				//--------Check to see if link is too high------------
 				//Apply handicap if link lies in page top regions. 
 				//The second regions encompasses the first.
 				if (linkYPosition < TOPREGIONONEHEIGHT) {
 					scoreOffset += TOPREGIONONEHANDICAP;
+					//log the y position score
+					_links.get(currentScore.getKey()).addScoreLog( "Y Position Top 1 Score: " + Integer.toString(TOPREGIONONEHANDICAP));
 				}
 				else if (linkYPosition < TOPREGIONTWOHEIGHT) {
 					scoreOffset += TOPREGIONTWOHANDICAP;
+					_links.get(currentScore.getKey()).addScoreLog( "Y Position Top 2 Score: " + Integer.toString(TOPREGIONTWOHANDICAP));
 				}
 				
 				//Add the score offset to the link object
@@ -790,14 +844,23 @@ public class StoryFinder {
 				int urlTextLength = urlText.length();
 				
 				//If the text is too short, give the url a handicap
-				if (urlTextLength <= SHORTTEXTLENGTH) {scoreOffset += SHORTTEXTHANDICAP;}
+				if (urlTextLength <= SHORTTEXTLENGTH) {
+					scoreOffset += SHORTTEXTHANDICAP;
+					_links.get(currentScore.getKey()).addScoreLog( "Text too short penalty: " + Integer.toString(SHORTTEXTHANDICAP));
+				}
 
 				//If the text is long enough, give the url a higher score
-				else if (urlTextLength >= LONGTEXTLENGTH) {scoreOffset += LONGTEXTSCORE;}
+				else if (urlTextLength >= LONGTEXTLENGTH) {
+					scoreOffset += LONGTEXTSCORE;
+					_links.get(currentScore.getKey()).addScoreLog( "Text too long penalty: " + Integer.toString(LONGTEXTSCORE));
+				}
 				
 				//If there are not enough words in the text, penalize the url
 				int wordCount = urlText.trim().split("\\s+").length;
-				if (wordCount < MINIMUMWORDCOUNT) {scoreOffset += MINIMUMWORDHANDICAP;}
+				if (wordCount < MINIMUMWORDCOUNT) {
+					scoreOffset += MINIMUMWORDHANDICAP;
+					_links.get(currentScore.getKey()).addScoreLog( "Text too few words penalty: " + Integer.toString(MINIMUMWORDHANDICAP));
+				}
 
 				//Add the score offset to the link object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
@@ -831,7 +894,10 @@ public class StoryFinder {
 					String urlPathPart = getFirstPartOfURIPath(urlHref);
 					
 					//If the targetURL and current link path parts are the same, increment the score
-					if (targetURLPathPart.equals(urlPathPart)) {scoreOffset += SAMEPATHPARTSCORE;}
+					if (targetURLPathPart.equals(urlPathPart)) {
+						scoreOffset += SAMEPATHPARTSCORE;
+						_links.get(currentScore.getKey()).addScoreLog( "URL Same Path Score: " + Integer.toString(SAMEPATHPARTSCORE));
+					}
 					
 					//Add the score offset to the link object
 					currentScore.setValue(currentScore.getValue() + scoreOffset);
@@ -858,6 +924,49 @@ public class StoryFinder {
 				//If the text is in all caps, apply the reduction
 				if (urlText.equals(urlText.toUpperCase())) {
 					scoreOffset += ALLCAPSHANDICAP;
+					_links.get(currentScore.getKey()).addScoreLog( "All Caps Title Penalty: " + Integer.toString(ALLCAPSHANDICAP));
+				}
+				
+				//Add the score offset to the link object
+				currentScore.setValue(currentScore.getValue() + scoreOffset);
+			}
+		}
+		
+		public void adjustScoreForPreferredClassNames(HashMap<Integer, Integer> linkScores) {
+			
+			//Loop through each link and handicap its score if it is in all capital letters
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+				
+				//Set the score offset to zero
+				int scoreOffset = 0;
+				
+				//Get the url's classname
+				String classNameText = _links.get(currentScore.getKey()).className;
+				
+				if (classNameText.contains("story")) {
+					scoreOffset += PREFERREDCLASSNAMESCORE;
+					_links.get(currentScore.getKey()).addScoreLog( "Preferred ClassName Score: " + Integer.toString(PREFERREDCLASSNAMESCORE));
+				}
+				
+				//Add the score offset to the link object
+				currentScore.setValue(currentScore.getValue() + scoreOffset);
+			}
+		}
+		
+		public void adjustScoreForUnwantedClassNames(HashMap<Integer, Integer> linkScores) {
+			
+			//Loop through each link and handicap its score if it is in all capital letters
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+				
+				//Set the score offset to zero
+				int scoreOffset = 0;
+				
+				//Get the url's classname
+				String classNameText = _links.get(currentScore.getKey()).className;
+				
+				if (classNameText.contains("nav")) {
+					scoreOffset += UNWANTEDCLASSNAMEHANDICAP;
+					_links.get(currentScore.getKey()).addScoreLog( "Unwanted ClassName Score: " + Integer.toString(UNWANTEDCLASSNAMEHANDICAP));
 				}
 				
 				//Add the score offset to the link object
