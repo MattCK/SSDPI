@@ -26,7 +26,7 @@ public class StoryFinderTester {
 		
 		//System.out.println(args[0]);
 		
-		String sectionURL = "http://www.nytimes.com/pages/politics/index.html";
+		String sectionURL = "http://www.chicagotribune.com/entertainment/";
 		//sectionURL = args[0]
 		
 		String foundStoryURL = "";

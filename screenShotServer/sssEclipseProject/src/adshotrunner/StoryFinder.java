@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,6 +74,9 @@ public class StoryFinder {
         try {
             
         	//Run the retrieve links js file with phantomjs
+        	StoryFinder.consoleLog("getLinkJSONFromUrl url: " + url);
+        	StoryFinder.consoleLog("getLinkJSONFromUrl width: " + viewWidth);
+        	StoryFinder.consoleLog("getLinkJSONFromUrl height: " + viewHeight);
             Process p = Runtime.getRuntime().exec(new String[]{
 	            "phantomjs/phantomjs", 
 	            "javascript/retrievePossibleStoriesFromURL.js",
@@ -191,6 +195,8 @@ public class StoryFinder {
 		//JsonArray linksArray = new Gson().fromJson(linkJSON, JsonArray.class);
 		Gson gson = new Gson();
 		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
+		StoryFinder.consoleLog("TokenType: " + arrayStoryLinksToken.toString());
+		StoryFinder.consoleLog("linkJSON: " + linkJSON);
 		ArrayList<StoryLink> storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
 
 		//Get the primary domain of the StoryFinder URL
@@ -641,7 +647,7 @@ public class StoryFinder {
 			}
 			//write the completed CSV file to disk
 			try {
-				FileUtils.writeStringToFile(new File("StoryScores.csv"), storyScoringCSV);
+				FileUtils.writeStringToFile(new File("StoryScores" + UUID.randomUUID() + ".csv"), storyScoringCSV);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -694,6 +700,8 @@ public class StoryFinder {
 			adjustScoresByTitleLength(linkScores);
 			adjustScoresBySimilarPaths(linkScores);
 			adjustScoreIfAllCaps(linkScores);
+			adjustScoreForPreferredClassNames(linkScores);
+			adjustScoreForUnwantedClassNames(linkScores);
 			
 			//Return the scores of each valid link
 			return linkScores;
@@ -789,7 +797,7 @@ public class StoryFinder {
 				//Finally, get the score for the link location
 				scoreOffset += (int) (linkXPosition * regionSlope) + yIntercept;
 				//log the xy score adjustment
-				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + ((int) (linkXPosition * regionSlope) + yIntercept));
+				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + ((int) (linkXPosition * regionSlope) + yIntercept) + " xPos :" + linkXPosition + " regionSlope:" + regionSlope);
 				
 				//--------Check to see if link is too high------------
 				//Apply handicap if link lies in page top regions. 
@@ -852,7 +860,7 @@ public class StoryFinder {
 				//If the text is long enough, give the url a higher score
 				else if (urlTextLength >= LONGTEXTLENGTH) {
 					scoreOffset += LONGTEXTSCORE;
-					_links.get(currentScore.getKey()).addScoreLog( "Text too long penalty: " + Integer.toString(LONGTEXTSCORE));
+					_links.get(currentScore.getKey()).addScoreLog( "Text good length score: " + Integer.toString(LONGTEXTSCORE));
 				}
 				
 				//If there are not enough words in the text, penalize the url
@@ -942,9 +950,9 @@ public class StoryFinder {
 				
 				//Get the url's classname
 				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
-				String unwantedClassNames[] = new String [] {"story",""};
+				String preferredClassNames[] = new String [] {"story","news-item"};
 				
-				if (classNameText.contains("story")) {
+				if (stringContainsItemFromListCapInsensitive(classNameText, preferredClassNames)) {
 					scoreOffset += PREFERREDCLASSNAMESCORE;
 					_links.get(currentScore.getKey()).addScoreLog( "Preferred ClassName Score: " + Integer.toString(PREFERREDCLASSNAMESCORE));
 				}
@@ -964,8 +972,9 @@ public class StoryFinder {
 				
 				//Get the url's classname
 				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
+				String unwantedClassNames[] = new String [] {"mnu","menu","nav","navigation","header"};
 				
-				if (classNameText.contains("nav")) {
+				if (stringContainsItemFromListCapInsensitive(classNameText, unwantedClassNames)) {
 					scoreOffset += UNWANTEDCLASSNAMEHANDICAP;
 					_links.get(currentScore.getKey()).addScoreLog( "Unwanted ClassName Score: " + Integer.toString(UNWANTEDCLASSNAMEHANDICAP));
 				}
@@ -1064,6 +1073,19 @@ public class StoryFinder {
 			//Or return nothing
 			else {return "";}
 		}
+		
+		private boolean stringContainsItemFromListCapInsensitive(String inputString, String[] items)
+		{
+			inputString = inputString.toLowerCase();
+		    for(int i =0; i < items.length; i++)
+		    {
+		        if(inputString.contains(items[i].toLowerCase()))
+		        {
+		            return true;
+		        }
+		    }
+		    return false;
+		} 
 		
 	}
 }

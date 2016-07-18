@@ -5,7 +5,7 @@
 */ 
 
 //Constants used throughout script
-var WINDOWWIDTH = 1024;
+var WINDOWWIDTH = 1366;
 var WINDOWHEIGHT = 768;
 
 //Grab the passed target URL to grab stories from
@@ -13,8 +13,8 @@ var system = require('system');
 var targetURL = system.args[1];
 if (!targetURL) {console.log('FAILURE: No URL passed'); phantom.exit();}
 
-//Grab the screen height and width. If not available, use 1024 x 768
-var WINDOWWIDTH = (system.args[2]) ? system.args[2] : 1024;
+//Grab the screen height and width. If not available, use 1366 x 768
+var WINDOWWIDTH = (system.args[2]) ? system.args[2] : 1366;
 var WINDOWHEIGHT = (system.args[3]) ? system.args[3] : 768;
 
 //Create the phantomjs driver webpage and set the viewport to a standard monitor size 
@@ -24,12 +24,17 @@ page.viewportSize = {width: WINDOWWIDTH, height: WINDOWHEIGHT};
 //This suppresses all error messages. Comment out to view console errors.
 page.onError = function(msg, trace) {};
 
+page.onResourceError = function(resourceError) {
+    page.reason = resourceError.errorString;
+    page.reason_url = resourceError.url;
+};
+
 //Try to connect to and open the target URL
 page.open(targetURL, function(status) {
 
 	//If the connection failed, notify and end execution	
 	if (status !== 'success') {
-		console.log('FAILURE: Unable to connect to URL'); phantom.exit();
+		console.log('FAILURE: Unable to connect to URL- ' + page.reason_url + " reason: " + page.reason + " targetURL:" + targetURL); phantom.exit();
 	} 
 
 	//Otherwise, get the stories
