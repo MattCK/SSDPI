@@ -79,6 +79,11 @@ public class AdShot {
 	private BufferedImage _image;
 	
 	/**
+	 * The final URL of the screenshot after page redirects. Default: null
+	 */
+	private String _finalURL;
+	
+	/**
 	 * Possible error that occurred during the screenshot attempt. Default: null
 	 */
 	private Exception _error;
@@ -118,6 +123,11 @@ public class AdShot {
 	public BufferedImage image() {return _image;}
 	
 	/**
+	 * @return	Final URL after redirects of the final screenshot. Default: null
+	 */
+	public String finalURL() {return _finalURL;}
+	
+	/**
 	 * @return	Possible error that occurred during screenshot attempt. Default: null
 	 */
 	public Exception error() {return _error;}
@@ -127,6 +137,12 @@ public class AdShot {
 	 * @param newImage	Screenshot image
 	 */
 	public void setImage(BufferedImage newImage) {_image = newImage;}
+	
+	/**
+	 * Sets the final URL of the screenshot after redirects
+	 * @param String	Final URL after redirects
+	 */
+	public void setFinalURL(String newURL) {_finalURL = newURL;}
 	
 	/**
 	 * Sets error that occurred during screenshot attempt.

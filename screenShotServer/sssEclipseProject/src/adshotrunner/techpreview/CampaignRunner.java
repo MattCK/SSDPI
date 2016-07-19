@@ -40,7 +40,30 @@ public class CampaignRunner implements Runnable {
 		//Put the tag images into a list
 		ArrayList<TagImage> tagImages = new ArrayList<TagImage>();
 		for (String tagURL: requestInfo.tagImages) {
-			tagImages.add(TagImage.create(tagURL));
+			
+			//////////////////////////////////////////////////////////////
+			/////// For some stupid god damn reason, calls to ///////////
+			/////// S3 on AWS' own network can fail. For this ///////////
+			/////// stud campaign runner and for the fact it  ///////////
+			/////// is incredibly rare, we'll try to grab it  ///////////
+			/////// a few times and otherwise not use it.     ///////////
+			//////////////////////////////////////////////////////////////
+			boolean tagRetrieved = false;
+			int tagRetrievalAttempts = 0;
+			TagImage currentTagImage = null;
+			while ((!tagRetrieved) && (tagRetrievalAttempts < 3)) {
+				try {
+					currentTagImage = TagImage.create(tagURL); 
+					tagRetrieved = true;
+				}
+				catch (Exception e) {
+					++tagRetrievalAttempts;
+				}
+			}
+			
+			if (currentTagImage != null) {
+				tagImages.add(currentTagImage);
+			}
 		}
 		
 		//Create the AdShotter to use
@@ -63,8 +86,7 @@ public class CampaignRunner implements Runnable {
 				try {
 					foundStoryURL = new StoryFinder(URLTool.setProtocol("http",pageURL)).Scorer().getStory();
 					System.out.println("StoryFinder found: " + foundStoryURL);
-				} catch (MalformedURLException | UnsupportedEncodingException
-						| URISyntaxException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					System.out.println("Error finding story");
 					e.printStackTrace();

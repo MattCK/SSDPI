@@ -8,6 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -285,7 +287,7 @@ public class AdShotter2 {
 		}
 		
     	//Take the screenshot 
-		System.out.print("Taking screenshot...");
+		consoleLog("Taking screenshot...");
 		long screenShotStartTime = System.nanoTime();
 		
     	File screenShot = null;
@@ -296,8 +298,7 @@ public class AdShotter2 {
 		}
 		
     	long screenShotEndTime = System.nanoTime();
-		System.out.print("Done! - ");
-		consoleLog((screenShotEndTime - screenShotStartTime)/1000000 + " ms");
+		consoleLog("Done! - " + (screenShotEndTime - screenShotStartTime)/1000000 + " ms");
 		
 		//Crop the image
 		try {adShot.setImage(cropAndConvertImageFile(screenShot, 1200, treatAsTag));}
@@ -470,12 +471,12 @@ public class AdShotter2 {
 		while (!succeeded && (attempts < 3)) {
 			try {
 				//activeSeleniumDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"t");
-				pause(1000);
+				pause(2000);
 				new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "t")).perform();
 				activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
 				activeSeleniumDriver.switchTo().defaultContent();
-				pause(1500);
-				succeeded = true;
+				pause(1000);
+				succeeded = activeSeleniumDriver.getCurrentUrl().equals("about:newtab");
 			}
 			catch (Exception e) {
 				++attempts; 
@@ -493,9 +494,24 @@ public class AdShotter2 {
 	 * @param activeSeleniumDriver	Selenium driver to interact with
 	 */
 	private void navigateToNextTab(WebDriver activeSeleniumDriver) {
-		new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.TAB)).perform();
-		activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
-		activeSeleniumDriver.switchTo().defaultContent();
+		int attempts = 0;
+		boolean succeeded = false;
+		while (!succeeded && (attempts < 3)) {
+			try {
+				pause(1500);
+				String startURL = activeSeleniumDriver.getCurrentUrl();
+				new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.TAB)).perform();
+				activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
+				activeSeleniumDriver.switchTo().defaultContent();
+				pause(1000);
+				succeeded = (!activeSeleniumDriver.getCurrentUrl().equals(startURL));
+			}
+			catch (Exception e) {
+				++attempts; 
+				consoleLog("Couldn't move to next tab: " + attempts);
+				pause(500);
+			}
+		}
 	}
 	
 	/**
@@ -626,7 +642,7 @@ public class AdShotter2 {
 	 */
 	private File captureSeleniumDriverScreenshot(final WebDriver activeSeleniumWebDriver) {
 		
-		consoleLog("\nAdShot: Send stop scripts key");	        	
+		consoleLog("Send stop scripts key - Just before screenshot");	        	
 		consoleLog("Pausing for .5 seconds");
 		pause(500);
 		
@@ -724,7 +740,7 @@ public class AdShotter2 {
 	
 	private void quitWebdriver(WebDriver activeSeleniumWebDriver) {
 		
-		System.out.print("Quitting web driver...");
+		consoleLog("Quitting web driver...");
     	final WebDriver finalDriver = activeSeleniumWebDriver;
     	TimeLimiter timeoutLimiter = new SimpleTimeLimiter();
 		try {
@@ -751,7 +767,10 @@ public class AdShotter2 {
 	}
 	
 	private void consoleLog(String message) {
-		if (VERBOSE) {System.out.println(message);}
+		if (VERBOSE) {
+			String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
+			System.out.println(timeStamp + ": " + message);
+		}
 	}
 	
 	//---------------------------------------------------------------------------------------
