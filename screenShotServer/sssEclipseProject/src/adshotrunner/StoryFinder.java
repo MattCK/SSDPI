@@ -195,8 +195,8 @@ public class StoryFinder {
 		//JsonArray linksArray = new Gson().fromJson(linkJSON, JsonArray.class);
 		Gson gson = new Gson();
 		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
-		StoryFinder.consoleLog("TokenType: " + arrayStoryLinksToken.toString());
-		StoryFinder.consoleLog("linkJSON: " + linkJSON);
+		//StoryFinder.consoleLog("TokenType: " + arrayStoryLinksToken.toString());
+		//StoryFinder.consoleLog("linkJSON: " + linkJSON);
 		ArrayList<StoryLink> storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
 
 		//Get the primary domain of the StoryFinder URL
@@ -314,19 +314,11 @@ public class StoryFinder {
 		/**
 		 * Score of the one third point of the screen width. DEFAULT: 10
 		 */
-		private int POSITIONONETHIRDXSCORE;
+		private int POSITIONONEFOURTHXSCORE;
 		/**
 		 * Score of the one half point of the screen width. DEFAULT: 19
 		 */
-		private int POSITIONONEHALFXSCORE;
-		/**
-		 * Score of the optimal point of the screen width. DEFAULT: 20
-		 */
-		private int POSITIONOPTIMALXSCORE;
-		/**
-		 * Score of two one third point of the screen width. DEFAULT: 19
-		 */
-		private int POSITIONTWOTHIRDXSCORE;
+		private int POSITIONTHREEQUARTERXSCORE;
 		/**
 		 * Score of the right most width point (complete right side of page). DEFAULT: 0
 		 */
@@ -374,7 +366,7 @@ public class StoryFinder {
 		 */
 		private int MINIMUMWORDCOUNT;
 		/**
-		 * Handicap link receieves if its title does not meet the minimum word count (negative number). DEFAULT: -10
+		 * Handicap link receives if its title does not meet the minimum word count (negative number). DEFAULT: -10
 		 */
 		private int MINIMUMWORDHANDICAP;
 		
@@ -405,11 +397,9 @@ public class StoryFinder {
 			
 			//Set page position defaults
 			POSITIONLEFTMOSTXSCORE = 0;
-			POSITIONONETHIRDXSCORE = 10;
-			POSITIONONEHALFXSCORE = 19;
-			POSITIONOPTIMALXSCORE = 20;
-			POSITIONTWOTHIRDXSCORE = 19;
-			POSITIONRIGHTMOSTXSCORE = 0;
+			POSITIONONEFOURTHXSCORE = 15;
+			POSITIONTHREEQUARTERXSCORE = 0;
+			POSITIONRIGHTMOSTXSCORE = -10;
 			
 			//Set top region defaults
 			TOPREGIONONEHEIGHT = 350;
@@ -451,32 +441,16 @@ public class StoryFinder {
 		 * @param newValue	The new value of the one-third position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Scorer positionOneThirdXScore(int newValue) {
-			POSITIONONETHIRDXSCORE = newValue; return this;
-		}
-		/**
-		 * Sets the score of the one-half position for page location scoring
-		 * @param newValue	The new value of the one-half position score
-		 * @return 			Reference to the current class instance
-		 */
-		public Scorer positionOneHalfXScore(int newValue) {
-			POSITIONONEHALFXSCORE = newValue; return this;
-		}
-		/**
-		 * Sets the score of the optimal position for page location scoring
-		 * @param newValue	The new value of the optimal position score
-		 * @return 			Reference to the current class instance
-		 */
-		public Scorer positionOptimalXScore(int newValue) {
-			POSITIONOPTIMALXSCORE = newValue; return this;
+		public Scorer positionOneFourthXScore(int newValue) {
+			POSITIONONEFOURTHXSCORE = newValue; return this;
 		}
 		/**
 		 * Sets the score of the two-third position for page location scoring
 		 * @param newValue	The new value of the two-third position score
 		 * @return 			Reference to the current class instance
 		 */
-		public Scorer positionTwoThirdXScore(int newValue) {
-			POSITIONTWOTHIRDXSCORE = newValue; return this;
+		public Scorer positionThreeQuarterXScore(int newValue) {
+			POSITIONTHREEQUARTERXSCORE = newValue; return this;
 		}
 		/**
 		 * Sets the score of the rightmost position (far right of page) for page location scoring
@@ -655,11 +629,11 @@ public class StoryFinder {
 			
 			//Clean up the URL
 			//If it begins with http, do nothing
-			if (storyURL.substring(0, 4).equals("http")) {}
+			if ((storyURL.length() >=4) && (storyURL.substring(0, 4).equals("http"))) {}
 			
 			//Some sites put // before the substring to keep protocol
 			//Since we don't care about protocol at the moment (due to redirects) just remove it
-			else if (storyURL.substring(0, 2).equals("//")) {
+			else if ((storyURL.length() >=2) &&(storyURL.substring(0, 2).equals("//"))) {
 				storyURL = storyURL.substring(2);
 			}
 			
@@ -667,7 +641,7 @@ public class StoryFinder {
 			else {
 				
 				//Add a slash before the URL if none exists
-				if (!storyURL.substring(0, 1).equals("/")) {
+				if ((storyURL.length() >=4) && (!storyURL.substring(0, 1).equals("/"))) {
 					storyURL = "/" + storyURL;
 				}
 				
@@ -749,11 +723,9 @@ public class StoryFinder {
 			 */
 			//Set the points based on the screen size
 			int firstPoint = 0;  								//Named for simpler clarity
-			int secondPoint = _screenWidth/3;					//One third mark
-			int thirdPoint = _screenWidth/2;						//Halfway mark
-			int fourthPoint = _screenWidth/3 + _screenWidth/4;  	//Halfway to 
-			int fifthPoint = _screenWidth*2/3;					//Two third mark
-			int sixthPoint = _screenWidth;						//Also added for clarity
+			int secondPoint = _screenWidth/4;					//One fourth mark
+			int thirdPoint = _screenWidth*3/4;						//three fourths mark
+			int fourthPoint = _screenWidth;  					////Also added for clarity
 			
 			//Loop through each remaining link and determine its score according to its place on the page
 			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
@@ -764,29 +736,31 @@ public class StoryFinder {
 				//Grab the current link's position
 				int linkXPosition = _links.get(currentScore.getKey()).xPosition;
 				int linkYPosition = _links.get(currentScore.getKey()).yPosition;
+				int linkRelativeXPosition = 0;
+				double xPositionScoreAdjustment = 0;
 				
 				//Based on the location of the link, determine the two points that it's between and their scores.
 				int leftPoint, leftScore, rightPoint, rightScore = 0;
 				if (linkXPosition < secondPoint) {
-					leftPoint = firstPoint; leftScore = POSITIONLEFTMOSTXSCORE;
-					rightPoint = secondPoint; rightScore = POSITIONONETHIRDXSCORE;
+					leftPoint = 0; leftScore = POSITIONLEFTMOSTXSCORE;
+					rightPoint = secondPoint - firstPoint; rightScore = POSITIONONEFOURTHXSCORE;
+					linkRelativeXPosition = linkXPosition - firstPoint;
+					//xPositionScoreAdjustment = 3;
+					
 				}
 				else if (linkXPosition < thirdPoint) {
-					leftPoint = secondPoint; leftScore = POSITIONONETHIRDXSCORE;
-					rightPoint = thirdPoint; rightScore = POSITIONONEHALFXSCORE;
+					leftPoint = 0; leftScore = POSITIONONEFOURTHXSCORE;
+					rightPoint = thirdPoint - secondPoint; rightScore = POSITIONTHREEQUARTERXSCORE;
+					linkRelativeXPosition = linkXPosition - secondPoint;
+					//xPositionScoreAdjustment = 8;
 				}
-				else if (linkXPosition < fourthPoint) {
-					leftPoint = thirdPoint; leftScore = POSITIONONEHALFXSCORE;
-					rightPoint = fourthPoint; rightScore = POSITIONOPTIMALXSCORE;
+				else 	{
+					leftPoint = 0; leftScore = POSITIONTHREEQUARTERXSCORE;
+					rightPoint = fourthPoint - thirdPoint; rightScore = POSITIONRIGHTMOSTXSCORE;
+					linkRelativeXPosition = linkXPosition - thirdPoint;
+					//xPositionScoreAdjustment = -5;
 				}
-				else if (linkXPosition < fifthPoint) {
-					leftPoint = fourthPoint; leftScore = POSITIONOPTIMALXSCORE;
-					rightPoint = fifthPoint; rightScore = POSITIONTWOTHIRDXSCORE;
-				}
-				else {
-					leftPoint = fifthPoint; leftScore = POSITIONTWOTHIRDXSCORE;
-					rightPoint = sixthPoint; rightScore = POSITIONRIGHTMOSTXSCORE;
-				}
+				
 				
 				//Use the points as the x and the scores as y, get the slope				
 				double regionSlope = (double) (rightScore - leftScore)/(rightPoint - leftPoint);
@@ -795,9 +769,11 @@ public class StoryFinder {
 				int yIntercept = (int) (leftScore - regionSlope*leftPoint);
 				
 				//Finally, get the score for the link location
-				scoreOffset += (int) (linkXPosition * regionSlope) + yIntercept;
+				xPositionScoreAdjustment = (double) (linkRelativeXPosition * regionSlope) + yIntercept;
+				scoreOffset += (int) (xPositionScoreAdjustment);
 				//log the xy score adjustment
-				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + ((int) (linkXPosition * regionSlope) + yIntercept) + " xPos :" + linkXPosition + " regionSlope:" + regionSlope);
+				//_links.get(currentScore.getKey()).addScoreLog( "firstPt:" + firstPoint + " secondPt:" + secondPoint + " thirdPt" + thirdPoint + " fourthPt" + fourthPoint + " relativeX:" + linkRelativeXPosition + " rightPt:" + rightPoint );
+				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + (int)xPositionScoreAdjustment );//+ " xPos :" + linkXPosition + " regionSlope:" + regionSlope + " yIntercept: " + yIntercept);
 				
 				//--------Check to see if link is too high------------
 				//Apply handicap if link lies in page top regions. 
@@ -900,7 +876,8 @@ public class StoryFinder {
 					//Grab the current link's href and path part
 					String urlHref = _links.get(currentScore.getKey()).href;
 					String urlPathPart = getFirstPartOfURIPath(urlHref);
-					
+					//StoryFinder.consoleLog("UrlPathScoring - StoryHref:" + urlHref + " path: " + urlPathPart);
+					//StoryFinder.consoleLog("UrlPathScoring - TargetHref:" + _targetURL + " path: " +targetURLPathPart);
 					//If the targetURL and current link path parts are the same, increment the score
 					if (targetURLPathPart.equals(urlPathPart)) {
 						scoreOffset += SAMEPATHPARTSCORE;
@@ -950,7 +927,7 @@ public class StoryFinder {
 				
 				//Get the url's classname
 				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
-				String preferredClassNames[] = new String [] {"story","news-item"};
+				String preferredClassNames[] = new String [] {"story","news-item","relatedListTitle","headline"};
 				
 				if (stringContainsItemFromListCapInsensitive(classNameText, preferredClassNames)) {
 					scoreOffset += PREFERREDCLASSNAMESCORE;
@@ -972,7 +949,7 @@ public class StoryFinder {
 				
 				//Get the url's classname
 				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
-				String unwantedClassNames[] = new String [] {"mnu","menu","nav","navigation","header"};
+				String unwantedClassNames[] = new String [] {"mnu","menu","nav","navigation","header","promo"};
 				
 				if (stringContainsItemFromListCapInsensitive(classNameText, unwantedClassNames)) {
 					scoreOffset += UNWANTEDCLASSNAMEHANDICAP;
@@ -1061,7 +1038,8 @@ public class StoryFinder {
 			if (uriParts.length <= 1) {return "";}
 			
 			//If the passed URI was a relative path beginning with a forward slash, return second array section
-			else if (URIString.substring(1,2).equals("/")) {
+			else if ((URIString.substring(0,1).equals("/")) || URIString.substring(1, 2).equals("/")) {
+				//StoryFinder.consoleLog("inside relative path:" + uriParts[1]);
 				return uriParts[1];
 			}
 			
@@ -1071,7 +1049,10 @@ public class StoryFinder {
 			}
 			
 			//Or return nothing
-			else {return "";}
+			else {
+				//StoryFinder.consoleLog("return nothing");
+				return "";
+				}
 		}
 		
 		private boolean stringContainsItemFromListCapInsensitive(String inputString, String[] items)

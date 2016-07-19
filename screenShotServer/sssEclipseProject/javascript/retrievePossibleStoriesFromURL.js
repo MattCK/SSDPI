@@ -34,7 +34,7 @@ page.open(targetURL, function(status) {
 
 	//If the connection failed, notify and end execution	
 	if (status !== 'success') {
-		console.log('FAILURE: Unable to connect to URL- ' + page.reason_url + " reason: " + page.reason + " targetURL:" + targetURL); phantom.exit();
+		console.log(status + ': FAILURE: Unable to connect to URL- ' + page.reason_url + " reason: " + page.reason + " targetURL:" + targetURL); phantom.exit();
 	} 
 
 	//Otherwise, get the stories
