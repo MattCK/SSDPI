@@ -12,6 +12,14 @@ public class StoryLink {
 	public String id;
 	public String name;
 	public String onclick;
+	public String scoreExplanationLog;
 	
-	StoryLink() {}
+	StoryLink() {
+		this.scoreExplanationLog = "";
+	}
+	public void addScoreLog(String Explanation){
+		
+		//this.scoreExplanationLog += Explanation + System.getProperty("line.separator");
+		this.scoreExplanationLog += Explanation + ",";
+	}
 }
