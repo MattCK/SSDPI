@@ -1,0 +1,1 @@
+fail: FAILURE: Unable to connect to URL- http://www.forbes.com/technology/ reason: Host www.forbes.com not found targetURL:http://www.forbes.com/technology/

@@ -9,6 +9,8 @@ public class StoryLink {
 	public String title;
 	public int xPosition;
 	public int yPosition;
+	public int width;
+	public int height;
 	public String id;
 	public String name;
 	public String onclick;

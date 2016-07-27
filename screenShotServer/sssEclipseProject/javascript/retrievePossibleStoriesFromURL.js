@@ -21,6 +21,18 @@ var WINDOWHEIGHT = (system.args[3]) ? system.args[3] : 768;
 var page = require('webpage').create();
 page.viewportSize = {width: WINDOWWIDTH, height: WINDOWHEIGHT};
 
+//set browser user agent
+//page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
+page.settings.userAgent = 'Mozilla/5.0 (compatible; Googlebot/2.1; http://www.google.com/bot.html)'
+
+page.customHeaders = {
+  "Referer": "https://www.google.com/"
+};
+ 
+page.onLoadStarted = function() {
+    page.customHeaders = {};
+};
+
 //This suppresses all error messages. Comment out to view console errors.
 page.onError = function(msg, trace) {};
 
@@ -36,7 +48,7 @@ page.open(targetURL, function(status) {
 	if (status !== 'success') {
 		console.log(status + ': FAILURE: Unable to connect to URL- ' + page.reason_url + " reason: " + page.reason + " targetURL:" + targetURL); phantom.exit();
 	} 
-
+			
 	//Otherwise, get the stories
 	else {
 
@@ -49,11 +61,11 @@ page.open(targetURL, function(status) {
 
 			//Grab all anchor elements from the page
 			var anchorElements = document.getElementsByTagName('a');
-			
+			//console.log(" elements: " + anchorElements.length);
 			//Loop through each elements and grab its own attributes and info
 			var anchorInfoList = [];
 			for (var curIndex = 0; curIndex < anchorElements.length; curIndex++) {
-					
+				//console.log("link found");
 				//Store the element's basic attributes 
 				var curAnchorInfo = {};
 				curAnchorInfo['id'] = anchorElements[curIndex].getAttribute('id');
@@ -69,8 +81,16 @@ page.open(targetURL, function(status) {
 				var currentHeight = 0;
 				var curParentNode = anchorElements[curIndex].parentNode;
 				while ((!curClass) && (currentHeight < MAXPARENTSEARCHHEIGHT)) {
-					curClass = curParentNode.getAttribute('class');;
-					curParentNode = curParentNode.parentNode;
+					
+					try{
+						curClass = curParentNode.getAttribute('class');
+					}
+					catch(err){
+
+					}
+					if ((curParentNode) && (curParentNode.parentNode)){
+						curParentNode = curParentNode.parentNode;
+					}
 					++currentHeight;
 				}
 				
@@ -78,7 +98,7 @@ page.open(targetURL, function(status) {
 				if (curClass) {curAnchorInfo['className'] = curClass;}
 				else {curAnchorInfo['className'] = "";}
 				
-				//Determine the anchor's location and add it to the info object
+				//Determine the anchor's location and size then add it to the info object
 				var box = anchorElements[curIndex].getBoundingClientRect();
 				var body = document.body;
 				var docElem = document.documentElement;
@@ -88,8 +108,12 @@ page.open(targetURL, function(status) {
 				var clientLeft = docElem.clientLeft || body.clientLeft || 0;
 				var top  = box.top +  scrollTop - clientTop;
 				var left = box.left + scrollLeft - clientLeft;
+				var currWidth = box.right - left;
+				var currHeight = box.bottom - box.top;
 				curAnchorInfo['yPosition'] = Math.round(top);
 				curAnchorInfo['xPosition'] = Math.round(left);
+				curAnchorInfo['width'] = Math.round(currWidth);
+				curAnchorInfo['height'] = Math.round(currHeight);
 				
 				//Finaly, add the info to the main list
 				anchorInfoList[curIndex] = curAnchorInfo;
@@ -99,7 +123,12 @@ page.open(targetURL, function(status) {
 			//Convert the anchor info list into JSON and return it
 			return JSON.stringify(anchorInfoList);
 		});
+
+		//page.render('currPhantomPage.png');
 		
+		//var pageContent = page.content;
+		//stringBuilder = stringBuilder + pageContent;
+		//console.log(pageTitle + 'FullDoc:' + pageContent);
 		//Print the final JSON to the command terminal
 		console.log(anchorListJSON);
 	}
