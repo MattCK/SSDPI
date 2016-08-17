@@ -88,22 +88,25 @@
 	<classpathentry kind="lib" path="lib/pptx4j/wmf2svg-0.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/pptx4j/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/pptx4j/xmlgraphics-commons-1.5.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/aspectj-1.6/aspectjrt.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/aspectj-1.6/aspectjweaver.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/commons-codec-1.6/commons-codec-1.6.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/commons-logging-1.1.3/commons-logging-1.1.3.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/freemarker-2.3.18/freemarker-2.3.18.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/httpcomponents-client-4.3/httpclient-4.3.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/httpcomponents-client-4.3/httpcore-4.3.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/jackson-annotations-2.3.0/jackson-annotations-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/jackson-core-2.3.2/jackson-core-2.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/jackson-databind-2.3.2/jackson-databind-2.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/javax-mail-1.4.6/javax.mail-api-1.4.6.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/joda-time-2.2/joda-time-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/spring-3.0/spring-beans-3.0.7.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/spring-3.0/spring-context-3.0.7.jar"/>
-	<classpathentry kind="lib" path="lib/awsThirdParty/spring-3.0/spring-core-3.0.7.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/pptx4j/slf4j-simple-1.7.21.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/aspectjrt-1.8.2.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/aspectjweaver.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/commons-logging-1.1.3.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/freemarker-2.3.9.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/httpclient-4.5.2.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/httpcore-4.4.4.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/jackson-annotations-2.6.0.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/jackson-core-2.6.6.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/jackson-databind-2.6.6.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/jackson-dataformat-cbor-2.6.6.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/javax.mail-api-1.4.6.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/jmespath-java-1.0.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/joda-time-2.8.1.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/spring-beans-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/spring-context-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/spring-core-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="/home/juicio/Documents/SSDPI/screenShotServer/sssEclipseProject/lib/awsThirdParty/spring-test-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -280,6 +280,7 @@ public class AdShotter2 {
 			Type listType = new TypeToken<ArrayList<String>>(){}.getType();
 			List<String> injectedTagImageIDs = new Gson().fromJson(injecterResponse, listType);
 			adShot.markTagImageAsInjected(injectedTagImageIDs);
+			System.out.println("Injected Tags Size: " + adShot.injectedTagImages().size());
 		}
 		
     	//Take the screenshot 

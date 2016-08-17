@@ -145,12 +145,10 @@ public class AdShot {
 
 		while (tagImageIterator.hasNext()) {
 			String tagImageID = tagImageIterator.next();
-			for (TagImage tagImage: _tagImages) {
-				if (tagImage.id().equals(tagImageID)) {
-					_injectedTagImages.add(tagImage);
-				}
-			}
-		}		
+			_tagImages.forEach(tagImage -> {if (tagImage.id().equals(tagImageID)) {
+												_injectedTagImages.add(tagImage);}});
+		}	
+		
 	}
 	
 	/**
