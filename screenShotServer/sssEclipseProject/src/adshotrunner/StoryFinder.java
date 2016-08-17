@@ -67,10 +67,11 @@ public class StoryFinder {
 	 * @param viewHeight	URL to grab the links from
 	 * @return				JSON string of links and their info
 	 */
-	private static String getLinkJSONFromURL(String url, int viewWidth, int viewHeight) {
+	private static String getLinkJSONFromURL(String url, int viewWidth, int viewHeight, String userAgent) {
 		
 		//Try to make the phantomjs call and return the JSON
         String phantomJSResponse = null;
+        
         try {
             
         	//Run the retrieve links js file with phantomjs
@@ -80,14 +81,14 @@ public class StoryFinder {
             Process p = Runtime.getRuntime().exec(new String[]{
 	            "phantomjs/phantomjs", 
 	            "javascript/retrievePossibleStoriesFromURL.js",
-	            url, Integer.toString(viewWidth), Integer.toString(viewHeight)        	
+	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent        	
             });
             
             //Get the string returned from phantomjs
-            //String thisLine = null;
+            String thisLine = "";
             BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            //while ((thisLine = commandLineInput.readLine()) != null) {
-            	//phantomJSResponse += thisLine;
+           // while ((thisLine = commandLineInput.readLine()) != null) {
+            //	phantomJSResponse += thisLine;
             //}
             phantomJSResponse = commandLineInput.readLine();
         }
@@ -167,11 +168,23 @@ public class StoryFinder {
 		_screenWidth = viewWidth;
 		_screenHeight = viewHeight;
 		
-		//Get the possible story links using phantomjs
-		String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight);
-                
-        //Get the immutable link info as array of maps
-		_links = getLinkInfoFromJSON(linkJSON);
+		//loop through the phantomjs request trying different user agents
+		String userAgents[] = new String [] {"googlebot","firefox", "msnbot", "firefoxlinux"};
+		int userAgentIncrementor = 0;
+		int linkCountMinimum = 10;
+		List<StoryLink> currLinks = new ArrayList<StoryLink>();
+		while((userAgentIncrementor < userAgents.length) && (currLinks.size()< linkCountMinimum)){
+		
+			StoryFinder.consoleLog("Trying phantomJS with agent:" + userAgents[userAgentIncrementor]);
+			//Get the possible story links using phantomjs
+			String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor]);
+	                
+	        //Get the immutable link info as array of maps
+			currLinks = getLinkInfoFromJSON(linkJSON);
+			
+			userAgentIncrementor++;
+		}
+		_links = currLinks;
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -243,7 +256,7 @@ public class StoryFinder {
 			        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
 			        Matcher m = p.matcher(currentLink.href);
 			        if (m.find()) {currentLink.href = m.group(0);}
-			        else {currentLink.href = "";}
+			        else {linksIterator.remove();}
 			    }
 			}
 		}
@@ -297,9 +310,15 @@ public class StoryFinder {
 
 			URL urlObject = new URL(URIString);
 			String nullFragment = null;
+			try{
 			URI uriObject = new URI(urlObject.getProtocol(), urlObject.getHost(), urlObject.getPath(), urlObject.getQuery(), nullFragment);
 			if (uriObject.getHost() == null) {return "";}
-			return InternetDomainName.from(uriObject.getHost()).topPrivateDomain().toString();
+				return InternetDomainName.from(uriObject.getHost()).topPrivateDomain().toString();
+			}
+			catch(Exception e){
+				return "";
+				//private suffix will cause an exception but can be ignored
+			}
 		}
 		else{	
 			return "";
@@ -315,6 +334,18 @@ public class StoryFinder {
 	 */
 	public Scorer Scorer() {
 		return new Scorer();
+	}
+	
+	public class StoryColumn{
+		
+		public String className;
+		public int xPosition;
+		public int runningScore;
+		public StoryColumn(){
+			className  = "";
+			xPosition = 0;
+			runningScore = 0;
+		}
 	}
 	
 	/**
@@ -361,7 +392,7 @@ public class StoryFinder {
 		/**
 		 * Height in pixels of the lowest a story should reasonably be Must be greater than TOPREGIONSTWOHEIGHT. DEFAULT: 2000
 		 */
-		private int TOOFARDOWNPAGEHEIGHT = 2000;
+		private int TOOFARDOWNPAGEHEIGHT;
 		/**
 		 * Handicap for stories that lie too far down the page (negative number). DEFAULT: -8
 		 */
@@ -425,6 +456,10 @@ public class StoryFinder {
 		 * The score added to link's where the first path part is the same as the target url (i.e. /entertainment, /sports). DEFAULT: 7
 		 */
 		private int SAMEPATHPARTSCORE;
+		/**
+		 * Handicap link's text has negative words in it . Default: -5
+		 */ 
+		private int NEGATIVEWORDSINLINKTEXTHANDICAP;
 		
 		/**
 		 * Handicap link receives if the title only contains capital letters (negative number). DEFAULT: 12
@@ -475,16 +510,16 @@ public class StoryFinder {
 			
 			//Set page position defaults
 			POSITIONLEFTMOSTXSCORE = 0;
-			POSITIONONEFOURTHXSCORE = 15;
-			POSITIONTHREEQUARTERXSCORE = 0;
-			POSITIONRIGHTMOSTXSCORE = -10;
+			POSITIONONEFOURTHXSCORE = 18;
+			POSITIONTHREEQUARTERXSCORE = -4;
+			POSITIONRIGHTMOSTXSCORE = -12;
 			
 			//Set top region defaults
 			TOPREGIONONEHEIGHT = 350;
 			TOPREGIONONEHANDICAP = -11;
 			TOPREGIONTWOHEIGHT = 475;
 			TOPREGIONTWOHANDICAP = -6;
-			TOOFARDOWNPAGEHEIGHT = 2000;
+			TOOFARDOWNPAGEHEIGHT = 2500;
 			//TOOFARDOWNPAGEHANDICAP = -8;
 			
 			//Set text attribute defaults
@@ -522,6 +557,9 @@ public class StoryFinder {
 			PREFERREDWIDTHMINIMUM = 300;
 			PREFERREDWIDTHMAXIMUM = 500;
 			PREFERREDLINKWIDTHSCORE = 4;
+			
+			//set handicap for negative words in link text
+			NEGATIVEWORDSINLINKTEXTHANDICAP = -5;
 			
 			// set handicap for only class entry
 			ONLYONECLASSENTRYHANDICAP = -9;
@@ -677,58 +715,57 @@ public class StoryFinder {
 		 * 
 		 * @return	URL of best story 
 		 */
-		public String getStory() {
+		public String getStory(String classNameOverride){
+			
+			ArrayList<String> listOfRankedStories = new ArrayList<String>();
+			listOfRankedStories = getStories(1, classNameOverride);
+			String topStory = listOfRankedStories.get(0);
+			
+		}
+		
+		public String getStories(int topXStories, String classNameOverride) {
 			
 			//Get all the link scores using the containing class links and the Scorer's numbers
 			HashMap<Integer, Integer> linkScores = getLinkScores();
 			
 			//Get a ranked list of the links' classes based off each classes links' averages
-			ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(linkScores);
-			StoryFinder.consoleLog("Top Ranked ClassName : " + rankedClasses.get(0));
-			//rankedClasses = reRankClasses(rankedClasses, linkScores);
+			//ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(linkScores);
+			
+			ArrayList<StoryColumn> rankedClasses =getClassesScoredByColumn(linkScores);
+			
+			if (!rankedClasses.isEmpty()){
+				StoryFinder.consoleLog("Top Ranked ClassName : " + rankedClasses.get(0).className + " at: " + rankedClasses.get(0).xPosition);
+				StoryFinder.consoleLog("With a final score of: " + rankedClasses.get(0).runningScore);
+			}
+			
 			
 			//Get the story with the highest score and with the highest ranked class
 			String storyURL = "";
-			String storyScoringCSV = "";
-			String CSVSeparator = "|";
-			storyScoringCSV += "URL" + CSVSeparator;
-			storyScoringCSV += "className" + CSVSeparator;
-			storyScoringCSV += "Score" + CSVSeparator;
-			storyScoringCSV += "ScoreExplanation" + CSVSeparator;
-			storyScoringCSV += System.getProperty("line.separator");
-			
+			String selectedClassName = "";
+			if (classNameOverride != ""){
+				selectedClassName = classNameOverride;
+				
+			}
+			else{
+				selectedClassName = rankedClasses.get(0).className;
+			}
+
 			int highestScore = 0;
 			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {
 				
-				//StoryFinder.consoleLog("Story: " + _links.get(currentScore.getKey()).href + "");
-				//StoryFinder.consoleLog("ClassName: " + _links.get(currentScore.getKey()).className + "");
-				//StoryFinder.consoleLog("Score: " + currentScore.getValue() + "");
-				//StoryFinder.consoleLog("Score Explanation: ");
-				//StoryFinder.consoleLog(_links.get(currentScore.getKey()).scoreExplanationLog);
-				//StoryFinder.consoleLog("------------------------");
-				
-				//this is to build a sortable and useful CSV file
-				storyScoringCSV += _links.get(currentScore.getKey()).href + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).className + CSVSeparator;
-				storyScoringCSV += currentScore.getValue() + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).scoreExplanationLog + CSVSeparator;
-				storyScoringCSV += System.getProperty("line.separator");
+				//this re-scores the links after all the other scoring so that the correct class
+				//will still be selected but now negative stories will be scored down
+				currentScore.setValue(scoreLinkText(_links.get(currentScore.getKey()).text, currentScore.getValue()));
 				
 				//If the current link has the class and a higher score, make it the current story URL
-				if ((_links.get(currentScore.getKey()).className.contains(rankedClasses.get(0))) &&
+				if ((_links.get(currentScore.getKey()).className.contains(selectedClassName)) &&
 					(currentScore.getValue() > highestScore)) {
 					storyURL = _links.get(currentScore.getKey()).href;
 					highestScore = currentScore.getValue();
 				}				
 			}
-			//write the completed CSV file to disk
-			try {
-				FileUtils.writeStringToFile(new File("StoryScores" + UUID.randomUUID() + ".csv"), storyScoringCSV);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			//writeStoryCSV(linkScores);
+
 			//Clean up the URL
 			//If it begins with http, do nothing
 			if ((storyURL.length() >=4) && (storyURL.substring(0, 4).equals("http"))) {}
@@ -828,26 +865,6 @@ public class StoryFinder {
 		    	linkScores.remove(currentKey);
 			}
 			
-			
-			/**
-			 * The screen is divided into five regions:
-			 * 		1) The first third
-			 * 		2) First Mark (1) to the half page mark
-			 * 		3) Second Mark (2) to HALFWAY TO THE TWO THIRD MARK
-			 * 		4) Third Mark (3) to the two third mark  (This is the optimal region)
-			 * 		5) The rightmost third of the page
-			 * 
-			 * There are six points that make up the borders.
-			 * 
-			 * Where the story lands on the page determines which score it gets.
-			 * Each section is a linear equation determined by the regions two border points score
-			 */
-			//Set the points based on the screen size
-			int firstPoint = 0;  								//Named for simpler clarity
-			int secondPoint = _screenWidth*3/12;					//One fourth mark
-			int thirdPoint = _screenWidth*3/4;						//three fourths mark
-			int fourthPoint = _screenWidth;  					////Also added for clarity
-			
 			//Loop through each remaining link and determine its score according to its place on the page
 			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
 				
@@ -857,44 +874,13 @@ public class StoryFinder {
 				//Grab the current link's position
 				int linkXPosition = _links.get(currentScore.getKey()).xPosition;
 				int linkYPosition = _links.get(currentScore.getKey()).yPosition;
-				int linkRelativeXPosition = 0;
-				double xPositionScoreAdjustment = 0;
 				
-				//Based on the location of the link, determine the two points that it's between and their scores.
-				int leftPoint, leftScore, rightPoint, rightScore = 0;
-				if (linkXPosition < secondPoint) {
-					leftPoint = 0; leftScore = POSITIONLEFTMOSTXSCORE;
-					rightPoint = secondPoint - firstPoint; rightScore = POSITIONONEFOURTHXSCORE;
-					linkRelativeXPosition = linkXPosition - firstPoint;
-					//xPositionScoreAdjustment = 3;
-					
-				}
-				else if (linkXPosition < thirdPoint) {
-					leftPoint = 0; leftScore = POSITIONONEFOURTHXSCORE;
-					rightPoint = thirdPoint - secondPoint; rightScore = POSITIONTHREEQUARTERXSCORE;
-					linkRelativeXPosition = linkXPosition - secondPoint;
-					//xPositionScoreAdjustment = 8;
-				}
-				else 	{
-					leftPoint = 0; leftScore = POSITIONTHREEQUARTERXSCORE;
-					rightPoint = fourthPoint - thirdPoint; rightScore = POSITIONRIGHTMOSTXSCORE;
-					linkRelativeXPosition = linkXPosition - thirdPoint;
-					//xPositionScoreAdjustment = -5;
-				}
-				
-				
-				//Use the points as the x and the scores as y, get the slope				
-				double regionSlope = (double) (rightScore - leftScore)/(rightPoint - leftPoint);
-				
-				//Get the y-intercept
-				int yIntercept = (int) (leftScore - regionSlope*leftPoint);
-				
-				//Finally, get the score for the link location
-				xPositionScoreAdjustment = (double) (linkRelativeXPosition * regionSlope) + yIntercept;
-				scoreOffset += (int) (xPositionScoreAdjustment);
+				int xPositionScoreAdjust = scoreXPosition(linkXPosition);
+
+				scoreOffset += xPositionScoreAdjust;
 				//log the xy score adjustment
 				//_links.get(currentScore.getKey()).addScoreLog( "firstPt:" + firstPoint + " secondPt:" + secondPoint + " thirdPt" + thirdPoint + " fourthPt" + fourthPoint + " relativeX:" + linkRelativeXPosition + " rightPt:" + rightPoint );
-				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + (int)xPositionScoreAdjustment + " Y: " + linkYPosition);//+ " W: " + _links.get(currentScore.getKey()).width);//+ " xPos :" + linkXPosition + " regionSlope:" + regionSlope + " yIntercept: " + yIntercept);
+				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + xPositionScoreAdjust + " xPos :" + linkXPosition);//+ " W: " + _links.get(currentScore.getKey()).width);//+ " xPos :" + linkXPosition + " regionSlope:" + regionSlope + " yIntercept: " + yIntercept);
 				
 				//--------Check to see if link is too high------------
 				//Apply handicap if link lies in page top regions. 
@@ -912,6 +898,65 @@ public class StoryFinder {
 				//Add the score offset to the link object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
+		}
+		private int scoreXPosition(int xPosition){
+			
+			/**
+			 * The screen is divided into five regions:
+			 * 		1) The first third
+			 * 		2) First Mark (1) to the half page mark
+			 * 		3) Second Mark (2) to HALFWAY TO THE TWO THIRD MARK
+			 * 		4) Third Mark (3) to the two third mark  (This is the optimal region)
+			 * 		5) The rightmost third of the page
+			 * 
+			 * There are six points that make up the borders.
+			 * 
+			 * Where the story lands on the page determines which score it gets.
+			 * Each section is a linear equation determined by the regions two border points score
+			 */
+			int linkXPosition = xPosition;
+			//Set the points based on the screen size
+			int firstPoint = 0;  								//Named for simpler clarity
+			int secondPoint = _screenWidth*3/12;					//One fourth mark
+			int thirdPoint = _screenWidth*3/4;						//three fourths mark
+			int fourthPoint = _screenWidth;  					////Also added for clarity
+			
+			int linkRelativeXPosition = 0;
+			double xPositionScoreAdjustment = 0;
+			
+			//Based on the location of the link, determine the two points that it's between and their scores.
+			int leftPoint, leftScore, rightPoint, rightScore = 0;
+			if (linkXPosition < secondPoint) {
+				leftPoint = 0; leftScore = POSITIONLEFTMOSTXSCORE;
+				rightPoint = secondPoint - firstPoint; rightScore = POSITIONONEFOURTHXSCORE;
+				linkRelativeXPosition = linkXPosition - firstPoint;
+				//xPositionScoreAdjustment = 3;
+				
+			}
+			else if (linkXPosition < thirdPoint) {
+				leftPoint = 0; leftScore = POSITIONONEFOURTHXSCORE;
+				rightPoint = thirdPoint - secondPoint; rightScore = POSITIONTHREEQUARTERXSCORE;
+				linkRelativeXPosition = linkXPosition - secondPoint;
+				//xPositionScoreAdjustment = 8;
+			}
+			else 	{
+				leftPoint = 0; leftScore = POSITIONTHREEQUARTERXSCORE;
+				rightPoint = fourthPoint - thirdPoint; rightScore = POSITIONRIGHTMOSTXSCORE;
+				linkRelativeXPosition = linkXPosition - thirdPoint;
+				//xPositionScoreAdjustment = -5;
+			}
+			
+			
+			//Use the points as the x and the scores as y, get the slope				
+			double regionSlope = (double) (rightScore - leftScore)/(rightPoint - leftPoint);
+			
+			//Get the y-intercept
+			int yIntercept = (int) (leftScore - regionSlope*leftPoint);
+			
+			//Finally, get the score for the link location
+			xPositionScoreAdjustment = (double) (linkRelativeXPosition * regionSlope) + yIntercept;
+			
+			return (int) (xPositionScoreAdjustment);
 		}
 		
 		/**
@@ -1099,8 +1144,8 @@ public class StoryFinder {
 				
 				//Get the url's classname
 				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
-				String preferredClassNames[] = new String [] {"story","news-item","relatedListTitle","headline",
-						"content"};
+				String preferredClassNames[] = new String [] {"story","news-item","relatedListTitle",
+						"headline", "content", "feature"};
 				
 				if (stringContainsItemFromListCapInsensitive(classNameText, preferredClassNames)) {
 					scoreOffset += PREFERREDCLASSNAMESCORE;
@@ -1124,7 +1169,8 @@ public class StoryFinder {
 				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
 				String unwantedClassNames[] = new String [] {"mnu","menu","nav","navigation","header","promo",
 						"subscribe", "feed", "trending", "ledestory", "feat-widget", "related-topics",
-						"carousel", "kicker-link", "display-above", "secondary"};
+						"carousel", "kicker-link", "display-above", "secondary", "gallery", "gameContent",
+						"partners", "pgem-item-link", "relatedtopics", "explore-graphic"};
 				
 				if (stringContainsItemFromListCapInsensitive(classNameText, unwantedClassNames)) {
 					scoreOffset += UNWANTEDCLASSNAMEHANDICAP;
@@ -1145,7 +1191,8 @@ public class StoryFinder {
 				
 				//Get the url's classname
 				String URLText = _links.get(currentScore.getKey()).href.toLowerCase();
-				String unwantedURLTerms[] = new String [] {"sponsored", "video"};
+				String unwantedURLTerms[] = new String [] {"sponsored", "video", "gallery",
+						"slideshow", "sponsor", "interactives"};
 				
 				if (stringContainsItemFromListCapInsensitive(URLText, unwantedURLTerms)) {
 					scoreOffset += UNWANTEDURLTERMSHANDICAP;
@@ -1176,6 +1223,148 @@ public class StoryFinder {
 				//Add the score offset to the link object
 				currentScore.setValue(currentScore.getValue() + scoreOffset);
 			}
+		}
+		
+		private int scoreLinkText(String linkText, int linkScore){
+			
+			ArrayList<String> negativeWordList = new ArrayList<String>();
+			negativeWordList.add("murder");
+			negativeWordList.add("homicide");
+			negativeWordList.add("death");
+			negativeWordList.add("kill");
+			negativeWordList.add("manslaughter");
+			negativeWordList.add("rape");
+			negativeWordList.add("dui");
+			negativeWordList.add("heroin");
+			negativeWordList.add("cocaine");
+			negativeWordList.add("meth");
+			negativeWordList.add("lsd");
+			negativeWordList.add("angel dust");
+			negativeWordList.add("mescaline");
+			negativeWordList.add("slaying");
+			negativeWordList.add("massacre");
+			negativeWordList.add("school shooting");
+			negativeWordList.add("mass shooting");
+			negativeWordList.add("deadliest");
+			negativeWordList.add("victim");
+			negativeWordList.add("mass killing");
+			negativeWordList.add("mass murder");
+			negativeWordList.add("genocide");
+			negativeWordList.add("holocaust");
+			negativeWordList.add("abortion");
+			negativeWordList.add("reported missing");
+			negativeWordList.add("tragedy");
+			negativeWordList.add("armed man");
+			negativeWordList.add("armed woman");
+			negativeWordList.add("body found");
+			negativeWordList.add("bomb threat");
+			negativeWordList.add("epidemic");
+			negativeWordList.add("die");
+			negativeWordList.add("hospitalized");
+			negativeWordList.add("collapsed in fire");
+			negativeWordList.add("building collapse");
+			negativeWordList.add("child abuse");
+			negativeWordList.add("kidnapping");
+			negativeWordList.add("sexual abuse");
+			negativeWordList.add("criminal");
+			negativeWordList.add("bus collision");
+			negativeWordList.add("jihad");
+			negativeWordList.add("drone strike");
+			negativeWordList.add("missile strike");
+			negativeWordList.add("hit and run");
+			negativeWordList.add("dismember");
+			negativeWordList.add("missing girl");
+			negativeWordList.add("missing boy");
+			negativeWordList.add("sex offender");
+			negativeWordList.add("preyed upon");
+			negativeWordList.add("masturbate");
+			negativeWordList.add("arson");
+			negativeWordList.add("stabbing");
+			negativeWordList.add("suicide");
+			negativeWordList.add("critical condition");
+			negativeWordList.add("prostitute");
+			negativeWordList.add("sex worker");
+			negativeWordList.add("gang bang");
+			negativeWordList.add("shooting victim");
+			negativeWordList.add("stabbing victim");
+			negativeWordList.add("body found");
+			negativeWordList.add("struck by car");
+			negativeWordList.add("struck by bus");
+			negativeWordList.add("struck by truck");
+			negativeWordList.add("struck by motorcycle");
+			negativeWordList.add("armed men");
+			negativeWordList.add("robbery");
+			negativeWordList.add("Follow Us");
+			negativeWordList.add("RSS");
+			
+			for (String currentWord : negativeWordList) {
+
+				Pattern currentWordPattern = Pattern.compile("(?i)" + currentWord);
+				Matcher wordMatcher = currentWordPattern.matcher(linkText);
+				while (wordMatcher.find()) {
+					linkScore += NEGATIVEWORDSINLINKTEXTHANDICAP;
+				}
+			}
+			
+			return linkScore;
+		}
+		
+		/**
+		 * Returns array list of all the links' classes ranked by average link score. The first class (at 0)
+		 * has the highest score.
+		 * 
+		 * The score is calculated by taking the sum of the scores of all the links in that class and column
+		 * 
+		 * 
+		 * @param linkScores	Map of link keys associated with their individual scores
+		 * @return
+		 */
+		private ArrayList<StoryColumn> getClassesScoredByColumn(HashMap<Integer, Integer> linkScores) {
+			
+			//Prepare to store each class' use count and total score
+			HashMap<String, StoryColumn> classScores = new HashMap<String, StoryColumn>();
+			int ColumnMinimumXScore = 2;
+			
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
+				
+				//Get the url's classes and xpos from the class attribute
+				String classColumnString = _links.get(currentScore.getKey()).className + ":x:" + _links.get(currentScore.getKey()).xPosition;
+				
+				//Loop through each class if any exist
+				if (classColumnString.length() > 0) {
+					
+					if (classScores.get(classColumnString) == null){
+						StoryColumn firstInsertColumn = new StoryColumn();
+						firstInsertColumn.className = _links.get(currentScore.getKey()).className;
+						firstInsertColumn.xPosition = _links.get(currentScore.getKey()).xPosition;
+						firstInsertColumn.runningScore = currentScore.getValue();
+						if(scoreXPosition(firstInsertColumn.xPosition) >= ColumnMinimumXScore){
+							classScores.put(classColumnString, firstInsertColumn);
+						}
+					}
+					else{
+						StoryColumn adjustScoreColumn = classScores.get(classColumnString);
+						adjustScoreColumn.runningScore += currentScore.getValue();
+						classScores.put(classColumnString, adjustScoreColumn);
+					}
+					
+				}
+			}
+			
+			//Get the column scores and put them into a TreeMap for sorting
+			TreeMap<Integer, StoryColumn> sortedColumnScores = new TreeMap<Integer, StoryColumn>(Collections.reverseOrder());
+			for (Map.Entry<String, StoryColumn> currentColumnScore : classScores.entrySet()) {
+				
+				sortedColumnScores.put(currentColumnScore.getValue().runningScore, currentColumnScore.getValue());
+			}
+			
+			//Turn the sorted map into the final array and return it
+			ArrayList<StoryColumn> rankedColumns = new ArrayList<StoryColumn>();
+			for (Map.Entry<Integer, StoryColumn> currentScore : sortedColumnScores.entrySet()) {
+				rankedColumns.add(currentScore.getValue());
+			}
+			
+			return rankedColumns;
 		}
 		
 		/**
@@ -1281,44 +1470,6 @@ public class StoryFinder {
 				}
 		}
 		
-		/*private ArrayList<String> reRankClasses(ArrayList<String> rankedClassArray, HashMap<Integer, Integer> linkScoresMap){
-		
-			//Get the story with the highest score and with the highest ranked class
-			String storyURL = "";
-			String storyScoringCSV = "";
-			String CSVSeparator = "|";
-			storyScoringCSV += "URL" + CSVSeparator;
-			storyScoringCSV += "className" + CSVSeparator;
-			storyScoringCSV += "Score" + CSVSeparator;
-			storyScoringCSV += "ScoreExplanation" + CSVSeparator;
-			storyScoringCSV += System.getProperty("line.separator");
-			
-			int highestScore = 0;
-			for (Map.Entry<Integer, Integer> currentScore : linkScoresMap.entrySet()) {
-				
-				StoryFinder.consoleLog("Story: " + _links.get(currentScore.getKey()).href + "");
-				StoryFinder.consoleLog("ClassName: " + _links.get(currentScore.getKey()).className + "");
-				StoryFinder.consoleLog("Score: " + currentScore.getValue() + "");
-				StoryFinder.consoleLog("Score Explanation: ");
-				StoryFinder.consoleLog(_links.get(currentScore.getKey()).scoreExplanationLog);
-				StoryFinder.consoleLog("------------------------");
-				
-				//this is to build a sortable and useful CSV file
-				storyScoringCSV += _links.get(currentScore.getKey()).href + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).className + CSVSeparator;
-				storyScoringCSV += currentScore.getValue() + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).scoreExplanationLog + CSVSeparator;
-				storyScoringCSV += System.getProperty("line.separator");
-				
-				//If the current link has the class and a higher score, make it the current story URL
-				if ((_links.get(currentScore.getKey()).className.contains(rankedClasses.get(0))) &&
-					(currentScore.getValue() > highestScore)) {
-					storyURL = _links.get(currentScore.getKey()).href;
-					highestScore = currentScore.getValue();
-				}				
-			}
-			return rankedClasses;
-		}*/
 		
 		private boolean stringContainsItemFromListCapInsensitive(String inputString, String[] items)
 		{
@@ -1331,7 +1482,55 @@ public class StoryFinder {
 		        }
 		    }
 		    return false;
-		} 
+		}
+		/**
+		 * Writes a csv file with all the stories and scores 
+		 * this is intended to make tuning the story finder easier
+		 */
+		public void writeStoryCSV(HashMap<Integer, Integer> linkScores) {
+			
+			String storyScoringCSV = "";
+			String CSVSeparator = "|";
+			storyScoringCSV += "URL" + CSVSeparator;
+			storyScoringCSV += "className" + CSVSeparator;
+			storyScoringCSV += "text" + CSVSeparator;
+			storyScoringCSV += "Score" + CSVSeparator;
+			storyScoringCSV += "X Pos" + CSVSeparator;
+			storyScoringCSV += "ScoreExplanation" + CSVSeparator;
+			storyScoringCSV += "Re-Score" + CSVSeparator;
+			storyScoringCSV += System.getProperty("line.separator");
+			
+			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {
+				
+				//this is to build a sortable and useful CSV file
+				storyScoringCSV += _links.get(currentScore.getKey()).href + CSVSeparator;
+				storyScoringCSV += _links.get(currentScore.getKey()).className + CSVSeparator;
+				storyScoringCSV += _links.get(currentScore.getKey()).text + CSVSeparator;
+				storyScoringCSV += currentScore.getValue() + CSVSeparator;
+				storyScoringCSV += _links.get(currentScore.getKey()).xPosition + CSVSeparator;
+				storyScoringCSV += _links.get(currentScore.getKey()).scoreExplanationLog + CSVSeparator;
+				storyScoringCSV += System.getProperty("line.separator");
+						
+			}
+			//write the completed CSV file to disk
+			String siteName = _targetURL;
+			siteName = siteName.replaceAll("/", "");
+			//siteName = siteName.replaceAll(".", "");
+			siteName = siteName.replaceAll(";", "");
+			siteName = siteName.replaceAll("/", "");
+			siteName = siteName.replaceAll("\\\\", "");
+			siteName = siteName.replaceAll("/", "");
+			siteName = siteName.replaceAll("http", "");
+			siteName = siteName.replaceAll(":", "");
+			
+			try {
+				FileUtils.writeStringToFile(new File("zz" + siteName + UUID.randomUUID() + ".csv"), storyScoringCSV);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+
+		}
 		
 	}
 }

@@ -17,13 +17,44 @@ if (!targetURL) {console.log('FAILURE: No URL passed'); phantom.exit();}
 var WINDOWWIDTH = (system.args[2]) ? system.args[2] : 1366;
 var WINDOWHEIGHT = (system.args[3]) ? system.args[3] : 768;
 
+var USERAGENT = (system.args[4]) ? system.args[4] : "googlebot";
+//var REFERRER = (system.args[5]) ? system.args[5] : "google";
+
 //Create the phantomjs driver webpage and set the viewport to a standard monitor size 
 var page = require('webpage').create();
 page.viewportSize = {width: WINDOWWIDTH, height: WINDOWHEIGHT};
-
+page.settings.resourceTimeout = 10000;
 //set browser user agent
 //page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
-page.settings.userAgent = 'Mozilla/5.0 (compatible; Googlebot/2.1; http://www.google.com/bot.html)'
+
+
+switch (USERAGENT) {
+  case "googlebot":
+    page.settings.userAgent = 'Mozilla/5.0 (compatible; Googlebot/2.1; http://www.google.com/bot.html)';
+    break;
+  case "chrome":
+    page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36';
+    break;
+  case "firefox":
+    page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0';
+    break;
+  case "msnbot":
+    page.settings.userAgent = 'msnbot/1.1 (+http://search.msn.com/msnbot.htm)';
+    break;
+  case "bingbot":
+  	page.settings.userAgent = 'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)';
+    break;
+  case "firefoxlinux":
+  	page.settings.userAgent = 'Mozilla/5.0 (X11; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0';
+    break;
+  case "chromelinux":
+  	page.settings.userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36';
+    break;
+  default:
+    page.settings.userAgent = 'Mozilla/5.0 (compatible; Googlebot/2.1; http://www.google.com/bot.html)';
+}
+
+
 
 page.customHeaders = {
   "Referer": "https://www.google.com/"
@@ -55,7 +86,8 @@ page.open(targetURL, function(status) {
 		//Inject the function to grab the list of anchor info
 		var anchorListJSON = page.evaluate(function() {
 		
-			//Scroll the window 1000 pixels down in order to make sure all anchors are loaded
+			//Scroll the window 1000 pixels down twice in order to make sure all anchors are loaded
+			window.scrollBy(0,1000);
 			window.scrollBy(0,1000);
 			var MAXPARENTSEARCHHEIGHT = 10;
 
@@ -75,6 +107,7 @@ page.open(targetURL, function(status) {
 				curAnchorInfo['text'] = anchorElements[curIndex].text.replace(/(\r\n|\n|\r)/gm,"").trim();
 				curAnchorInfo['style'] = anchorElements[curIndex].getAttribute('style');
 				curAnchorInfo['title'] = anchorElements[curIndex].getAttribute('title');
+				//curAnchorInfo['linktext'] = anchorElements[curIndex].innerText;
 				
 				//Store the element's class. If none exist, grab the first available parent class within reasonable crawl.
 				var curClass = anchorElements[curIndex].getAttribute('class');
@@ -124,11 +157,10 @@ page.open(targetURL, function(status) {
 			return JSON.stringify(anchorInfoList);
 		});
 
-		//page.render('currPhantomPage.png');
+		//page.render( "xx" + Math.random().toString(36).slice(2) + 'currPhantomPage.png');
 		
-		//var pageContent = page.content;
-		//stringBuilder = stringBuilder + pageContent;
-		//console.log(pageTitle + 'FullDoc:' + pageContent);
+		var pageContent = page.content;
+		//console.log('FullDoc:' + pageContent);
 		//Print the final JSON to the command terminal
 		console.log(anchorListJSON);
 	}

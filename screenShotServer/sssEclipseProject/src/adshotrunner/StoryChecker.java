@@ -104,6 +104,9 @@ public class StoryChecker {
 		negativeWordList.add("slaying");
 		negativeWordList.add("massacre");
 		negativeWordList.add("school shooting");
+		negativeWordList.add("mass shooting");
+		negativeWordList.add("deadliest");
+		negativeWordList.add("victim");
 		negativeWordList.add("mass killing");
 		negativeWordList.add("mass murder");
 		negativeWordList.add("genocide");
@@ -150,7 +153,7 @@ public class StoryChecker {
 		negativeWordList.add("struck by truck");
 		negativeWordList.add("struck by motorcycle");
 		negativeWordList.add("armed men");
-		negativeWordList.add("robbe");
+		negativeWordList.add("robbery");
 
 		return negativeWordList;
 	}
