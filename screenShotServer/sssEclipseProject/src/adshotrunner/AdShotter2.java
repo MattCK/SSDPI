@@ -4,14 +4,17 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +38,8 @@ import adshotrunner.errors.AdShotRunnerException;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * The AdShotter class inserts passed tags into webpages and returns screenshots.
@@ -115,13 +120,19 @@ public class AdShotter2 {
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
 	/**
-	 * Instantiates basic private variables. Nothing more.
+	 * Instantiates object with the default viewport width and height
 	 */
 	public AdShotter2() {
 		
 		this(DEFAULTVIEWWIDTH, DEFAULTVIEWHEIGHT);		
 	}
-
+	
+	/**
+	 * Instantiates object with the passed viewport width and height set
+	 * 
+	 * @param viewWidth		Width of browser viewport
+	 * @param viewHeight	Height of browser viewport
+	 */
 	public AdShotter2(int viewWidth, int viewHeight) {
 		
 		_browserViewWidth = viewWidth;
@@ -147,7 +158,7 @@ public class AdShotter2 {
 		long tabStartTime = System.nanoTime();
 		
 		int openTabIndex = 0;
-		while (openTabIndex < MAXOPENTABS) {
+		while ((openTabIndex < MAXOPENTABS) && (openTabIndex < adShots.size())) {
 			int pageLoadTime = (treatAsTags) ? 500 : PAGELOADTIME;
 			try {navigateSeleniumDriverToURL(firefoxDriver, adShots.get(openTabIndex).url(), pageLoadTime);} 
     		catch (Exception e) {
@@ -162,30 +173,9 @@ public class AdShotter2 {
 			}
 			
 			//Otherwise, loop back to the front
-			else {navigateToNextTab(firefoxDriver);}			
+			else if (adShots.size() > 1) {navigateToNextTab(firefoxDriver);}			
 		}
-		
-		/*
-		Iterator<AdShot> adShotIterator = adShots.iterator();
-		while (adShotIterator.hasNext()) {
-			AdShot currentAdShot = adShotIterator.next();
-			
-        	//Open the current URL within the PAGELOADTIMEOUT time (if we haven't had an error)
-			consoleLog("Navigating to: " + currentAdShot.url());
-			try {navigateSeleniumDriverToURL(firefoxDriver, currentAdShot.url(), PAGELOADTIME);} 
-    		catch (Exception e) {
-    			consoleLog("Couldn't navigate to page: " + currentAdShot.url());
-    			currentAdShot.setError(new AdShotRunnerException("Could not navigate to URL", e));
-    		}
-        	
-        	//If there is another URL after this one, open a new tab
-        	if (adShotIterator.hasNext()) {openNewTab(firefoxDriver);}
-        	
-        	//Otherwise, return to the first tab
-        	else {navigateToNextTab(firefoxDriver);}
-		}
-		*/
-		
+				
 		//Pause if still in the load time frame
 		int maxLoadTime = (treatAsTags) ? 7000 : 7000;
     	int currentPageLoadTime = (int) ((System.nanoTime() - tabStartTime)/1000000);	//Divide by a million to move nanoseconds to miliseconds
@@ -199,6 +189,24 @@ public class AdShotter2 {
 			AdShot currentAdShot = adShots.get(adShotIndex);
 			takeAdShot(firefoxDriver, currentAdShot, treatAsTags);
 			
+			//If no tag images were injected into the page AND alternate URLs exist, try those
+			if ((currentAdShot.injectedTagImages().size() == 0) && (currentAdShot.alternateURLs().size() > 0)) {
+				Iterator<String> urlIterator = currentAdShot.alternateURLs().iterator();
+				while ((currentAdShot.injectedTagImages().size() == 0) && 
+					   (urlIterator.hasNext())) {
+					
+					String alternateURL = urlIterator.next();
+					
+					try {navigateSeleniumDriverToURL(firefoxDriver, alternateURL, PAGELOADTIME);} 
+		    		catch (Exception e) {
+		    			consoleLog("Couldn't navigate to page: " + adShots.get(openTabIndex).url());
+		    			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
+		    		}
+					
+					takeAdShot(firefoxDriver, currentAdShot, treatAsTags);
+				}
+			}
+			
 			//If there is an AdShot that needs to be loaded still,
 			//put it in the current tab and navigate to the next
 			if ((adShotIndex + MAXOPENTABS) < adShots.size()) {
@@ -209,28 +217,11 @@ public class AdShotter2 {
 	    			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
 	    		}	
 			}
-			navigateToNextTab(firefoxDriver);				
-			
-			//Otherwise, close the current tab
-			//else {closeTab(firefoxDriver);}
-			
-			
+			if (adShots.size() > 1) {navigateToNextTab(firefoxDriver);}			
+						
         	long endTime = System.nanoTime();
 			consoleLog("AdShot time: " + (endTime - startTime)/1000000 + " ms");
 		}
-		/*
-		Iterator<AdShot> adShotIterator = adShots.iterator();
-		adShotIterator = adShots.iterator();
-		while (adShotIterator.hasNext()) {
-			long startTime = System.nanoTime();
-			AdShot currentAdShot = adShotIterator.next();
-			takeAdShot(firefoxDriver, currentAdShot, treatAsTags);
-			if (treatAsTags) {navigateToNextTab(firefoxDriver);}
-			else {closeTab(firefoxDriver);}
-        	long endTime = System.nanoTime();
-			consoleLog("AdShot time: " + (endTime - startTime)/1000000 + " ms");
-		}
-		*/
     	
     	//Quit the driver
         quitWebdriver(firefoxDriver);
@@ -250,9 +241,8 @@ public class AdShotter2 {
 	 * javascript, and takes a final screenshot.
 	 * 
 	 * @param activeSeleniumWebDriver	Selenium web driver to navigate
-	 * @param URL						URL to navigate to and use for AdShot
-	 * @param tags						Tags to attempt to inject into URL page
-	 * @return							Screenshot of URL with tags injected in JPG format
+	 * @param adShot					AdShot object used to take the screenshot
+	 * @param treatAsTag				If true, no javascript is injected into the page
 	 * @throws AdShotRunnerException 	Error and description if taking the ad screenshot failed
 	 */
 	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShot adShot, boolean treatAsTag) throws AdShotRunnerException {
@@ -277,13 +267,19 @@ public class AdShotter2 {
 			}
 	    	
 	    	//Execute the javascript
-			try {String javascriptResponse = executeSeleniumDriverJavascript(activeSeleniumWebDriver, adInjecterJS);}
+			String injecterResponse = "";
+			try {injecterResponse = executeSeleniumDriverJavascript(activeSeleniumWebDriver, adInjecterJS);}
 			catch (Exception e) {
 				consoleLog("Could not execute AdInjecter in page");
 				consoleLog(e.getMessage());
 				adShot.setError(new AdShotRunnerException("Could not execute AdInjecter in page", e)); //return;
 			}
-		
+			
+			//Mark which ads were injected
+			consoleLog("Javascript Response: " + injecterResponse);
+			Type listType = new TypeToken<ArrayList<String>>(){}.getType();
+			List<String> injectedTagImageIDs = new Gson().fromJson(injecterResponse, listType);
+			adShot.markTagImageAsInjected(injectedTagImageIDs);
 		}
 		
     	//Take the screenshot 
@@ -300,6 +296,9 @@ public class AdShotter2 {
     	long screenShotEndTime = System.nanoTime();
 		consoleLog("Done! - " + (screenShotEndTime - screenShotStartTime)/1000000 + " ms");
 		
+		//Store the final URL
+		adShot.setFinalURL(activeSeleniumWebDriver.getCurrentUrl());
+		
 		//Crop the image
 		try {adShot.setImage(cropAndConvertImageFile(screenShot, 1200, treatAsTag));}
 		catch (Exception e) {
@@ -307,7 +306,6 @@ public class AdShotter2 {
 			adShot.setError(new AdShotRunnerException("Could not crop screenshot", e)); return;
 		}
     			
-		return;
 	}
 	
 	/**
@@ -584,17 +582,18 @@ public class AdShotter2 {
 	 * @param tags			Tags and their placement rankings
 	 * @return				AdInjecter javascript with passed tags inserted into it
 	 */
-	private String getInjecterJS(List<TagImage> tagImageList) throws IOException {
+	private String getInjecterJS(Set<TagImage> tagImageSet) throws IOException {
 		
 		//Get the AdInjecter javascript file
 		String adInjecterJS = new String(Files.readAllBytes(Paths.get(ADINJECTERJSPATH)));
 		
 		//Create the tags object by looping through the tags and adding them to the tags string
 		String tagsString = "tags = [";
-		for (TagImage tagImage: tagImageList) {
+		for (TagImage tagImage: tagImageSet) {
         	
         	//build the current tag object and add it to overall object
-        	tagsString +=  "{tag: '" + tagImage.url() + "', " +
+        	tagsString +=  "{id: '" + tagImage.id() + "', " +
+							"tag: '" + tagImage.url() + "', " +
 							"placement: " + tagImage.priority() + ", " +
 							"width: " + tagImage.width() + ", " +
 							"height: " + tagImage.height() + "},";

@@ -722,12 +722,12 @@ public class StoryFinder {
 				}				
 			}
 			//write the completed CSV file to disk
-			try {
+			/*try {
 				FileUtils.writeStringToFile(new File("StoryScores" + UUID.randomUUID() + ".csv"), storyScoringCSV);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 			
 			//Clean up the URL
 			//If it begins with http, do nothing

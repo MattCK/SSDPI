@@ -2,8 +2,11 @@ package adshotrunner;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import adshotrunner.errors.AdShotRunnerException;
 import adshotrunner.utilities.URLTool;
@@ -30,23 +33,22 @@ public class AdShot {
 	 * @return
 	 */
 	public static AdShot create(String pageURL) {
-		return AdShot.create(pageURL, new ArrayList<TagImage>());
+		return AdShot.create(pageURL, new HashSet<TagImage>());
 	}
 
 	
 	/**
-	 * Creates an instance of an AdShot using the passed URL, list of tag images, and
-	 * whether or not the instance should be treated as a tag.
+	 * Creates an instance of an AdShot using the passed URL and set of tag images.
 	 * 
 	 * If no protocol precedes the URL, "http" is added.
 	 * 
 	 * If the URL is null or empty, an AdShotRunnerException is thrown.
 	 * 
 	 * @param pageURL			URL where the screenshot should be taken
-	 * @param pageTagImages		List of tag images to be inserted into the page
+	 * @param pageTagImages		Set of tag images to be inserted into the page
 	 * @return
 	 */
-	public static AdShot create(String pageURL, List<TagImage> pageTagImages) {
+	public static AdShot create(String pageURL, Set<TagImage> pageTagImages) {
 		
 		//Verify the URL is not null and not an empty string
 		if (pageURL == null || pageURL.isEmpty()) {throw new AdShotRunnerException("URL empty or null");}
@@ -57,7 +59,7 @@ public class AdShot {
 		}
 		
 		//If a null TagImage list was passed, instantiate one
-		if (pageTagImages == null) {pageTagImages = new ArrayList<TagImage>();}
+		if (pageTagImages == null) {pageTagImages = new HashSet<TagImage>();}
 		
 		//Create and return the AdShot
 		return new AdShot(pageURL, pageTagImages);
@@ -69,9 +71,19 @@ public class AdShot {
 	private final String _url;
 	
 	/**
-	 * List of TagImages to be inserted into the page
+	 * Alternate page URLs. These are generally used if no tag images were injected into the primary URL page (includes protocol)
 	 */
-	private final List<TagImage> _tagImages;
+	private final Set<String> _alternateURLs;
+	
+	/**
+	 * Set of TagImages to be inserted into the page
+	 */
+	private final Set<TagImage> _tagImages;
+	
+	/**
+	 * Set of TagImages that were injected into the page
+	 */
+	private final Set<TagImage> _injectedTagImages;
 	
 	/**
 	 * Image of the final screenshot.
@@ -90,12 +102,15 @@ public class AdShot {
 	
 	/**
 	 * Sets private variables of instance. Parameter verification should be done in static factory.
+	 * 
 	 * @param pageURL			URL for the screenshot
-	 * @param pageTagImages		List of TagImages to be inserted into the page
+	 * @param pageTagImages		Set of TagImages to be inserted into the page
 	 */
-	private AdShot(String pageURL, List<TagImage> pageTagImages) {
+	private AdShot(String pageURL, Set<TagImage> pageTagImages) {
 		_url = pageURL;
 		_tagImages = pageTagImages;
+		_alternateURLs = new HashSet<String>();
+		_injectedTagImages = new HashSet<TagImage>();
 	}
 	
 	/**
@@ -108,14 +123,75 @@ public class AdShot {
 	}
 	
 	/**
+	 * Sets the tag image with the passed ID as injected into the page.
+	 * 
+	 * @param tagImageID	ID of tag image that was injected into the page
+	 */
+	public void markTagImageAsInjected(String tagImageID) {
+		
+		ArrayList<String> idList = new ArrayList<String>();
+		idList.add(tagImageID);
+		markTagImageAsInjected(tagImageID);
+	}
+	
+	/**
+	 * Sets the tag images with the set of passed IDs as injected into the page.
+	 * 
+	 * @param tagImageIDs	IDs of tag images that were injected into the page
+	 */
+	public void markTagImageAsInjected(Collection<String> tagImageIDs) {
+		
+        Iterator<String> tagImageIterator = tagImageIDs.iterator();
+
+		while (tagImageIterator.hasNext()) {
+			String tagImageID = tagImageIterator.next();
+			for (TagImage tagImage: _tagImages) {
+				if (tagImage.id().equals(tagImageID)) {
+					_injectedTagImages.add(tagImage);
+				}
+			}
+		}		
+	}
+	
+	/**
+	 * Adds an alternate page URL. These are generally used if no tag images were
+	 * injected into the primary URL page.
+	 * 
+	 * @param alternatePageURL		Alternate URL to include
+	 */
+	public void addAlternatePageURL(String alternatePageURL) {
+		_alternateURLs.add(alternatePageURL);
+	}
+	
+	/**
+	 * Adds alternate page URLs. These are generally used if no tag images were
+	 * injected into the primary URL page.
+	 * 
+	 * @param alternatePageURLs		Collection of alternate URLs to include
+	 */
+	public void addAlternatePageURL(Collection<String> alternatePageURLs) {
+		_alternateURLs.addAll(alternatePageURLs);
+	}
+	
+	/**
 	 * @return	URL for the screenshot
 	 */
 	public String url() {return _url;}
 	
 	/**
-	 * @return	List of tag images to insert into the page (unmodifiable)
+	 * @return	Set of alternate page URLs (unmodifiable)
 	 */
-	public List<TagImage> tagImages() {return Collections.unmodifiableList(_tagImages);}
+	public Set<String> alternateURLs() {return Collections.unmodifiableSet(_alternateURLs);}
+	
+	/**
+	 * @return	Set of tag images to insert into the page (unmodifiable)
+	 */
+	public Set<TagImage> tagImages() {return Collections.unmodifiableSet(_tagImages);}
+	
+	/**
+	 * @return	Set of tag images that were injected into the page (unmodifiable)
+	 */
+	public Set<TagImage> injectedTagImages() {return Collections.unmodifiableSet(_injectedTagImages);}
 	
 	/**
 	 * @return	Image of the final screenshot. Default: null

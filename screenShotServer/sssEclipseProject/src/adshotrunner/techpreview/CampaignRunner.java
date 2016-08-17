@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ public class CampaignRunner implements Runnable {
 	public void run() {
 		
 		//Put the tag images into a list
-		ArrayList<TagImage> tagImages = new ArrayList<TagImage>();
+		HashSet<TagImage> tagImages = new HashSet<TagImage>();
 		for (String tagURL: requestInfo.tagImages) {
 			
 			//////////////////////////////////////////////////////////////
