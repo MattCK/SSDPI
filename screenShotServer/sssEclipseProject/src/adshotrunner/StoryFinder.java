@@ -764,19 +764,6 @@ public class StoryFinder {
 					highestScore = currentScore.getValue();
 				}				
 			}
-<<<<<<< HEAD
-			//writeStoryCSV(linkScores);
-
-=======
-			//write the completed CSV file to disk
-			/*try {
-				FileUtils.writeStringToFile(new File("StoryScores" + UUID.randomUUID() + ".csv"), storyScoringCSV);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
-			
->>>>>>> 1fb6186109f7a9bad5a2837e951fd83f58bec1b2
 			//Clean up the URL
 			//If it begins with http, do nothing
 			if ((storyURL.length() >=4) && (storyURL.substring(0, 4).equals("http"))) {}
