@@ -3,6 +3,7 @@ package adshotrunner;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
@@ -67,6 +68,8 @@ public class TagImage {
 	/**
 	 * Creates a copy of the provided TagImage.
 	 * 
+	 * A new unique ID for the instance is created.
+	 * 
 	 * @param originalTagImage	TagImage to copy
 	 * @return
 	 */
@@ -76,6 +79,11 @@ public class TagImage {
 							originalTagImage._priority);
 	}
 
+	/**
+	 * ID of the tag instance (automatically generated)
+	 */
+	private final String _id;
+	
 	/**
 	 * URL of the tag (includes protocol)
 	 */
@@ -111,12 +119,22 @@ public class TagImage {
 	 * @param tagPriority	Relative priority of tag in relation to tags of same dimensions
 	 */
 	private TagImage(String tagURL, BufferedImage tagImage, int tagWidth, int tagHeight, int tagPriority) {
+		
+		//Set the private member variables
 		_url = tagURL;
 		_image = tagImage;
 		_width = tagWidth;
 		_height = tagHeight;
 		_priority = tagPriority;
+		
+		//Create a unique ID for this tag
+		_id = UUID.randomUUID().toString();
 	}
+	
+	/**
+	 * @return	ID of tag image
+	 */
+	public String id() {return _id;}
 	
 	/**
 	 * @return	URL of tag image

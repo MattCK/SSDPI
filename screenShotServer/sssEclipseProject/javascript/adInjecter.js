@@ -6,15 +6,13 @@
 //tags from the calling java instance.
 var tags = [];
 //INSERT TAGS OBJECT//
-
-//Retrieve the viewport size. If not available, use 1024 x 768
-var viewportWidth = 1024;//(system.args[1]) ? system.args[1] : 1024;
-var viewportHeight = 768;//(system.args[2]) ? system.args[2] : 768;
+//tags = [{tag: 'http://s3.amazonaws.com/asr-tagimages/574b76fb-35fc-4b04-b1e6-4a6511b52a20.png', placement: 0, width: 120, height: 240},{tag: 'http://s3.amazonaws.com/asr-tagimages/c019c2d1-9949-4d02-9dd2-f8321ca614f7.png', placement: 0, width: 250, height: 250},{tag: 'http://s3.amazonaws.com/asr-tagimages/dd394eda-2250-4909-bbce-4a3381eb8bea.png', placement: 0, width: 120, height: 600},{tag: 'http://s3.amazonaws.com/asr-tagimages/f894d0b2-13d2-46b0-9528-442b0dff797b.png', placement: 0, width: 300, height: 250},{tag: 'http://s3.amazonaws.com/asr-tagimages/9be5757d-ba0f-4caa-bc09-6153440be6d2.png', placement: 0, width: 120, height: 60},{tag: 'http://s3.amazonaws.com/asr-tagimages/f0c2df76-2ad6-400e-9509-c7b2e82ba1a6.png', placement: 0, width: 336, height: 280},{tag: 'http://s3.amazonaws.com/asr-tagimages/fcd400c0-7b65-43bb-8da9-d9f12ec23c4b.png', placement: 0, width: 120, height: 90},{tag: 'http://s3.amazonaws.com/asr-tagimages/1ad318d2-6cb3-444b-8d26-33654ac95e54.png', placement: 0, width: 468, height: 60},{tag: 'http://s3.amazonaws.com/asr-tagimages/dab12a71-9060-451c-b16a-0859acbd4144.png', placement: 0, width: 125, height: 125},{tag: 'http://s3.amazonaws.com/asr-tagimages/426fda03-717f-4736-8676-aada462ab97e.png', placement: 0, width: 728, height: 90},{tag: 'http://s3.amazonaws.com/asr-tagimages/a7cdcdec-5eee-4e4c-aede-64854f4a91a8.png', placement: 0, width: 160, height: 600},{tag: 'http://s3.amazonaws.com/asr-tagimages/8a4263c6-b350-4966-b8b2-0401498d0f70.png', placement: 0, width: 88, height: 31},{tag: 'http://s3.amazonaws.com/asr-tagimages/976ec221-37d9-44de-b58f-0ed177026df9.png', placement: 0, width: 180, height: 150},{tag: 'http://s3.amazonaws.com/asr-tagimages/75e36cac-9074-4cbd-89fd-4fa60dcfde35.png', placement: 0, width: 234, height: 60},{tag: 'http://s3.amazonaws.com/asr-tagimages/d19f9609-a09e-4d18-8094-f2166e5bec9e.png', placement: 0, width: 240, height: 400},{tag: 'http://s3.amazonaws.com/asr-tagimages/b26c43f0-072b-4318-8594-f0655297b5be.png', placement: 0, width: 1232, height: 90},{tag: 'http://s3.amazonaws.com/asr-tagimages/c4266d18-bbb9-4d7f-a377-1770243b7fb3.png', placement: 0, width: 230, height: 33},{tag: 'http://s3.amazonaws.com/asr-tagimages/86d5cd75-140f-4d6d-a33b-f167ded0f91e.png', placement: 0, width: 970, height: 250},{tag: 'http://s3.amazonaws.com/asr-tagimages/af3b73d7-0e87-4b36-a65d-9bc04c02114e.png', placement: 0, width: 300, height: 600},{tag: 'http://s3.amazonaws.com/asr-tagimages/7670d3b9-8239-48d4-88e2-ca2464185791.png', placement: 0, width: 500, height: 350},{tag: 'http://s3.amazonaws.com/asr-tagimages/a0b78c50-7ab9-496e-9b34-58b63085f73b.png', placement: 0, width: 550, height: 480},{tag: 'http://s3.amazonaws.com/asr-tagimages/77d875f3-413c-4b98-a479-40d5b7fade7a.png', placement: 0, width: 720, height: 300},{tag: 'http://s3.amazonaws.com/asr-tagimages/94800b64-cb14-41d4-8058-c161555fd6aa.png', placement: 0, width: 120, height: 30},{tag: 'http://s3.amazonaws.com/asr-tagimages/eccc043d-6eb2-4980-85aa-85b5cd9a11d5.png', placement: 0, width: 728, height: 210},{tag: 'http://s3.amazonaws.com/asr-tagimages/9b3256ca-17cb-4e5e-aff8-9264e2944113.png', placement: 0, width: 1, height: 1},{tag: 'http://s3.amazonaws.com/asr-tagimages/ac53d5df-301c-4843-a6a0-e6be66e58895.png', placement: 0, width: 94, height: 15},];
 
 //Initialize and get the adInjecter object
-var adInjecter = initializeAdInjecter(tags, viewportWidth, viewportHeight);
-adInjecter.injectAdsIntoPage();
-return adInjecter.outputString;
+var adInjecter = initializeAdInjecter(tags);
+adInjecter.injectTagsIntoPage();
+return JSON.stringify(adInjecter.injectedTagIDs);
+//console.log(adInjecter.outputString);
 
 
 
@@ -24,20 +22,18 @@ return adInjecter.outputString;
 * Builds the object and sets the passed arguments.
 *
 * @param {Object} 	tags  				Tags object, array of associative arrays {tag:...,placement...,width:...,height:...}
-* @param {Integer} 	viewportWidth  		Width of browser viewport in pixels
-* @param {Integer} 	viewportHeight  	Height of browser viewport in pixels
 * @return {Object}						AdInjecter object
 */
-function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
+function initializeAdInjecter(tags) {
 
 	//Create the AdInjecter object
 	var adInjecter = {
 
 		//Set the object variables
 		_tags: tags,											//Tags to inject into page
-		_viewportWidth: viewportWidth,							//Width of browser viewport in pixels
-		_viewportHeight: viewportHeight,						//Height of browser viewport in pixels
 		_ads: [],												//List of ads found on the page
+		_possibleAdElements: [],								//List of unmarked elements the size of a tag. Used if tag not injected.
+		injectedTagIDs: [],										//List of the IDs of the tags that were injected into the page
 		outputString: "",										//String of output from the different called functions
 		_LARGEADWIDTH: 750,										//Width in pixels for an ad to be considered very large
 		_LARGEADHEIGHT: 249,									//Height in pixels for an ad to be considered very large
@@ -49,16 +45,35 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 		/**
 		* Injects the object's tags into the current page.
 		*/
-		injectAdsIntoPage: function() {
+		injectTagsIntoPage: function() {
 
 			//Get all of the ad elements from the page
 			adInjecter._removeScreenStealersAndRetrieveAds(document);
 
 			//Get the sorted ads and tags
-			var sortedAds = adInjecter._getAdsSortedByPosition(); 
+			var sortedAds = adInjecter._getAdElementsSortedByPosition(adInjecter._ads); 
+			var sortedPossibleAdElements = adInjecter._getAdElementsSortedByPosition(adInjecter._possibleAdElements); 
 			var sortedTags = adInjecter._getTagsSortedByPlacement(); 
-			adInjecter.outputString += "Tag dimensions: ";
 
+			//Inject the tags
+			adInjecter._replaceAdsWithTags(sortedTags, sortedAds);
+
+			//Remove the tags that have been injected and replace the possible ad elements with the rest
+			Object.keys(sortedTags).forEach(function (currentTagKey) {
+				for (var tagIndex = sortedTags[currentTagKey].length - 1; tagIndex >= 0; tagIndex--) {
+					if (sortedTags[currentTagKey][tagIndex].injected) {
+						sortedTags[currentTagKey].splice(tagIndex, 1);
+					}
+				}
+			});
+
+			//If any tags have not been injected, do so on possible ad elements
+			adInjecter._replaceAdsWithTags(sortedTags, sortedPossibleAdElements);
+		},
+
+		_replaceAdsWithTags: function(sortedTags, sortedAds) {
+
+			adInjecter.outputString += "Replacing ads: ";
 
 			//Loop through tag array and insert tags where ads of the same dimensions exist
 			Object.keys(sortedTags).forEach(function (currentTagKey) {
@@ -72,57 +87,73 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 					var currentAdArray = sortedAds[currentTagKey];
 					var currentTagArray = sortedTags[currentTagKey];
 					var currentTagIterator = 0;
-					for (var adIndex = 0; adIndex < currentAdArray.length; ++adIndex) {
+					if (currentTagArray.length > 0) {
 
-						adInjecter.outputString += adIndex + ", ";
+						for (var adIndex = 0; adIndex < currentAdArray.length; ++adIndex) {
 
-						//If another tag exists in the array and the current ad position is
-						//not the same as the last, increase the iterator
-						if ((adIndex != 0) &&
-							(currentTagArray[currentTagIterator + 1] != null) &&
-							((currentAdArray[adIndex].xPosition != currentAdArray[adIndex - 1].xPosition) ||
-							(currentAdArray[adIndex].yPosition != currentAdArray[adIndex - 1].yPosition))) {
-							++currentTagIterator;
-						}
+							adInjecter.outputString += adIndex + ", ";
 
-						//Use unique variables for readability
-						var currentAd = currentAdArray[adIndex];
-						var currentTag = currentTagArray[currentTagIterator];
-
-						//If the current ad has a valid element
-						if (currentAd.element) {
-
-							//Remove all the child nodes of the ad element
-							while (currentAd.element.firstChild) {
-								currentAd.element.removeChild(currentAd.element.firstChild);
-							}
-							currentAd.element.innerHTML = "";
-
-							//Replace the ad with the tag
-							var tagImage = document.createElement('img');
-							tagImage.src = currentTag.tag;
-							tagImage.style.floodOpacity = "0.9898";
-							if (currentAd.element && currentAd.element.parentNode) {
-								currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
+							//If another tag exists in the array and the current ad position is
+							//not the same as the last, increase the iterator
+							if ((adIndex != 0) &&
+								(currentTagArray[currentTagIterator + 1] != null) &&
+								((currentAdArray[adIndex].xPosition != currentAdArray[adIndex - 1].xPosition) ||
+								(currentAdArray[adIndex].yPosition != currentAdArray[adIndex - 1].yPosition))) {
+								++currentTagIterator;
 							}
 
-							//Change parents' width/height if need be
-							//-------------------Seems possibly broken-------------------------
-							if (currentAd.element.parentNode) {
-								adInjecter._expandParents(currentAd.element.parentNode, currentAd.width, currentAd.height);
+							//Use unique variables for readability
+							var currentAd = currentAdArray[adIndex];
+							var currentTag = currentTagArray[currentTagIterator];
 
-								var targetNode = currentAd.element;
-								targetNode.style.display = '';
-								while (targetNode = targetNode.parentNode) {
-									targetNode.style.display = '';
+							//If the current ad has a valid element
+							if (currentAd.element) {
+
+								console.log("Replacing: " + currentAd.width + "x" + currentAd.height + " - " + currentAd.element.nodeName + " - " + currentAd.element.id);
+
+								//Remove all the child nodes of the ad element
+								while (currentAd.element.firstChild) {
+									currentAd.element.removeChild(currentAd.element.firstChild);
 								}
+								currentAd.element.innerHTML = "";
 
+								//Replace the ad with the tag
+								var tagImage = document.createElement('img');
+								tagImage.src = currentTag.tag;
+								tagImage.style.floodOpacity = "0.9898";
+								if (currentAd.element && currentAd.element.parentNode) {
+									currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
+
+									//Mark the tag as injected and store it in the injected tags ID array
+									sortedTags[currentTagKey][currentTagIterator].injected = true;
+									if (adInjecter.injectedTagIDs.indexOf(currentTag.id) <= -1) {
+										adInjecter.injectedTagIDs[adInjecter.injectedTagIDs.length] = currentTag.id;
+									}
+								}
+								else if (currentAd.element) {
+									console.log("Couldn't replace - " + currentAd.element.nodeName + ": " + currentAd.element.id);
+								}
+								else {console.log("element gone");}
+
+								//Change parents' width/height if need be
+								//-------------------Seems possibly broken-------------------------
+								if (currentAd.element.parentNode) {
+									adInjecter._expandParents(currentAd.element.parentNode, currentAd.width, currentAd.height);
+
+									var targetNode = currentAd.element;
+									targetNode.style.display = '';
+									while (targetNode = targetNode.parentNode) {
+										targetNode.style.display = '';
+									}
+
+								}
 							}
-						}
-					} 
-
+						} 
+					}
 				}
 			});
+			adInjecter.outputString += "\n\n";
+
 		},
 
 		/**
@@ -154,7 +185,7 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 
 				//Remove any border from the node
 				//-----------------------Should we be doing this?------------------------
-				curNode.style.setProperty('border', 0);
+				//curNode.style.setProperty('border', 0);
 
 				//Get the basic info from the node
 				var floodOpacity = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('flood-opacity');
@@ -174,6 +205,8 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 				if ((floodOpacity == '0.9898') ||
 					((curNode.nodeName == "IFRAME") && //(!curNode.contentDocument) && 
 					 (adInjecter._areDimensionsOfATag(nodeWidth, nodeHeight)))) {
+
+					console.log("Ad found: " + curNode.nodeName + " - " + nodeWidth + "x" + nodeHeight);
 
 					//Store the ad and its info
 					adInjecter._ads.push({
@@ -210,9 +243,26 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 					}			
 				}
 
+				//Otherwise, if the element is the same size as a tag but not flagged or an iframe,
+				//store it as a possible ad element.
+				else if ((curNode.nodeName != "IFRAME") &&  
+					 	 (adInjecter._areDimensionsOfATag(nodeWidth, nodeHeight))) {
+
+					//Store the ad and its info
+					adInjecter._possibleAdElements.push({
+						element: curNode,
+						xPosition: xyPosition.x,
+						yPosition: xyPosition.y,
+						width: nodeWidth,
+						height: nodeHeight,
+						bottom: nodeBounds.bottom,
+					});
+				}
+
 				//If the node has a fixed position and is a screen stealer, hide it
 				//------------------Check out both functions--------------------
 				if (adInjecter._isFixedPositionScreenStealer(curNode)) {
+					console.log("Removing fixed position node: " + curNode.id);
 					adInjecter._hideAdElement(curNode);
 				}
 
@@ -269,8 +319,9 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 		* @return boolean 					TRUE if a tag exists with the passed dimensions, FALSE otherwise
 		*/
 		_areDimensionsOfATag: function(width, height) {
-			for (var i in adInjecter._tags) {
+			for (var i = 0; i < adInjecter._tags.length; ++i) {
 				if ((width == adInjecter._tags[i].width) && (height == adInjecter._tags[i].height)) {
+					//console.log("Are Dimensions: " + width + ", " + height + " (" + adInjecter._tags[i].tag + ")");
 					return true;
 				}
 			}
@@ -295,6 +346,10 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 			var nodeHeight = curNode.offsetHeight;
 			var zIndex = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('z-index');
 			var position = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('position');
+			var topMargin = parseInt(document.defaultView.getComputedStyle(curNode,null).getPropertyValue('margin-top'), 10);
+			var leftMargin = parseInt(document.defaultView.getComputedStyle(curNode,null).getPropertyValue('margin-left'), 10);
+			var topPosition = nodeBounds.top - topMargin;
+			var leftPosition = nodeBounds.left - leftMargin;
 
 			//If the node has a positive index, a fixed position, 
 			//and is not the dimensions of a tag, see if its a screen stealer
@@ -302,7 +357,7 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 				(!adInjecter._areDimensionsOfATag(nodeWidth, nodeHeight))) {
 
 				//If the node is fixed anywhere other than the top left corner, return it is a screen stealer
-				if ((nodeBounds.top > 0) || (nodeBounds.left > 0)) {return true;}
+				if ((topPosition > 0) || (leftPosition > 0)) {return true;}
 
 				//Otherwise, if it is very large, return that it is a screen stealer
 				else if (((nodeWidth > adInjecter._LARGENODEWIDTH1) && (nodeHeight > adInjecter._LARGENODEHEIGHT1)) ||
@@ -316,15 +371,19 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 		},
 
 		/**
-		* Returns an object of all the ads where arrays of the ads are keyed by their dimensions. The
+		* Returns an object of all the ad elements where arrays of the ad elements are keyed by their dimensions. The
 		* arrays themselves are sorted by best page location with the most prominent first. 
 		*
 		* The keys are strings of WIDTHxHEIGHT.
 		*
-		* @return boolean 					Sorted ads object
+		* @param HTMLElement	adElements  	Array of ad elements including their dimensions
+		*
+		* @return boolean 						Sorted ads object
 		*/
-		_getAdsSortedByPosition: function() {
+		_getAdElementsSortedByPosition: function(adElements) {
 			
+			//console.log(adElements);
+			//console.log("Length: " + Object.keys(adElements).length);
 			//Define the sort function that will be used for the ad arrays.
 			//Ads closer to the top right of the screen are put closer to the beginning of the array.
 			//Distance from the top of the screen always takes presidence over distance from the left.
@@ -339,10 +398,10 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 			//Loop through the ads and add them to the final associative object
 			adInjecter.outputString += "Ad dimensions: ";
 			var sortedAds = {};
-			for (adIndex in adInjecter._ads) {
+			for (adIndex in adElements) {
 
 				//Get the current ad and figure out its key
-			    var currentAd = adInjecter._ads[adIndex];
+			    var currentAd = adElements[adIndex];
 			    var currentAdKey = currentAd.width + 'x' + currentAd.height;
 
 			    //If that key does not exist in the object yet, create it and its associated array
@@ -357,7 +416,7 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 			    //Sort the array. While unnecessary to do everytime here, it's simple and clear
 			    sortedAds[currentAdKey].sort(adSortFunction);
 			}
-			adInjecter.outputString += "\n";
+			adInjecter.outputString += "\n\n";
 
 			//Return the final sorted object
 			return sortedAds;

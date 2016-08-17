@@ -14,7 +14,7 @@ var viewportHeight = 768;//(system.args[2]) ? system.args[2] : 768;
 //Initialize and get the adInjecter object
 var adInjecter = initializeAdInjecter(tags, viewportWidth, viewportHeight);
 adInjecter.injectAdsIntoPage();
-return adInjecter.outputString;
+//return adInjecter.outputString;
 
 
 
@@ -154,7 +154,7 @@ function initializeAdInjecter(tags, viewportWidth, viewportHeight) {
 
 				//Remove any border from the node
 				//-----------------------Should we be doing this?------------------------
-				curNode.style.setProperty('border', 0);
+				//curNode.style.setProperty('border', 0);
 
 				//Get the basic info from the node
 				var floodOpacity = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('flood-opacity');
