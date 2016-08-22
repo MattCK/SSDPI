@@ -139,7 +139,7 @@ public class AdShot {
 	 * 
 	 * @param tagImageIDs	IDs of tag images that were injected into the page
 	 */
-	public void markTagImageAsInjected(Collection<String> tagImageIDs) {
+	public void markTagImageAsInjected(Collection<String> tagImageIDs) {	
 		
         Iterator<String> tagImageIterator = tagImageIDs.iterator();
 

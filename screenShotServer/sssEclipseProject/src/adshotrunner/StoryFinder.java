@@ -15,12 +15,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
@@ -172,19 +174,19 @@ public class StoryFinder {
 		String userAgents[] = new String [] {"googlebot","firefox", "msnbot", "firefoxlinux"};
 		int userAgentIncrementor = 0;
 		int linkCountMinimum = 10;
-		List<StoryLink> currLinks = new ArrayList<StoryLink>();
-		while((userAgentIncrementor < userAgents.length) && (currLinks.size()< linkCountMinimum)){
+		List<StoryLink> retrievedLinks = new ArrayList<StoryLink>();
+		while((userAgentIncrementor < userAgents.length) && (retrievedLinks.size() < linkCountMinimum)){
 		
 			StoryFinder.consoleLog("Trying phantomJS with agent:" + userAgents[userAgentIncrementor]);
 			//Get the possible story links using phantomjs
 			String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor]);
 	                
 	        //Get the immutable link info as array of maps
-			currLinks = getLinkInfoFromJSON(linkJSON);
+			retrievedLinks = getStoryLinksFromJSON(linkJSON);
 			
 			userAgentIncrementor++;
 		}
-		_links = currLinks;
+		_links = retrievedLinks;
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -200,20 +202,18 @@ public class StoryFinder {
 	 * @throws URISyntaxException
 	 * @throws UnsupportedEncodingException 
 	 */
-	private List<StoryLink> getLinkInfoFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+	private List<StoryLink> getStoryLinksFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Turn the returned JSON into an array of objects
-		try {
+		/*try {
 			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".txt"), linkJSON);
 			System.out.println("Saved StoryFinder JSON");
 		} catch (IOException e) {
 			System.out.println("Could not save StoryFinder JSON");
-		}
-		//JsonArray linksArray = new Gson().fromJson(linkJSON, JsonArray.class);
+		}*/
+		
 		Gson gson = new Gson();
 		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
-		//StoryFinder.consoleLog("TokenType: " + arrayStoryLinksToken.toString());
-		//StoryFinder.consoleLog("linkJSON: " + linkJSON);
 		ArrayList<StoryLink> storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
 
 		//Get the primary domain of the StoryFinder URL
@@ -225,11 +225,6 @@ public class StoryFinder {
 			
 			StoryLink currentLink = linksIterator.next();
 			
-			
-			/*if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2)){
-				StoryFinder.consoleLog(" currlink:" + currentLink.href );
-				StoryFinder.consoleLog("currlink: " + currentLink.href + "cur len: " + currentLink.href.length() + "substr: " + currentLink.href.substring(0, 2)) ;
-			}*/
 			//Check for // at beginning of href and add protocol if not there
 			if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
 				//StoryFinder.consoleLog("Inside //: " + currentLink.href );
@@ -261,34 +256,6 @@ public class StoryFinder {
 			}
 		}
 		
-		//Get the primary domain of the target URL
-		//String urlDomain = getURIDomain(_targetURL);
-		
-		//Convert the data into an ArrayList of immutable link HashMaps
-		/*ArrayList<Map<String, String>> linksList = new ArrayList<Map<String, String>>();
-        for(int i = 0; i < linksArray.size(); i++){
-        	
-        	//Convert the current array item into an link object
-            JsonObject curLink = linksArray.get(i).getAsJsonObject();
-           
-            //As long as the href domain is the same as the target site, add the link info. Otherwise, ignore.
-            if (!curLink.href.isJsonNull()){
-            	String currentDomain = getURIDomain(curLink.href.getAsString());
-            
-	            if ((currentDomain == "") || (urlDomain.equals(currentDomain))) {
-	            
-		            //Put all the link attributes into a map
-		            HashMap<String, String> linkMap = new HashMap<String, String>();
-					for (Map.Entry<String,JsonElement> linkAttribute : curLink.entrySet()) {
-						linkMap.put(linkAttribute.getKey(), linkAttribute.getValue().toString());
-					}+0
-					
-					//Make the map immutable and place it into the final arraylist
-					Map<String, String> immutableLinkMap = Collections.unmodifiableMap(linkMap); 
-					linksList.add(immutableLinkMap);
-	            }
-            }
-        }*/
         
         //Make the linksList immutable and return it
 		//List<Map<String, String>> immutableLinkList = Collections.unmodifiableList(linksList);  
@@ -715,79 +682,96 @@ public class StoryFinder {
 		 * 
 		 * @return	URL of best story 
 		 */
-		public String getStory(String classNameOverride){
+		public String getStory() {
 			
-			ArrayList<String> listOfRankedStories = new ArrayList<String>();
-			listOfRankedStories = getStories(1, classNameOverride);
-			String topStory = listOfRankedStories.get(0);
+			ArrayList<String> listOfRankedStories = getStories(1);
+			return listOfRankedStories.get(0);
 			
 		}
 		
-		public String getStories(int topXStories, String classNameOverride) {
+		public ArrayList<String> getStories(int maxStories) {
 			
 			//Get all the link scores using the containing class links and the Scorer's numbers
-			HashMap<Integer, Integer> linkScores = getLinkScores();
+			HashMap<StoryLink, Integer> storyLinkScores = getLinkScores();
 			
 			//Get a ranked list of the links' classes based off each classes links' averages
-			//ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(linkScores);
+			//ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(storyLinkScores);
 			
-			ArrayList<StoryColumn> rankedClasses =getClassesScoredByColumn(linkScores);
+			ArrayList<StoryColumn> rankedClasses = getClassesScoredByColumn(storyLinkScores);
 			
-			if (!rankedClasses.isEmpty()){
+			String topClassName = (!rankedClasses.isEmpty()) ? rankedClasses.get(0).className : "";
+			if (topClassName.isEmpty()) {return new ArrayList<String>();}
+			
+			/*if (!rankedClasses.isEmpty()){
 				StoryFinder.consoleLog("Top Ranked ClassName : " + rankedClasses.get(0).className + " at: " + rankedClasses.get(0).xPosition);
 				StoryFinder.consoleLog("With a final score of: " + rankedClasses.get(0).runningScore);
-			}
-			
+			}*/
 			
 			//Get the story with the highest score and with the highest ranked class
-			String storyURL = "";
-			String selectedClassName = "";
-			if (classNameOverride != ""){
-				selectedClassName = classNameOverride;
-				
-			}
-			else{
-				selectedClassName = rankedClasses.get(0).className;
-			}
-
-			int highestScore = 0;
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {
+			HashMap<String, Integer> topStories = new HashMap<String, Integer>();
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {
 				
 				//this re-scores the links after all the other scoring so that the correct class
 				//will still be selected but now negative stories will be scored down
-				currentScore.setValue(scoreLinkText(_links.get(currentScore.getKey()).text, currentScore.getValue()));
+				storyLinkScore.setValue(scoreLinkText(storyLinkScore.getKey().text, storyLinkScore.getValue()));
 				
 				//If the current link has the class and a higher score, make it the current story URL
-				if ((_links.get(currentScore.getKey()).className.contains(selectedClassName)) &&
-					(currentScore.getValue() > highestScore)) {
-					storyURL = _links.get(currentScore.getKey()).href;
-					highestScore = currentScore.getValue();
+				if (storyLinkScore.getKey().className.contains(topClassName)) {
+
+					//Clean up the URL
+					//If it begins with http, do nothing
+					String storyURL = storyLinkScore.getKey().href;
+					if ((storyURL.length() >=4) && (storyURL.substring(0, 4).equals("http"))) {}
+					
+					//Some sites put // before the substring to keep protocol
+					//Since we don't care about protocol at the moment (due to redirects) just remove it
+					else if ((storyURL.length() >=2) &&(storyURL.substring(0, 2).equals("//"))) {
+						storyURL = storyURL.substring(2);
+					}
+					
+					//Otherwise, add the domain
+					else {
+						
+						//Add a slash before the URL if none exists
+						if ((storyURL.length() >=4) && (!storyURL.substring(0, 1).equals("/"))) {
+							storyURL = "/" + storyURL;
+						}
+						
+						//Add the domain and set protocol to http
+						String targetDomain = URLTool.getDomain(_targetURL);
+						storyURL = URLTool.setProtocol("http", targetDomain + storyURL);
+					}
+
+					topStories.put(storyURL, storyLinkScore.getValue());
 				}				
 			}
-			//Clean up the URL
-			//If it begins with http, do nothing
-			if ((storyURL.length() >=4) && (storyURL.substring(0, 4).equals("http"))) {}
 			
-			//Some sites put // before the substring to keep protocol
-			//Since we don't care about protocol at the moment (due to redirects) just remove it
-			else if ((storyURL.length() >=2) &&(storyURL.substring(0, 2).equals("//"))) {
-				storyURL = storyURL.substring(2);
+			
+			Map<String, Integer> sortedStories =
+					topStories.entrySet().stream()
+			                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+			                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+			                        (e1, e2) -> e2, LinkedHashMap::new));
+			
+			int storyIndex = 0;
+			ArrayList<String> finalStories = new ArrayList<String>();
+			Iterator<Map.Entry<String, Integer>> storyIterator = sortedStories.entrySet().iterator();
+			while ((storyIndex < maxStories) && (storyIterator.hasNext())) {
+				Map.Entry<String, Integer> story = storyIterator.next();
+				finalStories.add(story.getKey());
+				++storyIndex;
 			}
 			
-			//Otherwise, add the domain
-			else {
-				
-				//Add a slash before the URL if none exists
-				if ((storyURL.length() >=4) && (!storyURL.substring(0, 1).equals("/"))) {
-					storyURL = "/" + storyURL;
-				}
-				
-				//Add the domain and set protocol to http
-				String targetDomain = URLTool.getDomain(_targetURL);
-				storyURL = URLTool.setProtocol("http", targetDomain + storyURL);
-			}
+			return finalStories;
 			
-			return storyURL;
+			/*
+			ArrayList<String> testStories = new ArrayList<String>();
+			testStories.add("http://www.foxsports.com/college-football/story/pulse-shooting-orlando-rodney-sumter-tim-tebow-080316");
+			testStories.add("http://www.foxsports.com/college-football/gallery/ohio-state-buckeyes-2016-season-preview-why-they-can-win-the-national-championship-082216");
+			testStories.add("http://www.foxsports.com/college-football/gallery/cfb-preseason-predictions-sec-alabama-lsu-tennessee-georgia-bruce-feldman-082216");
+			
+			return testStories;
+			 */
 		}
 		
 		/**
@@ -798,28 +782,28 @@ public class StoryFinder {
 		 * 
 		 * @return		Map with key the same as the link key in 'links' and the link's score
 		 */
-		public HashMap<Integer, Integer> getLinkScores() {
+		public HashMap<StoryLink, Integer> getLinkScores() {
 			
-			//Create the score object. A map is used to maintain relation to the links object
-			HashMap<Integer,Integer> linkScores = new HashMap<Integer, Integer>(); 			
-			for (int linkIndex = 0; linkIndex < _links.size(); ++linkIndex) {
-				linkScores.put(linkIndex, 0);
+			//Create the map to connect a StoryLink with its score
+			HashMap<StoryLink,Integer> storyLinkScores = new HashMap<StoryLink, Integer>(); 			
+			for (StoryLink story : _links) {
+				storyLinkScores.put(story, 0);
 			}
 			
 			//Score each link based on the following criteria
-			adjustScoresByPageLocation(linkScores);
-			adjustScoresByTitleLength(linkScores);
-			adjustScoresBySimilarPaths(linkScores);
-			adjustScoreIfAllCaps(linkScores);
-			adjustScoreForPreferredClassNames(linkScores);
-			adjustScoreForUnwantedClassNames(linkScores);
-			adjustScoreIfVideoLink(linkScores);
-			adjustScoreForLinkWidth(linkScores);
-			adjustScoreForClassNameTooLong(linkScores);
-			adjustScoreForUnwantedTermsInURL(linkScores);
+			adjustScoresByPageLocation(storyLinkScores);
+			adjustScoresByTitleLength(storyLinkScores);
+			adjustScoresBySimilarPaths(storyLinkScores);
+			adjustScoreIfAllCaps(storyLinkScores);
+			adjustScoreForPreferredClassNames(storyLinkScores);
+			adjustScoreForUnwantedClassNames(storyLinkScores);
+			adjustScoreIfVideoLink(storyLinkScores);
+			adjustScoreForLinkWidth(storyLinkScores);
+			adjustScoreForClassNameTooLong(storyLinkScores);
+			adjustScoreForUnwantedTermsInURL(storyLinkScores);
 			
 			//Return the scores of each valid link
-			return linkScores;
+			return storyLinkScores;
 		}
 		
 		/**
@@ -827,58 +811,58 @@ public class StoryFinder {
 		 * includes height (y-position), width location (x-position), proximity to top of the page,
 		 * and visibility.
 		 * 
-		 * Links not on the visible region (x-position < 0) are removed from the linkScores object.
+		 * Links not on the visible region (x-position < 0) are removed from the storyLinkScores object.
 		 * 
 		 * See internal documentation for how x-position score is calculated.
 		 * 
-		 * @param linkScores	Map of link keys associated with their individual scores
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
 		 */
-		public void adjustScoresByPageLocation(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoresByPageLocation(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//First, lets loop through the urls and mark any that fall off the visible page
-			ArrayList<Integer> unseenURLs = new ArrayList<Integer>();
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
-				int currentLinkXPosition = _links.get(currentScore.getKey()).xPosition;
+			ArrayList<StoryLink> unseenURLs = new ArrayList<StoryLink>();
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
+				int currentLinkXPosition = storyLinkScore.getKey().xPosition;
 			    if ((currentLinkXPosition < 0) || (currentLinkXPosition > _screenWidth)) {
-			    	unseenURLs.add(currentScore.getKey());
+			    	unseenURLs.add(storyLinkScore.getKey());
 			    }
 			}
 			
 			//Delete from the score object the marked unseen urls
-			for (Integer currentKey: unseenURLs) {
-		    	linkScores.remove(currentKey);
+			for (StoryLink currentKey: unseenURLs) {
+		    	storyLinkScores.remove(currentKey);
 			}
 			
 			// remove links too far down the page
-			ArrayList<Integer> tooFarDownPageURLs = new ArrayList<Integer>();
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
-				int currentLinkYPosition = _links.get(currentScore.getKey()).yPosition;
+			ArrayList<StoryLink> tooFarDownPageURLs = new ArrayList<StoryLink>();
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
+				int currentLinkYPosition = storyLinkScore.getKey().yPosition;
 			    if ((currentLinkYPosition >= TOOFARDOWNPAGEHEIGHT)) {
-			    	tooFarDownPageURLs.add(currentScore.getKey());
+			    	tooFarDownPageURLs.add(storyLinkScore.getKey());
 			    }
 			}
 			
 			//Delete from the score object urls too far down the page
-			for (Integer currentKey: tooFarDownPageURLs) {
-		    	linkScores.remove(currentKey);
+			for (StoryLink currentKey: tooFarDownPageURLs) {
+		    	storyLinkScores.remove(currentKey);
 			}
 			
 			//Loop through each remaining link and determine its score according to its place on the page
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero for starters
 				int scoreOffset = 0;
 				
 				//Grab the current link's position
-				int linkXPosition = _links.get(currentScore.getKey()).xPosition;
-				int linkYPosition = _links.get(currentScore.getKey()).yPosition;
+				int linkXPosition = storyLinkScore.getKey().xPosition;
+				int linkYPosition = storyLinkScore.getKey().yPosition;
 				
 				int xPositionScoreAdjust = scoreXPosition(linkXPosition);
 
 				scoreOffset += xPositionScoreAdjust;
 				//log the xy score adjustment
-				//_links.get(currentScore.getKey()).addScoreLog( "firstPt:" + firstPoint + " secondPt:" + secondPoint + " thirdPt" + thirdPoint + " fourthPt" + fourthPoint + " relativeX:" + linkRelativeXPosition + " rightPt:" + rightPoint );
-				_links.get(currentScore.getKey()).addScoreLog( "X Position Score Adjustment: " + xPositionScoreAdjust + " xPos :" + linkXPosition);//+ " W: " + _links.get(currentScore.getKey()).width);//+ " xPos :" + linkXPosition + " regionSlope:" + regionSlope + " yIntercept: " + yIntercept);
+				//storyLinkScore.getKey().addScoreLog( "firstPt:" + firstPoint + " secondPt:" + secondPoint + " thirdPt" + thirdPoint + " fourthPt" + fourthPoint + " relativeX:" + linkRelativeXPosition + " rightPt:" + rightPoint );
+				storyLinkScore.getKey().addScoreLog( "X Position Score Adjustment: " + xPositionScoreAdjust + " xPos :" + linkXPosition);//+ " W: " + storyLinkScore.getKey().width);//+ " xPos :" + linkXPosition + " regionSlope:" + regionSlope + " yIntercept: " + yIntercept);
 				
 				//--------Check to see if link is too high------------
 				//Apply handicap if link lies in page top regions. 
@@ -886,15 +870,15 @@ public class StoryFinder {
 				if (linkYPosition < TOPREGIONONEHEIGHT) {
 					scoreOffset += TOPREGIONONEHANDICAP;
 					//log the y position score
-					_links.get(currentScore.getKey()).addScoreLog( "Y Position Top 1 Score: " + Integer.toString(TOPREGIONONEHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Y Position Top 1 Score: " + Integer.toString(TOPREGIONONEHANDICAP));
 				}
 				else if (linkYPosition < TOPREGIONTWOHEIGHT) {
 					scoreOffset += TOPREGIONTWOHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Y Position Top 2 Score: " + Integer.toString(TOPREGIONTWOHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Y Position Top 2 Score: " + Integer.toString(TOPREGIONTWOHANDICAP));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		private int scoreXPosition(int xPosition){
@@ -963,55 +947,55 @@ public class StoryFinder {
 		 * 
 		 * Links with titles not meeting the minimum text length are removed from the passed link scores object.
 		 * 
-		 * @param linkScores	Map of link keys associated with their individual scores
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
 		 */
-		public void adjustScoresByTitleLength(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoresByTitleLength(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//First, lets loop through the urls and mark any that have no text or only a few characters
-			ArrayList<Integer> lowTextURLs = new ArrayList<Integer>();
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
-				String currentLinkText = _links.get(currentScore.getKey()).text;
+			ArrayList<StoryLink> lowTextURLs = new ArrayList<StoryLink>();
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
+				String currentLinkText = storyLinkScore.getKey().text;
 			    if (currentLinkText.length() <= MINIMUMTEXTLENGTH) {
-			    	lowTextURLs.add(currentScore.getKey());
+			    	lowTextURLs.add(storyLinkScore.getKey());
 			    }
 			}
 			
 			//Delete from the score object the marked low text urls
-			for (Integer currentKey: lowTextURLs) {
-		    	linkScores.remove(currentKey);
+			for (StoryLink currentKey: lowTextURLs) {
+		    	storyLinkScores.remove(currentKey);
 			}
 			
 			//Loop through the links and adjust scores by length and word count
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Grab the current link's text and length
-				String urlText = _links.get(currentScore.getKey()).text;
+				String urlText = storyLinkScore.getKey().text;
 				int urlTextLength = urlText.length();
 				
 				//If the text is too short, give the url a handicap
 				if (urlTextLength <= SHORTTEXTLENGTH) {
 					scoreOffset += SHORTTEXTHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Text too short penalty: " + Integer.toString(SHORTTEXTHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Text too short penalty: " + Integer.toString(SHORTTEXTHANDICAP));
 				}
 
 				//If the text is long enough, give the url a higher score
 				else if (urlTextLength >= LONGTEXTLENGTH) {
 					scoreOffset += LONGTEXTSCORE;
-					_links.get(currentScore.getKey()).addScoreLog( "Text good length score: " + Integer.toString(LONGTEXTSCORE));
+					storyLinkScore.getKey().addScoreLog( "Text good length score: " + Integer.toString(LONGTEXTSCORE));
 				}
 				
 				//If there are not enough words in the text, penalize the url
 				int wordCount = urlText.trim().split("\\s+").length;
 				if (wordCount < MINIMUMWORDCOUNT) {
 					scoreOffset += MINIMUMWORDHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Text too few words penalty: " + Integer.toString(MINIMUMWORDHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Text too few words penalty: " + Integer.toString(MINIMUMWORDHANDICAP));
 				}
 
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		
@@ -1021,9 +1005,9 @@ public class StoryFinder {
 		 * In other words, this is the path part right after the domain part. For example, the first path part of 
 		 * 'boston.com/entertainment' is 'entertainment'.
 		 * 
-		 * @param linkScores	Map of link keys associated with their individual scores
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
 		 */
-		public void adjustScoresBySimilarPaths(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoresBySimilarPaths(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Grab the first path part of the target url for comparison
 			String targetURLPathPart = getFirstPartOfURIPath(_targetURL);
@@ -1032,24 +1016,24 @@ public class StoryFinder {
 			if (targetURLPathPart.length() > 1) {
 				
 				//Loop through each link and adjust its score based on similar first path part
-				for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+				for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 					
 					//Set the score offset to zero
 					int scoreOffset = 0;
 					
 					//Grab the current link's href and path part
-					String urlHref = _links.get(currentScore.getKey()).href;
+					String urlHref = storyLinkScore.getKey().href;
 					String urlPathPart = getFirstPartOfURIPath(urlHref);
 					//StoryFinder.consoleLog("UrlPathScoring - StoryHref:" + urlHref + " path: " + urlPathPart);
 					//StoryFinder.consoleLog("UrlPathScoring - TargetHref:" + _targetURL + " path: " +targetURLPathPart);
 					//If the targetURL and current link path parts are the same, increment the score
 					if (targetURLPathPart.equals(urlPathPart)) {
 						scoreOffset += SAMEPATHPARTSCORE;
-						_links.get(currentScore.getKey()).addScoreLog( "URL Same Path Score: " + Integer.toString(SAMEPATHPARTSCORE));
+						storyLinkScore.getKey().addScoreLog( "URL Same Path Score: " + Integer.toString(SAMEPATHPARTSCORE));
 					}
 					
 					//Add the score offset to the link object
-					currentScore.setValue(currentScore.getValue() + scoreOffset);
+					storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 				}
 			}
 		}
@@ -1057,114 +1041,114 @@ public class StoryFinder {
 		/**
 		 * Applies handicap to any link's score with a title consisting of all caps
 		 * 
-		 * @param linkScores	Map of link keys associated with their individual scores
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
 		 */
-		public void adjustScoreIfAllCaps(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoreIfAllCaps(HashMap<StoryLink, Integer> storyLinkScores) {
 							
 			//Loop through each link and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's text
-				String urlText = _links.get(currentScore.getKey()).text;
+				String urlText = storyLinkScore.getKey().text;
 				
 				//If the text is in all caps, apply the reduction
 				if (urlText.equals(urlText.toUpperCase())) {
 					scoreOffset += ALLCAPSHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "All Caps Title Penalty: " + Integer.toString(ALLCAPSHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "All Caps Title Penalty: " + Integer.toString(ALLCAPSHANDICAP));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		
-		public void adjustScoreForLinkWidth(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoreForLinkWidth(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Loop through each link and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's width
-				int linkWidth = _links.get(currentScore.getKey()).width;
+				int linkWidth = storyLinkScore.getKey().width;
 				
 				//If the text is in all caps, apply the reduction
 				if (linkWidth <= TOONARROWWIDTH) {
 					scoreOffset += TOONARROWHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Link too narrow: " + Integer.toString(TOONARROWHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Link too narrow: " + Integer.toString(TOONARROWHANDICAP));
 				} else if ((linkWidth >= PREFERREDWIDTHMINIMUM) && (linkWidth <= PREFERREDWIDTHMAXIMUM)){
 					scoreOffset += PREFERREDLINKWIDTHSCORE;
-					_links.get(currentScore.getKey()).addScoreLog( "Link size preferred score: " + Integer.toString(PREFERREDLINKWIDTHSCORE));
+					storyLinkScore.getKey().addScoreLog( "Link size preferred score: " + Integer.toString(PREFERREDLINKWIDTHSCORE));
 				} else if (linkWidth >= TOOWIDEWIDTH){
 					scoreOffset += TOOWIDEHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Link too wide: " + Integer.toString(TOOWIDEHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Link too wide: " + Integer.toString(TOOWIDEHANDICAP));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		
-		public void adjustScoreIfVideoLink(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoreIfVideoLink(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Loop through each link and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's text
-				String urlText = _links.get(currentScore.getKey()).text;
+				String urlText = storyLinkScore.getKey().text;
 				urlText = urlText.toLowerCase();
 				//If the text is in all caps, apply the reduction
 				if ((urlText.length() >= 6) && (urlText.substring(0, 6).equals("video:"))) {
 					scoreOffset += VIDEOHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Video Link Penalty: " + Integer.toString(VIDEOHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Video Link Penalty: " + Integer.toString(VIDEOHANDICAP));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		
 		
-		public void adjustScoreForPreferredClassNames(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoreForPreferredClassNames(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Loop through each link and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's classname
-				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
+				String classNameText = storyLinkScore.getKey().className.toLowerCase();
 				String preferredClassNames[] = new String [] {"story","news-item","relatedListTitle",
 						"headline", "content", "feature"};
 				
 				if (stringContainsItemFromListCapInsensitive(classNameText, preferredClassNames)) {
 					scoreOffset += PREFERREDCLASSNAMESCORE;
-					_links.get(currentScore.getKey()).addScoreLog( "Preferred ClassName Score: " + Integer.toString(PREFERREDCLASSNAMESCORE));
+					storyLinkScore.getKey().addScoreLog( "Preferred ClassName Score: " + Integer.toString(PREFERREDCLASSNAMESCORE));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		
-		public void adjustScoreForUnwantedClassNames(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoreForUnwantedClassNames(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Loop through each link and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's classname
-				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
+				String classNameText = storyLinkScore.getKey().className.toLowerCase();
 				String unwantedClassNames[] = new String [] {"mnu","menu","nav","navigation","header","promo",
 						"subscribe", "feed", "trending", "ledestory", "feat-widget", "related-topics",
 						"carousel", "kicker-link", "display-above", "secondary", "gallery", "gameContent",
@@ -1172,54 +1156,54 @@ public class StoryFinder {
 				
 				if (stringContainsItemFromListCapInsensitive(classNameText, unwantedClassNames)) {
 					scoreOffset += UNWANTEDCLASSNAMEHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Unwanted ClassName Handicap: " + Integer.toString(UNWANTEDCLASSNAMEHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Unwanted ClassName Handicap: " + Integer.toString(UNWANTEDCLASSNAMEHANDICAP));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
-		public void adjustScoreForUnwantedTermsInURL(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoreForUnwantedTermsInURL(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Loop through each link and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's classname
-				String URLText = _links.get(currentScore.getKey()).href.toLowerCase();
+				String URLText = storyLinkScore.getKey().href.toLowerCase();
 				String unwantedURLTerms[] = new String [] {"sponsored", "video", "gallery",
 						"slideshow", "sponsor", "interactives"};
 				
 				if (stringContainsItemFromListCapInsensitive(URLText, unwantedURLTerms)) {
 					scoreOffset += UNWANTEDURLTERMSHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "Unwanted URL Term Handicap: " + Integer.toString(UNWANTEDCLASSNAMEHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "Unwanted URL Term Handicap: " + Integer.toString(UNWANTEDCLASSNAMEHANDICAP));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		
-		public void adjustScoreForClassNameTooLong(HashMap<Integer, Integer> linkScores) {
+		public void adjustScoreForClassNameTooLong(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Loop through each link and handicap its score if it is in all capital letters
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {			    
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {			    
 				
 				//Set the score offset to zero
 				int scoreOffset = 0;
 				
 				//Get the url's classname
-				String classNameText = _links.get(currentScore.getKey()).className.toLowerCase();
+				String classNameText = storyLinkScore.getKey().className.toLowerCase();
 				
 				if (classNameText.length() >= LONGCLASSNAMELENGTH) {
 					scoreOffset += LONGCLASSNAMEHANDICAP;
-					_links.get(currentScore.getKey()).addScoreLog( "ClassName too long Handicap: " + Integer.toString( LONGCLASSNAMEHANDICAP));
+					storyLinkScore.getKey().addScoreLog( "ClassName too long Handicap: " + Integer.toString( LONGCLASSNAMEHANDICAP));
 				}
 				
 				//Add the score offset to the link object
-				currentScore.setValue(currentScore.getValue() + scoreOffset);
+				storyLinkScore.setValue(storyLinkScore.getValue() + scoreOffset);
 			}
 		}
 		
@@ -1314,35 +1298,35 @@ public class StoryFinder {
 		 * The score is calculated by taking the sum of the scores of all the links in that class and column
 		 * 
 		 * 
-		 * @param linkScores	Map of link keys associated with their individual scores
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
 		 * @return
 		 */
-		private ArrayList<StoryColumn> getClassesScoredByColumn(HashMap<Integer, Integer> linkScores) {
+		private ArrayList<StoryColumn> getClassesScoredByColumn(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Prepare to store each class' use count and total score
 			HashMap<String, StoryColumn> classScores = new HashMap<String, StoryColumn>();
 			int ColumnMinimumXScore = 2;
 			
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
 				
 				//Get the url's classes and xpos from the class attribute
-				String classColumnString = _links.get(currentScore.getKey()).className + ":x:" + _links.get(currentScore.getKey()).xPosition;
+				String classColumnString = storyLinkScore.getKey().className + ":x:" + storyLinkScore.getKey().xPosition;
 				
 				//Loop through each class if any exist
 				if (classColumnString.length() > 0) {
 					
 					if (classScores.get(classColumnString) == null){
 						StoryColumn firstInsertColumn = new StoryColumn();
-						firstInsertColumn.className = _links.get(currentScore.getKey()).className;
-						firstInsertColumn.xPosition = _links.get(currentScore.getKey()).xPosition;
-						firstInsertColumn.runningScore = currentScore.getValue();
+						firstInsertColumn.className = storyLinkScore.getKey().className;
+						firstInsertColumn.xPosition = storyLinkScore.getKey().xPosition;
+						firstInsertColumn.runningScore = storyLinkScore.getValue();
 						if(scoreXPosition(firstInsertColumn.xPosition) >= ColumnMinimumXScore){
 							classScores.put(classColumnString, firstInsertColumn);
 						}
 					}
 					else{
 						StoryColumn adjustScoreColumn = classScores.get(classColumnString);
-						adjustScoreColumn.runningScore += currentScore.getValue();
+						adjustScoreColumn.runningScore += storyLinkScore.getValue();
 						classScores.put(classColumnString, adjustScoreColumn);
 					}
 					
@@ -1358,8 +1342,8 @@ public class StoryFinder {
 			
 			//Turn the sorted map into the final array and return it
 			ArrayList<StoryColumn> rankedColumns = new ArrayList<StoryColumn>();
-			for (Map.Entry<Integer, StoryColumn> currentScore : sortedColumnScores.entrySet()) {
-				rankedColumns.add(currentScore.getValue());
+			for (Map.Entry<Integer, StoryColumn> storyLinkScore : sortedColumnScores.entrySet()) {
+				rankedColumns.add(storyLinkScore.getValue());
 			}
 			
 			return rankedColumns;
@@ -1374,20 +1358,20 @@ public class StoryFinder {
 		 * 
 		 * THE AVERAGES GET PENALIZED FOR ONLY HAVING ONE CLASS ENTRY
 		 * 
-		 * @param linkScores	Map of link keys associated with their individual scores
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
 		 * @return
 		 */
-		private ArrayList<String> getClassesRankedByAveragedLinkScore(HashMap<Integer, Integer> linkScores) {
+		private ArrayList<String> getClassesRankedByAveragedLinkScore(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Prepare to store each class' use count and total score
 			HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
 			HashMap<String, Integer> classTotalScores = new HashMap<String, Integer>();
 			
 			//Loop through the urls and total up the classes with the urls' scores
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {		
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
 				
 				//Get the url's classes from the class attribute
-				String classString = _links.get(currentScore.getKey()).className;
+				String classString = storyLinkScore.getKey().className;
 				String[] urlClasses = classString.trim().split("\\s+");
 				
 				//Loop through each class if any exist
@@ -1397,13 +1381,13 @@ public class StoryFinder {
 						//If this class has not been seen before, begin an entry for it
 						if (!classCounts.containsKey(currentClass)) {
 							classCounts.put(currentClass, 1);
-							classTotalScores.put(currentClass, currentScore.getValue());
+							classTotalScores.put(currentClass, storyLinkScore.getValue());
 						}
 						
 						//Otherwise, add the current score to its score and increment the count
 						else {
 							classCounts.put(currentClass, classCounts.get(currentClass) + 1);
-							classTotalScores.put(currentClass, classTotalScores.get(currentClass) + currentScore.getValue());
+							classTotalScores.put(currentClass, classTotalScores.get(currentClass) + storyLinkScore.getValue());
 						}
 						
 					}
@@ -1426,8 +1410,8 @@ public class StoryFinder {
 			
 			//Turn the sorted map into the final array and return it
 			ArrayList<String> rankedClasses = new ArrayList<String>();
-			for (Map.Entry<Integer, String> currentScore : averagedClassScores.entrySet()) {
-				rankedClasses.add(currentScore.getValue());
+			for (Map.Entry<Integer, String> storyLinkScore : averagedClassScores.entrySet()) {
+				rankedClasses.add(storyLinkScore.getValue());
 			}
 			
 			return rankedClasses;
@@ -1485,7 +1469,7 @@ public class StoryFinder {
 		 * Writes a csv file with all the stories and scores 
 		 * this is intended to make tuning the story finder easier
 		 */
-		public void writeStoryCSV(HashMap<Integer, Integer> linkScores) {
+		public void writeStoryCSV(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			String storyScoringCSV = "";
 			String CSVSeparator = "|";
@@ -1498,15 +1482,15 @@ public class StoryFinder {
 			storyScoringCSV += "Re-Score" + CSVSeparator;
 			storyScoringCSV += System.getProperty("line.separator");
 			
-			for (Map.Entry<Integer, Integer> currentScore : linkScores.entrySet()) {
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {
 				
 				//this is to build a sortable and useful CSV file
-				storyScoringCSV += _links.get(currentScore.getKey()).href + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).className + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).text + CSVSeparator;
-				storyScoringCSV += currentScore.getValue() + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).xPosition + CSVSeparator;
-				storyScoringCSV += _links.get(currentScore.getKey()).scoreExplanationLog + CSVSeparator;
+				storyScoringCSV += storyLinkScore.getKey().href + CSVSeparator;
+				storyScoringCSV += storyLinkScore.getKey().className + CSVSeparator;
+				storyScoringCSV += storyLinkScore.getKey().text + CSVSeparator;
+				storyScoringCSV += storyLinkScore.getValue() + CSVSeparator;
+				storyScoringCSV += storyLinkScore.getKey().xPosition + CSVSeparator;
+				storyScoringCSV += storyLinkScore.getKey().scoreExplanationLog + CSVSeparator;
 				storyScoringCSV += System.getProperty("line.separator");
 						
 			}

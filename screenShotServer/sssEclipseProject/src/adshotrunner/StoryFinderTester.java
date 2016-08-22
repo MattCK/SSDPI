@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +33,7 @@ public class StoryFinderTester {
 		ArrayList<String> sectionList = new ArrayList<String>();
 		/*sectionList.add("http://www.alexcityoutlook.com/category/opinion/");
 		sectionList.add("http://www.andalusiastarnews.com/category/schools/");*/
-		sectionList.add("http://www.palmbeachpost.com/s/living/");
+		/*sectionList.add("http://www.palmbeachpost.com/s/living/");
 		sectionList.add("http://www.si.com/olympics");
 		sectionList.add("http://www.sandmountainreporter.com/sports/");
 		sectionList.add("http://nypost.com/business/");
@@ -45,7 +46,7 @@ public class StoryFinderTester {
 		sectionList.add("http://www.forbes.com/technology/");
 		sectionList.add("http://www.indystar.com/travel/");
 		sectionList.add("http://www.theverge.com/tech");
-		
+		//*/
 		
 		sectionList.add("http://www.dispatch.com/content/sections/sports/index.html?cmpid=tplnnv");
 		sectionList.add("http://www.sfgate.com/entertainment/");
@@ -64,7 +65,7 @@ public class StoryFinderTester {
 		sectionList.add("http://www.huffingtonpost.com/dept/whats-working");
 		sectionList.add("http://www.laweekly.com/marijuana");
 		sectionList.add("http://variety.com/v/film/");
-		sectionList.add("http://www.cleveland.com/community/");
+		/*sectionList.add("http://www.cleveland.com/community/");
 		sectionList.add("http://www.annistonstar.com/features/");
 		sectionList.add("http://www.thearabtribune.com/sports/");
 		sectionList.add("http://www.adn.com/section/outdoors-adventure/");
@@ -114,17 +115,22 @@ public class StoryFinderTester {
 		sectionList.add("http://www.chicagotribune.com/suburbs/");
 		sectionList.add("http://www.toledoblade.com/opinion");
 		sectionList.add("http://juneauempire.com/neighbors");
+		//*/
 
 		
-		HashMap<String, String> sectionsAndStories = new HashMap<String, String>();
+		TreeMap<String, String> sectionsAndStories = new TreeMap<String, String>();
 		
 		for (String currentSection : sectionList) {
 
 			String foundStoryURL = "";
 			try {
-				foundStoryURL = new StoryFinder(URLTool.setProtocol("http",currentSection)).Scorer().getStories(5, "");
-				System.out.println("StoryFinder found: " + foundStoryURL);
-				sectionsAndStories.put(currentSection, foundStoryURL);
+				ArrayList<String> foundStories = new StoryFinder(URLTool.setProtocol("http",currentSection)).Scorer().getStories(3);
+				System.out.println("StoryFinder found: " + foundStories);
+				if (!foundStories.isEmpty()) {
+					for (int storyIndex = 0; storyIndex < foundStories.size(); ++storyIndex) {
+						sectionsAndStories.put(currentSection + "-" + storyIndex, foundStories.get(storyIndex));
+					}
+				}
 				
 			} catch (MalformedURLException | UnsupportedEncodingException
 					| URISyntaxException e) {
@@ -140,7 +146,7 @@ public class StoryFinderTester {
 
 	}
 	
-	public static boolean writeFoundStoriesToHTML(HashMap<String, String> sectionAndStoryHash){
+	public static boolean writeFoundStoriesToHTML(Map<String, String> sectionAndStoryHash){
 		boolean writeSuccess = false;
 		String htmlOut = "";
 		htmlOut +=  "<!DOCTYPE html PUBLIC \"-//IETF//DTD HTML 2.0//EN\"> <HTML> <HEAD> <TITLE> Section </TITLE> </HEAD> <BODY><table style=\"width:100%\" border = \"2\"><tr><th>Section</th><th>Story</th> </tr>";

@@ -77,36 +77,43 @@ public class CampaignRunner implements Runnable {
 			
 			//Put the values into easier to understand variables
 			String pageURL = currentPage.get("url");
+			List<String> alternateURLs = new ArrayList<String>();
 			boolean findStory = (currentPage.get("findStory").equals("1"));
 			boolean onlyScreenshot = (currentPage.get("onlyScreenshot").equals("1"));
 			System.out.println("Request URL: " + pageURL);
 			
 			//If finding a story is requested, set the page URL to the found story
 			if (findStory) {
-				String foundStoryURL = "";
+				ArrayList<String> foundStories = new ArrayList<String>();
 				try {
-					foundStoryURL = new StoryFinder(URLTool.setProtocol("http",pageURL)).Scorer().getStory();
-					System.out.println("StoryFinder found: " + foundStoryURL);
+					foundStories = new StoryFinder(URLTool.setProtocol("http",pageURL)).Scorer().getStories(3);
+					System.out.println("StoryFinder found: " + foundStories);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					System.out.println("Error finding story");
 					e.printStackTrace();
 				}
 				
-				if(foundStoryURL != null && !foundStoryURL.isEmpty()) {
-					pageURL = URLTool.removeProtocol(foundStoryURL);
+				if((!foundStories.isEmpty()) && (!foundStories.get(0).isEmpty())) {
+					pageURL = URLTool.removeProtocol(foundStories.get(0));
 					System.out.println("Final page URL: " + pageURL);
-					//Remove the possible protocol
-					//pageURL = foundStoryURL.replace(/^http:\/\//, '');
+					
+					if (foundStories.size() > 1) {
+						alternateURLs = foundStories.subList(1, (foundStories.size() - 1));
+					}
 				}
 			}
 			
 			if (onlyScreenshot) {
-				adShotList.add(AdShot.create(pageURL));
+				AdShot newAdShot = AdShot.create(pageURL);
+				if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
+				adShotList.add(newAdShot);
 			}
 			
 			else {
-				adShotList.add(AdShot.create(pageURL, tagImages));
+				AdShot newAdShot = AdShot.create(pageURL, tagImages);
+				if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
+				adShotList.add(newAdShot);
 			}
 		}
 	
@@ -118,7 +125,7 @@ public class CampaignRunner implements Runnable {
 		HashMap<String, String>  pageAndScreenshotURLs = new HashMap<String, String>();
 		for (AdShot currentAdShot : adShotList) {
 			System.out.println("Saving a screenshot");
-			System.out.println("URL: " + currentAdShot.url());
+			System.out.println("URL: " + currentAdShot.finalURL());
 			String imageFilename = requestInfo.jobID + "-" + imageIndex + ".png";		
 			
 			try {
@@ -131,7 +138,7 @@ public class CampaignRunner implements Runnable {
 				//e.printStackTrace();
 			}
 			++imageIndex;
-			pageAndScreenshotURLs.put(currentAdShot.url(), "https://s3.amazonaws.com/asr-screenshots/" + imageFilename);
+			pageAndScreenshotURLs.put(currentAdShot.finalURL(), "https://s3.amazonaws.com/asr-screenshots/" + imageFilename);
 		}
 		
 		//Create the powerpoint
