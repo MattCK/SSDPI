@@ -576,7 +576,7 @@ class MenuGrabber {
 			}
 
 			//Add the array of DIV info to the final return array 
-			if (count($curDIVAnchorInformation)) {$possibleULMenus[] = $curDIVAnchorInformation;}
+			if (count($curDIVAnchorInformation)) {$possibleDivMenus[] = $curDIVAnchorInformation;}
 		}
 		
 		//Return the array of DIV sets, if any exist
