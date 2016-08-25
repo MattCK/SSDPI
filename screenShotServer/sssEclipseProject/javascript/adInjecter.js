@@ -59,16 +59,18 @@ function initializeAdInjecter(tags) {
 			adInjecter._replaceAdsWithTags(sortedTags, sortedAds);
 
 			//Remove the tags that have been injected and replace the possible ad elements with the rest
+			var anAdWasInjected = false;
 			Object.keys(sortedTags).forEach(function (currentTagKey) {
 				for (var tagIndex = sortedTags[currentTagKey].length - 1; tagIndex >= 0; tagIndex--) {
 					if (sortedTags[currentTagKey][tagIndex].injected) {
 						sortedTags[currentTagKey].splice(tagIndex, 1);
+						anAdWasInjected = true;
 					}
 				}
 			});
 
 			//If any tags have not been injected, do so on possible ad elements
-			adInjecter._replaceAdsWithTags(sortedTags, sortedPossibleAdElements);
+			if (!anAdWasInjected) {adInjecter._replaceAdsWithTags(sortedTags, sortedPossibleAdElements);}
 		},
 
 		_replaceAdsWithTags: function(sortedTags, sortedAds) {

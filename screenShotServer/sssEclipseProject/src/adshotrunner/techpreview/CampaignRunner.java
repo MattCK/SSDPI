@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +23,7 @@ import adshotrunner.AdShotter;
 import adshotrunner.AdShotter2;
 import adshotrunner.StoryFinder;
 import adshotrunner.TagImage;
+import adshotrunner.utilities.EmailClient;
 import adshotrunner.utilities.FileStorageClient;
 import adshotrunner.utilities.URLTool;
 
@@ -67,8 +70,6 @@ public class CampaignRunner implements Runnable {
 			}
 		}
 		
-		//Create the AdShotter to use
-		AdShotter2 campaignShotter = new AdShotter2();
 		System.out.println(requestInfo);
 		
 		//Loop through each page, preparing the adshots and finding stories as necessary
@@ -107,18 +108,29 @@ public class CampaignRunner implements Runnable {
 			if (onlyScreenshot) {
 				AdShot newAdShot = AdShot.create(pageURL);
 				if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
+				newAdShot.useMobile(currentPage.get("useMobile").equals("1"));
 				adShotList.add(newAdShot);
 			}
 			
 			else {
 				AdShot newAdShot = AdShot.create(pageURL, tagImages);
 				if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
+				newAdShot.useMobile(currentPage.get("useMobile").equals("1"));
 				adShotList.add(newAdShot);
 			}
 		}
-	
+		
+		//Put the ad shots into standard and mobile lists for clarification
+		List<AdShot> standardAdShots = new ArrayList<AdShot>();
+		List<AdShot> mobileAdShots = new ArrayList<AdShot>();
+		for (AdShot currentAdShot : adShotList) {
+			if (currentAdShot.mobile()) {mobileAdShots.add(currentAdShot);}
+			else {standardAdShots.add(currentAdShot);}
+		}
+		
 		//Get the screenshots
-		campaignShotter.takeAdShots(adShotList);	
+		if (standardAdShots.size() > 0) {AdShotter2.create().takeAdShots(standardAdShots);}
+		if (mobileAdShots.size() > 0) {AdShotter2.createForMobile().takeAdShots(mobileAdShots);}
 		
 		//Upload them
 		int imageIndex = 1;
@@ -142,14 +154,14 @@ public class CampaignRunner implements Runnable {
 		}
 		
 		//Create the powerpoint
-		/*System.out.println("Creating powerpoint");
+		System.out.println("Creating powerpoint");
 		CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("back1.jpg", "16x9", "Campaign Name");
-		for (Map.Entry<String, BufferedImage> currentScreenshot : screenshots.entrySet()) {
-			powerPoint.AddScreenshotSlide(currentScreenshot.getKey(), currentScreenshot.getValue());
+		for (AdShot currentAdShot : adShotList) {
+			powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
 		}
 		powerPoint.SaveCampaignPowerPoint("powerpoints/" + requestInfo.jobID + ".pptx");
 		FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + requestInfo.jobID + ".pptx", requestInfo.jobID + ".pptx");
-		System.out.println("Done with powerpoint");*/
+		System.out.println("Done with powerpoint");
 		
 		//Create and upload the job result
 		CampaignResult jobResult = new CampaignResult();
@@ -158,7 +170,7 @@ public class CampaignRunner implements Runnable {
 		jobResult.success = true;
 		jobResult.message = "";
 		jobResult.screenshots = pageAndScreenshotURLs;
-		jobResult.powerPointURL = "";//"https://s3.amazonaws.com/asr-powerpoints/" + requestInfo.jobID + ".pptx";
+		jobResult.powerPointURL = "https://s3.amazonaws.com/asr-powerpoints/" + requestInfo.jobID + ".pptx";
 		jobResult.zipURL = "";
 		try {
 			FileUtils.writeStringToFile(new File("campaignJobs/" + jobResult.jobID), jobResult.toJSON());
@@ -166,6 +178,15 @@ public class CampaignRunner implements Runnable {
 			System.out.println("Could not save job result");
 		}
 		FileStorageClient.saveFile(FileStorageClient.CAMPAIGNJOBS, "campaignJobs/" + jobResult.jobID, jobResult.jobID);
+		
+		//Send the notification email
+		CampaignEmail.sendEmail(requestInfo.customer, 
+								adShotList, 
+								"http://techpreview.adshotrunner.com/campaignResults.php?jobID=" + requestInfo.jobID, 
+								jobResult.powerPointURL, 
+								requestInfo.domain, 
+								new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime()), 
+								requestInfo.email);
 	}
 	
 	private static void saveImageAsPNG(BufferedImage imageToSave, String filepath) throws IOException {

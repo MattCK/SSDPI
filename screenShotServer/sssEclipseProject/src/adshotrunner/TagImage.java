@@ -13,7 +13,7 @@ import adshotrunner.utilities.URLTool;
 /**
  * Class to contain URL, image, dimensions, and priority of an ad tag image.
  */
-public class TagImage {
+public class TagImage implements Comparable<TagImage> {
 
 	/**
 	 * Creates instance of TagImage object. Retrieves the image at the passed URL and
@@ -161,4 +161,8 @@ public class TagImage {
 	 */
 	public int priority() {return _priority;}
 
+	@Override
+	public int compareTo(TagImage otherTagImage) {
+	    return Integer.compare(this._priority, otherTagImage._priority);
+	}
 }

@@ -16,6 +16,7 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 
 use AdShotRunner\Utilities\FileStorageClient;
 use AdShotRunner\Utilities\MessageQueueClient;
+use AdShotRunner\Users\User;
 
 if (!$_POST['jobID']) {
 	echo createJSONResponse(false, "No Job ID passed."); return;
@@ -29,8 +30,16 @@ if (!$_POST['pages']) {
 	echo createJSONResponse(false, "No pages passed."); return;
 }
 
+//Get the user email
+$currentUser = User::getUser(USERID);
+$userEmail = $currentUser->getEmail();
+
+
 //Create the final object of data to turn into JSON
 $screenshotRequestObject = ['jobID' => $_POST['jobID'], 
+							'customer' => $_POST['customer'],
+							'domain' => $_POST['domain'],
+							'email' => $userEmail,
 							'tagImages' => $_POST['tagImages'],
 							'pages' => []];
 
@@ -39,6 +48,7 @@ foreach ($_POST['pages'] as $currentID => $currentPage) {
 	$pageInfo = ['url' => $currentPage];
 	$pageInfo['findStory'] = ($_POST['findStory'][$currentID] && ($_POST['findStory'][$currentID] == 1)) ? 1 : 0;
 	$pageInfo['onlyScreenshot'] = ($_POST['onlyScreenshot'][$currentID]) ? 1 : 0;
+	$pageInfo['useMobile'] = ($_POST['useMobile'][$currentID]) ? 1 : 0;
 	$screenshotRequestObject['pages'][] = $pageInfo;
 }
 

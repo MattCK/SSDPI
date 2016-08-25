@@ -11,7 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +68,9 @@ public class AdShotter2 {
 	final private static int SCREENSHOTTIMEOUT = 20000;		//in miliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
+	final private static List<Integer> DEFAULTVIEWPORT = Collections.unmodifiableList(Arrays.asList(1366, 768));
+	final private static List<Integer> MOBILEVIEWPORT = Collections.unmodifiableList(Arrays.asList(360, 640));
+	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Mobile; rv:26.0) Gecko/26.0 Firefox/26.0";
 	final private static boolean VERBOSE = true;
 	final private static int MAXOPENTABS = 3;
 
@@ -73,6 +79,17 @@ public class AdShotter2 {
 	//-------------------------------- Static Variables -------------------------------------
 	//---------------------------------------------------------------------------------------	
 	//***************************** Public Static Variables *********************************
+	public static AdShotter2 create() {
+		return new AdShotter2(DEFAULTVIEWPORT.get(0), DEFAULTVIEWPORT.get(1), null);
+	}
+
+	public static AdShotter2 create(int viewWidth, int viewHeight) {
+		return new AdShotter2(viewWidth, viewHeight, null);
+	}
+
+	public static AdShotter2 createForMobile() {
+		return new AdShotter2(MOBILEVIEWPORT.get(0), MOBILEVIEWPORT.get(1), MOBILEUSERAGENT);
+	}
 
 
 	//**************************** Protected Static Variables *******************************
@@ -115,6 +132,11 @@ public class AdShotter2 {
 	 */
 	private int _browserViewHeight;
 
+	/**
+	 * User Agent string the browser should provide. If empty or NULL, the browser's default user agent is used.
+	 */
+	private String _userAgent;
+
 
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
@@ -122,7 +144,7 @@ public class AdShotter2 {
 	/**
 	 * Instantiates object with the default viewport width and height
 	 */
-	public AdShotter2() {
+	private AdShotter2() {
 		
 		this(DEFAULTVIEWWIDTH, DEFAULTVIEWHEIGHT);		
 	}
@@ -133,10 +155,25 @@ public class AdShotter2 {
 	 * @param viewWidth		Width of browser viewport
 	 * @param viewHeight	Height of browser viewport
 	 */
-	public AdShotter2(int viewWidth, int viewHeight) {
+	private AdShotter2(int viewWidth, int viewHeight) {
 		
 		_browserViewWidth = viewWidth;
 		_browserViewHeight = viewHeight;
+	}
+
+	/**
+	 * Instantiates object with the passed viewport and user agent string
+	 * 
+	 * If the userAgent string is empty or null, the browser's default will be used.
+	 * 
+	 * @param viewWidth		Width of browser viewport
+	 * @param viewHeight	Height of browser viewport
+	 */
+	private AdShotter2(int viewWidth, int viewHeight, String userAgent) {
+		
+		_browserViewWidth = viewWidth;
+		_browserViewHeight = viewHeight;
+		_userAgent = userAgent;
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -342,6 +379,7 @@ public class AdShotter2 {
         ffProfile.setPreference("browser.tabs.warnOnClose", false);
         ffProfile.setPreference("privacy.trackingprotection.pbmode.enabled", false);
         ffProfile.setPreference("extensions.blocklist.enabled", false);
+        
         //these are to make the screenshots look pretty
         ffProfile.setPreference("gfx.direct2d.disabled", true);
         ffProfile.setPreference("layers.acceleration.disabled", true);
@@ -354,6 +392,11 @@ public class AdShotter2 {
         ffProfile.setPreference("network.http.response.timeout", 7); //this is time in seconds
         
         ffProfile.setPreference("xpinstall.signatures.required", false); //this is time in seconds
+        
+        //If a user agent was defined, set it in the browser
+        if ((_userAgent != null) && (!_userAgent.isEmpty())) {
+	        ffProfile.setPreference("general.useragent.override", _userAgent);
+        }
 
         //install extension
         //String AdMarkerPath = "/home/ec2-user/firefoxExtensions/adMarker.xpi";

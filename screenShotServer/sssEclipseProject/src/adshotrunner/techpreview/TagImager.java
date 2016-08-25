@@ -33,7 +33,7 @@ public class TagImager implements Runnable {
 		System.out.println("\nIn TagImager - " + urlsWithIDs);
 		System.out.println();
 		
-		AdShotter2 tagShotter = new AdShotter2(50, 30);
+		AdShotter2 tagShotter = AdShotter2.create(50, 30);
 		
 		HashMap<String, AdShot> adShotsByIDMap = new HashMap<String, AdShot>();
 		for(Map.Entry<String, String> currentURLSet : urlsWithIDs.entrySet()) {

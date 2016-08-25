@@ -81,6 +81,11 @@ public class AdShot {
 	private final Set<TagImage> _tagImages;
 	
 	/**
+	 * Flags whether or not the AdShot should be taken in a mobile browser
+	 */
+	private Boolean _mobile;
+	
+	/**
 	 * Set of TagImages that were injected into the page
 	 */
 	private final Set<TagImage> _injectedTagImages;
@@ -187,6 +192,11 @@ public class AdShot {
 	public Set<TagImage> tagImages() {return Collections.unmodifiableSet(_tagImages);}
 	
 	/**
+	 * @return	TRUE if the AdShot should use a mobile browser and FALSE otherwise
+	 */
+	public Boolean mobile() {return _mobile;}
+	
+	/**
 	 * @return	Set of tag images that were injected into the page (unmodifiable)
 	 */
 	public Set<TagImage> injectedTagImages() {return Collections.unmodifiableSet(_injectedTagImages);}
@@ -205,6 +215,12 @@ public class AdShot {
 	 * @return	Possible error that occurred during screenshot attempt. Default: null
 	 */
 	public Exception error() {return _error;}
+	
+	/**
+	 * Sets the screenshot image
+	 * @param newImage	Screenshot image
+	 */
+	public void useMobile(Boolean mobileFlag) {_mobile = mobileFlag;}
 	
 	/**
 	 * Sets the screenshot image
