@@ -1,6 +1,6 @@
 <?PHP
 /**
-* Contains the class for communicating with  the web
+* Contains the class for communicating with the web
 *
 * @package Adshotrunner
 * @subpackage Classes

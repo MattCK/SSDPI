@@ -9,6 +9,7 @@
 namespace AdShotRunner\Menu;
 
 use AdShotRunner\Utilities\WebPageCommunicator;
+use AdShotRunner\PhantomJS\PhantomJSCommunicator;
 
 /**
 * The Menu Grabber attempts to grab possible menus from a given webpage or webpages.
@@ -23,6 +24,10 @@ use AdShotRunner\Utilities\WebPageCommunicator;
 */
 class MenuGrabber {
 
+	//---------------------------------------------------------------------------------------
+	//---------------------------------- Constants ------------------------------------------
+	//---------------------------------------------------------------------------------------	
+	const FOUNDLINKMINIMUM = 10;
 
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------
@@ -205,8 +210,9 @@ class MenuGrabber {
 	protected function getRankedMenusFromManyURLs($urls) {
 		
 		//Get the HTML responses from the passed URL
-		$URLCommunicator = new WebPageCommunicator();
-		$urlResponses = $URLCommunicator->getManyURLResponses($urls);
+		//$URLCommunicator = new WebPageCommunicator();
+		//$urlResponses = $URLCommunicator->getManyURLResponses($urls);
+		$urlResponses = $this->getURLResponses($urls);
 
 		//Loop through each of the URL responses and build a final array
 		$urlMenus = [];
@@ -483,6 +489,14 @@ class MenuGrabber {
 					$anchorHREF = $curAnchor->getAttribute('href');
 					$anchorLabel = $curAnchor->nodeValue;
 					
+					//If the label already exists in the menu, make the link empty
+					foreach ($curULAnchorInformation as $currentLinkSet) {
+						if (($currentLinkSet['label'] == $anchorLabel) ||
+							($currentLinkSet['url'] == $anchorHREF)) {
+							$anchorLabel = "";
+						}
+					}
+					
 					//If there is no label, grab the alt from the image if it exists
 					if ($anchorLabel == "") {
 						$imageList = $curAnchor->getElementsByTagName('img');
@@ -559,6 +573,14 @@ class MenuGrabber {
 						$imageList = $curAnchor->getElementsByTagName('img');
 						if ($imageList->item(0)) {
 							$anchorLabel = $imageList->item(0)->getAttribute('alt');
+						}
+					}
+
+					//If the label already exists in the menu, make the link empty
+					foreach ($curDIVAnchorInformation as $currentLinkSet) {
+						if (($currentLinkSet['label'] == $anchorLabel) ||
+							($currentLinkSet['url'] == $anchorHREF)) {
+							$anchorLabel = "";
 						}
 					}
 					
@@ -679,6 +701,61 @@ class MenuGrabber {
 		$this->_menuWeights = $newMenuWeights;
 	}
 
+	//**********************************************************************************//
+	//********************************TEMPORARY CODE************************************//
+	//People say that and then it becomes permanent.
+
+	private function getURLResponses($urls) {
+
+		//echo "Begin to get URL\n";
+		//print_r($urls); echo "\n";
+
+		//SHOULD COME FROM DATABASE LATER DATE
+		$userAgents = [
+							'Mozilla/5.0 (compatible; Googlebot/2.1; http://www.google.com/bot.html)',  //Googlebot
+							'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0',	//Firefox
+							'msnbot/1.1 (+http://search.msn.com/msnbot.htm)',							//MSNBot
+							'Mozilla/5.0 (X11; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0'		//Firefox Linux
+					  ];
+
+		//Loop through the URLs and get the web response for each
+		$urlResponses = [];
+		foreach ($urls as $targetURL) {
+
+			$userAgentIndex = 0;
+			$foundLinksCount = 0;
+			$urlResponse = "";
+			// echo "Attempting to get: " . $targetURL . "\n";
+			// echo "User agent count: " . count($userAgents) . "\n";
+			// echo "User agent index: " . $userAgentIndex . "\n";
+			// echo "Found links count: " . $foundLinksCount . "\n";
+			// echo "Links found minimum: " . MenuGrabber::FOUNDLINKMINIMUM . "\n";
+			while (($userAgentIndex < count($userAgents)) && ($foundLinksCount < MenuGrabber::FOUNDLINKMINIMUM)) {
+
+				//Get the URL response
+				//echo "Before phantomjs grab\n";
+				$urlResponse = PhantomJSCommunicator::getResponse("http://" . $targetURL); //, $userAgents[$userAgentIndex]);
+				//$urlResponse = PhantomJSCommunicator::getResponse("http://nytimes.com");
+				//echo "After phantomjs grab\n";
+				//echo "URL response: " . substr($urlResponse, 0, 200) . "\n";
+
+				//Get amount of links found
+				$htmlDocument = new \DomDocument();
+				$htmlDocument->loadHTML($urlResponse);
+				$foundLinks = $htmlDocument->getElementsByTagName('a');
+				$foundLinksCount = count($foundLinks);
+				//echo $userAgents[$userAgentIndex];
+				//echo "Links found: " . count($foundLinks);
+
+				++$userAgentIndex;
+			}
+
+			//Store the response
+			$urlResponses[$targetURL] = $urlResponse;
+		}
+
+		return $urlResponses;
+	}
 
 }
 
