@@ -129,6 +129,11 @@ class MenuGrabber {
 		//Check the database to see if the menus exist there
 		$databaseDomainMenus = $this->retrieveManyDomainMenusFromDatabase($domains);
 
+		//Grab any exception menus. Merge the two arrays.
+		//The merge will cause the original domains to be overwritten.
+		$domainMenuExceptions = $this->retrieveMenuExceptions($domains);
+		$databaseDomainMenus = array_merge($databaseDomainMenus, $domainMenuExceptions);
+
 		//Loop through the domains and see if any don't exist in the database
 		$missingDomains = array();
 		foreach ($domains as $curDomain) {
@@ -241,6 +246,61 @@ class MenuGrabber {
 	}
 
 	/**
+	* Returns a list menu exceptions for multiple domains out of the database.
+	*
+	* The returned array consists for each key of associated arrays with two keys:
+	* 'score' pointing to the numeric score of the menu and 'items' for the menu itself.
+	* The 'items' points to an array of items. Each item is an associative array as
+	* 'label' pointing to an individual label and 'url' pointing to that label's link.
+	*
+	* The key of the top-most array is the URL string.
+	*
+	* Array[url] -> 0 -> 'score' => 12
+	*		     	  -> 'items' => Array -> 'label'
+	*			        			 	  -> 'url'
+	*	
+	* On failure, an empty array is returned.
+	*
+	* @param 	array 	$domains 	Domains to get menus from
+	* @retval 	mixed  				Array of ranked menus or empty array on failure
+	*/
+	protected function retrieveMenuExceptions($domains) {
+		
+		//If no domains were passed, return an empty array
+		if ((!$domains) || (count($domains) < 1)) {return array();}
+
+		//Clean up the domains for the query
+		$cleanDomains = [];
+		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . databaseEscape($curDomain) . "'";}
+		$cleanDomainString = implode(',', $cleanDomains);
+
+		//Get the domains' menus from the database (if any exist)
+		$menuResults = databaseQuery("	SELECT *
+										FROM exceptionsMenuGrabberDomains
+										LEFT JOIN exceptionsMenuGrabberItems ON EMI_EMD_id = EMD_id
+										WHERE EMD_domain IN ($cleanDomainString)");
+
+		//Create the final array and loop through the results, creating the menu structures
+		$domainMenus = [];
+		while ($curMenuItem = $menuResults->fetch_assoc()) {
+
+			//If we haven't seen this domain yet, add it final results array
+		    if (!array_key_exists($curMenuItem['EMD_domain'], $domainMenus)) {
+		    	$domainMenus[$curMenuItem['EMD_domain']] = array(0 => array());
+			    $domainMenus[$curMenuItem['EMD_domain']][0]['score'] = 0;
+		    	$domainMenus[$curMenuItem['EMD_domain']][0]['items'] = array();
+		    }
+
+		    //Finally, add the actual item
+		    $domainMenus[$curMenuItem['EMD_domain']][0]['items'][] = ['label' => $curMenuItem['EMI_label'],
+		    														  'url' => $curMenuItem['EMI_url']];
+		}
+
+		//Return the menus, if any exist
+		return $domainMenus;
+	}
+
+	/**
 	* Returns a list of ranked possible menus sorted from highest score to lowest out of the database.
 	*
 	* The returned object consists of an array of associated arrays with two keys:
@@ -278,11 +338,11 @@ class MenuGrabber {
 	*
 	* The key of the top-most array is the URL string.
 	*
-	* Array[url] -> 'score' => 12
-	*		     -> 'items' => Array -> 'label'
-	*			        			 -> 'url'
+	* Array[url] -> Menu ID -> 'score' => 12
+	*		     	  		-> 'items' => Array -> 'label'
+	*			        			 	  		-> 'url'
 	*	
-	* On failure, an empty array is return.
+	* On failure, an empty array is returned.
 	*
 	* @param 	array 	$domains 	Domains to get menus from
 	* @retval 	mixed  				Array of ranked menus or empty array on failure
@@ -299,37 +359,37 @@ class MenuGrabber {
 
 		//Get the domains' menus from the database (if any exist)
 		$menuResults = databaseQuery("	SELECT *
-										FROM menuDomains
-										LEFT JOIN menus ON MNU_MND_id = MND_id
-										LEFT JOIN menuItems ON MNI_MNU_id = MNU_id
-										WHERE MND_domain IN ($cleanDomainString)
-										ORDER BY MNU_score DESC");
+										FROM menuGrabberDomains
+										LEFT JOIN menuGrabberMenus ON MGM_MGD_id = MGD_id
+										LEFT JOIN menuGrabberItems ON MGI_MGM_id = MGM_id
+										WHERE MGD_domain IN ($cleanDomainString)
+										ORDER BY MGM_score DESC");
 
 		//Create the final array and loop through the results, creating the menu structures
 		$domainMenus = [];
 		while ($curMenuItem = $menuResults->fetch_assoc()) {
 
 			//If we haven't seen this domain yet, add it to the top level of the results
-		    if (!array_key_exists($curMenuItem['MND_domain'], $domainMenus)) {
-		    	$domainMenus[$curMenuItem['MND_domain']] = array();
+		    if (!array_key_exists($curMenuItem['MGD_domain'], $domainMenus)) {
+		    	$domainMenus[$curMenuItem['MGD_domain']] = array();
 		    }
 
 		    //Same again but for the menu
-		    if (!array_key_exists($curMenuItem['MNU_id'], $domainMenus[$curMenuItem['MND_domain']])) {
-		    	$domainMenus[$curMenuItem['MND_domain']][$curMenuItem['MNU_id']] = array();
+		    if (!array_key_exists($curMenuItem['MGM_id'], $domainMenus[$curMenuItem['MGD_domain']])) {
+		    	$domainMenus[$curMenuItem['MGD_domain']][$curMenuItem['MGM_id']] = array();
 		    }
 
 		    //Enter the menu score
-		    $domainMenus[$curMenuItem['MND_domain']][$curMenuItem['MNU_id']]['score'] = $curMenuItem['MNU_score'];
+		    $domainMenus[$curMenuItem['MGD_domain']][$curMenuItem['MGM_id']]['score'] = $curMenuItem['MGM_score'];
 
 		    //If the items array has not been added, do so.
-		    if (!array_key_exists('items', $domainMenus[$curMenuItem['MND_domain']][$curMenuItem['MNU_id']])) {
-		    	$domainMenus[$curMenuItem['MND_domain']][$curMenuItem['MNU_id']]['items'] = array();
+		    if (!array_key_exists('items', $domainMenus[$curMenuItem['MGD_domain']][$curMenuItem['MGM_id']])) {
+		    	$domainMenus[$curMenuItem['MGD_domain']][$curMenuItem['MGM_id']]['items'] = array();
 		    }
 
 		    //Finally, add the actual item
-		    $domainMenus[$curMenuItem['MND_domain']][$curMenuItem['MNU_id']]['items'][] = ['label' => $curMenuItem['MNI_label'],
-		    																   'url' => $curMenuItem['MNI_url']];
+		    $domainMenus[$curMenuItem['MGD_domain']][$curMenuItem['MGM_id']]['items'][] = ['label' => $curMenuItem['MGI_label'],
+		    																   'url' => $curMenuItem['MGI_url']];
 		}
 
 		//Return the menus, if any exist
@@ -363,7 +423,7 @@ class MenuGrabber {
 
 			//Add the domain to the database
 			$cleanDomainString = "'" . databaseEscape($domain) . "'";
-			databaseQuery("INSERT INTO menuDomains (MND_domain) VALUES ($cleanDomainString)");
+			databaseQuery("INSERT INTO menuGrabberDomains (MGD_domain) VALUES ($cleanDomainString)");
 
 			//Get the domain insert ID
 			$domainID = databaseLastInsertID();
@@ -373,7 +433,7 @@ class MenuGrabber {
 
 				//Insert the menu and its score
 				$cleanScoreString = "'" . databaseEscape($menu['score']) . "'";
-				databaseQuery("INSERT INTO menus (MNU_MND_id, MNU_score) VALUES ($domainID, $cleanScoreString)");
+				databaseQuery("INSERT INTO menuGrabberMenus (MGM_MGD_id, MGM_score) VALUES ($domainID, $cleanScoreString)");
 
 				//Get the menu insert ID
 				$menuID = databaseLastInsertID();
@@ -407,7 +467,7 @@ class MenuGrabber {
 
 				//Insert the items into the database
 				if ($cleanMenuItemString) {
-					databaseQuery("INSERT IGNORE INTO menuItems (MNI_MNU_id, MNI_label, MNI_url) 
+					databaseQuery("INSERT IGNORE INTO menuGrabberItems (MGI_MGM_id, MGI_label, MGI_url) 
 								   VALUES $cleanMenuItemString");
 				}
 			}
@@ -620,10 +680,10 @@ class MenuGrabber {
 	private function retrieveMenuLabelWeightsFromDatabase() {
 		
 		//Retrieve the labels and weights from the database table and return them in an associative array
-		$menuWeightsResult = databaseQuery("SELECT * FROM menuLabelWeights");
+		$menuWeightsResult = databaseQuery("SELECT * FROM menuGrabberLabelWeights");
 		$labelWeights = array();
 		while ($curRow = $menuWeightsResult->fetch_assoc()) {
-		    $labelWeights[$curRow['MLW_name']] = $curRow['MLW_weight'];
+		    $labelWeights[strtolower($curRow['MLW_name'])] = $curRow['MLW_weight'];
 		}
 		return $labelWeights;
 	}
@@ -644,7 +704,7 @@ class MenuGrabber {
 		$score = 0;
 		$labelWeights = $this->getMenuLabelWeights();
 		foreach ($menuItems as $curItem) {
-			$possibleWeight = $labelWeights[$curItem['label']];
+			$possibleWeight = $labelWeights[strtolower($curItem['label'])];
 			$score += ($possibleWeight) ? $possibleWeight : 0;
 		}
 		return $score;
@@ -674,7 +734,7 @@ class MenuGrabber {
 		$cleanDomainString = implode(',', $cleanDomains);
 
 		//Delete all the domains, their menus, and their menu items
-		databaseQuery("DELETE FROM menuDomains WHERE MND_domain IN ($cleanDomainString)");
+		databaseQuery("DELETE FROM menuGrabberDomains WHERE MGD_domain IN ($cleanDomainString)");
 	}
 		
 	//---------------------------------------------------------------------------------------
