@@ -29,10 +29,9 @@ public class TagImage implements Comparable<TagImage> {
 	 */
 	public static TagImage create(String tagURL, int tagPriority) {
 		
-		//Add the http protocol to the URL if not present
-		if (!tagURL.substring(0, 4).equals("http")) {
-			tagURL = URLTool.setProtocol("http", tagURL);
-		}
+		//Set the protocol to http. Many ads won't appear on https.
+		tagURL = URLTool.setProtocol("http", tagURL);
+		System.out.println("Tag URL after change: " + tagURL);
 		
 		//Retrieve the image
 		BufferedImage tagImage = null;

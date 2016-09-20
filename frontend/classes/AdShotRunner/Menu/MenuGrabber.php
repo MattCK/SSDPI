@@ -548,6 +548,14 @@ class MenuGrabber {
 					$curAnchor = $anchorList->item(0);
 					$anchorHREF = $curAnchor->getAttribute('href');
 					$anchorLabel = $curAnchor->nodeValue;
+
+					//If there is no label but a second link, use the second link
+					if (($anchorLabel == "") && ($anchorList->item(1))) {
+						$curAnchor = $anchorList->item(1);
+						$anchorHREF = $curAnchor->getAttribute('href');
+						$anchorLabel = $curAnchor->nodeValue;
+					}
+					//echo $anchorLabel . ": " . $anchorHREF . "\n";
 					
 					//If the label already exists in the menu, make the link empty
 					foreach ($curULAnchorInformation as $currentLinkSet) {
@@ -576,7 +584,9 @@ class MenuGrabber {
 						$curULAnchorInformation[] = array('label' => $anchorLabel, 'url' => $anchorHREF);
 					}
 				}
+
 			}
+			//echo "\n-------------\n";
 			
 			//Add the array of UL LI info to the final return array if it is not empty
 			if (count($curULAnchorInformation)) {$possibleULMenus[] = $curULAnchorInformation;}

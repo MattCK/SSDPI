@@ -82,7 +82,7 @@ function registerUser($username, $password, $firstName, $lastName, $email) {
 	
 	//Create the new user, add the data, and insert it into the system
 	$newUser = new User();
-	$newUser->setUsername($_POST['desiredLogin']);
+	$newUser->setUsername($_POST['email']);
 	$newUser->setPassword($hashedPassword);
 	$newUser->setFirstName($_POST['firstName']);
 	$newUser->setLastName($_POST['lastName']);

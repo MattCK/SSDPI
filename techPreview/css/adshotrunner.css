@@ -27,13 +27,13 @@ body {
     position: relative;
     width: 1920px; 
 }
-#home {
+#home2 {
     position: absolute;
     width: 960px;
     height: 600px;
 }
 
-#member-home {
+#member-home2 {
     position: absolute;
     left: 960px;
     width: 960px;

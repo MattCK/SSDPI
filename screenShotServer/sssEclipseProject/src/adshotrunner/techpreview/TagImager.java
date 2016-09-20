@@ -17,7 +17,7 @@ import adshotrunner.utilities.FileStorageClient;
 
 public class TagImager implements Runnable {
 
-	final public static String TAGPAGESPATH = "https://s3.amazonaws.com/asr-tagpages/";
+	final public static String TAGPAGESPATH = "http://s3.amazonaws.com/asr-tagpages/";
 
 	private Map<String, String> urlsWithIDs;
 	private Thread imagerThread;

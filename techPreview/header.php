@@ -13,6 +13,8 @@
 	<script src="<?PHP echo JAVASCRIPTURL;?>jquery-ui-1.11.4.min.js" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>base.js" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>zip.js" language="javascript" type="text/javascript"></script>	
+	<script src="<?PHP echo JAVASCRIPTURL;?>asr.js" language="javascript" type="text/javascript"></script>	
+	<script src="<?PHP echo JAVASCRIPTURL;?>tagParser.js" language="javascript" type="text/javascript"></script>	
 	<script>zip.workerScriptsPath = "<?PHP echo JAVASCRIPTURL;?>";</script>
 </head>
 

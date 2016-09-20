@@ -17,9 +17,9 @@ require_once(FUNCTIONPATH . 'loginFunctions.php');
 
 use Aws\Common\Aws;
 
-function getAWSFactory() {
-	return Aws::factory(RESTRICTEDPATH . 'awsFrontendProfile.php');
-}
+//function getAWSFactory() {
+//	return Aws::factory(RESTRICTEDPATH . 'awsFrontendProfile.php');
+//}
 
 
 //If the login form was submitted, attempt to login using those credentials.
@@ -58,9 +58,9 @@ else if ($_POST['registerSubmit']) {
 	if ((strlen($_POST['firstName']) == 0) || (strlen($_POST['lastName']) == 0)) {
 		$registrationError = "Please enter a First and Last Name.";
 	}
-	else if (strlen($_POST['desiredLogin']) == 0) {
+	/*else if (strlen($_POST['desiredLogin']) == 0) {
 		$registrationError = "Please enter a desired Login Name.";
-	}
+	}*/
 	else if (strlen($_POST['email']) == 0) {
 		$registrationError = "Please enter an email address.";
 	}
@@ -75,18 +75,18 @@ else if ($_POST['registerSubmit']) {
 	}
 	
 	//If the info was successfully validated, check to see if the username is already taken.
-	else if (usernameAlreadyTaken($_POST['desiredLogin'])) {
-		$registrationError = "The desired username is not available. Please choose another.";
+	else if (usernameAlreadyTaken($_POST['email'])) {
+		$registrationError = "The email address has already been registered. Please enter another.";
 	}
 	
 	//If everything passes, add the user and send a validation email.
 	else {
 	
 		//Insert the user into the system
-		if (registerUser($_POST['desiredLogin'], $_POST['newPassword1'], $_POST['firstName'], $_POST['lastName'], $_POST['email'])) {
+		if (registerUser($_POST['email'], $_POST['newPassword1'], $_POST['firstName'], $_POST['lastName'], $_POST['email'])) {
 		
 			//If the registration was successful, send an email to verify the account
-			sendVerificationEmail($_POST['desiredLogin']);
+			sendVerificationEmail($_POST['email']);
 			
 			$registrationError = "<span style='color:blue'>A verification email has been sent to you. Please check your mail and follow the instructions.</span>";
 		
@@ -103,7 +103,7 @@ else if ($_POST['resetPasswordSubmit']) {
 	$openTab = 2;
 	
 	if (strlen($_POST['resetUsername']) == 0) {
-		$passwordResetError = "Please enter a username.";
+		$passwordResetError = "Please enter an email.";
 	}
 	
 	//If everything passes, send a password reset email.
@@ -157,14 +157,14 @@ $(function() {
 				<div align="center">
 
 					<div id="loginErrorDiv" align="center" style="padding-bottom: 10px; display:<?PHP if (!$loginError) {echo 'none';}?>;">
-						The username and password do not match. <br>Please re-enter your username and password.
+						The email and password do not match. <br>Please re-enter your email and password.
 					</div>
 					
 					<form action="index.php" id="login" name="login" method="POST" align="center" style="display:inline-block">
 						<table cellspacing="1" cellpadding="5" style="text-align:left">
 							<tr>
-								<td><strong>Username:</strong></td>
-								<td><input type="text" name="username" id="username" maxlength="16"></td>
+								<td><strong>Email:</strong></td>
+								<td><input type="text" name="username" id="username" maxlength="64"></td>
 							</tr>
 							<tr>
 								<td><strong>Password:</strong></td>
@@ -190,6 +190,10 @@ $(function() {
 					<form action="index.php" id="register" name="register" method="POST" align="center" style="display:inline-block">
 						<table cellspacing="1" cellpadding="5" style="text-align:left">
 							<tr>
+								<td><strong>Email:</strong></td>
+								<td><input type="text" name="email" id="email" maxlength="64" value="<? if ($registrationError) echo $_POST['email'];?>"></td>
+							</tr>
+							<tr>
 								<td><strong>First Name:</strong></td>
 								<td><input type="text" name="firstName" id="firstName" maxlength="24" value="<? if ($registrationError) echo $_POST['firstName'];?>">*</td>
 							</tr>
@@ -197,14 +201,10 @@ $(function() {
 								<td><strong>Last Name:</strong></td>
 								<td><input type="text" name="lastName" id="lastName" maxlength="24" value="<? if ($registrationError) echo $_POST['lastName'];?>">*</td>
 							</tr>
-							<tr>
-								<td><strong>Email:</strong></td>
-								<td><input type="text" name="email" id="email" maxlength="64" value="<? if ($registrationError) echo $_POST['email'];?>"></td>
-							</tr>
-							<tr>
+							<!--tr>
 								<td><strong>Desired Login Name:</strong></td>
 								<td><input type="text" name="desiredLogin" id="desiredLogin" maxlength="16" value="<? if ($registrationError) echo $_POST['desiredLogin'];?>"></td>
-							</tr>
+							</tr-->
 							<tr>
 								<td><strong>Choose a Password:</strong></td>
 								<td><input type="password" id="newPassword1" name="newPassword1" maxlength="24" value="<? if ($registrationError) echo $_POST['newPassword1'];?>"></td>
@@ -233,8 +233,8 @@ $(function() {
 					<form action="index.php" id="resetPassword" name="resetPassword" method="POST" align="center" style="display:inline-block">
 						<table cellspacing="1" cellpadding="5" style="text-align:left">
 							<tr>
-								<td><strong>Username:</strong></td>
-								<td><input type="text" name="resetUsername" id="resetUsername" maxlength="16"></td>
+								<td><strong>Email:</strong></td>
+								<td><input type="text" name="resetUsername" id="resetUsername" maxlength="64"></td>
 							</tr>
 							<tr>
 								<td colspan="2" align="center">
