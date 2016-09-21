@@ -33,7 +33,7 @@ public class StoryFinderTester {
 		ArrayList<String> sectionList = new ArrayList<String>();
 		/*sectionList.add("http://www.alexcityoutlook.com/category/opinion/");
 		sectionList.add("http://www.andalusiastarnews.com/category/schools/");*/
-		/*sectionList.add("http://www.palmbeachpost.com/s/living/");
+		sectionList.add("http://www.palmbeachpost.com/s/living/");
 		sectionList.add("http://www.si.com/olympics");
 		sectionList.add("http://www.sandmountainreporter.com/sports/");
 		sectionList.add("http://nypost.com/business/");
@@ -46,26 +46,27 @@ public class StoryFinderTester {
 		sectionList.add("http://www.forbes.com/technology/");
 		sectionList.add("http://www.indystar.com/travel/");
 		sectionList.add("http://www.theverge.com/tech");
-		//*/
+
+		sectionList.add("http://www.indystar.com/life/");
+		sectionList.add("http://www.latimes.com/sports/");
+		sectionList.add("http://www.mercurynews.com/business");
+		sectionList.add("http://www.nydailynews.com/entertainment");
 		
+		/*
 		sectionList.add("http://www.dispatch.com/content/sections/sports/index.html?cmpid=tplnnv");
 		sectionList.add("http://www.sfgate.com/entertainment/");
 		sectionList.add("http://www.msnbc.com/economy");
-		sectionList.add("http://www.mercurynews.com/business");
-		sectionList.add("http://www.indystar.com/life/");
 		sectionList.add("http://www.reuters.com/news/technology");
 		sectionList.add("http://www.alaskajournal.com/oil_gas");
 		sectionList.add("http://www.foxsports.com/college-football");
-		sectionList.add("http://www.nydailynews.com/entertainment");
 		sectionList.add("http://www.nytimes.com/pages/politics/index.html");
 		sectionList.add("http://observer.com/culture/");
 		sectionList.add("http://www.usatoday.com/sports/");
-		sectionList.add("http://www.latimes.com/sports/");
 		sectionList.add("http://www.dailynews.com/entertainment");
 		sectionList.add("http://www.huffingtonpost.com/dept/whats-working");
 		sectionList.add("http://www.laweekly.com/marijuana");
 		sectionList.add("http://variety.com/v/film/");
-		/*sectionList.add("http://www.cleveland.com/community/");
+		sectionList.add("http://www.cleveland.com/community/");
 		sectionList.add("http://www.annistonstar.com/features/");
 		sectionList.add("http://www.thearabtribune.com/sports/");
 		sectionList.add("http://www.adn.com/section/outdoors-adventure/");
@@ -128,7 +129,7 @@ public class StoryFinderTester {
 				System.out.println("StoryFinder found: " + foundStories);
 				if (!foundStories.isEmpty()) {
 					for (int storyIndex = 0; storyIndex < foundStories.size(); ++storyIndex) {
-						sectionsAndStories.put(currentSection + "-" + storyIndex, foundStories.get(storyIndex));
+						sectionsAndStories.put(currentSection + "#" + storyIndex, foundStories.get(storyIndex));
 					}
 				}
 				

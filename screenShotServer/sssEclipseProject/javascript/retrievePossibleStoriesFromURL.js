@@ -20,6 +20,9 @@ var WINDOWHEIGHT = (system.args[3]) ? system.args[3] : 768;
 var USERAGENT = (system.args[4]) ? system.args[4] : "googlebot";
 //var REFERRER = (system.args[5]) ? system.args[5] : "google";
 
+var DESIREDELEMENTID = (system.args[5]) ? system.args[5] : '';
+var DESIREDELEMENTCLASS = (system.args[6]) ? system.args[6] : '';
+
 //Create the phantomjs driver webpage and set the viewport to a standard monitor size 
 var page = require('webpage').create();
 page.viewportSize = {width: WINDOWWIDTH, height: WINDOWHEIGHT};
@@ -92,7 +95,46 @@ page.open(targetURL, function(status) {
 			var MAXPARENTSEARCHHEIGHT = 10;
 
 			//Grab all anchor elements from the page
-			var anchorElements = document.getElementsByTagName('a');
+			//This is where the class and ID Override take place
+			var anchorElements;
+			if (DESIREDELEMENTCLASS == '' && DESIREDELEMENTID == ''){
+				anchorElements = document.getElementsByTagName('a');
+			}
+			else if (DESIREDELEMENTID == ''){
+				var currentElement = document.getElementByID(DESIREDELEMENTID);
+				anchorElements = currentElement.getElementsByTagName('a');
+			}
+			//this one's compliated because you hace to loop through each element and grab the anchors
+			//then you have to add those lists of anchors together without duplicating elements
+			else(){
+				var currentElements = document.getElementsByClassName(DESIREDELEMENTCLASS);
+				
+				var currentElements = document.getElementsByClassName('item-text');
+				var anchorElementList = [];
+
+				for (var curIndex = 0; curIndex < currentElements.length; curIndex++) {
+				  
+				    var tempAnchorElements = currentElements[curIndex].getElementsByTagName('a');
+				    var arrayBuilder = [];
+				    for(var i in tempAnchorElements){       
+				        if (anchorElementList.length > 0){
+				           for (var j in anchorElementList)
+				              if (tempAnchorElements[i]!= anchorElementList[j]) {
+				                 arrayBuilder.push(tempAnchorElements[i])
+				              }
+				        }
+				        else{
+				            arrayBuilder = tempAnchorElements;
+				        }
+				    }
+				    var concatArray = Array.prototype.slice.call(arrayBuilder).concat(Array.prototype.slice.call(anchorElementList));
+				    anchorElementList = concatArray;
+
+				}
+				anchorElements = anchorElementList;
+			}
+
+
 			//console.log(" elements: " + anchorElements.length);
 			//Loop through each elements and grab its own attributes and info
 			var anchorInfoList = [];

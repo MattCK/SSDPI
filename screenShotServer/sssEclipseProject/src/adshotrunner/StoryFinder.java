@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -205,17 +206,22 @@ public class StoryFinder {
 	private List<StoryLink> getStoryLinksFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Turn the returned JSON into an array of objects
-		/*try {
+		try {
 			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".txt"), linkJSON);
-			System.out.println("Saved StoryFinder JSON");
+			StoryFinder.consoleLog("Saved StoryFinder JSON");
 		} catch (IOException e) {
-			System.out.println("Could not save StoryFinder JSON");
-		}*/
-		
+			StoryFinder.consoleLog("Could not save StoryFinder JSON");
+		}
 		Gson gson = new Gson();
 		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
-		ArrayList<StoryLink> storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
-
+		ArrayList<StoryLink> storyLinkList = new ArrayList<StoryLink>();
+		try{
+			storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
+		}
+		catch(com.google.gson.JsonSyntaxException e){
+			StoryFinder.consoleLog("unable to parse linkJSON");
+			
+		}
 		//Get the primary domain of the StoryFinder URL
 		String primaryDomain = getURIDomain(_targetURL);
 		
@@ -260,6 +266,7 @@ public class StoryFinder {
         //Make the linksList immutable and return it
 		//List<Map<String, String>> immutableLinkList = Collections.unmodifiableList(linksList);  
 		return storyLinkList;
+		
 	}
 	
 	/**
@@ -308,10 +315,56 @@ public class StoryFinder {
 		public String className;
 		public int xPosition;
 		public int runningScore;
+		public HashMap<StoryLink,Integer> columnStoryLinks;
 		public StoryColumn(){
 			className  = "";
 			xPosition = 0;
 			runningScore = 0;
+			columnStoryLinks =  new HashMap<StoryLink, Integer>();
+		}
+		public boolean badScore(){
+			boolean currentlyBad = false;
+			int storyCount = columnStoryLinks.size();
+			int topScore = 0;
+			int secondScore = 0;
+			int thirdScore = 0;
+			List<Integer> tempStoryList=new ArrayList<Integer>();
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : columnStoryLinks.entrySet()) {
+				tempStoryList.add(storyLinkScore.getValue());
+			}
+			Collections.sort(tempStoryList, Collections.reverseOrder());
+			if(tempStoryList.size() >= 3){
+				thirdScore = tempStoryList.get(2);
+			}
+			if(tempStoryList.size() >= 2){
+				secondScore = tempStoryList.get(1);
+			}
+			if(tempStoryList.size() >= 1){
+				topScore = tempStoryList.get(0);
+			}
+			
+			double SCOREMULTIPLIERMINIMUM = 2.5;
+			//if the total score is only 2.5x more than the top score then this isn't a good column
+			if((double)topScore * SCOREMULTIPLIERMINIMUM > (double)runningScore ){
+				currentlyBad = true;
+			}
+			//if the average score is less than .65 of the top story then this isn't a good column
+			double SCOREAVERAGEMULTIPLIER = .65;
+			if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
+				currentlyBad = true;
+			}
+			//if there are fewer than 3 stories then this isn't a good column
+			int MINIMUMSTORYCOUNT = 3;
+			if(storyCount <= MINIMUMSTORYCOUNT){
+				currentlyBad = true;
+			}
+			//if the second and third score are too low compared to the first it isn't a good column
+			if( ((double)((double)secondScore + (double)thirdScore)/(double)2) < ((double)topScore * SCOREAVERAGEMULTIPLIER)) {
+				currentlyBad = true;
+			}
+			
+			
+			return currentlyBad;
 		}
 	}
 	
@@ -697,15 +750,17 @@ public class StoryFinder {
 			//Get a ranked list of the links' classes based off each classes links' averages
 			//ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(storyLinkScores);
 			
+			
 			ArrayList<StoryColumn> rankedClasses = getClassesScoredByColumn(storyLinkScores);
 			
 			String topClassName = (!rankedClasses.isEmpty()) ? rankedClasses.get(0).className : "";
 			if (topClassName.isEmpty()) {return new ArrayList<String>();}
 			
-			/*if (!rankedClasses.isEmpty()){
+			//StoryFinder.consoleLog("");
+			if (!rankedClasses.isEmpty()){
 				StoryFinder.consoleLog("Top Ranked ClassName : " + rankedClasses.get(0).className + " at: " + rankedClasses.get(0).xPosition);
 				StoryFinder.consoleLog("With a final score of: " + rankedClasses.get(0).runningScore);
-			}*/
+			}
 			
 			//Get the story with the highest score and with the highest ranked class
 			HashMap<String, Integer> topStories = new HashMap<String, Integer>();
@@ -745,6 +800,8 @@ public class StoryFinder {
 					topStories.put(storyURL, storyLinkScore.getValue());
 				}				
 			}
+			//re-added for debuging
+			writeStoryCSV(storyLinkScores);
 			
 			
 			Map<String, Integer> sortedStories =
@@ -1301,6 +1358,10 @@ public class StoryFinder {
 		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
 		 * @return
 		 */
+		//should add if top scoring column is == (or maybe at least 4 stories?)to it's top story then should 
+		//redo with a wider range than exact column and drop classname
+		//maybe needs to happen after this function...
+		
 		private ArrayList<StoryColumn> getClassesScoredByColumn(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Prepare to store each class' use count and total score
@@ -1320,6 +1381,7 @@ public class StoryFinder {
 						firstInsertColumn.className = storyLinkScore.getKey().className;
 						firstInsertColumn.xPosition = storyLinkScore.getKey().xPosition;
 						firstInsertColumn.runningScore = storyLinkScore.getValue();
+						firstInsertColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
 						if(scoreXPosition(firstInsertColumn.xPosition) >= ColumnMinimumXScore){
 							classScores.put(classColumnString, firstInsertColumn);
 						}
@@ -1327,6 +1389,7 @@ public class StoryFinder {
 					else{
 						StoryColumn adjustScoreColumn = classScores.get(classColumnString);
 						adjustScoreColumn.runningScore += storyLinkScore.getValue();
+						adjustScoreColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
 						classScores.put(classColumnString, adjustScoreColumn);
 					}
 					
