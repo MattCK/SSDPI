@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +70,8 @@ public class AdShotter2 {
 	final private static int SCREENSHOTTIMEOUT = 20000;		//in miliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
+	final private static int DEFAULTCROPHEIGHT = 1200;		//in pixels
+	final private static int MAXCROPHEIGHT = 2500;			//in pixels
 	final private static List<Integer> DEFAULTVIEWPORT = Collections.unmodifiableList(Arrays.asList(1366, 768));
 	final private static List<Integer> MOBILEVIEWPORT = Collections.unmodifiableList(Arrays.asList(360, 640));
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Mobile; rv:26.0) Gecko/26.0 Firefox/26.0";
@@ -285,6 +289,7 @@ public class AdShotter2 {
 	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShot adShot, boolean treatAsTag) throws AdShotRunnerException {
 		
 		//If the AdShot is not to be treated like a tag, create and inject javascript
+		int lowestTagBottom = 0;
 		if (!treatAsTag) {
 			
 	    	//Send esc to stop any final loading and close possible popups 
@@ -312,12 +317,14 @@ public class AdShotter2 {
 				adShot.setError(new AdShotRunnerException("Could not execute AdInjecter in page", e)); //return;
 			}
 			
-			//Mark which ads were injected
+			//Mark which ads were injected and store the lowest tags bottom position
 			consoleLog("Javascript Response: " + injecterResponse);
-			Type listType = new TypeToken<ArrayList<String>>(){}.getType();
-			List<String> injectedTagImageIDs = new Gson().fromJson(injecterResponse, listType);
-			adShot.markTagImageAsInjected(injectedTagImageIDs);
+			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
+			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
+			adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
+			lowestTagBottom = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
 			System.out.println("Injected Tags Size: " + adShot.injectedTagImages().size());
+			System.out.println("Bottom position: " + lowestTagBottom);
 		}
 		
     	//Take the screenshot 
@@ -338,7 +345,7 @@ public class AdShotter2 {
 		adShot.setFinalURL(activeSeleniumWebDriver.getCurrentUrl());
 		
 		//Crop the image
-		try {adShot.setImage(cropAndConvertImageFile(screenShot, 1200, treatAsTag));}
+		try {adShot.setImage(cropAndConvertImageFile(screenShot, lowestTagBottom, treatAsTag));}
 		catch (Exception e) {
 			consoleLog("Could not crop screenshot");
 			adShot.setError(new AdShotRunnerException("Could not crop screenshot", e)); return;
@@ -720,15 +727,19 @@ public class AdShotter2 {
 	 * The cropped image is returned on success and a runtime error is thrown on failure.
 	 * 
 	 * @param originalImageFile		File of image to crop
-	 * @param maximumBottom			Lowest cutoff allowed for image
+	 * @param requestedCropHeight	Requested crop height. If set too low or to zero, class defaults will be used.
+	 * @param treatAsTag			If flagged as a tag, the crop width will be set to the image width (not the default view width)
 	 * @return						Cropped image
 	 * @throws IOException 
 	 */
-	private BufferedImage cropAndConvertImageFile(File originalImageFile, int maximumBottom, boolean treatAsTag) throws IOException {
-		
+	private BufferedImage cropAndConvertImageFile(File originalImageFile, int requestedCropHeight, boolean treatAsTag) throws IOException {
+				
 		//Get the image from the file and determine the height and width
 		BufferedImage originalImage = ImageIO.read(originalImageFile);
-		int cropHeight = (originalImage.getHeight() < maximumBottom) ? originalImage.getHeight() : maximumBottom;
+		int cropHeight = ((requestedCropHeight < 1) || (requestedCropHeight < DEFAULTCROPHEIGHT)) ? 
+				DEFAULTCROPHEIGHT : requestedCropHeight;
+		cropHeight = (cropHeight < MAXCROPHEIGHT) ? cropHeight : MAXCROPHEIGHT;
+		cropHeight = (originalImage.getHeight() < cropHeight) ? originalImage.getHeight() : cropHeight;
 		int defaultWidth = (treatAsTag) ? originalImage.getWidth() : DEFAULTVIEWWIDTH;
 		int cropWidth = (originalImage.getWidth() < defaultWidth) ? originalImage.getWidth() : defaultWidth;
 		BufferedImage croppedImage = originalImage.getSubimage(0, 0, cropWidth, cropHeight);

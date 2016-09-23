@@ -154,14 +154,14 @@ public class CampaignRunner implements Runnable {
 		}
 		
 		//Create the powerpoint
-		System.out.println("Creating powerpoint");
+		/*System.out.println("Creating powerpoint");
 		CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("back1.jpg", "16x9", "Campaign Name");
 		for (AdShot currentAdShot : adShotList) {
 			powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
 		}
 		powerPoint.SaveCampaignPowerPoint("powerpoints/" + requestInfo.jobID + ".pptx");
 		FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + requestInfo.jobID + ".pptx", requestInfo.jobID + ".pptx");
-		System.out.println("Done with powerpoint");
+		System.out.println("Done with powerpoint");*/
 		
 		//Create and upload the job result
 		CampaignResult jobResult = new CampaignResult();

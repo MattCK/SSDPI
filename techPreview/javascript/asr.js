@@ -20,7 +20,8 @@ let asr = {
 	_imageLoadTimeout: 3000,							//Interval the client should check to see if a tag image is ready
 	_rowIndex: 0,										//Stores the index for the next page row to define its array number. 
 														//(Possibly unnecessary but more robust)
-	_queuedTags: [],									//Array of tag texts that need to be processed into images
+	_queuedTags: [],									//Array of tags that need to be processed into images
+	_tagsBeingProcessed: 0,								//Number of tags being processed into images
 
 	/**
 	* Requests the menu for the domain stored in the domain input field. If a menu is returned, its items are
@@ -31,9 +32,13 @@ let asr = {
 
 		//Disable the call button
 		base.disable("getMenuButton");
+		base.disable("domain");
 
 		//Remove the http/https from the domain if present
-		base.nodeFromID('domain').value = base.nodeFromID('domain').value.replace(/^https?\:\/\//i, "");
+		let targetDomain = base.nodeFromID('domain').value.replace(/^https?\:\/\//i, "");
+		let domainParts = targetDomain.split("/");
+		if (domainParts.length > 0) {targetDomain = domainParts[0];}
+		base.nodeFromID('domain').value = targetDomain;
 
 		//Callback that on success stores menu items, puts them into and HTML options string, and shows pages table
 		let callback = function(response) {
@@ -55,7 +60,7 @@ let asr = {
 				//Store the domain, hide it, and show the add pages table
 				asr._domain = base.nodeFromID('domain').value;
 				base.hide("domainInputDiv");
-				base.nodeFromID("domainNameDiv").innerHTML = asr._domain;
+				base.nodeFromID("campaignPagesHeader").innerHTML = "Campaign Pages: " + asr._domain;
 				base.show("domainNameDiv");
 				base.show("pagesTableDiv");
 
@@ -73,6 +78,7 @@ let asr = {
 
 			//Re-enable the call button
 			base.enable("getMenuButton");
+			base.enable("domain");
 		}
 		
 		//Make the request
@@ -94,13 +100,18 @@ let asr = {
 		//Build the row cells and insert them
 		rowCells =  "<td><select name='pages[" + asr._rowIndex + "]'>" + asr._menuOptions + "</select></td>";
 		rowCells += "<td><select name='findStory[" + asr._rowIndex + "]'><option value=0>Front Page</option><option value=1>Find me a story</option></select></td>";
-		rowCells += "<td><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Take screenshot without inserting tags</td>";
-		rowCells += "<td><input type='checkbox' name='useMobile[" + asr._rowIndex + "]' value='1'>Mobile</td>";
-		rowCells += "<td><input type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
+		rowCells += "<td><label><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Get screenshot without inserting tags</label></td>";
+		rowCells += "<td><label><input type='checkbox' name='useMobile[" + asr._rowIndex + "]' value='1'>Mobile</label></td>";
+		rowCells += "<td><input class='button-tiny' type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
 
 		//Increment the row index for the next inserted row
 		asr._rowIndex += 1;
+
+		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
+			base.enable("getScreenshotsButton");}
+		else {base.disable("getScreenshotsButton");}
 	},
 
 	/**
@@ -116,14 +127,20 @@ let asr = {
 		newRow.id = "pageRow" + asr._rowIndex;
 
 		//Build the row cells and insert them
-		rowCells = "<td>Page URL: </td>";
+		rowCells = "<td class='pageURLTitle'>Page URL: </td>";
 		rowCells += "<td><input type='text' name='pages[" + asr._rowIndex + "]'></td>";
-		rowCells += "<td><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Take screenshot without inserting tags</td>";
-		rowCells += "<td><input type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
+		rowCells += "<td><label><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Get screenshot without inserting tags</label></td>";
+		rowCells += "<td><label><input type='checkbox' name='useMobile[" + asr._rowIndex + "]' value='1'>Mobile</label></td>";
+		rowCells += "<td><input class='button-tiny' type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
 
 		//Increment the row index for the next inserted row
 		asr._rowIndex += 1;
+
+		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
+			base.enable("getScreenshotsButton");}
+		else {base.disable("getScreenshotsButton");}
 	},
 
 	/*
@@ -167,6 +184,11 @@ let asr = {
 		//Remove the row
 		let rowToDelete = base.nodeFromID("pageRow" + rowID);
 		rowToDelete.parentNode.removeChild(rowToDelete);
+	
+		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
+			base.enable("getScreenshotsButton");}
+		else {base.disable("getScreenshotsButton");}
 	},
 
 	/**
@@ -190,6 +212,9 @@ let asr = {
 		    $("#sortable").append($li);
 		    $("#sortable").sortable('refresh');
 
+		    //Increase the count of tags being processed into images
+		    ++asr._tagsBeingProcessed;
+
 		    //Start checking for the image to be done.
 			asr.loadTagImage("https://s3.amazonaws.com/asr-tagimages/" + newUUID + ".png", "tagLI" + newUUID);
 		}	
@@ -204,6 +229,11 @@ let asr = {
 		//Make the request to get images for the tags
 		base.disable("getTagImagesButton");
 		base.asyncRequest(asr._getTagImagesURL, {'tags': tagsByID}, callback);
+
+		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
+			base.enable("getScreenshotsButton");}
+		else {base.disable("getScreenshotsButton");}
 	},
 
 	/**
@@ -251,6 +281,11 @@ let asr = {
 		asr._queuedTags = asr._queuedTags.concat(tagTextArray);
 		base.nodeFromID("queuedTagCountSpan").innerHTML = asr._queuedTags.length;
 		if (asr._queuedTags.length > 0) {base.enable("getTagImagesButton");}
+
+		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
+			base.enable("getScreenshotsButton");}
+		else {base.disable("getScreenshotsButton");}
 	},
 
 	/**
@@ -286,7 +321,16 @@ let asr = {
 
 		//If the image is loaded, place it into its tags table row
 		tagImage.onload = function() {
-	        $("#" + tagLIID).html('<img rowTag="" style="max-height: 120px;" src="' + imageURL + '" />');
+			imageLIHTML =  '<div><img rowTag="" style="max-height: 120px;" src="' + imageURL + '" /></div>';
+			imageLIHTML += '<div>' + tagImage.naturalWidth + 'x' + tagImage.naturalHeight + '</div>';
+			imageLIHTML += "<input type='button' value='Delete' onClick='asr.deleteTagImageListItem(\"" + tagLIID + "\")'>";
+	        $("#" + tagLIID).html(imageLIHTML);
+	        --asr._tagsBeingProcessed;
+
+			//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+			if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
+				base.enable("getScreenshotsButton");}
+			else {base.disable("getScreenshotsButton");}
 		};
 
 		//If the image was not loaded, check again in a few seconds
@@ -301,6 +345,17 @@ let asr = {
 
 	},
 
+	/**
+	* Deletes the list item in the tag images list with the passed ID
+	*
+	* @param {Integer} tagLIID  	ID of the list item in the tag images list to delete
+	*/
+	deleteTagImageListItem: function(tagLIID) {
+
+		//Remove the row
+		let liToDelete = base.nodeFromID(tagLIID);
+		liToDelete.parentNode.removeChild(liToDelete);
+	},
 
 	/**
 	* Returns a random UUID

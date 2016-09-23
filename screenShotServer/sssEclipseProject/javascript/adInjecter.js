@@ -11,7 +11,9 @@ var tags = [];
 //Initialize and get the adInjecter object
 var adInjecter = initializeAdInjecter(tags);
 adInjecter.injectTagsIntoPage();
-return JSON.stringify(adInjecter.injectedTagIDs);
+
+//Return the list of injected tags and the lowest tag image bottom position. The position is returned as an array to help clarify java code.
+return JSON.stringify({"injectedTagIDs": adInjecter.injectedTagIDs, "lowestTagPosition": [adInjecter.lowestTagPosition]});
 //console.log(adInjecter.outputString);
 
 
@@ -34,6 +36,7 @@ function initializeAdInjecter(tags) {
 		_ads: [],												//List of ads found on the page
 		_possibleAdElements: [],								//List of unmarked elements the size of a tag. Used if tag not injected.
 		injectedTagIDs: [],										//List of the IDs of the tags that were injected into the page
+		lowestTagPosition: 0,									//The bottom position of the lowest tag image. Used for screenshot cropping.
 		outputString: "",										//String of output from the different called functions
 		_LARGEADWIDTH: 750,										//Width in pixels for an ad to be considered very large
 		_LARGEADHEIGHT: 249,									//Height in pixels for an ad to be considered very large
@@ -131,6 +134,13 @@ function initializeAdInjecter(tags) {
 									if (adInjecter.injectedTagIDs.indexOf(currentTag.id) <= -1) {
 										adInjecter.injectedTagIDs[adInjecter.injectedTagIDs.length] = currentTag.id;
 									}
+
+									//If this tag image is the lowest on the page so far, store its lower position
+									var tagImageBox = tagImage.getBoundingClientRect();
+									if (tagImageBox.bottom > adInjecter.lowestTagPosition) {
+										adInjecter.lowestTagPosition = Math.round(tagImageBox.bottom);
+									}
+
 								}
 								else if (currentAd.element) {
 									console.log("Couldn't replace - " + currentAd.element.nodeName + ": " + currentAd.element.id);
