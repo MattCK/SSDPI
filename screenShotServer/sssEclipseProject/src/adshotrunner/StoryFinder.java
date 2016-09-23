@@ -24,11 +24,14 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.apache.commons.io.FileUtils;
 
 import adshotrunner.errors.AdShotRunnerException;
 import adshotrunner.utilities.URLTool;
+import adshotrunner.utilities.MySQLDatabase;
 
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
@@ -70,7 +73,7 @@ public class StoryFinder {
 	 * @param viewHeight	URL to grab the links from
 	 * @return				JSON string of links and their info
 	 */
-	private static String getLinkJSONFromURL(String url, int viewWidth, int viewHeight, String userAgent) {
+	private static String getLinkJSONFromURL(String url, int viewWidth, int viewHeight, String userAgent, String ExceptionID, String ExceptionClass) {
 		
 		//Try to make the phantomjs call and return the JSON
         String phantomJSResponse = null;
@@ -84,16 +87,22 @@ public class StoryFinder {
             Process p = Runtime.getRuntime().exec(new String[]{
 	            "phantomjs/phantomjs", 
 	            "javascript/retrievePossibleStoriesFromURL.js",
-	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent        	
+	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass        	
             });
-            
             //Get the string returned from phantomjs
             String thisLine = "";
             BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            //StoryFinder.consoleLog("after the to call the readbuffer");
            // while ((thisLine = commandLineInput.readLine()) != null) {
             //	phantomJSResponse += thisLine;
             //}
             phantomJSResponse = commandLineInput.readLine();
+            String[] commandArray = new String[]{
+    	            "phantomjs/phantomjs", 
+    	            "javascript/retrievePossibleStoriesFromURL.js",
+    	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass};
+            StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
+            StoryFinder.consoleLog("FirstLineRead: " + phantomJSResponse);
         }
         catch (IOException e) {
 			throw new AdShotRunnerException("Could not execute phantomjs", e);
@@ -126,6 +135,15 @@ public class StoryFinder {
 	 * Height to set phantomjs screen to before grabbing links
 	 */
 	private final int _screenHeight;
+	
+	/**
+	 * HTML ID Exception in the database for this URL 
+	 */
+	private String _dbExceptionID;
+	/**
+	 * HTML ClassName Exception in the database for this URL 
+	 */
+	private String _dbExceptionClassName;
 	
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
@@ -171,24 +189,96 @@ public class StoryFinder {
 		_screenWidth = viewWidth;
 		_screenHeight = viewHeight;
 		
+		//get possible exceptions from the DB
+		Map<String, String> storyException = null;
+		_dbExceptionID = "";
+		_dbExceptionClassName = "";
+		try {
+			storyException = getException(url);
+			if (storyException != null){
+				_dbExceptionID = storyException.get("containerID");
+				_dbExceptionClassName = storyException.get("className");
+			}
+				
+		} catch (SQLException e) {
+			StoryFinder.consoleLog("Database Error When finding Exception for: " + url);
+		}
+		
+		
 		//loop through the phantomjs request trying different user agents
 		String userAgents[] = new String [] {"googlebot","firefox", "msnbot", "firefoxlinux"};
 		int userAgentIncrementor = 0;
-		int linkCountMinimum = 10;
+		int linkCountMinimumNormal = 10;
+		int linkCountMinimumWException = 5;
+		int linkCountMinimum = linkCountMinimumNormal;
+		boolean useException = false;
+		
+		if ((_dbExceptionID != "") || (_dbExceptionClassName != "")){
+			linkCountMinimum = linkCountMinimumWException;
+			useException = true;
+		}
+		
 		List<StoryLink> retrievedLinks = new ArrayList<StoryLink>();
 		while((userAgentIncrementor < userAgents.length) && (retrievedLinks.size() < linkCountMinimum)){
 		
 			StoryFinder.consoleLog("Trying phantomJS with agent:" + userAgents[userAgentIncrementor]);
 			//Get the possible story links using phantomjs
-			String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor]);
-	                
+			String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor], _dbExceptionID, _dbExceptionClassName);
+			
+			StoryFinder.consoleLog("full String: " + linkJSON);
+			
 	        //Get the immutable link info as array of maps
 			retrievedLinks = getStoryLinksFromJSON(linkJSON);
 			
 			userAgentIncrementor++;
 		}
+		
 		_links = retrievedLinks;
 	}
+	
+	public static Map<String, String> getException(String targetURL) throws SQLException {
+		
+		//Get the domain with subdomain of the url. The protocol type is not important. It is necessary for getDomain.
+		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
+		
+		//Check the database to see if any entries matching the domain exist
+		ResultSet exceptionsSet = MySQLDatabase.executeQuery("SELECT * " + 
+															 "FROM exceptionsStoryFinder " +
+															 "WHERE ESF_url LIKE '" + urlDomain + "%'");
+				
+		//If a match was found, use the container ID and class of the longest matching url part
+		String urlPart = "", containerID = "", className = "";
+		while (exceptionsSet.next()) {
+						
+			//Get the current URL part
+			String currentURLPart = exceptionsSet.getString("ESF_url");
+			
+			//If the url part is a substring of the target URL, store its info if it is the longest
+			if (targetURL.toLowerCase().contains(currentURLPart.toLowerCase())) {
+				
+				//See if the new part is longer than the current
+				if (currentURLPart.length() > urlPart.length()) {
+					
+					//Store the new exception
+					urlPart = currentURLPart;
+					containerID = exceptionsSet.getString("ESF_containerID");
+					className = exceptionsSet.getString("ESF_className");
+				}
+			}			
+		}
+		
+		//If no matches in the database were found, return null
+		if (urlPart.isEmpty()) {return null;}
+		
+		//Otherwise, put the info in a map and return it
+		else {
+			Map<String, String> storyException = new HashMap<String, String>();
+			storyException.put("url", urlPart);
+			storyException.put("containerID", containerID);
+			storyException.put("className", className);
+			return storyException;
+		}
+	} 
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
@@ -208,7 +298,7 @@ public class StoryFinder {
 		//Turn the returned JSON into an array of objects
 		try {
 			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".txt"), linkJSON);
-			StoryFinder.consoleLog("Saved StoryFinder JSON");
+			//StoryFinder.consoleLog("Saved StoryFinder JSON");
 		} catch (IOException e) {
 			StoryFinder.consoleLog("Could not save StoryFinder JSON");
 		}
@@ -226,40 +316,44 @@ public class StoryFinder {
 		String primaryDomain = getURIDomain(_targetURL);
 		
 		//Loop through the list removing null and empty href elements and setting null class to empty string
-		Iterator<StoryLink> linksIterator = storyLinkList.iterator();
-		while(linksIterator.hasNext()){
-			
-			StoryLink currentLink = linksIterator.next();
-			
-			//Check for // at beginning of href and add protocol if not there
-			if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
-				//StoryFinder.consoleLog("Inside //: " + currentLink.href );
-				currentLink.href = "http:" + currentLink.href;
-			}
-			
-			String currentDomain = (currentLink.href != null) ? getURIDomain(currentLink.href) : null;
-			
-			if (currentLink.href == null || currentLink.href.isEmpty()) {
-				linksIterator.remove();
-			}
-			else if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 7) && (currentLink.href.substring(0, 7).equals("mailto:"))){
-				linksIterator.remove();
-			}
-			else if ((currentDomain != "") && (!primaryDomain.equals(currentDomain))) {
-				linksIterator.remove();
-			}
-			else {
-				if (currentLink.className == null) {currentLink.className = "";}
+		try{
+			Iterator<StoryLink> linksIterator = storyLinkList.iterator();
+			while(linksIterator.hasNext()){
 				
-				//If the link begins with javascript, try to get the URL
-				if ((currentLink.href.length() >= 11) && currentLink.href.substring(0, 11).equals("javascript:")) {
-			        String urlPattern = "((https?|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
-			        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
-			        Matcher m = p.matcher(currentLink.href);
-			        if (m.find()) {currentLink.href = m.group(0);}
-			        else {linksIterator.remove();}
-			    }
+				StoryLink currentLink = linksIterator.next();
+				
+				//Check for // at beginning of href and add protocol if not there
+				if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
+					//StoryFinder.consoleLog("Inside //: " + currentLink.href );
+					currentLink.href = "http:" + currentLink.href;
+				}
+				
+				String currentDomain = (currentLink.href != null) ? getURIDomain(currentLink.href) : null;
+				
+				if (currentLink.href == null || currentLink.href.isEmpty()) {
+					linksIterator.remove();
+				}
+				else if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 7) && (currentLink.href.substring(0, 7).equals("mailto:"))){
+					linksIterator.remove();
+				}
+				else if ((currentDomain != "") && (!primaryDomain.equals(currentDomain))) {
+					linksIterator.remove();
+				}
+				else {
+					if (currentLink.className == null) {currentLink.className = "";}
+					
+					//If the link begins with javascript, try to get the URL
+					if ((currentLink.href.length() >= 11) && currentLink.href.substring(0, 11).equals("javascript:")) {
+				        String urlPattern = "((https?|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
+				        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
+				        Matcher m = p.matcher(currentLink.href);
+				        if (m.find()) {currentLink.href = m.group(0);}
+				        else {linksIterator.remove();}
+				    }
+				}
 			}
+		}catch (java.lang.NullPointerException e) {
+			StoryFinder.consoleLog("JSON Somehow Parsed without any entries");
 		}
 		
         
@@ -322,8 +416,8 @@ public class StoryFinder {
 			runningScore = 0;
 			columnStoryLinks =  new HashMap<StoryLink, Integer>();
 		}
-		public boolean badScore(){
-			boolean currentlyBad = false;
+		public boolean goodColumn( boolean doubleStrict){
+			boolean currentlyGood = true;
 			int storyCount = columnStoryLinks.size();
 			int topScore = 0;
 			int secondScore = 0;
@@ -346,25 +440,46 @@ public class StoryFinder {
 			double SCOREMULTIPLIERMINIMUM = 2.5;
 			//if the total score is only 2.5x more than the top score then this isn't a good column
 			if((double)topScore * SCOREMULTIPLIERMINIMUM > (double)runningScore ){
-				currentlyBad = true;
-			}
-			//if the average score is less than .65 of the top story then this isn't a good column
-			double SCOREAVERAGEMULTIPLIER = .65;
-			if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
-				currentlyBad = true;
+				currentlyGood = false;
+				StoryFinder.consoleLog("total only 2.5x: " + currentlyGood);
 			}
 			//if there are fewer than 3 stories then this isn't a good column
 			int MINIMUMSTORYCOUNT = 3;
 			if(storyCount <= MINIMUMSTORYCOUNT){
-				currentlyBad = true;
+				currentlyGood = false;
+				StoryFinder.consoleLog("min count: " + currentlyGood);
 			}
-			//if the second and third score are too low compared to the first it isn't a good column
-			if( ((double)((double)secondScore + (double)thirdScore)/(double)2) < ((double)topScore * SCOREAVERAGEMULTIPLIER)) {
-				currentlyBad = true;
+			if(doubleStrict){
+				//if the average score is less than .65 of the top story then this isn't a good column
+				double SCOREAVERAGEMULTIPLIER = .40;
+				if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
+					currentlyGood = false;
+					StoryFinder.consoleLog(".65 avg: " + currentlyGood);
+				}
+				double SCOREMULTIPLIER = .65;
+				//if the second and third score are too low compared to the first it isn't a good column
+				if( ((double)((double)secondScore + (double)thirdScore)/(double)2) < ((double)topScore * SCOREMULTIPLIER)) {
+					currentlyGood = false;
+					StoryFinder.consoleLog("2nd and 3rd low: " + currentlyGood);
+				}
 			}
+			else{
+				//if the average score is less than .65 of the top story then this isn't a good column
+				double SCOREAVERAGEMULTIPLIER = .30;
+				if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
+					currentlyGood = false;
+					StoryFinder.consoleLog(".65 avg: " + currentlyGood);
+				}
+				
+			}
+			/*
+			StoryFinder.consoleLog("column entries:");
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : columnStoryLinks.entrySet()) {
+				tempStoryList.add(storyLinkScore.getValue());
+				StoryFinder.consoleLog("l: " + storyLinkScore.getKey().href + " s: " + storyLinkScore.getValue() + " x: " + storyLinkScore.getKey().xPosition);
+			}*/
 			
-			
-			return currentlyBad;
+			return currentlyGood;
 		}
 	}
 	
@@ -458,7 +573,7 @@ public class StoryFinder {
 		private int UNWANTEDCLASSNAMEHANDICAP;
 		
 		/**
-		 * Handicap for link's when containing one of the unwanted terms in the URL. Default: -5
+		 * Handicap for link's when containing one of the unwanted terms in the URL. Default: -10
 		 */ 
 		private int UNWANTEDURLTERMSHANDICAP;
 		
@@ -561,7 +676,7 @@ public class StoryFinder {
 			LONGCLASSNAMELENGTH = 65;
 			
 			//Set URL Terms Score
-			UNWANTEDURLTERMSHANDICAP = -5;
+			UNWANTEDURLTERMSHANDICAP = -10;
 			
 			//Set handicap for all caps
 			ALLCAPSHANDICAP = -12;
@@ -750,17 +865,61 @@ public class StoryFinder {
 			//Get a ranked list of the links' classes based off each classes links' averages
 			//ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(storyLinkScores);
 			
-			
-			ArrayList<StoryColumn> rankedClasses = getClassesScoredByColumn(storyLinkScores);
-			
-			String topClassName = (!rankedClasses.isEmpty()) ? rankedClasses.get(0).className : "";
-			if (topClassName.isEmpty()) {return new ArrayList<String>();}
-			
-			//StoryFinder.consoleLog("");
-			if (!rankedClasses.isEmpty()){
-				StoryFinder.consoleLog("Top Ranked ClassName : " + rankedClasses.get(0).className + " at: " + rankedClasses.get(0).xPosition);
-				StoryFinder.consoleLog("With a final score of: " + rankedClasses.get(0).runningScore);
+			if((_dbExceptionID != "") || (_dbExceptionClassName != "")){
+				//this is just a reminder that we're not scoring any columns if there is an exception
+				storyLinkScores = storyLinkScores;
+				StoryFinder.consoleLog("Inside DB Exception");
 			}
+			else{
+				ArrayList<StoryColumn> rankedByClass = getColumnsScoredWClassNameStrictXPos(storyLinkScores);
+				//if the first ranked column is scored poorly then retry with less strict columns
+				StoryFinder.consoleLog("After get strict x w class");
+				if (rankedByClass.get(0).goodColumn(true)){
+					StoryFinder.consoleLog("strict x w class marked as good");
+					//if the strict x pos and classname had a good first column grab all the columns of that class
+					String topClassName = (!rankedByClass.isEmpty()) ? rankedByClass.get(0).className : "";
+					//StoryFinder.consoleLog("");
+					if (!rankedByClass.isEmpty()){
+						StoryFinder.consoleLog("Top Ranked ClassName : " + rankedByClass.get(0).className + " at: " + rankedByClass.get(0).xPosition);
+						StoryFinder.consoleLog("With a final score of: " + rankedByClass.get(0).runningScore);
+					}
+					storyLinkScores = new HashMap<StoryLink, Integer>();
+					//this adds every story from every column with a mataching classname where the column is good
+					for (StoryColumn currColumn : rankedByClass) {
+						if ((currColumn.className == topClassName) && (currColumn.goodColumn(true))){
+							StoryFinder.consoleLog("adding good columns to the storylinklist");
+							storyLinkScores.putAll(currColumn.columnStoryLinks);
+						}
+						
+					}
+	
+				}
+				//if the strictx pos and classname did not return a good column
+				else{
+					StoryFinder.consoleLog("strict x no class scoring");
+					ArrayList<StoryColumn> looseColumns = getColumnsScoredWStrictXPosNoClass(storyLinkScores);
+					if(looseColumns.get(0).goodColumn(false)){
+						StoryFinder.consoleLog("strict x no class scoring: had good columns");
+						storyLinkScores = looseColumns.get(0).columnStoryLinks;
+					}
+					else{
+						StoryFinder.consoleLog("with class no X scoring");
+						ArrayList<StoryColumn> justClassName = getColumnsScoredWClassNoXPos(storyLinkScores);
+						if (justClassName.get(0).goodColumn(false)){
+							storyLinkScores = justClassName.get(0).columnStoryLinks;
+						}
+						else{
+							StoryFinder.consoleLog("just remove bad positions scoring");
+							ArrayList<StoryColumn> reallyBadPositionsRemoved = getColumnsRemoveBadPositions(storyLinkScores);
+							storyLinkScores = reallyBadPositionsRemoved.get(0).columnStoryLinks;
+						}
+					}
+	
+				}
+			}
+			
+			if (storyLinkScores.isEmpty()) {return new ArrayList<String>();}
+			
 			
 			//Get the story with the highest score and with the highest ranked class
 			HashMap<String, Integer> topStories = new HashMap<String, Integer>();
@@ -769,36 +928,33 @@ public class StoryFinder {
 				//this re-scores the links after all the other scoring so that the correct class
 				//will still be selected but now negative stories will be scored down
 				storyLinkScore.setValue(scoreLinkText(storyLinkScore.getKey().text, storyLinkScore.getValue()));
+
+				//Clean up the URL
+				//If it begins with http, do nothing
+				String storyURL = storyLinkScore.getKey().href;
+				if ((storyURL.length() >=4) && (storyURL.substring(0, 4).equals("http"))) {}
 				
-				//If the current link has the class and a higher score, make it the current story URL
-				if (storyLinkScore.getKey().className.contains(topClassName)) {
-
-					//Clean up the URL
-					//If it begins with http, do nothing
-					String storyURL = storyLinkScore.getKey().href;
-					if ((storyURL.length() >=4) && (storyURL.substring(0, 4).equals("http"))) {}
+				//Some sites put // before the substring to keep protocol
+				//Since we don't care about protocol at the moment (due to redirects) just remove it
+				else if ((storyURL.length() >=2) &&(storyURL.substring(0, 2).equals("//"))) {
+					storyURL = storyURL.substring(2);
+				}
+				
+				//Otherwise, add the domain
+				else {
 					
-					//Some sites put // before the substring to keep protocol
-					//Since we don't care about protocol at the moment (due to redirects) just remove it
-					else if ((storyURL.length() >=2) &&(storyURL.substring(0, 2).equals("//"))) {
-						storyURL = storyURL.substring(2);
+					//Add a slash before the URL if none exists
+					if ((storyURL.length() >=4) && (!storyURL.substring(0, 1).equals("/"))) {
+						storyURL = "/" + storyURL;
 					}
 					
-					//Otherwise, add the domain
-					else {
-						
-						//Add a slash before the URL if none exists
-						if ((storyURL.length() >=4) && (!storyURL.substring(0, 1).equals("/"))) {
-							storyURL = "/" + storyURL;
-						}
-						
-						//Add the domain and set protocol to http
-						String targetDomain = URLTool.getDomain(_targetURL);
-						storyURL = URLTool.setProtocol("http", targetDomain + storyURL);
-					}
+					//Add the domain and set protocol to http
+					String targetDomain = URLTool.getDomain(_targetURL);
+					storyURL = URLTool.setProtocol("http", targetDomain + storyURL);
+				}
 
-					topStories.put(storyURL, storyLinkScore.getValue());
-				}				
+				topStories.put(storyURL, storyLinkScore.getValue());
+								
 			}
 			//re-added for debuging
 			writeStoryCSV(storyLinkScores);
@@ -1231,7 +1387,7 @@ public class StoryFinder {
 				//Get the url's classname
 				String URLText = storyLinkScore.getKey().href.toLowerCase();
 				String unwantedURLTerms[] = new String [] {"sponsored", "video", "gallery",
-						"slideshow", "sponsor", "interactives"};
+						"slideshow", "sponsor", "interactives", "deals"};
 				
 				if (stringContainsItemFromListCapInsensitive(URLText, unwantedURLTerms)) {
 					scoreOffset += UNWANTEDURLTERMSHANDICAP;
@@ -1362,7 +1518,132 @@ public class StoryFinder {
 		//redo with a wider range than exact column and drop classname
 		//maybe needs to happen after this function...
 		
-		private ArrayList<StoryColumn> getClassesScoredByColumn(HashMap<StoryLink, Integer> storyLinkScores) {
+		private ArrayList<StoryColumn> getColumnsRemoveBadPositions(HashMap<StoryLink, Integer> storyLinkScores) {
+			
+			//Prepare to store each class' use count and total score
+			HashMap<String, StoryColumn> classScores = new HashMap<String, StoryColumn>();
+			int ColumnMinimumXScore = 2;
+			
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
+				
+				//Get the url's classes and xpos from the class attribute
+				String classColumnString = "fullList";
+			
+				if (classScores.get(classColumnString) == null){
+					StoryColumn firstInsertColumn = new StoryColumn();
+					firstInsertColumn.className = storyLinkScore.getKey().className;
+					firstInsertColumn.xPosition = storyLinkScore.getKey().xPosition;
+					firstInsertColumn.runningScore = storyLinkScore.getValue();
+					firstInsertColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
+					if(scoreXPosition(firstInsertColumn.xPosition) >= ColumnMinimumXScore){
+						classScores.put(classColumnString, firstInsertColumn);
+					}
+				}
+				else{
+					StoryColumn adjustScoreColumn = classScores.get(classColumnString);
+					adjustScoreColumn.runningScore += storyLinkScore.getValue();
+					adjustScoreColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
+					if(scoreXPosition(adjustScoreColumn.xPosition) >= ColumnMinimumXScore){
+						classScores.put(classColumnString, adjustScoreColumn);
+					}
+				}
+					
+			}
+			
+			//Get the column scores and put them into a TreeMap for sorting
+			TreeMap<Integer, StoryColumn> sortedColumnScores = new TreeMap<Integer, StoryColumn>(Collections.reverseOrder());
+			for (Map.Entry<String, StoryColumn> currentColumnScore : classScores.entrySet()) {
+				
+				sortedColumnScores.put(currentColumnScore.getValue().runningScore, currentColumnScore.getValue());
+			}
+			
+			//Turn the sorted map into the final array and return it
+			ArrayList<StoryColumn> rankedColumns = new ArrayList<StoryColumn>();
+			for (Map.Entry<Integer, StoryColumn> storyLinkScore : sortedColumnScores.entrySet()) {
+				rankedColumns.add(storyLinkScore.getValue());
+			}
+			
+			return rankedColumns;
+		}
+		
+		/**
+		 * Returns array list of all the links' classes ranked by average link score. The first class (at 0)
+		 * has the highest score.
+		 * 
+		 * The score is calculated by taking the sum of the scores of all the links in that class and column
+		 * 
+		 * 
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
+		 * @return
+		 */
+		//should add if top scoring column is == (or maybe at least 4 stories?)to it's top story then should 
+		//redo with a wider range than exact column and drop classname
+		//maybe needs to happen after this function...
+		
+		private ArrayList<StoryColumn> getColumnsScoredWClassNoXPos(HashMap<StoryLink, Integer> storyLinkScores) {
+			
+			//Prepare to store each class' use count and total score
+			HashMap<String, StoryColumn> classScores = new HashMap<String, StoryColumn>();
+			int ColumnMinimumXScore = 2;
+			
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
+				
+				//Get the url's classes and xpos from the class attribute
+				String classColumnString = storyLinkScore.getKey().className;
+				
+				//Loop through each class if any exist
+				if (classColumnString.length() > 0) {
+					
+					if (classScores.get(classColumnString) == null){
+						StoryColumn firstInsertColumn = new StoryColumn();
+						firstInsertColumn.className = storyLinkScore.getKey().className;
+						firstInsertColumn.xPosition = storyLinkScore.getKey().xPosition;
+						firstInsertColumn.runningScore = storyLinkScore.getValue();
+						firstInsertColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
+						if(scoreXPosition(firstInsertColumn.xPosition) >= ColumnMinimumXScore){
+							classScores.put(classColumnString, firstInsertColumn);
+						}
+					}
+					else{
+						StoryColumn adjustScoreColumn = classScores.get(classColumnString);
+						adjustScoreColumn.runningScore += storyLinkScore.getValue();
+						adjustScoreColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
+						if(scoreXPosition(adjustScoreColumn.xPosition) >= ColumnMinimumXScore){
+							classScores.put(classColumnString, adjustScoreColumn);
+						}
+					}
+					
+				}
+			}
+			
+			//Get the column scores and put them into a TreeMap for sorting
+			TreeMap<Integer, StoryColumn> sortedColumnScores = new TreeMap<Integer, StoryColumn>(Collections.reverseOrder());
+			for (Map.Entry<String, StoryColumn> currentColumnScore : classScores.entrySet()) {
+				
+				sortedColumnScores.put(currentColumnScore.getValue().runningScore, currentColumnScore.getValue());
+			}
+			
+			//Turn the sorted map into the final array and return it
+			ArrayList<StoryColumn> rankedColumns = new ArrayList<StoryColumn>();
+			for (Map.Entry<Integer, StoryColumn> storyLinkScore : sortedColumnScores.entrySet()) {
+				rankedColumns.add(storyLinkScore.getValue());
+			}
+			
+			return rankedColumns;
+		}
+		
+		/**
+		 * Returns array list of all the columns with strict column x pos and using classname
+		 * 
+		 * The score is calculated by taking the sum of the scores of all the links in that class and column
+		 * 
+		 * 
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
+		 * @return
+		 */
+
+		
+		private ArrayList<StoryColumn> getColumnsScoredWClassNameStrictXPos(HashMap<StoryLink, Integer> storyLinkScores) {
 			
 			//Prepare to store each class' use count and total score
 			HashMap<String, StoryColumn> classScores = new HashMap<String, StoryColumn>();
@@ -1372,6 +1653,67 @@ public class StoryFinder {
 				
 				//Get the url's classes and xpos from the class attribute
 				String classColumnString = storyLinkScore.getKey().className + ":x:" + storyLinkScore.getKey().xPosition;
+				
+				//Loop through each class if any exist
+				if (classColumnString.length() > 0) {
+					
+					if (classScores.get(classColumnString) == null){
+						StoryColumn firstInsertColumn = new StoryColumn();
+						firstInsertColumn.className = storyLinkScore.getKey().className;
+						firstInsertColumn.xPosition = storyLinkScore.getKey().xPosition;
+						firstInsertColumn.runningScore = storyLinkScore.getValue();
+						firstInsertColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
+						if(scoreXPosition(firstInsertColumn.xPosition) >= ColumnMinimumXScore){
+							classScores.put(classColumnString, firstInsertColumn);
+						}
+					}
+					else{
+						StoryColumn adjustScoreColumn = classScores.get(classColumnString);
+						adjustScoreColumn.runningScore += storyLinkScore.getValue();
+						adjustScoreColumn.columnStoryLinks.put(storyLinkScore.getKey(), storyLinkScore.getValue());
+						classScores.put(classColumnString, adjustScoreColumn);
+					}
+					
+				}
+			}
+			
+			//Get the column scores and put them into a TreeMap for sorting
+			TreeMap<Integer, StoryColumn> sortedColumnScores = new TreeMap<Integer, StoryColumn>(Collections.reverseOrder());
+			for (Map.Entry<String, StoryColumn> currentColumnScore : classScores.entrySet()) {
+				
+				sortedColumnScores.put(currentColumnScore.getValue().runningScore, currentColumnScore.getValue());
+			}
+			
+			//Turn the sorted map into the final array and return it
+			ArrayList<StoryColumn> rankedColumns = new ArrayList<StoryColumn>();
+			for (Map.Entry<Integer, StoryColumn> storyLinkScore : sortedColumnScores.entrySet()) {
+				rankedColumns.add(storyLinkScore.getValue());
+			}
+			
+			return rankedColumns;
+		}
+		
+		/**
+		 * Returns array list of all the columns with strict column x pos and using classname
+		 * 
+		 * The score is calculated by taking the sum of the scores of all the links in that class and column
+		 * 
+		 * 
+		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
+		 * @return
+		 */
+
+		
+		private ArrayList<StoryColumn> getColumnsScoredWStrictXPosNoClass(HashMap<StoryLink, Integer> storyLinkScores) {
+			
+			//Prepare to store each class' use count and total score
+			HashMap<String, StoryColumn> classScores = new HashMap<String, StoryColumn>();
+			int ColumnMinimumXScore = 2;
+			
+			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
+				
+				//Get the url's classes and xpos from the class attribute
+				String classColumnString = "x:" + storyLinkScore.getKey().xPosition;
 				
 				//Loop through each class if any exist
 				if (classColumnString.length() > 0) {

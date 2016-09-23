@@ -68,16 +68,39 @@ page.onLoadStarted = function() {
 };
 
 //This suppresses all error messages. Comment out to view console errors.
-page.onError = function(msg, trace) {};
+page.onError = function(msg, trace) {
+
+	/*console.log("there was an error on the page");
+	console.log("m: " + msg);
+	console.log("trace: " + trace);
+	trace.forEach(function(item) {
+        console.log('  ', item.file, ':', item.line);
+    });*/
+};
 
 page.onResourceError = function(resourceError) {
     page.reason = resourceError.errorString;
     page.reason_url = resourceError.url;
 };
 
+function returnDesiredClass() {
+    return DESIREDELEMENTCLASS;
+}
+function returnDesiredID() {
+    return DESIREDELEMENTID;
+}
+
+page.onInitialized = function () {
+    page.evaluate(function () {
+        Math.random = function() {
+            return 42 / 100;
+        };
+    });
+};
+
+
 //Try to connect to and open the target URL
 page.open(targetURL, function(status) {
-
 	//If the connection failed, notify and end execution	
 	if (status !== 'success') {
 		console.log(status + ': FAILURE: Unable to connect to URL- ' + page.reason_url + " reason: " + page.reason + " targetURL:" + targetURL); phantom.exit();
@@ -85,50 +108,65 @@ page.open(targetURL, function(status) {
 			
 	//Otherwise, get the stories
 	else {
-
 		//Inject the function to grab the list of anchor info
-		var anchorListJSON = page.evaluate(function() {
+		var anchorListJSON = page.evaluate(function(DESIREDELEMENTCLASS, DESIREDELEMENTID) {
 		
 			//Scroll the window 1000 pixels down twice in order to make sure all anchors are loaded
 			window.scrollBy(0,1000);
 			window.scrollBy(0,1000);
 			var MAXPARENTSEARCHHEIGHT = 10;
 
+			//var desiredElClas = returnDesiredClass.apply();
+			//var desiredElID = returnDesiredID.apply();
+
+			var sendBack = "cl:" + DESIREDELEMENTCLASS + "-ID:" + DESIREDELEMENTID + "-";
+			//var sendBack = "cl:" + desiredElClas + "-ID:" + desiredElID + "-";
+			//return sendBack;
+			//return "hello";
+			
 			//Grab all anchor elements from the page
 			//This is where the class and ID Override take place
 			var anchorElements;
 			if (DESIREDELEMENTCLASS == '' && DESIREDELEMENTID == ''){
 				anchorElements = document.getElementsByTagName('a');
+				var sendBack = sendBack + ": inside get by tagname";
 			}
-			else if (DESIREDELEMENTID == ''){
-				var currentElement = document.getElementByID(DESIREDELEMENTID);
+			else if (DESIREDELEMENTID != ''){
+				var currentElement = document.getElementById(DESIREDELEMENTID);
 				anchorElements = currentElement.getElementsByTagName('a');
+				var sendBack = sendBack + ": inside get by ID";
 			}
 			//this one's compliated because you hace to loop through each element and grab the anchors
 			//then you have to add those lists of anchors together without duplicating elements
-			else(){
+			else if (DESIREDELEMENTCLASS != ''){
+				var sendBack = sendBack + ": inside get by classname";
 				var currentElements = document.getElementsByClassName(DESIREDELEMENTCLASS);
 				
-				var currentElements = document.getElementsByClassName('item-text');
 				var anchorElementList = [];
-
 				for (var curIndex = 0; curIndex < currentElements.length; curIndex++) {
-				  
-				    var tempAnchorElements = currentElements[curIndex].getElementsByTagName('a');
-				    var arrayBuilder = [];
-				    for(var i in tempAnchorElements){       
-				        if (anchorElementList.length > 0){
-				           for (var j in anchorElementList)
-				              if (tempAnchorElements[i]!= anchorElementList[j]) {
-				                 arrayBuilder.push(tempAnchorElements[i])
-				              }
-				        }
-				        else{
-				            arrayBuilder = tempAnchorElements;
-				        }
-				    }
-				    var concatArray = Array.prototype.slice.call(arrayBuilder).concat(Array.prototype.slice.call(anchorElementList));
-				    anchorElementList = concatArray;
+
+				  	if(currentElements[curIndex] != null){
+					    var tempAnchorElements = currentElements[curIndex].getElementsByTagName('a');
+					    var arrayBuilder = [];
+					    //this loop builds a temp array of all the elements not already in
+					    //the ongoing anchor elements
+					    for(var i in tempAnchorElements){       
+					        if (anchorElementList.length > 0){
+					           for (var j in anchorElementList)
+					              if (tempAnchorElements[i]!= anchorElementList[j]) {
+					                 arrayBuilder.push(tempAnchorElements[i])
+					              }
+					        }
+					        else{
+					            arrayBuilder = tempAnchorElements;
+					        }
+					    }
+					    //concat can not be assigned either of the lists in the concat operation
+					    //the array.prototype turns a list of elements into an array so it can be concatenated
+					    var concatArray = Array.prototype.slice.call(arrayBuilder).concat(Array.prototype.slice.call(anchorElementList));
+					    anchorElementList = concatArray;
+				   	}
+
 
 				}
 				anchorElements = anchorElementList;
@@ -197,16 +235,24 @@ page.open(targetURL, function(status) {
 			
 			//Convert the anchor info list into JSON and return it
 			return JSON.stringify(anchorInfoList);
-		});
+			//var retMe = "retVal:";
+			//return retMe;
+			
+
+		} , DESIREDELEMENTCLASS, DESIREDELEMENTID);
 
 		//page.render( "xx" + Math.random().toString(36).slice(2) + 'currPhantomPage.png');
 		
-		var pageContent = page.content;
+		//var pageContent = page.content;
 		//console.log('FullDoc:' + pageContent);
 		//Print the final JSON to the command terminal
+		//console.log("about to output the anchor list");
 		console.log(anchorListJSON);
 	}
 	
 	//Completely terminate this running script
 	phantom.exit();
-});
+	
+} );
+
+

@@ -33,15 +33,15 @@ public class StoryFinderTester {
 		ArrayList<String> sectionList = new ArrayList<String>();
 		/*sectionList.add("http://www.alexcityoutlook.com/category/opinion/");
 		sectionList.add("http://www.andalusiastarnews.com/category/schools/");*/
-		sectionList.add("http://www.palmbeachpost.com/s/living/");
-		sectionList.add("http://www.si.com/olympics");
+		//sectionList.add("http://www.palmbeachpost.com/s/living/");
+		/*sectionList.add("http://www.si.com/olympics");
 		sectionList.add("http://www.sandmountainreporter.com/sports/");
 		sectionList.add("http://nypost.com/business/");
 		sectionList.add("http://www.investors.com/news/");
 		sectionList.add("http://www.aol.com/finance/");//actually wrong
 		sectionList.add("http://www.cbssports.com/college-football/");
-		sectionList.add("http://fortune.com/autos/");
-		sectionList.add("http://www.eonline.com/news/tv");
+		sectionList.add("http://fortune.com/autos/");*/
+		/*sectionList.add("http://www.eonline.com/news/tv");
 		sectionList.add("http://www.cincinnati.com/business/");
 		sectionList.add("http://www.forbes.com/technology/");
 		sectionList.add("http://www.indystar.com/travel/");
@@ -52,7 +52,7 @@ public class StoryFinderTester {
 		sectionList.add("http://www.mercurynews.com/business");
 		sectionList.add("http://www.nydailynews.com/entertainment");
 		
-		/*
+		
 		sectionList.add("http://www.dispatch.com/content/sections/sports/index.html?cmpid=tplnnv");
 		sectionList.add("http://www.sfgate.com/entertainment/");
 		sectionList.add("http://www.msnbc.com/economy");
@@ -112,11 +112,11 @@ public class StoryFinderTester {
 		sectionList.add("http://www.newsworks.org/index.php/art-entertainment-sports");
 		sectionList.add("http://www.pcworld.com/howto/");
 		sectionList.add("http://www.livescience.com/environment");
-		sectionList.add("http://www.csmonitor.com/Business");
+		sectionList.add("http://www.csmonitor.com/Business");*/
 		sectionList.add("http://www.chicagotribune.com/suburbs/");
-		sectionList.add("http://www.toledoblade.com/opinion");
-		sectionList.add("http://juneauempire.com/neighbors");
-		//*/
+		//sectionList.add("http://www.toledoblade.com/opinion");
+		//sectionList.add("http://juneauempire.com/neighbors");
+		
 
 		
 		TreeMap<String, String> sectionsAndStories = new TreeMap<String, String>();
