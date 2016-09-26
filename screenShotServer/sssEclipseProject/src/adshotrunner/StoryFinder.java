@@ -303,12 +303,12 @@ public class StoryFinder {
 	private List<StoryLink> getStoryLinksFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
 		//Turn the returned JSON into an array of objects
-		try {
+		/*try {
 			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".json"), linkJSON);
 			//StoryFinder.consoleLog("Saved StoryFinder JSON");
 		} catch (IOException e) {
 			StoryFinder.consoleLog("Could not save StoryFinder JSON");
-		}
+		}*/
 		Gson gson = new Gson();
 		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
 		ArrayList<StoryLink> storyLinkList = new ArrayList<StoryLink>();
