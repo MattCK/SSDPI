@@ -18,9 +18,6 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 
 <?PHP include_once(BASEPATH . "header.php");?>
 
-<style>
-</style>
-
 <body>
 	
 <div id="header">
@@ -74,7 +71,7 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 			</div>
 			<!--input type="button" value="Back to Page Selection" onclick="asr.toggleDivs()"-->
 			
-			<div id="queuedTagDiv" align="center">
+			<div id="queuedTagDiv" class="yellowBackground" align="center">
 				<span id="queuedTagCountSpan">0</span> <span id="tagsQueuedSpan">Tags Queued</span> &nbsp; 
 				<input class="button-tiny" id="getTagImagesButton" type="button" value="Get Tag Images" onclick="asr.getTagImages()" disabled>
 

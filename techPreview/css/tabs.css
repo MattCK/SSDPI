@@ -14,16 +14,9 @@
 } 
 #tabsDiv .ui-tabs-panel { 
     border-width: 0px 1px 1px 1px; 
+    border-color: #e78f08;
 }
 
-#leadersBoardTable {
-	border: 1px solid gray;
-}
-
-#leadersBoardTable  .nameCell {
-	text-align: left;
-}
-
-#leadersBoardTable  .scoreCell {
-	text-align: center;
+#tabsDiv .ui-tabs-active {
+    border-color: #e78f08;
 }

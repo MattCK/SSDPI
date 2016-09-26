@@ -209,6 +209,7 @@ button,input.button,a.button,span.button,input.button-tiny,a.button-tiny,span.bu
     -moz-transition-transition-timing:ease-in,linear;
     -o-transition-transition-timing:ease-in,linear;
     -webkit-transition-transition-timing:ease-in,linear;
+    font-family:VAGRundschriftD,'Arial Rounded MT Bold','Arial Rounded MT',Arial,sans-serif;
 }
 
 input.button    {
@@ -233,9 +234,14 @@ input.button-tiny {
 
 input.button:hover,input.button:focus,a.button:hover,a.button:focus,input.button-tiny:hover,input.button-tiny:focus,a.button-tiny:hover,a.button-tiny:focus {
     cursor:pointer;
-    background-position:-300px 100%;
-    color:#d79035;
-    border-color:#d79035;
+    background-position: -300px 100%;
+    color: #d79035;
+    border-color: #d79035;
+}
+
+input.button-tiny:disabled, input.button-tiny:disabled:hover {
+    color: #999999;
+    border-color: #C1C1C1;
 }
 
 /** Shared Content **/
@@ -265,6 +271,14 @@ input.button:hover,input.button:focus,a.button:hover,a.button:focus,input.button
     text-align: right;
     padding-top: 22px;
 }
+
+.indexPageTable tr td {
+    padding: 2px 5px;
+}
+
+.indexPageTable .indexPageButton {
+    margin-top: 10px;
+}   
 
 #mainContent {
     width: 960px;
@@ -348,10 +362,18 @@ input.button:hover,input.button:focus,a.button:hover,a.button:focus,input.button
 }
 
 #queuedTagDiv {
-    background-color: #B5FFB2;
     padding: 10px;
     clear: both;
-    margin-top: 80px;
+    margin: 80px 0 15px 0;
+    border: 1px solid #AAAAAA;
+}
+
+#queuedTagDiv.yellowBackground {
+    background-color: #FFFD91;
+}
+
+#queuedTagDiv.greenBackground {
+    background-color: #B5FFB2;
 }
 
 #queuedTagCountSpan {
@@ -367,4 +389,56 @@ input.button:hover,input.button:focus,a.button:hover,a.button:focus,input.button
 
 #getScreenShotsDiv {
     width: 200px;
+}
+
+.queuedTagDiv {
+    vertical-align: middle;
+    text-align: center;
+    line-height: 120px; 
+    height: 120px;
+}
+
+.tagImageRowDiv {
+    height: 120px;
+}
+
+.tagImageInfoDiv {
+    float: left;
+}
+
+.deleteButtonDiv {
+    float: right;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 120px; 
+    width: 180px
+}
+
+.tagDimensionsDiv {
+    float: left;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 120px; 
+    width: 75px
+}
+
+.tagImageDiv {
+    float: right;
+    vertical-align: middle;
+    line-height: 120px; 
+}
+
+.tagImageDiv img {
+    vertical-align: middle;
+    max-height: 120px;
+    max-width: 600px;
+}
+
+#campaignDetailsDiv td {
+    padding: 0 8px 5px 0;
+}
+
+#campaignDetailsDiv td:first-child {
+    font-weight: bold;
+    font-size: 15px;
 }

@@ -208,7 +208,7 @@ let asr = {
 			tagsByID[newUUID] = asr._queuedTags[tagIndex];
 
 			//Add the "queued" row to the tags table
-		    let $li = $("<li class='ui-state-default' id='tagLI" + newUUID + "' />").text('Queued...');
+		    let $li = $("<li class='ui-state-default' id='tagLI" + newUUID + "' />").html('<div class="queuedTagDiv">Queued...</div>');
 		    $("#sortable").append($li);
 		    $("#sortable").sortable('refresh');
 
@@ -224,6 +224,7 @@ let asr = {
 			asr._queuedTags = [];
 			base.nodeFromID("queuedTagCountSpan").innerHTML = 0;
 			console.log(response.data);
+			base.nodeFromID("queuedTagDiv").className = "yellowBackground";
 		}
 		
 		//Make the request to get images for the tags
@@ -286,6 +287,9 @@ let asr = {
 		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
 			base.enable("getScreenshotsButton");}
 		else {base.disable("getScreenshotsButton");}
+
+		//Turn the tag queue process tag div green
+		base.nodeFromID("queuedTagDiv").className = "greenBackground";
 	},
 
 	/**
@@ -321,9 +325,16 @@ let asr = {
 
 		//If the image is loaded, place it into its tags table row
 		tagImage.onload = function() {
-			imageLIHTML =  '<div><img rowTag="" style="max-height: 120px;" src="' + imageURL + '" /></div>';
-			imageLIHTML += '<div>' + tagImage.naturalWidth + 'x' + tagImage.naturalHeight + '</div>';
-			imageLIHTML += "<input type='button' value='Delete' onClick='asr.deleteTagImageListItem(\"" + tagLIID + "\")'>";
+			let imageLIHTML = "";
+			imageLIHTML += 	'<div class="tagImageRowDiv">';
+			imageLIHTML += 		'<div class="tagImageInfoDiv">';
+			imageLIHTML += 			'<div class="tagDimensionsDiv">' + tagImage.naturalWidth + 'x' + tagImage.naturalHeight + '</div>';
+			imageLIHTML += 			'<div class="tagImageDiv"><img rowTag="" style="max-height: 120px;" src="' + imageURL + '" /></div>';
+			imageLIHTML += 		'</div>';
+			imageLIHTML += 		'<div class="deleteButtonDiv">';
+			imageLIHTML +=  		"<input type='button' class='button-tiny' value='Delete' onClick='asr.deleteTagImageListItem(\"" + tagLIID + "\")'>";
+			imageLIHTML += 		'</div>';
+			imageLIHTML += 	'</div>';
 	        $("#" + tagLIID).html(imageLIHTML);
 	        --asr._tagsBeingProcessed;
 

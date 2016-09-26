@@ -140,12 +140,21 @@ $(function() {
 });
 </script>
 
+<div id="header">
+	<div id="title">
+		<h1>AdShotRunner&trade;: Free Tech Preview</h1> 
+	</div>
+	<div id="logout">
+		<a href="mailto:contact@dangerouspenguins.com">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
+	</div>
+</div>
 
 
 <body>
+
+<div id="mainContent">
+
 	<div align="center">
-		
-		<h1>AdShotRunner: Free Tech Preview</h1>
 		
 		<div id="tabsDiv" align="center" style="padding-top: 20px">
 			 <ul>
@@ -161,7 +170,7 @@ $(function() {
 					</div>
 					
 					<form action="index.php" id="login" name="login" method="POST" align="center" style="display:inline-block">
-						<table cellspacing="1" cellpadding="5" style="text-align:left">
+						<table class="indexPageTable" cellspacing="1" cellpadding="5" style="text-align:left">
 							<tr>
 								<td><strong>Email:</strong></td>
 								<td><input type="text" name="username" id="username" maxlength="64"></td>
@@ -172,7 +181,7 @@ $(function() {
 							</tr>
 							<tr>
 								<td colspan="2" align="center">
-									<input type="submit" name="loginSubmit" value="login">
+									<input class="button-tiny indexPageButton" type="submit" name="loginSubmit" value="Login">
 								</td>
 							</tr>
 						</table>
@@ -188,7 +197,7 @@ $(function() {
 					</div>
 
 					<form action="index.php" id="register" name="register" method="POST" align="center" style="display:inline-block">
-						<table cellspacing="1" cellpadding="5" style="text-align:left">
+						<table class="indexPageTable" cellspacing="1" cellpadding="5" style="text-align:left">
 							<tr>
 								<td><strong>Email:</strong></td>
 								<td><input type="text" name="email" id="email" maxlength="64" value="<? if ($registrationError) echo $_POST['email'];?>"></td>
@@ -215,7 +224,7 @@ $(function() {
 							</tr>
 							<tr>
 								<td colspan="2" align="center">
-									<input type="submit" name="registerSubmit"  value="register">
+									<input class="button-tiny indexPageButton" type="submit" name="registerSubmit"  value="Register">
 								</td>
 							</tr>
 						</table>
@@ -231,14 +240,14 @@ $(function() {
 					</div>	
 					
 					<form action="index.php" id="resetPassword" name="resetPassword" method="POST" align="center" style="display:inline-block">
-						<table cellspacing="1" cellpadding="5" style="text-align:left">
+						<table class="indexPageTable" cellspacing="1" cellpadding="5" style="text-align:left">
 							<tr>
 								<td><strong>Email:</strong></td>
 								<td><input type="text" name="resetUsername" id="resetUsername" maxlength="64"></td>
 							</tr>
 							<tr>
-								<td colspan="2" align="center">
-									<input type="submit" name="resetPasswordSubmit" value="Reset Password">
+								<td colspan="2" align="center" style="margin-top: 25px">
+									<input class="button-tiny indexPageButton" type="submit" name="resetPasswordSubmit" value="Reset Password">
 								</td>
 							</tr>
 						</table>
@@ -247,5 +256,6 @@ $(function() {
 			</div>
 		</div>		
 	</div>
+</div>
 </body>
 </html>
