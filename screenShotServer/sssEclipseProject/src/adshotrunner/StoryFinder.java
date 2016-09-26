@@ -101,8 +101,8 @@ public class StoryFinder {
     	            "phantomjs/phantomjs", 
     	            "javascript/retrievePossibleStoriesFromURL.js",
     	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass};
-            StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
-            StoryFinder.consoleLog("FirstLineRead: " + phantomJSResponse);
+            //StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
+            //StoryFinder.consoleLog("FirstLineRead: " + phantomJSResponse);
         }
         catch (IOException e) {
 			throw new AdShotRunnerException("Could not execute phantomjs", e);
@@ -225,12 +225,19 @@ public class StoryFinder {
 			//Get the possible story links using phantomjs
 			String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor], _dbExceptionID, _dbExceptionClassName);
 			
-			StoryFinder.consoleLog("full String: " + linkJSON);
+			//StoryFinder.consoleLog("full String: " + linkJSON);
 			
 	        //Get the immutable link info as array of maps
 			retrievedLinks = getStoryLinksFromJSON(linkJSON);
 			
 			userAgentIncrementor++;
+			//if this is an exception and we've gotten all the way through all the user agents
+			//without enough results loop through again without the exception
+			if((userAgentIncrementor >= userAgents.length) && (_dbExceptionID != "" && _dbExceptionClassName != "")){
+				StoryFinder.consoleLog("Unable to process exception: restarting without");
+				_dbExceptionID = "";
+				_dbExceptionClassName = "";
+			}
 		}
 		
 		_links = retrievedLinks;
@@ -297,7 +304,7 @@ public class StoryFinder {
 		
 		//Turn the returned JSON into an array of objects
 		try {
-			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".txt"), linkJSON);
+			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".json"), linkJSON);
 			//StoryFinder.consoleLog("Saved StoryFinder JSON");
 		} catch (IOException e) {
 			StoryFinder.consoleLog("Could not save StoryFinder JSON");
@@ -316,16 +323,19 @@ public class StoryFinder {
 		String primaryDomain = getURIDomain(_targetURL);
 		
 		//Loop through the list removing null and empty href elements and setting null class to empty string
-		try{
+		
 			Iterator<StoryLink> linksIterator = storyLinkList.iterator();
 			while(linksIterator.hasNext()){
 				
 				StoryLink currentLink = linksIterator.next();
-				
+				//StoryFinder.consoleLog("processing: " + currentLink.href);
 				//Check for // at beginning of href and add protocol if not there
 				if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
 					//StoryFinder.consoleLog("Inside //: " + currentLink.href );
 					currentLink.href = "http:" + currentLink.href;
+				}
+				if ((currentLink.text == null || currentLink.text == "" || currentLink.text.isEmpty()) && (currentLink.title != null && !currentLink.title.isEmpty())){
+					currentLink.text = currentLink.title;
 				}
 				
 				String currentDomain = (currentLink.href != null) ? getURIDomain(currentLink.href) : null;
@@ -352,9 +362,7 @@ public class StoryFinder {
 				    }
 				}
 			}
-		}catch (java.lang.NullPointerException e) {
-			StoryFinder.consoleLog("JSON Somehow Parsed without any entries");
-		}
+
 		
         
         //Make the linksList immutable and return it
@@ -441,26 +449,26 @@ public class StoryFinder {
 			//if the total score is only 2.5x more than the top score then this isn't a good column
 			if((double)topScore * SCOREMULTIPLIERMINIMUM > (double)runningScore ){
 				currentlyGood = false;
-				StoryFinder.consoleLog("total only 2.5x: " + currentlyGood);
+				//StoryFinder.consoleLog("total only 2.5x: " + currentlyGood);
 			}
 			//if there are fewer than 3 stories then this isn't a good column
 			int MINIMUMSTORYCOUNT = 3;
 			if(storyCount <= MINIMUMSTORYCOUNT){
 				currentlyGood = false;
-				StoryFinder.consoleLog("min count: " + currentlyGood);
+				//StoryFinder.consoleLog("min count: " + currentlyGood);
 			}
 			if(doubleStrict){
 				//if the average score is less than .65 of the top story then this isn't a good column
 				double SCOREAVERAGEMULTIPLIER = .40;
 				if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
 					currentlyGood = false;
-					StoryFinder.consoleLog(".65 avg: " + currentlyGood);
+					//StoryFinder.consoleLog(".65 avg: " + currentlyGood);
 				}
 				double SCOREMULTIPLIER = .65;
 				//if the second and third score are too low compared to the first it isn't a good column
 				if( ((double)((double)secondScore + (double)thirdScore)/(double)2) < ((double)topScore * SCOREMULTIPLIER)) {
 					currentlyGood = false;
-					StoryFinder.consoleLog("2nd and 3rd low: " + currentlyGood);
+					//StoryFinder.consoleLog("2nd and 3rd low: " + currentlyGood);
 				}
 			}
 			else{
@@ -468,14 +476,13 @@ public class StoryFinder {
 				double SCOREAVERAGEMULTIPLIER = .30;
 				if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
 					currentlyGood = false;
-					StoryFinder.consoleLog(".65 avg: " + currentlyGood);
+					//StoryFinder.consoleLog(".65 avg: " + currentlyGood);
 				}
 				
 			}
-			/*
-			StoryFinder.consoleLog("column entries:");
+			
+			/*StoryFinder.consoleLog("column entries:");
 			for (Map.Entry<StoryLink, Integer> storyLinkScore : columnStoryLinks.entrySet()) {
-				tempStoryList.add(storyLinkScore.getValue());
 				StoryFinder.consoleLog("l: " + storyLinkScore.getKey().href + " s: " + storyLinkScore.getValue() + " x: " + storyLinkScore.getKey().xPosition);
 			}*/
 			
@@ -862,23 +869,23 @@ public class StoryFinder {
 			//Get all the link scores using the containing class links and the Scorer's numbers
 			HashMap<StoryLink, Integer> storyLinkScores = getLinkScores();
 			
-			//Get a ranked list of the links' classes based off each classes links' averages
-			//ArrayList<String> rankedClasses = getClassesRankedByAveragedLinkScore(storyLinkScores);
+			//print list of stories for debugging purposes
+			//for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {
+				//StoryFinder.consoleLog("link: " + storyLinkScore.getKey().href);}
 			
-			if((_dbExceptionID != "") || (_dbExceptionClassName != "")){
+			/*if((_dbExceptionID != "") || (_dbExceptionClassName != "")){
 				//this is just a reminder that we're not scoring any columns if there is an exception
 				storyLinkScores = storyLinkScores;
-				StoryFinder.consoleLog("Inside DB Exception");
-			}
-			else{
+				//StoryFinder.consoleLog("Inside DB Exception");
+			}*/
+			//else{
 				ArrayList<StoryColumn> rankedByClass = getColumnsScoredWClassNameStrictXPos(storyLinkScores);
 				//if the first ranked column is scored poorly then retry with less strict columns
-				StoryFinder.consoleLog("After get strict x w class");
-				if (rankedByClass.get(0).goodColumn(true)){
-					StoryFinder.consoleLog("strict x w class marked as good");
+				//StoryFinder.consoleLog("After get strict x w class");
+				if (!rankedByClass.isEmpty() && rankedByClass.get(0).goodColumn(true)){
+					//StoryFinder.consoleLog("strict x w class marked as good");
 					//if the strict x pos and classname had a good first column grab all the columns of that class
 					String topClassName = (!rankedByClass.isEmpty()) ? rankedByClass.get(0).className : "";
-					//StoryFinder.consoleLog("");
 					if (!rankedByClass.isEmpty()){
 						StoryFinder.consoleLog("Top Ranked ClassName : " + rankedByClass.get(0).className + " at: " + rankedByClass.get(0).xPosition);
 						StoryFinder.consoleLog("With a final score of: " + rankedByClass.get(0).runningScore);
@@ -887,7 +894,7 @@ public class StoryFinder {
 					//this adds every story from every column with a mataching classname where the column is good
 					for (StoryColumn currColumn : rankedByClass) {
 						if ((currColumn.className == topClassName) && (currColumn.goodColumn(true))){
-							StoryFinder.consoleLog("adding good columns to the storylinklist");
+							//StoryFinder.consoleLog("adding good columns to the storylinklist");
 							storyLinkScores.putAll(currColumn.columnStoryLinks);
 						}
 						
@@ -896,27 +903,34 @@ public class StoryFinder {
 				}
 				//if the strictx pos and classname did not return a good column
 				else{
-					StoryFinder.consoleLog("strict x no class scoring");
+					//StoryFinder.consoleLog("strict x no class scoring");
 					ArrayList<StoryColumn> looseColumns = getColumnsScoredWStrictXPosNoClass(storyLinkScores);
-					if(looseColumns.get(0).goodColumn(false)){
-						StoryFinder.consoleLog("strict x no class scoring: had good columns");
+					if(!looseColumns.isEmpty() && looseColumns.get(0).goodColumn(false)){
+						//StoryFinder.consoleLog("strict x no class scoring: had good columns");
 						storyLinkScores = looseColumns.get(0).columnStoryLinks;
 					}
 					else{
-						StoryFinder.consoleLog("with class no X scoring");
+						//StoryFinder.consoleLog("with class no X scoring");
 						ArrayList<StoryColumn> justClassName = getColumnsScoredWClassNoXPos(storyLinkScores);
-						if (justClassName.get(0).goodColumn(false)){
+						if (!justClassName.isEmpty() && justClassName.get(0).goodColumn(false)){
 							storyLinkScores = justClassName.get(0).columnStoryLinks;
 						}
 						else{
-							StoryFinder.consoleLog("just remove bad positions scoring");
+							//StoryFinder.consoleLog("just remove bad positions scoring");
 							ArrayList<StoryColumn> reallyBadPositionsRemoved = getColumnsRemoveBadPositions(storyLinkScores);
-							storyLinkScores = reallyBadPositionsRemoved.get(0).columnStoryLinks;
+							if(!reallyBadPositionsRemoved.isEmpty() && reallyBadPositionsRemoved.get(0).goodColumn(false)){
+								storyLinkScores = reallyBadPositionsRemoved.get(0).columnStoryLinks;
+							}
+							else{
+								//if none of the scoring worked return the whole list
+								//this is here just to make it easier to follow
+								storyLinkScores = storyLinkScores;
+							}
 						}
 					}
 	
 				}
-			}
+			//}
 			
 			if (storyLinkScores.isEmpty()) {return new ArrayList<String>();}
 			
@@ -1000,12 +1014,15 @@ public class StoryFinder {
 			//Create the map to connect a StoryLink with its score
 			HashMap<StoryLink,Integer> storyLinkScores = new HashMap<StoryLink, Integer>(); 			
 			for (StoryLink story : _links) {
+				//StoryFinder.consoleLog("Inside Get LinkScores: " + story.href);
 				storyLinkScores.put(story, 0);
 			}
 			
 			//Score each link based on the following criteria
 			adjustScoresByPageLocation(storyLinkScores);
 			adjustScoresByTitleLength(storyLinkScores);
+			//for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {
+				//StoryFinder.consoleLog("After score title length: " + storyLinkScore.getKey().href);}
 			adjustScoresBySimilarPaths(storyLinkScores);
 			adjustScoreIfAllCaps(storyLinkScores);
 			adjustScoreForPreferredClassNames(storyLinkScores);
@@ -1014,6 +1031,7 @@ public class StoryFinder {
 			adjustScoreForLinkWidth(storyLinkScores);
 			adjustScoreForClassNameTooLong(storyLinkScores);
 			adjustScoreForUnwantedTermsInURL(storyLinkScores);
+			
 			
 			//Return the scores of each valid link
 			return storyLinkScores;
@@ -1169,6 +1187,7 @@ public class StoryFinder {
 			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
 				String currentLinkText = storyLinkScore.getKey().text;
 			    if (currentLinkText.length() <= MINIMUMTEXTLENGTH) {
+			    	//StoryFinder.consoleLog("link to be removed txt: " + currentLinkText + " length:" + currentLinkText.length());
 			    	lowTextURLs.add(storyLinkScore.getKey());
 			    }
 			}

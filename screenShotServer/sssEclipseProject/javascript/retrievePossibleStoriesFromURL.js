@@ -116,57 +116,53 @@ page.open(targetURL, function(status) {
 			window.scrollBy(0,1000);
 			var MAXPARENTSEARCHHEIGHT = 10;
 
-			//var desiredElClas = returnDesiredClass.apply();
-			//var desiredElID = returnDesiredID.apply();
-
 			var sendBack = "cl:" + DESIREDELEMENTCLASS + "-ID:" + DESIREDELEMENTID + "-";
-			//var sendBack = "cl:" + desiredElClas + "-ID:" + desiredElID + "-";
-			//return sendBack;
-			//return "hello";
 			
 			//Grab all anchor elements from the page
 			//This is where the class and ID Override take place
 			var anchorElements;
 			if (DESIREDELEMENTCLASS == '' && DESIREDELEMENTID == ''){
 				anchorElements = document.getElementsByTagName('a');
-				var sendBack = sendBack + ": inside get by tagname";
+				sendBack = sendBack + ": inside get by tagname";
 			}
 			else if (DESIREDELEMENTID != ''){
 				var currentElement = document.getElementById(DESIREDELEMENTID);
-				anchorElements = currentElement.getElementsByTagName('a');
-				var sendBack = sendBack + ": inside get by ID";
+				if(currentElement != null){
+					anchorElements = currentElement.getElementsByTagName('a');
+					sendBack = sendBack + ": inside get by ID";
+				}
+				
 			}
-			//this one's compliated because you hace to loop through each element and grab the anchors
+			//this one's compliated because you have to loop through each element and grab the anchors
 			//then you have to add those lists of anchors together without duplicating elements
 			else if (DESIREDELEMENTCLASS != ''){
-				var sendBack = sendBack + ": inside get by classname";
+				sendBack = sendBack + ": inside get by classname";
 				var currentElements = document.getElementsByClassName(DESIREDELEMENTCLASS);
 				
 				var anchorElementList = [];
+
+				function arrayUnique(array) {
+				    var a = array.concat();
+				    for(var i=0; i<a.length; ++i) {
+				        for(var j=i+1; j<a.length; ++j) {
+				            try{
+				                if(a[i].getAttribute('href') === a[j].getAttribute('href'))
+				                    a.splice(j--, 1);
+				           }
+				            catch(err){}
+				        }
+				    }
+
+				    return a;
+				}
+
+
 				for (var curIndex = 0; curIndex < currentElements.length; curIndex++) {
+				    
+				    var tempAnchorElements = currentElements[curIndex].getElementsByTagName('a');
+				    var ca = arrayUnique(Array.prototype.slice.call(tempAnchorElements).concat(Array.prototype.slice.call(anchorElementList)));
 
-				  	if(currentElements[curIndex] != null){
-					    var tempAnchorElements = currentElements[curIndex].getElementsByTagName('a');
-					    var arrayBuilder = [];
-					    //this loop builds a temp array of all the elements not already in
-					    //the ongoing anchor elements
-					    for(var i in tempAnchorElements){       
-					        if (anchorElementList.length > 0){
-					           for (var j in anchorElementList)
-					              if (tempAnchorElements[i]!= anchorElementList[j]) {
-					                 arrayBuilder.push(tempAnchorElements[i])
-					              }
-					        }
-					        else{
-					            arrayBuilder = tempAnchorElements;
-					        }
-					    }
-					    //concat can not be assigned either of the lists in the concat operation
-					    //the array.prototype turns a list of elements into an array so it can be concatenated
-					    var concatArray = Array.prototype.slice.call(arrayBuilder).concat(Array.prototype.slice.call(anchorElementList));
-					    anchorElementList = concatArray;
-				   	}
-
+				    anchorElementList = ca;
 
 				}
 				anchorElements = anchorElementList;
@@ -176,67 +172,70 @@ page.open(targetURL, function(status) {
 			//console.log(" elements: " + anchorElements.length);
 			//Loop through each elements and grab its own attributes and info
 			var anchorInfoList = [];
-			for (var curIndex = 0; curIndex < anchorElements.length; curIndex++) {
-				//console.log("link found");
-				//Store the element's basic attributes 
-				var curAnchorInfo = {};
-				curAnchorInfo['id'] = anchorElements[curIndex].getAttribute('id');
-				curAnchorInfo['href'] = anchorElements[curIndex].getAttribute('href');
-				curAnchorInfo['name'] = anchorElements[curIndex].getAttribute('name');
-				curAnchorInfo['onclick'] = anchorElements[curIndex].getAttribute('onclick');
-				curAnchorInfo['text'] = anchorElements[curIndex].text.replace(/(\r\n|\n|\r)/gm,"").trim();
-				curAnchorInfo['style'] = anchorElements[curIndex].getAttribute('style');
-				curAnchorInfo['title'] = anchorElements[curIndex].getAttribute('title');
-				//curAnchorInfo['linktext'] = anchorElements[curIndex].innerText;
-				
-				//Store the element's class. If none exist, grab the first available parent class within reasonable crawl.
-				var curClass = anchorElements[curIndex].getAttribute('class');
-				var currentHeight = 0;
-				var curParentNode = anchorElements[curIndex].parentNode;
-				while ((!curClass) && (currentHeight < MAXPARENTSEARCHHEIGHT)) {
+			if (anchorElements != null){
+					for (var curIndex = 0; curIndex < anchorElements.length; curIndex++) {
+					//console.log("link found");
+					//Store the element's basic attributes 
+					var curAnchorInfo = {};
+					curAnchorInfo['id'] = anchorElements[curIndex].getAttribute('id');
+					curAnchorInfo['href'] = anchorElements[curIndex].getAttribute('href');
+					curAnchorInfo['name'] = anchorElements[curIndex].getAttribute('name');
+					curAnchorInfo['onclick'] = anchorElements[curIndex].getAttribute('onclick');
+					curAnchorInfo['text'] = anchorElements[curIndex].text.replace(/(\r\n|\n|\r)/gm,"").trim();
+					curAnchorInfo['style'] = anchorElements[curIndex].getAttribute('style');
+					curAnchorInfo['title'] = anchorElements[curIndex].getAttribute('title');
 					
-					try{
-						curClass = curParentNode.getAttribute('class');
-					}
-					catch(err){
+					//Store the element's class. If none exist, grab the first available parent class within reasonable crawl.
+					var curClass = anchorElements[curIndex].getAttribute('class');
+					var currentHeight = 0;
+					var curParentNode = anchorElements[curIndex].parentNode;
+					while ((!curClass) && (currentHeight < MAXPARENTSEARCHHEIGHT)) {
+						
+						try{
+							curClass = curParentNode.getAttribute('class');
+						}
+						catch(err){
 
+						}
+						if ((curParentNode) && (curParentNode.parentNode)){
+							curParentNode = curParentNode.parentNode;
+						}
+						++currentHeight;
 					}
-					if ((curParentNode) && (curParentNode.parentNode)){
-						curParentNode = curParentNode.parentNode;
-					}
-					++currentHeight;
-				}
-				
-				//If a class was found, add it to the info object. Otherwise, leave an empty string.
-				if (curClass) {curAnchorInfo['className'] = curClass;}
-				else {curAnchorInfo['className'] = "";}
-				
-				//Determine the anchor's location and size then add it to the info object
-				var box = anchorElements[curIndex].getBoundingClientRect();
-				var body = document.body;
-				var docElem = document.documentElement;
-				var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
-				var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-				var clientTop = docElem.clientTop || body.clientTop || 0;
-				var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-				var top  = box.top +  scrollTop - clientTop;
-				var left = box.left + scrollLeft - clientLeft;
-				var currWidth = box.right - left;
-				var currHeight = box.bottom - box.top;
-				curAnchorInfo['yPosition'] = Math.round(top);
-				curAnchorInfo['xPosition'] = Math.round(left);
-				curAnchorInfo['width'] = Math.round(currWidth);
-				curAnchorInfo['height'] = Math.round(currHeight);
-				
-				//Finaly, add the info to the main list
-				anchorInfoList[curIndex] = curAnchorInfo;
 					
+					//If a class was found, add it to the info object. Otherwise, leave an empty string.
+					if (curClass) {curAnchorInfo['className'] = curClass;}
+					else {curAnchorInfo['className'] = "";}
+					
+					//Determine the anchor's location and size then add it to the info object
+					var box = anchorElements[curIndex].getBoundingClientRect();
+					var body = document.body;
+					var docElem = document.documentElement;
+					var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+					var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+					var clientTop = docElem.clientTop || body.clientTop || 0;
+					var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+					var top  = box.top +  scrollTop - clientTop;
+					var left = box.left + scrollLeft - clientLeft;
+					var currWidth = box.right - left;
+					var currHeight = box.bottom - box.top;
+					curAnchorInfo['yPosition'] = Math.round(top);
+					curAnchorInfo['xPosition'] = Math.round(left);
+					curAnchorInfo['width'] = Math.round(currWidth);
+					curAnchorInfo['height'] = Math.round(currHeight);
+					
+					//Finaly, add the info to the main list
+					anchorInfoList[curIndex] = curAnchorInfo;
+						
+				}
+				//Convert the anchor info list into JSON and return it
+				return JSON.stringify(anchorInfoList);
 			}
 			
-			//Convert the anchor info list into JSON and return it
-			return JSON.stringify(anchorInfoList);
-			//var retMe = "retVal:";
-			//return retMe;
+			else{
+				return "FAILURE - Unable to find any anchors for the request";
+			}
+			
 			
 
 		} , DESIREDELEMENTCLASS, DESIREDELEMENTID);
@@ -246,7 +245,6 @@ page.open(targetURL, function(status) {
 		//var pageContent = page.content;
 		//console.log('FullDoc:' + pageContent);
 		//Print the final JSON to the command terminal
-		//console.log("about to output the anchor list");
 		console.log(anchorListJSON);
 	}
 	

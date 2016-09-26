@@ -34,25 +34,26 @@ public class StoryFinderTester {
 		/*sectionList.add("http://www.alexcityoutlook.com/category/opinion/");
 		sectionList.add("http://www.andalusiastarnews.com/category/schools/");*/
 		//sectionList.add("http://www.palmbeachpost.com/s/living/");
-		/*sectionList.add("http://www.si.com/olympics");
+		sectionList.add("http://www.si.com/olympics");
 		sectionList.add("http://www.sandmountainreporter.com/sports/");
 		sectionList.add("http://nypost.com/business/");
 		sectionList.add("http://www.investors.com/news/");
 		sectionList.add("http://www.aol.com/finance/");//actually wrong
 		sectionList.add("http://www.cbssports.com/college-football/");
-		sectionList.add("http://fortune.com/autos/");*/
-		/*sectionList.add("http://www.eonline.com/news/tv");
+		sectionList.add("http://fortune.com/autos/");
+		
+		sectionList.add("http://thebiglead.com/category/golf/");
+		sectionList.add("http://observer.com/culture/");
+		
+		sectionList.add("http://www.eonline.com/news/tv");
 		sectionList.add("http://www.cincinnati.com/business/");
 		sectionList.add("http://www.forbes.com/technology/");
 		sectionList.add("http://www.indystar.com/travel/");
 		sectionList.add("http://www.theverge.com/tech");
-
 		sectionList.add("http://www.indystar.com/life/");
 		sectionList.add("http://www.latimes.com/sports/");
 		sectionList.add("http://www.mercurynews.com/business");
 		sectionList.add("http://www.nydailynews.com/entertainment");
-		
-		
 		sectionList.add("http://www.dispatch.com/content/sections/sports/index.html?cmpid=tplnnv");
 		sectionList.add("http://www.sfgate.com/entertainment/");
 		sectionList.add("http://www.msnbc.com/economy");
@@ -60,7 +61,6 @@ public class StoryFinderTester {
 		sectionList.add("http://www.alaskajournal.com/oil_gas");
 		sectionList.add("http://www.foxsports.com/college-football");
 		sectionList.add("http://www.nytimes.com/pages/politics/index.html");
-		sectionList.add("http://observer.com/culture/");
 		sectionList.add("http://www.usatoday.com/sports/");
 		sectionList.add("http://www.dailynews.com/entertainment");
 		sectionList.add("http://www.huffingtonpost.com/dept/whats-working");
@@ -76,7 +76,6 @@ public class StoryFinderTester {
 		sectionList.add("http://www.boston.com/section/culture");
 		sectionList.add("http://www.sbnation.com/nhl");
 		sectionList.add("http://www.sfchronicle.com/foodandhome/");
-		sectionList.add("http://thebiglead.com/category/golf/");
 		sectionList.add("https://www.washingtonpost.com/national/?nid=top_nav_national");
 		sectionList.add("http://newsok.com/entertainment");
 		sectionList.add("http://arizonasports.com/phoenix-suns/");
@@ -112,10 +111,10 @@ public class StoryFinderTester {
 		sectionList.add("http://www.newsworks.org/index.php/art-entertainment-sports");
 		sectionList.add("http://www.pcworld.com/howto/");
 		sectionList.add("http://www.livescience.com/environment");
-		sectionList.add("http://www.csmonitor.com/Business");*/
+		sectionList.add("http://www.csmonitor.com/Business");
 		sectionList.add("http://www.chicagotribune.com/suburbs/");
-		//sectionList.add("http://www.toledoblade.com/opinion");
-		//sectionList.add("http://juneauempire.com/neighbors");
+		sectionList.add("http://www.toledoblade.com/opinion");
+		sectionList.add("http://juneauempire.com/neighbors");
 		
 
 		
