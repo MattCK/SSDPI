@@ -971,7 +971,7 @@ public class StoryFinder {
 								
 			}
 			//re-added for debuging
-			writeStoryCSV(storyLinkScores);
+			//writeStoryCSV(storyLinkScores);
 			
 			
 			Map<String, Integer> sortedStories =

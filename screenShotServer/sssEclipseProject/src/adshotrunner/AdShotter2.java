@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -371,11 +372,13 @@ public class AdShotter2 {
 		FirefoxProfile ffProfile = new FirefoxProfile();
         
 		//proxy
+		ProxyDetails chosenProxy = getProxyServer();
+		String proxyIPAddress = chosenProxy.ip;
+		int proxyPort = chosenProxy.port;
         // Direct = 0, Manual = 1, PAC = 2, AUTODETECT = 4, SYSTEM = 5
         ffProfile.setPreference("network.proxy.type", 1);
-        ffProfile.setPreference("network.proxy.http", "192.210.148.231");
-        //ffProfile.setPreference("network.proxy.http", "198.23.217.23");
-        ffProfile.setPreference("network.proxy.http_port", 3128);
+        ffProfile.setPreference("network.proxy.http", proxyIPAddress);
+        ffProfile.setPreference("network.proxy.http_port", proxyPort);
         ffProfile.setPreference("network.proxy.socks_remote_dns", false);
         
         //profile data
@@ -388,13 +391,20 @@ public class AdShotter2 {
         ffProfile.setPreference("extensions.blocklist.enabled", false);
         
         //these are to make the screenshots look pretty
-        ffProfile.setPreference("gfx.direct2d.disabled", true);
-        ffProfile.setPreference("layers.acceleration.disabled", true);
-        ffProfile.setPreference("gfx.font_rendering.cleartype_params.cleartype_level", 2);
-        ffProfile.setPreference("gfx.font_rendering.cleartype_params.enhanced_contrast", 2);
-        ffProfile.setPreference("gfx.font_rendering.cleartype_params.gamma", 2);
-        ffProfile.setPreference("gfx.font_rendering.cleartype_params.pixel_structure", 2);
-        ffProfile.setPreference("gfx.font_rendering.cleartype_params.rendering_mode", 2);
+        //ffProfile.setPreference("gfx.direct2d.disabled", true);
+        //ffProfile.setPreference("layers.acceleration.disabled", true);
+        //ffProfile.setPreference("gfx.font_rendering.cleartype_params.cleartype_level", 2);
+        //ffProfile.setPreference("gfx.font_rendering.cleartype_params.enhanced_contrast", 2);
+        //ffProfile.setPreference("gfx.font_rendering.cleartype_params.gamma", 2);
+        //ffProfile.setPreference("gfx.font_rendering.cleartype_params.pixel_structure", 2);
+        //ffProfile.setPreference("gfx.font_rendering.cleartype_params.rendering_mode", 2);
+        
+        //deal with firefox forcing bad rendering when it doesn't like the driver
+        ffProfile.setPreference("webgl.force-enabled", true);
+        ffProfile.setPreference("webgl.msaa-force", true);
+        ffProfile.setPreference("layers.acceleration.force-enabled", true);
+        ffProfile.setPreference("gfx.direct2d.force-enabled", true);
+        
         
         ffProfile.setPreference("network.http.response.timeout", 7); //this is time in seconds
         
@@ -625,6 +635,30 @@ public class AdShotter2 {
     	
     	//Return whether the attempt was successful or not
     	return escapeCommandSuccessful;
+	}
+	
+	private class ProxyDetails{
+		public String ip;
+		public int port;
+		public ProxyDetails(String ipAddress, int portNumber){
+			ip = ipAddress;
+			port = portNumber;
+		}
+	}
+	
+	private ProxyDetails getProxyServer(){
+		
+		ArrayList<ProxyDetails> proxyList = new ArrayList<ProxyDetails>();
+		proxyList.add(new ProxyDetails("192.210.148.231", 3128));
+		proxyList.add(new ProxyDetails("198.23.217.23", 3128));
+		proxyList.add(new ProxyDetails("104.144.165.103", 3128));
+		proxyList.add(new ProxyDetails("107.173.182.217", 3128));
+		proxyList.add(new ProxyDetails("104.168.23.154", 3128));
+		
+		Random randomGenerator = new Random();
+		int anyFromProxyList = randomGenerator.nextInt(proxyList.size());
+		
+		return proxyList.get(anyFromProxyList);
 	}
 
 	/**
