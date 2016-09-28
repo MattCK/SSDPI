@@ -442,3 +442,26 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     font-weight: bold;
     font-size: 15px;
 }
+
+#screenshotsDiv {
+    padding: 0px;
+}
+
+#screenshotsTable {
+    width: 100%;
+}
+
+#screenshotsTable a {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#screenshotsTable tr:nth-child(even) {
+    background-color: #F3F3F3;
+}
+
+#screenshotsTable td {
+    text-align: center;
+    padding: 10px 0 30px 0;
+}
+

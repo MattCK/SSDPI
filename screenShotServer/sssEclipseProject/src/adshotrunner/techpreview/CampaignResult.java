@@ -9,6 +9,10 @@ public class CampaignResult {
 	public Boolean queued;
 	public Boolean success;
 	public String message;
+	
+	public String customer;
+	public String domain;
+	public String date;
 
 	public Map<String, String> screenshots;
 

@@ -33,6 +33,11 @@ let campaign = {
 			//If the campaign results were successfully returned, display them
 			else if (jobData.success) {
 				
+				//Set the campaign details
+				base.nodeFromID("customerSpan").innerHTML = jobData.customer;
+				base.nodeFromID("domainSpan").innerHTML = jobData.domain;
+				base.nodeFromID("dateSpan").innerHTML = jobData.date;
+
 				//Set the powerpoint link
 				base.nodeFromID("powerPointLink").href = jobData.powerPointURL;
 
@@ -40,7 +45,7 @@ let campaign = {
 				let imageTableRows = "";
 				for (var pageURL in jobData.screenshots) {
 					if (jobData.screenshots.hasOwnProperty(pageURL)) {
-						imageTableRows += "<tr><td>" + pageURL + "<br><br>";
+						imageTableRows += "<tr><td><a href='" + pageURL + "' target='_blank'>" + pageURL + "</a><br><br>";
 						imageTableRows += '<img style="max-width: 600px;" src="' + jobData.screenshots[pageURL] + '" /></td></tr>';
 					}
 				}

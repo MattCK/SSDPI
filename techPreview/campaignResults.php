@@ -51,7 +51,7 @@ require_once('systemSetup.php');
 		</div>
 
 		<h2>Screenshots</h2>
-		<div id="screenshotsDiv" class="section">
+		<div id="screenshotsDiv" class="section" align="center">
 			<table id="screenshotsTable"></table>
 		</div>
 
