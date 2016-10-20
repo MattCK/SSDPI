@@ -92,7 +92,7 @@ public class StoryFinder {
             //Get the string returned from phantomjs
             String thisLine = "";
             BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            StoryFinder.consoleLog("after the to call the readbuffer");
+            //StoryFinder.consoleLog("after the to call the readbuffer");
            // while ((thisLine = commandLineInput.readLine()) != null) {
             //	phantomJSResponse += thisLine;
             //}
@@ -100,14 +100,14 @@ public class StoryFinder {
     	            "phantomjs/phantomjs", 
     	            "javascript/retrievePossibleStoriesFromURL.js",
     	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass};
-            StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
+            //StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
             phantomJSResponse = commandLineInput.readLine();
             //StoryFinder.consoleLog("FirstLineRead: " + phantomJSResponse);
         }
         catch (IOException e) {
 			throw new AdShotRunnerException("Could not execute phantomjs", e);
         }
-		StoryFinder.consoleLog("PhantomJSResponse: " + phantomJSResponse);
+		//StoryFinder.consoleLog("PhantomJSResponse: " + phantomJSResponse);
         //If the command was successful, return the phantomjs response
 		return phantomJSResponse;
 	}

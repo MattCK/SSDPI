@@ -404,6 +404,11 @@ public class AdShotter2 {
         ffProfile.setPreference("webgl.msaa-force", true);
         ffProfile.setPreference("layers.acceleration.force-enabled", true);
         ffProfile.setPreference("gfx.direct2d.force-enabled", true);
+        ffProfile.setPreference("gfx.direct2d.disabled", false);
+        ffProfile.setPreference("layers.acceleration.disabled", false);
+        ffProfile.setPreference("gfx.font_rendering.cleartype_params.cleartype_level", 100);
+        ffProfile.setPreference("gfx.font_rendering.cleartype.always_use_for_content", true);
+        ffProfile.setPreference("gfx.font_rendering.cleartype_params.rendering_mode", 5);
         
         
         ffProfile.setPreference("network.http.response.timeout", 7); //this is time in seconds
@@ -650,7 +655,7 @@ public class AdShotter2 {
 		
 		ArrayList<ProxyDetails> proxyList = new ArrayList<ProxyDetails>();
 		proxyList.add(new ProxyDetails("192.210.148.231", 3128));
-		proxyList.add(new ProxyDetails("198.23.217.23", 3128));
+		//proxyList.add(new ProxyDetails("198.23.217.23", 3128));
 		proxyList.add(new ProxyDetails("104.144.165.103", 3128));
 		proxyList.add(new ProxyDetails("107.173.182.217", 3128));
 		proxyList.add(new ProxyDetails("104.168.23.154", 3128));
