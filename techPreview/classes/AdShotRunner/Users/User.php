@@ -81,11 +81,22 @@ class User {
 
 		//If no data was returned, return NULL.
 		if (!$userInfo) {return NULL;}
+
+		//Get the user's DFP network code if one exists
+		$userDFPNetworkCode = NULL;
+		$emailSubdomain = array_pop(explode("@", $userInfo['USR_email']));
+		if ($emailSubdomain) {
+			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . databaseEscape($emailSubdomain) . "'";
+			$dfpNetworkCodeResult = databaseQuery($getDFPNetworkCodeQuery);
+			$networkCodeInfo = $dfpNetworkCodeResult->fetch_assoc();
+			if ($networkCodeInfo) {$userDFPNetworkCode = $networkCodeInfo['DNC_networkCode'];}
+		}
 		
 		//Create an instance of the class to return and put the info into it
 		$curUser = new User($userInfo);
 		$curUser->setID($userInfo['USR_id']);
 		$curUser->setArchiveStatus($userInfo['USR_archived']);
+		$curUser->setDFPNetworkCode($userDFPNetworkCode);
 		
 		//Return the user
 		return $curUser;
@@ -111,21 +122,30 @@ class User {
 											USR_firstName,
 											USR_lastName,
 											USR_email,
-											USR_verified,
-											USR_tieBreaker,
-											USR_transactionData)
+											USR_verified)
 						 VALUES ('" . databaseEscape($newUser->getUsername()) . "',
 								'" . databaseEscape($newUser->getPassword()) . "',
 								'" . databaseEscape($newUser->getFirstName()) . "',
 								'" . databaseEscape($newUser->getLastName()) . "',
 								'" . databaseEscape($newUser->getEmail()) . "',
-								'" . databaseEscape($newUser->isVerified()) . "',
-								'" . databaseEscape($newUser->getTieBreaker()) . "',
-								'" . databaseEscape($newUser->getEncodedTransactionData()) . "')";
+								'" . databaseEscape($newUser->isVerified()) . "')";
 		databaseQuery($addUserQuery);
 		
-		//Set the id in the User and return it
+		//Set the id in the User
 		$newUser->setID(databaseLastInsertID());
+
+		//Get the user's DFP network code if one exists and set it
+		$userDFPNetworkCode = NULL;
+		$emailSubdomain = array_pop(explode("@", $newUser->getEmail()));
+		if ($emailSubdomain) {
+			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . databaseEscape($emailSubdomain) . "'";
+			$dfpNetworkCodeResult = databaseQuery($getDFPNetworkCodeQuery);
+			$networkCodeInfo = $dfpNetworkCodeResult->fetch_assoc();
+			if ($networkCodeInfo) {$userDFPNetworkCode = $networkCodeInfo['DNC_networkCode'];}
+		}
+		$newUser->setDFPNetworkCode($userDFPNetworkCode);
+
+		//Return the newly inserted user
 		return $newUser;
 
 	}
@@ -164,8 +184,6 @@ class User {
 								USR_lastName = '" . databaseEscape($modifiedUser->getLastName()) . "',
 								USR_email = '" . databaseEscape($modifiedUser->getEmail()) . "',
 								USR_verified = '" . databaseEscape($modifiedUser->isVerified()) . "',
-								USR_tieBreaker = '" . databaseEscape($modifiedUser->getTieBreaker()) . "',
-								USR_transactionData = '" . databaseEscape($modifiedUser->getEncodedTransactionData()) . "'
 							WHERE USR_id = " . $modifiedUser->getID();
 		databaseQuery($updateUserQuery);
 		
@@ -261,11 +279,22 @@ class User {
 		//If no data was returned, return NULL.
 		if (!$userInfo) {return NULL;}
 		
+		//Get the user's DFP network code if one exists
+		$userDFPNetworkCode = NULL;
+		$emailSubdomain = array_pop(explode("@", $userInfo['USR_email']));
+		if ($emailSubdomain) {
+			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . databaseEscape($emailSubdomain) . "'";
+			$dfpNetworkCodeResult = databaseQuery($getDFPNetworkCodeQuery);
+			$networkCodeInfo = $dfpNetworkCodeResult->fetch_assoc();
+			if ($networkCodeInfo) {$userDFPNetworkCode = $networkCodeInfo['DNC_networkCode'];}
+		}
+		
 		//Create an instance of the class to return and put the info into it
 		$curUser = new User($userInfo);
 		$curUser->setID($userInfo['USR_id']);
 		$curUser->setArchiveStatus($userInfo['USR_archived']);
-		
+		$curUser->setDFPNetworkCode($userDFPNetworkCode);
+	
 		//Return the user
 		return $curUser;
 	}
@@ -337,14 +366,9 @@ class User {
 	private $verified;
 
 	/**
-	* @var number  The user's tie breaker guess.
+	* @var string  DFP network code of the user if one exists
 	*/
-	private $tieBreaker;
-
-	/**
-	* @var string  Encoded JSON object of all the data returned when the user bought in.
-	*/
-	private $transactionData;
+	private $dfpNetworkCode;
 
 	/**
 	* @var boolean  Flags whether or not the user has been archived. TRUE if it has been archived.
@@ -384,8 +408,6 @@ class User {
 			$this->setLastName($userInfo['USR_lastName']);
 			$this->setEmail($userInfo['USR_email']);
 			$this->setVerifiedStatus($userInfo['USR_verified']);
-			$this->setTieBreaker($userInfo['USR_tieBreaker']);
-			$this->setEncodedTransactionData($userInfo['USR_transactionData']);
 		}
 	}
 
@@ -510,66 +532,21 @@ class User {
 	}
 	
 	/**
-	* Returns the tie breaker guess of the user
-	*
-	* @return number  Tie breaker guess of the user
-	*/
-	public function getTieBreaker(){
-		return $this->tieBreaker;
-	}
-	/**
-	* Sets the tie breaker guess of the user
-	*
-	* @param string $newTieBreaker  New tie breaker for the user 
-	*/
-	public function setTieBreaker($newTieBreaker){
-		$this->tieBreaker = $newTieBreaker;
-	}
-
-	/**
-	* Returns the payment transaction data of the user as JSON encoded object
-	*
-	* @return string  JSON encoded object of payment information
-	*/
-	public function getTransactionData(){
-		return json_decode($this->transactionData);
-	}
-	/**
-	* Returns the encoded payment transaction data of the user as a string
-	*
-	* @return string encoded object of payment information
-	*/
-	public function getEncodedTransactionData(){
-		return $this->transactionData;
-	}
-	/**
-	* Sets the buy in transaction data of the user.
-	*
-	* Accepts a mixed data type and turns it into a JSON encoded string
-	*
-	* @param mixed $newData  Payment data of the user
-	*/
-	public function setTransactionData($newData){
-		$this->transactionData = json_encode($newData);
-	}
-	/**
-	* Sets the buy in transaction data of the user.
-	*
-	* Accepts a mixed data type and turns it into a JSON encoded string
-	*
-	* @param mixed $newData  Payment data of the user
-	*/
-	public function setEncodedTransactionData($newData){
-		$this->transactionData = $newData;
-	}
-
-	/**
 	* Returns the archive status of the user
 	*
 	* @return string  Archive status of the user
 	*/
 	public function isArchived(){
 		return $this->archived;
+	}
+		
+	/**
+	* Returns the DFP network code of the user
+	*
+	* @return string  DFP network code of the user
+	*/
+	public function getDFPNetworkCode(){
+		return $this->dfpNetworkCode;
 	}
 		
 	//********************************* Private Accessors ***********************************
@@ -585,10 +562,19 @@ class User {
 	/**
 	* Sets the the archive status of the user
 	*
-	* @param string $newArchiveStatus  New archive status of the user 
+	* @param boolean $newArchiveStatus  New archive status of the user 
 	*/
 	private function setArchiveStatus($newArchiveStatus){
 		$this->archived = $newArchiveStatus;
+	}
+	
+	/**
+	* Sets the the DFP network code of the user
+	*
+	* @param string $newDFPNetworkCode  New DFP network code of the user 
+	*/
+	private function setDFPNetworkCode($newDFPNetworkCode){
+		$this->dfpNetworkCode = $newDFPNetworkCode;
 	}
 	
 }

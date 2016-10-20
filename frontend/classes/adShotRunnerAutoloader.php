@@ -2,6 +2,7 @@
 
 $mapping = array(
     'AdShotRunner\Database\MySQLDatabase' => __DIR__ . '/AdShotRunner/Database/MySQLDatabase.php',
+    'AdShotRunner\DFP\DFPCommunicator' => __DIR__ . '/AdShotRunner/DFP/DFPCommunicator.php',
     'AdShotRunner\Menu\MenuGrabber' => __DIR__ . '/AdShotRunner/Menu/MenuGrabber.php',
     'AdShotRunner\PhantomJS\PhantomJSCommunicator' => __DIR__ . '/AdShotRunner/PhantomJS/PhantomJSCommunicator.php',
     'AdShotRunner\Users\User' => __DIR__ . '/AdShotRunner/Users/User.php',

@@ -22,6 +22,7 @@ if (!$_SESSION['userID']){
 //Define the session constants
 define('USERID', $_SESSION['userID']);
 define('USERNAME', $_SESSION['username']);
+define('USERDFPNETWORKCODE', $_SESSION['userDFPNetworkCode']);
 
 
 ?>

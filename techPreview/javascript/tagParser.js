@@ -47,13 +47,14 @@ let tagParser = {
 		if (textHTMLParts.length == 0) {return [];}
 		
 		//To simplify code below, let's mark each type of HTML tags we are working with
-		let hasHTMLScriptTag, hasHTMLIFrameTag, hasHTMLNoscriptTag, hasHTMLAnchorTag, hasHTMLIMGTag;
+		let hasHTMLScriptTag, hasHTMLIFrameTag, hasHTMLNoscriptTag, hasHTMLAnchorTag, hasHTMLImageTag;
 		for (let htmlPartIndex = 0; htmlPartIndex < textHTMLParts.length; ++htmlPartIndex) {
 			switch (textHTMLParts[htmlPartIndex].type) {
 				case 'script': hasHTMLScriptTag = true; break;
 				case 'iframe': hasHTMLIFrameTag = true; break;
 				case 'noscript': hasHTMLNoscriptTag = true; break;
 				case 'a': hasHTMLAnchorTag = true; break;
+				case 'img': hasHTMLImageTag = true; break;
 			}
 		}
 
@@ -101,6 +102,13 @@ let tagParser = {
 			//Otherwise, if no script, iframe, or noscript tags but an anchor, only store anchor tags
 			else if (hasHTMLAnchorTag) {
 				if (textHTMLParts[htmlPartIndex].type == 'a') {
+					adTags.push(textHTMLParts[htmlPartIndex].html);
+				}
+			}
+
+			//Otherwise, if no script, iframe, noscript, or anchor tags but an image, only store image tags
+			else if (hasHTMLImageTag) {
+				if (textHTMLParts[htmlPartIndex].type == 'img') {
 					adTags.push(textHTMLParts[htmlPartIndex].html);
 				}
 			}

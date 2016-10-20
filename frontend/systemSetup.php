@@ -22,6 +22,11 @@ require_once(THIRDPARTYPATH . 'aws/aws-autoloader.php');
 require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
 
 /**
+* Add third-party folder to path for Google DFP
+*/
+set_include_path(get_include_path() . PATH_SEPARATOR . THIRDPARTYPATH);
+
+/**
 * Connect to the database
 */
 require_once(RESTRICTEDPATH . 'databaseSetup.php');

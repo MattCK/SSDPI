@@ -14,6 +14,19 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\DFP\DFPCommunicator;
+
+$orders = null;
+if (USERDFPNETWORKCODE) {
+
+	$dfpCommunicator = DFPCommunicator::create("1041453671893-6u2tkvf48t1d761c40niul48e94f27pr.apps.googleusercontent.com", 
+											   "VdC_QJfGyZCt0Q-dUJl47CnQ", 
+											   "1/YI_KIXNvTmidUf756JE_4bu9qXlD_j_1azY_E6iLfb0", 
+											   USERDFPNETWORKCODE, "AdShotRunner");
+
+	$orders = $dfpCommunicator->getOrders();
+}
+
 ?>
 
 <?PHP include_once(BASEPATH . "header.php");?>
@@ -32,6 +45,43 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 
 <div id="mainContent">
 		<form id="pagesForm">
+
+			<?PHP if (!USERDFPNETWORKCODE): ?>
+			<div id="dfpInfoDiv" class="section"> 
+				<strong>Google DFP Users:</strong> 
+				AdShotRunner&trade; can retrieve orders, line notes, and creatives from your account. 
+				For more information, call (773) 295-2386 or <a href="mailto:info@adshotrunner.com">email us</a>
+			</div>
+			<?PHP endif; ?>
+
+			<?PHP if (USERDFPNETWORKCODE): ?>
+
+			<h2 id="dfpOrdersHeader">DFP Orders</h2>
+			<div id="dfpOrdersDiv" class="section"> 
+				<table>
+					<tr>
+						<td style="width: 100px; font-weight: bold;">Orders:</td>				
+						<td colspan="2"><input id="orderFilter" name="orderFilter" type="text" oninput="asr.filterOrders()" style="width: 488px"></td>
+					</tr>
+					<tr>
+						<td>&nbsp;</td>
+						<td><select id="orderSelect" name="orderSelect" size="8" onchange="asr.displayOrderNotes()" style="width: 500px;"></select></td>
+						<td style="vertical-align: top"><div id="orderNotesDiv" style="padding: 2px 30px"></div></td>
+					</tr>
+					<tr>
+						<td>&nbsp;</td>
+						<td colspan="2"><input id="getOrderDataButton" type="button" value="Get Line Items and Creatives" onclick="asr.requestOrderData()"></td>
+					</tr>
+				</table>
+			</div>
+
+			<h2 id="lineItemsHeader" style="display: none;">Line Items</h2>
+			<div id="lineItemsDiv" class="section" style="display: none;"></div> 
+
+
+
+			<?PHP endif; ?>
+
 			<h2>Customer</h2>
 			<div id="customerDiv" class="section">
 				<div class="textFieldName">Name:</div> 
@@ -104,6 +154,11 @@ zipFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
 zipFileDropZone.addEventListener('drop', tagParser.handleTagZipFileDrop, false);
 let tagTextTextboxButton = base.nodeFromID("tagTextTextboxButton");
 tagTextTextboxButton.addEventListener('click', tagParser.handleTagTextboxInput, false);
+let orderFilter = base.nodeFromID("orderFilter");
+orderFilter.addEventListener('onchange', asr.filterOrders);
+
+
+
 $(function() {
 	$( "#sortable" ).sortable();
 	//$( "#sortable" ).disableSelection();
@@ -124,6 +179,13 @@ $(function() {
 			}
 		}
 	});
+
+	<?PHP if (USERDFPNETWORKCODE): ?>
+
+	asr.orders = <?PHP echo json_encode($orders) ?>;
+	asr.filterOrders();
+
+	<?PHP endif; ?>
 });
 
 </script>

@@ -15,6 +15,7 @@ let asr = {
 	_getTagImagesURL: 'getTagImages.php',				//URL of request page to turn tags into images
 	_requestScreenshotsURL: 'requestScreenshots.php',	//URL of request page to send information to in order to create screenshots
 	_storeTagTextURL: 'storeTagText.php',				//URL of request page that stores tag text for analysis
+	_getOrderDataURL: 'getOrderData.php',				//URL of request page to get line items and creatives for an order
 	_menuItems: [],										//List of menu items returned from the get menu request
 	_menuOptions: "",									//HTML options string of menu labels and their URLs
 	_imageLoadTimeout: 3000,							//Interval the client should check to see if a tag image is ready
@@ -22,6 +23,9 @@ let asr = {
 														//(Possibly unnecessary but more robust)
 	_queuedTags: [],									//Array of tags that need to be processed into images
 	_tagsBeingProcessed: 0,								//Number of tags being processed into images
+	_lineItems: [],										//Array of line item names and their descriptions
+	_creatives: [],										//Array of creative IDs and their content
+	orders: {},											//Array of order IDs with 'name' and 'notes' properties
 
 	/**
 	* Requests the menu for the domain stored in the domain input field. If a menu is returned, its items are
@@ -366,6 +370,97 @@ let asr = {
 		//Remove the row
 		let liToDelete = base.nodeFromID(tagLIID);
 		liToDelete.parentNode.removeChild(liToDelete);
+	},
+
+	filterOrders: function() {
+
+		//Loop through the orders and add each whose name matches the filter field
+		let filterText = base.nodeFromID("orderFilter").value;
+		let orderOptions = "";
+		for (var orderID in asr.orders) {
+			if (asr.orders.hasOwnProperty(orderID)) {
+
+				//If there is no filter text or the filter text is in the order's name, add the order
+				let orderName = asr.orders[orderID].name;
+				if ((filterText == "") || (orderName.toLowerCase().indexOf(filterText.toLowerCase()) !== -1)) {
+					orderOptions += "<option value='" + orderID + "'>" + orderName + "</option>";
+				}
+			}
+		}
+
+		//Add the order options to the select menu
+		base.nodeFromID("orderSelect").innerHTML = orderOptions;
+		base.nodeFromID("orderNotesDiv").innerHTML = "";
+	},
+
+	displayOrderNotes: function() {
+		let orderID = base.nodeFromID("orderSelect").value;
+		if (orderID) {
+			base.nodeFromID("orderNotesDiv").innerHTML = asr.orders[orderID].notes;
+		}
+	},
+
+	requestOrderData: function() {
+
+		//Check to see if an order has been selected
+		let orderID = base.nodeFromID("orderSelect").value;
+		if (!orderID) {return;}
+		base.disable("getOrderDataButton");
+
+		//Create the callback function that will display the information
+		let callback = function(response) {
+
+			base.enable("getOrderDataButton");
+			
+			//If successful, show the information
+			if (response.success) {
+
+				//Store the order data
+				asr._lineItems = response.data.lineItems;
+				asr._creatives = response.data.creatives;
+
+				//Add the creatives to the queue
+				for (var creativeID in asr._creatives) {
+					if (asr._creatives.hasOwnProperty(creativeID)) {
+						console.log("Tag before: " + asr._creatives[creativeID]);
+
+						//Hack to show off software
+						if (asr._creatives[creativeID].toLowerCase().substring(0, 4) == "<img") {
+							asr._creatives[creativeID] = "<a>" + asr._creatives[creativeID] + "</a>";
+						}
+
+
+						asr.addTagsToQueue(tagParser.getTags(asr._creatives[creativeID]));
+						console.log("tag: " + tagParser.getTags(asr._creatives[creativeID]));
+					}
+				}
+
+				//Put the line items in the line items div
+				for (var lineItemName in asr._lineItems) {
+					if (asr._lineItems.hasOwnProperty(lineItemName)) {
+						base.nodeFromID("lineItemsDiv").innerHTML += "<strong>" + lineItemName + " - </strong>" + asr._lineItems[lineItemName] + "<br><br>";
+					}
+				}
+
+				//Hide the orders and show the line items
+				base.hide("dfpOrdersHeader");
+				base.hide("dfpOrdersDiv");
+				base.show("lineItemsHeader");
+				base.show("lineItemsDiv");
+
+				//Get the creatives
+				asr.getTagImages();
+			}
+						
+			//If failure, simply output to the console for the time being
+			else {
+				console.log('in failure');
+				console.log(response.data);
+			}
+		}
+		
+		//Make the request
+		base.asyncRequest(asr._getOrderDataURL, 'orderID=' + orderID, callback);
 	},
 
 	/**

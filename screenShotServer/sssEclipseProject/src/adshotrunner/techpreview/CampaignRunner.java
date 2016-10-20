@@ -185,13 +185,14 @@ public class CampaignRunner implements Runnable {
 		FileStorageClient.saveFile(FileStorageClient.CAMPAIGNJOBS, "campaignJobs/" + jobResult.jobID, jobResult.jobID);
 		
 		//Send the notification email
-		CampaignEmail.sendEmail(requestInfo.customer, 
-								adShotList, 
-								"http://techpreview.adshotrunner.com/campaignResults.php?jobID=" + requestInfo.jobID, 
-								jobResult.powerPointURL, 
-								requestInfo.domain, 
-								new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime()), 
-								requestInfo.email);
+		CampaignEmail resultsEmail = CampaignEmail.createCampaignEmail(
+										 requestInfo.customer, 
+										 requestInfo.domain, 
+										 new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime()), 
+										 "http://techpreview.adshotrunner.com/campaignResults.php?jobID=" + requestInfo.jobID, 
+										 jobResult.powerPointURL, 
+										 adShotList);
+		resultsEmail.send(requestInfo.email);
 	}
 	
 	private static void saveImageAsPNG(BufferedImage imageToSave, String filepath) throws IOException {

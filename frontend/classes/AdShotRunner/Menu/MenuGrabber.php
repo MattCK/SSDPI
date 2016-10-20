@@ -55,7 +55,7 @@ class MenuGrabber {
 	/**
 	* Instantiates class and grabs the menu label weights from the database.
 	*/
-	function __construct() {
+	private function __construct() {
 		
 		//Retrieve and store the menu label weight information
 		$this->setMenuLabelWeights($this->retrieveMenuLabelWeightsFromDatabase());
