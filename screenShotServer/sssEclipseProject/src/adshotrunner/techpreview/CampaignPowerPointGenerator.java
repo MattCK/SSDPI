@@ -55,7 +55,7 @@ public class CampaignPowerPointGenerator {
 		textDate.Text = simpleDate;
 		textDate.fontColor = textDate.Red;
 		textDate.x = 40;
-		textDate.y = 460;
+		textDate.y = 465;
 		textDate.fontSize = 12;
 		String DateXML = textDate.BuildXMLTextBoxString();
 		CampaignPowerPoint.addTextBoxToCurrentSlide(DateXML);
@@ -131,8 +131,8 @@ public class CampaignPowerPointGenerator {
 	private int[] CalculatePositionAndSizeOfScreenshot(int screenshotWidth, int screenshotHeight, String pptAspectRatio){
 		int XYandSize[] = new int[4];
 		int sideMargin = 30;
-		int topMargin = 30;
-		int bottomMargin = 20;
+		int topMargin = 25;
+		int bottomMargin = 10;
 		int wideScreenWidth = 960;
 		int wideScreenHeight = 540;
 		int squareWidth = 1024;
@@ -165,7 +165,10 @@ public class CampaignPowerPointGenerator {
 			if (widthRatio > heightRatio){
 				this.dbgmsg("Inside widthratio greater than heightratio");
 				adjustedScreenshotWidth = (slideWidth - (sideMargin * 2));
-				adjustedScreenshotHeight = (int)((((double)slideWidth - ((double)sideMargin * 2.0)) / ((double)screenshotWidth)) * (double)screenshotWidth);
+				//adjustedScreenshotHeight = (int)((((double)slideWidth - ((double)sideMargin * 2.0)) / ((double)screenshotWidth)) * (double)screenshotWidth);
+				double shrinkToPercentage = (((double)slideWidth) - (((double)sideMargin * 2.0) )) / ((double)screenshotWidth);
+				adjustedScreenshotHeight = (int)(shrinkToPercentage * (double)screenshotHeight);
+				this.dbgmsg("ShrinkPercentage: " + shrinkToPercentage);
 				this.dbgmsg("AdjustedWidth : " + adjustedScreenshotWidth );
 				this.dbgmsg("AdjustedHeight : " + adjustedScreenshotHeight );
 			}

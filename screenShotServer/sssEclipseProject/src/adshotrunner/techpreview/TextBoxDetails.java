@@ -24,6 +24,13 @@ public class TextBoxDetails {
     //int convertedY = y * 12700;
     int convertedX = x * 9525;
     int convertedY = y * 9525;
+    
+    //the text box size default size needs to be widened for very long text lengths
+    int calculatedWidth = 5303520;
+    if (Text.length() >= 70){
+    	calculatedWidth = 8403120;
+    }
+    
     Random randomGenerator = new Random();
     int randoCalrisian = randomGenerator.nextInt();
     randoCalrisian = Math.abs(randoCalrisian);
@@ -38,7 +45,7 @@ public class TextBoxDetails {
     "<p:spPr>" +
     "<a:xfrm>" +
     "<a:off x=\"" + Integer.toString(convertedX) + "\" y=\"" + Integer.toString(convertedY) + "\"/>" +
-    "<a:ext cx=\"5303520\" cy=\"546680\"/>" +
+    "<a:ext cx=\"" + Integer.toString(calculatedWidth) + "\" cy=\"546680\"/>" +
     "</a:xfrm>" +
     "<a:prstGeom prst=\"rect\">" +
     "<a:avLst/>" +
