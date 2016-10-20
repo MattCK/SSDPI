@@ -92,22 +92,22 @@ public class StoryFinder {
             //Get the string returned from phantomjs
             String thisLine = "";
             BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            //StoryFinder.consoleLog("after the to call the readbuffer");
+            StoryFinder.consoleLog("after the to call the readbuffer");
            // while ((thisLine = commandLineInput.readLine()) != null) {
             //	phantomJSResponse += thisLine;
             //}
-            phantomJSResponse = commandLineInput.readLine();
             String[] commandArray = new String[]{
     	            "phantomjs/phantomjs", 
     	            "javascript/retrievePossibleStoriesFromURL.js",
     	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass};
-            //StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
+            StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
+            phantomJSResponse = commandLineInput.readLine();
             //StoryFinder.consoleLog("FirstLineRead: " + phantomJSResponse);
         }
         catch (IOException e) {
 			throw new AdShotRunnerException("Could not execute phantomjs", e);
         }
-		//StoryFinder.consoleLog("PhantomJSResponse: " + phantomJSResponse);
+		StoryFinder.consoleLog("PhantomJSResponse: " + phantomJSResponse);
         //If the command was successful, return the phantomjs response
 		return phantomJSResponse;
 	}
@@ -224,7 +224,7 @@ public class StoryFinder {
 			StoryFinder.consoleLog("Trying phantomJS with agent:" + userAgents[userAgentIncrementor]);
 			//Get the possible story links using phantomjs
 			String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor], _dbExceptionID, _dbExceptionClassName);
-			
+			StoryFinder.consoleLog("after get JSON fron phantomJS");
 			//StoryFinder.consoleLog("full String: " + linkJSON);
 			
 	        //Get the immutable link info as array of maps

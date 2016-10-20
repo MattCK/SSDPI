@@ -90,14 +90,6 @@ function returnDesiredID() {
     return DESIREDELEMENTID;
 }
 
-page.onInitialized = function () {
-    page.evaluate(function () {
-        Math.random = function() {
-            return 42 / 100;
-        };
-    });
-};
-
 
 //Try to connect to and open the target URL
 page.open(targetURL, function(status) {

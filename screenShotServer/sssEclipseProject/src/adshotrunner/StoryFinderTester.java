@@ -68,7 +68,7 @@ public class StoryFinderTester {
 		sectionList.add("http://www.laweekly.com/marijuana");
 		sectionList.add("http://variety.com/v/film/");
 		sectionList.add("http://www.cleveland.com/community/");*/
-		sectionList.add("http://www.annistonstar.com/features/");
+		sectionList.add("http://www.chicagotribune.com/business/");
 		/*sectionList.add("http://www.thearabtribune.com/sports/");
 		sectionList.add("http://www.adn.com/section/outdoors-adventure/");
 		sectionList.add("http://www.anchoragepress.com/post-categories/food-drink");
