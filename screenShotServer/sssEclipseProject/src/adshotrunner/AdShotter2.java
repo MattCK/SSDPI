@@ -389,6 +389,9 @@ public class AdShotter2 {
         ffProfile.setPreference("browser.tabs.warnOnClose", false);
         ffProfile.setPreference("privacy.trackingprotection.pbmode.enabled", false);
         ffProfile.setPreference("extensions.blocklist.enabled", false);
+        //turn on multi process firefox
+        //ffProfile.setPreference("browser.tabs.remote.autostart", true);
+        //ffProfile.setPreference("browser.tabs.remote.force-enable", true);
         
         //these are to make the screenshots look pretty
         //ffProfile.setPreference("gfx.direct2d.disabled", true);
@@ -434,6 +437,15 @@ public class AdShotter2 {
         String DoNotDisturbPath = "firefoxExtensions/donotdisturb-1.4.2.xpi";
         try {
 			ffProfile.addExtension(new File(DoNotDisturbPath));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        //install flash video auto stopper extension
+        String stopFlashVideoPath = "firefoxExtensions/flashstopper-1.4.2-fx.xpi";
+        try {
+			ffProfile.addExtension(new File(stopFlashVideoPath));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
