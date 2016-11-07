@@ -72,7 +72,7 @@ public class AdShotter2 {
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
 	final private static int DEFAULTCROPHEIGHT = 1200;		//in pixels
-	final private static int MAXCROPHEIGHT = 2500;			//in pixels
+	final private static int MAXCROPHEIGHT = 1500;			//in pixels
 	final private static List<Integer> DEFAULTVIEWPORT = Collections.unmodifiableList(Arrays.asList(1366, 768));
 	final private static List<Integer> MOBILEVIEWPORT = Collections.unmodifiableList(Arrays.asList(360, 640));
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Mobile; rv:26.0) Gecko/26.0 Firefox/26.0";

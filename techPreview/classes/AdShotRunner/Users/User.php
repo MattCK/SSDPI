@@ -183,7 +183,7 @@ class User {
 								USR_firstName = '" . databaseEscape($modifiedUser->getFirstName()) . "',
 								USR_lastName = '" . databaseEscape($modifiedUser->getLastName()) . "',
 								USR_email = '" . databaseEscape($modifiedUser->getEmail()) . "',
-								USR_verified = '" . databaseEscape($modifiedUser->isVerified()) . "',
+								USR_verified = '" . databaseEscape($modifiedUser->isVerified()) . "'
 							WHERE USR_id = " . $modifiedUser->getID();
 		databaseQuery($updateUserQuery);
 		

@@ -94,15 +94,19 @@ class DFPCommunicator {
 	* Returns all the orders for the network associated with the instance's DfpUser
 	*
 	* The returned object consists of an array of order IDs pointing to an associated array with
-	* 'name' and 'notes' properties. Example:
+	* 'name', 'notes', 'advertiserName', and 'agencyName' properties. Example:
 	*
-	*		[0123456] => ['name' 	=> 'Order #1 Name',
-	*					  'notes' 	=> 'Notes for order #1],
-	*		[9876543] => ['name' 	=> 'Order #2 Name',
-	*					  'notes' 	=> 'Notes for order #2],
+	*		[0123456] => ['name' 			=> 'Order #1 Name',
+	*					  'notes' 			=> 'Notes for order #1,
+	*					  'advertiserName' 	=> 'Advertiser Name for order #1,
+	*					  'agencyName' 		=> 'Agency Name for order #1],
+	*		[9876543] => ['name' 			=> 'Order #2 Name',
+	*					  'notes' 			=> 'Notes for order #2,
+	*					  'advertiserName' 	=> 'Advertiser Name for order #2,
+	*					  'agencyName' 		=> 'Agency Name for order #2],
 	*		...
 	*
-	* @return 	mixed  					Associative array containing order ID, order name, and order notes as stated in main description
+	* @return 	mixed  	Associative array containing order ID, order name, order notes, advertiser name, and agency name as stated in main description
 	*/
 	public function getOrders() {
 
@@ -119,11 +123,42 @@ class DFPCommunicator {
 		//Get the orders from DFP
 		$orderResults = $orderService->getOrdersByStatement($statementBuilder->ToStatement());
 
+		//Get the company service for the network
+		$companyService = $user->GetService('CompanyService', 'v201608');
+
+		//Build the where clause to get company information for the orders
+		$companyWhereClause = "";
+		if (isset($orderResults->results)) {
+		    foreach ($orderResults->results as $order) {
+			    if ($companyWhereClause != "") {$companyWhereClause .= " OR ";}
+			    $companyWhereClause .= "(companyId = " . $order->advertiserId . ")";
+			    if ($order->agencyId) {$companyWhereClause .= " OR (companyId = " . $order->agencyId . ")";}
+			}
+		}
+
+		//Create the statement to get all companies for the orders
+		if ($companyWhereClause != "") {
+			$statementBuilder = new \StatementBuilder();
+			$statementBuilder->Where("(" . $companyWhereClause . ")");
+			$companyResults = $companyService->
+				              getCompaniesByStatement($statementBuilder->ToStatement());
+		}
+
+		//Format the company names
+		$companyNames = [];
+		if (isset($companyResults->results)) {
+		    foreach ($companyResults->results as $company) {
+		    	$companyNames[$company->id] = $company->name;
+		    }
+		}
+
 		//Format the returned orders
 		$finalOrders = [];
 		if (isset($orderResults->results)) {
 		    foreach ($orderResults->results as $order) {
-		    	$finalOrders[$order->id] = ['name' => $order->name, 'notes' => $order->notes];
+		    	$finalOrders[$order->id] = ['name' => $order->name, 'notes' => $order->notes,
+		    								'advertiserName' => $companyNames[$order->advertiserId]];
+		    	$finalOrders[$order->id]['agencyName'] = ($order->agencyId) ? $companyNames[$order->agencyId] : "";
 		    }
 		}
 		return $finalOrders;

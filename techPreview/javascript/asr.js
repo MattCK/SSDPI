@@ -380,8 +380,12 @@ let asr = {
 		for (var orderID in asr.orders) {
 			if (asr.orders.hasOwnProperty(orderID)) {
 
+				//Create the order label
+				let orderName = asr.orders[orderID].name + " - " + asr.orders[orderID].advertiserName;
+				if (asr.orders[orderID].agencyName != "") {orderName += " (" + asr.orders[orderID].agencyName + ")";}
+				orderName += " - " + orderID;
+
 				//If there is no filter text or the filter text is in the order's name, add the order
-				let orderName = asr.orders[orderID].name;
 				if ((filterText == "") || (orderName.toLowerCase().indexOf(filterText.toLowerCase()) !== -1)) {
 					orderOptions += "<option value='" + orderID + "'>" + orderName + "</option>";
 				}
@@ -429,7 +433,6 @@ let asr = {
 							asr._creatives[creativeID] = "<a>" + asr._creatives[creativeID] + "</a>";
 						}
 
-
 						asr.addTagsToQueue(tagParser.getTags(asr._creatives[creativeID]));
 						console.log("tag: " + tagParser.getTags(asr._creatives[creativeID]));
 					}
@@ -441,6 +444,9 @@ let asr = {
 						base.nodeFromID("lineItemsDiv").innerHTML += "<strong>" + lineItemName + " - </strong>" + asr._lineItems[lineItemName] + "<br><br>";
 					}
 				}
+
+				//Place the advertiser name in the customer field
+				base.nodeFromID("customer").value = asr.orders[orderID].advertiserName;
 
 				//Hide the orders and show the line items
 				base.hide("dfpOrdersHeader");

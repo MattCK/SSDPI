@@ -155,7 +155,7 @@ public class CampaignRunner implements Runnable {
 		
 		//Create the powerpoint
 		System.out.println("Creating powerpoint");
-		CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("back1.jpg", "16x9", "Campaign Name");
+		CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("back1.jpg", "16x9", requestInfo.customer);
 		for (AdShot currentAdShot : adShotList) {
 			powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
 		}

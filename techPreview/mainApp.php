@@ -61,11 +61,11 @@ if (USERDFPNETWORKCODE) {
 				<table>
 					<tr>
 						<td style="width: 100px; font-weight: bold;">Orders:</td>				
-						<td colspan="2"><input id="orderFilter" name="orderFilter" type="text" oninput="asr.filterOrders()" style="width: 488px"></td>
+						<td colspan="2"><input id="orderFilter" name="orderFilter" type="text" oninput="asr.filterOrders()" style="width: 588px"></td>
 					</tr>
 					<tr>
 						<td>&nbsp;</td>
-						<td><select id="orderSelect" name="orderSelect" size="8" onchange="asr.displayOrderNotes()" style="width: 500px;"></select></td>
+						<td><select id="orderSelect" name="orderSelect" size="8" onchange="asr.displayOrderNotes()" style="width: 600px;"></select></td>
 						<td style="vertical-align: top"><div id="orderNotesDiv" style="padding: 2px 30px"></div></td>
 					</tr>
 					<tr>
