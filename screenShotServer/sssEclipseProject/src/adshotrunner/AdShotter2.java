@@ -58,8 +58,8 @@ public class AdShotter2 {
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	//final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
-	final private static String SELENIUMHUBADDRESS = "http://ec2-54-172-131-29.compute-1.amazonaws.com:4444/wd/hub";
+	final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
+	//final private static String SELENIUMHUBADDRESS = "http://ec2-54-172-131-29.compute-1.amazonaws.com:4444/wd/hub";
 	final private static String SELENIUMPROFILE = "SeleniumDPI";
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
 	final private static String FIREFOXPROFILEFATH = "/home/ec2-user/seleniumdpi";
@@ -68,14 +68,14 @@ public class AdShotter2 {
 	final private static int ESCAPEPAUSETIME = 100;			//in miliseconds
 	final private static int JAVASCRIPTWAITTIME = 2000;		//in miliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
-	final private static int SCREENSHOTTIMEOUT = 20000;		//in miliseconds
+	final private static int SCREENSHOTTIMEOUT = 60000;		//in miliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
 	final private static int DEFAULTCROPHEIGHT = 1200;		//in pixels
 	final private static int MAXCROPHEIGHT = 1500;			//in pixels
 	final private static List<Integer> DEFAULTVIEWPORT = Collections.unmodifiableList(Arrays.asList(1366, 768));
 	final private static List<Integer> MOBILEVIEWPORT = Collections.unmodifiableList(Arrays.asList(360, 640));
-	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Mobile; rv:26.0) Gecko/26.0 Firefox/26.0";
+	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Android 6.0.1; Mobile; rv:49.0) Gecko/49.0 Firefox/49.0";
 	final private static boolean VERBOSE = true;
 	final private static int MAXOPENTABS = 3;
 
@@ -208,6 +208,11 @@ public class AdShotter2 {
     			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
     		}
 			
+			if (_userAgent.toLowerCase().contains("mobile")) {
+				new Actions(firefoxDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m")).perform();
+				pause(100);
+			}
+			
 			//If there are still adShots to be opened and we are less than max tabs, create a new tab
 			++openTabIndex;
 			if ((openTabIndex < adShots.size()) && (openTabIndex < MAXOPENTABS)) {
@@ -338,7 +343,8 @@ public class AdShotter2 {
 			consoleLog("Could not take screenshot");
 			adShot.setError(new AdShotRunnerException("Could not take screenshot", e)); return;
 		}
-		
+		consoleLog("After screenshot attempts");
+    	
     	long screenShotEndTime = System.nanoTime();
 		consoleLog("Done! - " + (screenShotEndTime - screenShotStartTime)/1000000 + " ms");
 		
@@ -392,6 +398,8 @@ public class AdShotter2 {
         //turn on multi process firefox
         //ffProfile.setPreference("browser.tabs.remote.autostart", true);
         //ffProfile.setPreference("browser.tabs.remote.force-enable", true);
+
+        ffProfile.setPreference("accessibility.blockautorefresh", true);
         
         //these are to make the screenshots look pretty
         //ffProfile.setPreference("gfx.direct2d.disabled", true);
@@ -744,6 +752,7 @@ public class AdShotter2 {
 	private File captureSeleniumDriverScreenshot(final WebDriver activeSeleniumWebDriver) {
 		
 		consoleLog("Send stop scripts key - Just before screenshot");	        	
+		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
 		consoleLog("Pausing for .5 seconds");
 		pause(500);
 		
@@ -767,8 +776,10 @@ public class AdShotter2 {
     		}
     		++currentAttempt;
     	}
+    	consoleLog("Before start scripts command");
 		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
-   	
+		consoleLog("After start scripts command");
+		
     	return screenShot;
 	}
 	

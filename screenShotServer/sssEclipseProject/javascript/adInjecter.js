@@ -210,7 +210,7 @@ function initializeAdInjecter(tags) {
 				//Remove any margin from the top HTML element
 				//---------------------------Should this be here?-----------------------------
 				//-------------------------Yes, weird chicago eatery things-------------------
-				curDocument.getElementsByTagName('html')[0].style.margin = 0;
+				//curDocument.getElementsByTagName('html')[0].style.margin = 0;
 
 				//If the flood value is recognized, store the ad OR
 				//If the node is an uncrawlable IFRAME, use it if its dimensions match a tag
