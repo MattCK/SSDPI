@@ -13,6 +13,7 @@ let asr = {
 	_domain: '',										//Stores the domain to get screenshots for
 	_getMenuURL: 'getMenu.php',							//URL of request page used to retrieve the menu for the domain
 	_getTagImagesURL: 'getTagImages.php',				//URL of request page to turn tags into images
+	_uploadTagImageURL: 'uploadTagImage.php',					//URL of request page to upload tag image and store it
 	_requestScreenshotsURL: 'requestScreenshots.php',	//URL of request page to send information to in order to create screenshots
 	_storeTagTextURL: 'storeTagText.php',				//URL of request page that stores tag text for analysis
 	_getOrderDataURL: 'getOrderData.php',				//URL of request page to get line items and creatives for an order
@@ -242,6 +243,41 @@ let asr = {
 	},
 
 	/**
+	* Uploads the tag image to the server where it is placed in official tag image storage
+	*/
+	uploadTagImage: function(tagImageData) {
+
+		//If no tag image was passed, do nothing
+		if (!tagImageData) {return;}
+
+		//Create the tag UUID
+		let newUUID = asr.getUUID();
+
+		//Add the "queued" row to the tags table
+	    let $li = $("<li class='ui-state-default' id='tagLI" + newUUID + "' />").html('<div class="queuedTagDiv">Queued...</div>');
+	    $("#sortable").append($li);
+	    $("#sortable").sortable('refresh');
+
+	    //Start checking for the image to be done.
+		asr.loadTagImage("https://s3.amazonaws.com/asr-tagimages/" + newUUID + ".png", "tagLI" + newUUID);
+
+		//Do nothing for now
+		let callback = function(response) {
+			console.log("Image uploaded");
+		}
+		
+		var formData = new FormData();
+		formData.append('imageID', newUUID);
+		formData.append('image', tagImageData);
+		base.asyncRequest(asr._uploadTagImageURL, formData, callback, true);
+
+		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
+			base.enable("getScreenshotsButton");}
+		else {base.disable("getScreenshotsButton");}
+	},
+
+	/**
 	* Sends a screenshot job request to the server with the job ID, campaign, and tag information.
 	*
 	* On success, the user is sent to the job queued page
@@ -429,9 +465,9 @@ let asr = {
 						console.log("Tag before: " + asr._creatives[creativeID]);
 
 						//Hack to show off software
-						if (asr._creatives[creativeID].toLowerCase().substring(0, 4) == "<img") {
-							asr._creatives[creativeID] = "<a>" + asr._creatives[creativeID] + "</a>";
-						}
+						//if (asr._creatives[creativeID].toLowerCase().substring(0, 4) == "<img") {
+						//	asr._creatives[creativeID] = "<a>" + asr._creatives[creativeID] + "</a>";
+						//}
 
 						asr.addTagsToQueue(tagParser.getTags(asr._creatives[creativeID]));
 						console.log("tag: " + tagParser.getTags(asr._creatives[creativeID]));

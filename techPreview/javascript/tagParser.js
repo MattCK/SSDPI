@@ -43,6 +43,18 @@ let tagParser = {
 			});
 		}
 
+		//Loop through the text again and this time grab img tags.
+		let imgRegularExpression = /<img[^>]+src="?[^"\s]+"?\s*\/>/g;
+		while ((currentIMGTag = imgRegularExpression.exec(adTagText)) !== null) {
+
+			textHTMLParts.push({
+				html: currentIMGTag[0],
+				type: 'img',
+				isSource: false,
+			});
+		}
+
+
 		//If no parts were found, return an empty array
 		if (textHTMLParts.length == 0) {return [];}
 		
@@ -106,7 +118,7 @@ let tagParser = {
 				}
 			}
 
-			//Otherwise, if no script, iframe, noscript, or anchor tags but an image, only store image tags
+			//Otherwise, if no script, iframe, noscript, or anchor tags but an anchor, only store img tags
 			else if (hasHTMLImageTag) {
 				if (textHTMLParts[htmlPartIndex].type == 'img') {
 					adTags.push(textHTMLParts[htmlPartIndex].html);
@@ -158,16 +170,38 @@ let tagParser = {
 			//Create the reader to read the current file
 			let reader = new FileReader();
 
-			//For each file, add its tags to the queue and store the text for future analysis
-			reader.onload = (function(theFile) {
-				return function(e) {
-					asr.addTagsToQueue(tagParser.getTags(e.target.result));
-					asr.storeTagText(e.target.result);
-				};
-			})(currentFile);
+			//If the current file is a text file, get the ad tags and add them to the queue
+			if (currentFile.type.match('text.*')) {
 
-			//Read the file as text
-			reader.readAsText(currentFile);
+				//For each file, add its tags to the queue and store the text for future analysis
+				reader.onload = (function(theFile) {
+					return function(e) {
+						asr.addTagsToQueue(tagParser.getTags(e.target.result));
+						asr.storeTagText(e.target.result);
+					};
+				})(currentFile);
+
+				//Read the file as text
+				reader.readAsText(currentFile);
+			}
+
+			//If the current file is an image, get the ad tags and add them to the queue
+			else if (currentFile.type.match('image.*')) {
+
+				//For each file, add its tags to the queue and store the text for future analysis
+				/*reader.onload = (function(theFile) {
+					return function(e) {
+						console.log("Dropped image file");
+						asr.uploadTagImage(e.target.result);
+					};
+				})(currentFile);
+
+				//Read the file as text
+				reader.readAsDataURL(currentFile);*/
+
+				asr.uploadTagImage(currentFile);
+			}
+
 		}
 	},
 
@@ -208,6 +242,8 @@ let tagParser = {
 
 					//Loop through each entry and try to read it as text
 					for (let i = 0, entry; entry = entries[i]; i++) {
+
+						console.log(entry);
 
 						//Get and store entry content as text
 						entry.getData(new zip.TextWriter(), function(text) {

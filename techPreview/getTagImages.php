@@ -1,6 +1,6 @@
 <?PHP
 /**
-* Stores a tag text
+* Saves passed tags in HTML files for image processing and notifies the SSS through the message queue
 *
 * @package AdShotRunner
 */
@@ -16,24 +16,49 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 
 use AdShotRunner\Utilities\FileStorageClient;
 use AdShotRunner\Utilities\MessageQueueClient;
+use AdShotRunner\Utilities\WebPageCommunicator;
 
 if (!$_POST['tags']) {echo "{}"; return;}
 
 $filePages = [];
 foreach ($_POST['tags'] as $currentID => $currentTag) {
 
-	$fileName = USERID . "-" . $currentID . ".html";
-	$styleString = "<style>body { margin: 75px 0 0 425px; padding:0px;}</style>";
-	file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $styleString . $currentTag);
-	FileStorageClient::saveFile(FileStorageClient::TAGPAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
-	unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
-	$filePages[$currentID] = $fileName;
+	//If the tag is an image tag, simply store it
+	if (substr(trim(strtolower($currentTag)), 0, 4) == '<img') {
+
+		//Get the src from the img tag
+		$xpath = new DOMXPath(@DOMDocument::loadHTML($currentTag));
+		$imageSrc = $xpath->evaluate("string(//img/@src)");
+
+		//Get the image 
+		$webCommunicator = new WebPageCommunicator();
+		$tagImage = $webCommunicator->getURLResponse($imageSrc);
+
+		//Conver the image to a png
+		$fileName = $currentID . ".png";
+		imagepng(imagecreatefromstring($tagImage), RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
+
+		//Store the image
+		FileStorageClient::saveFile(FileStorageClient::TAGIMAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
+		unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
+	}
+
+	//Otherwise, store the tag in an html file and add it to the tag list for sending to the sss for processing
+	else {
+		$fileName = USERID . "-" . $currentID . ".html";
+		$styleString = "<style>body { margin: 75px 0 0 425px; padding:0px;}</style>";
+		file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $styleString . $currentTag);
+		FileStorageClient::saveFile(FileStorageClient::TAGPAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
+		unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
+		$filePages[$currentID] = $fileName;
+	}
 }
 
 //Create the queue request and add it
-$requestObject = $filePages;
-MessageQueueClient::sendMessage(MessageQueueClient::TAGIMAGEREQUESTS, json_encode($requestObject));
-
+if (count($filePages) > 0) {
+	$requestObject = $filePages;
+	MessageQueueClient::sendMessage(MessageQueueClient::TAGIMAGEREQUESTS, json_encode($requestObject));
+}
 
 echo "{}"; return;
 

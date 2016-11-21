@@ -68,16 +68,17 @@ public class AdShotter2 {
 	final private static int ESCAPEPAUSETIME = 100;			//in miliseconds
 	final private static int JAVASCRIPTWAITTIME = 2000;		//in miliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
-	final private static int SCREENSHOTTIMEOUT = 60000;		//in miliseconds
+	final private static int SCREENSHOTTIMEOUT = 30000;		//in miliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
 	final private static int DEFAULTCROPHEIGHT = 1200;		//in pixels
 	final private static int MAXCROPHEIGHT = 1500;			//in pixels
 	final private static List<Integer> DEFAULTVIEWPORT = Collections.unmodifiableList(Arrays.asList(1366, 768));
-	final private static List<Integer> MOBILEVIEWPORT = Collections.unmodifiableList(Arrays.asList(360, 640));
-	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Android 6.0.1; Mobile; rv:49.0) Gecko/49.0 Firefox/49.0";
+	final private static List<Integer> MOBILEVIEWPORT = Collections.unmodifiableList(Arrays.asList(320, 640));
+	//final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Android 6.0.1; Mobile; rv:49.0) Gecko/49.0 Firefox/49.0";
+	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
-	final private static int MAXOPENTABS = 3;
+	final private static int MAXOPENTABS = 1;
 
 
 	//---------------------------------------------------------------------------------------
@@ -198,17 +199,20 @@ public class AdShotter2 {
         
 		//Open each AdShot URL in a new tab up to the max tab amount
 		long tabStartTime = System.nanoTime();
+		consoleLog("Beginning to open tabs...");
 		
 		int openTabIndex = 0;
 		while ((openTabIndex < MAXOPENTABS) && (openTabIndex < adShots.size())) {
 			int pageLoadTime = (treatAsTags) ? 500 : PAGELOADTIME;
+			consoleLog("    Navigating to initial page: " + adShots.get(openTabIndex).url());
 			try {navigateSeleniumDriverToURL(firefoxDriver, adShots.get(openTabIndex).url(), pageLoadTime);} 
     		catch (Exception e) {
-    			consoleLog("Couldn't navigate to page: " + adShots.get(openTabIndex).url());
+    			consoleLog("    Couldn't navigate to page: " + adShots.get(openTabIndex).url());
     			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
     		}
 			
-			if (_userAgent.toLowerCase().contains("mobile")) {
+			if ((_userAgent != null) && (_userAgent.toLowerCase().contains("mobile"))) {
+				consoleLog("    Mobile: opening firefox design view");
 				new Actions(firefoxDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m")).perform();
 				pause(100);
 			}
@@ -216,11 +220,14 @@ public class AdShotter2 {
 			//If there are still adShots to be opened and we are less than max tabs, create a new tab
 			++openTabIndex;
 			if ((openTabIndex < adShots.size()) && (openTabIndex < MAXOPENTABS)) {
+				consoleLog("    Opening new tab: " + (openTabIndex + 1));
 				openNewTab(firefoxDriver);
 			}
 			
 			//Otherwise, loop back to the front
-			else if (adShots.size() > 1) {navigateToNextTab(firefoxDriver);}			
+			else if ((adShots.size() > 1) && (MAXOPENTABS > 1)) {
+				navigateToNextTab(firefoxDriver);
+			}			
 		}
 				
 		//Pause if still in the load time frame
@@ -229,9 +236,11 @@ public class AdShotter2 {
     	if (currentPageLoadTime < maxLoadTime) {
 			pause(maxLoadTime - currentPageLoadTime);
     	}
+		consoleLog("Done opening tabs.");
 		
 		//Loop through each AdShot and take the screenshot
 		for (int adShotIndex = 0; adShotIndex < adShots.size(); ++ adShotIndex) {
+			consoleLog("------------- New AdShot --------------");
 			long startTime = System.nanoTime();
 			AdShot currentAdShot = adShots.get(adShotIndex);
 			takeAdShot(firefoxDriver, currentAdShot, treatAsTags);
@@ -264,10 +273,11 @@ public class AdShotter2 {
 	    			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
 	    		}	
 			}
-			if (adShots.size() > 1) {navigateToNextTab(firefoxDriver);}			
+			if ((adShots.size() > 1) && (MAXOPENTABS > 1)) {navigateToNextTab(firefoxDriver);}			
 						
         	long endTime = System.nanoTime();
-			consoleLog("AdShot time: " + (endTime - startTime)/1000000 + " ms");
+			consoleLog("Total Adshot runtime: " + (endTime - startTime)/1000000 + " ms");
+			consoleLog("------------------------------");
 		}
     	
     	//Quit the driver
@@ -296,65 +306,83 @@ public class AdShotter2 {
 		
 		//If the AdShot is not to be treated like a tag, create and inject javascript
 		int lowestTagBottom = 0;
-		if (!treatAsTag) {
+		if (false) { //(!treatAsTag) {
 			
 	    	//Send esc to stop any final loading and close possible popups 
 			try {sendSeleniumDriverEscapeCommand(activeSeleniumWebDriver, ESCAPEATTEMPTTIME);}
 			catch (Exception e) {
 				
 				//If the key couldn't be pressed, keep on going
-				consoleLog("Could not perform escape key press");
+				consoleLog("FAILED: Could not perform escape key or stop scripts!");
 			}
 		
 	    	//First, get the AdInjecter javascript with the current tags inserted
+			consoleLog("Creating Injecter JS...");
 			String adInjecterJS = "";
-			try {adInjecterJS = getInjecterJS(adShot.tagImages());}
+			try {
+				adInjecterJS = getInjecterJS(adShot.tagImages());
+				consoleLog("Done creating Injecter JS.");
+			}
 			catch (Exception e) {
-				consoleLog("Could not create AdInjecter javascript");
+				consoleLog("FAILED: Could not create AdInjecter javascript");
 				adShot.setError(new AdShotRunnerException("Could not create AdInjecter javascript", e)); return;
 			}
 	    	
 	    	//Execute the javascript
+			consoleLog("Injecting JS...");
 			String injecterResponse = "";
-			try {injecterResponse = executeSeleniumDriverJavascript(activeSeleniumWebDriver, adInjecterJS);}
+			try {
+				injecterResponse = executeSeleniumDriverJavascript(activeSeleniumWebDriver, adInjecterJS);
+				consoleLog("    Injecter response:");
+				consoleLog("    " + injecterResponse);
+			}
 			catch (Exception e) {
-				consoleLog("Could not execute AdInjecter in page");
+				consoleLog("FAILED: Could not execute AdInjecter in page!");
 				consoleLog(e.getMessage());
 				adShot.setError(new AdShotRunnerException("Could not execute AdInjecter in page", e)); //return;
 			}
 			
 			//Mark which ads were injected and store the lowest tags bottom position
-			consoleLog("Javascript Response: " + injecterResponse);
 			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
 			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
-			adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
-			lowestTagBottom = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
-			System.out.println("Injected Tags Size: " + adShot.injectedTagImages().size());
-			System.out.println("Bottom position: " + lowestTagBottom);
+			if (injectedTagInfo.get("injectedTagIDs") != null) {
+				adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
+				lowestTagBottom = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
+				consoleLog("    Injected Tags Size: " + adShot.injectedTagImages().size());
+				consoleLog("    Bottom position: " + lowestTagBottom);
+			}
+			else {
+				consoleLog("------------------- Javascript returned empty String -------------------------");
+			}
+			consoleLog("Done injecting JS.");
 		}
 		
     	//Take the screenshot 
-		consoleLog("Taking screenshot...");
 		long screenShotStartTime = System.nanoTime();
 		
     	File screenShot = null;
-    	try {screenShot = captureSeleniumDriverScreenshot(activeSeleniumWebDriver);}
+    	try {
+    		screenShot = captureSeleniumDriverScreenshot(activeSeleniumWebDriver);
+    	}
 		catch (Exception e) {
-			consoleLog("Could not take screenshot");
+			consoleLog("FAILED: Could not take screenshot!");
 			adShot.setError(new AdShotRunnerException("Could not take screenshot", e)); return;
 		}
-		consoleLog("After screenshot attempts");
     	
     	long screenShotEndTime = System.nanoTime();
-		consoleLog("Done! - " + (screenShotEndTime - screenShotStartTime)/1000000 + " ms");
+		consoleLog("Screenshot Time: - " + (screenShotEndTime - screenShotStartTime)/1000000 + " ms");
 		
 		//Store the final URL
 		adShot.setFinalURL(activeSeleniumWebDriver.getCurrentUrl());
 		
 		//Crop the image
-		try {adShot.setImage(cropAndConvertImageFile(screenShot, lowestTagBottom, treatAsTag));}
+		consoleLog("Cropping screenshot...");
+		try {
+			adShot.setImage(cropAndConvertImageFile(screenShot, lowestTagBottom, treatAsTag));
+			consoleLog("Done cropping.");
+		}
 		catch (Exception e) {
-			consoleLog("Could not crop screenshot");
+			consoleLog("FAILED: Could not crop screenshot!");
 			adShot.setError(new AdShotRunnerException("Could not crop screenshot", e)); return;
 		}
     			
@@ -372,6 +400,7 @@ public class AdShotter2 {
 	private WebDriver getSeleniumDriver() throws MalformedURLException {
 		
 		//Attempt to create the actual web driver used to connect to selenium
+		consoleLog("Creating driver...");
 		
         //added by matt to test proxy settings and authentication issues
 		//FirefoxProfile ffProfile = new FirefoxProfile(new File(FIREFOXPROFILEFATH));
@@ -381,6 +410,8 @@ public class AdShotter2 {
 		ProxyDetails chosenProxy = getProxyServer();
 		String proxyIPAddress = chosenProxy.ip;
 		int proxyPort = chosenProxy.port;
+		consoleLog("    Proxy: " + proxyIPAddress + ":" + proxyPort);
+		
         // Direct = 0, Manual = 1, PAC = 2, AUTODETECT = 4, SYSTEM = 5
         ffProfile.setPreference("network.proxy.type", 1);
         ffProfile.setPreference("network.proxy.http", proxyIPAddress);
@@ -425,21 +456,26 @@ public class AdShotter2 {
         ffProfile.setPreference("network.http.response.timeout", 7); //this is time in seconds
         
         ffProfile.setPreference("xpinstall.signatures.required", false); //this is time in seconds
+
+        ffProfile.setPreference("dom.ipc.plugins.flash.disable-protected-mode", true); //
         
         //If a user agent was defined, set it in the browser
         if ((_userAgent != null) && (!_userAgent.isEmpty())) {
 	        ffProfile.setPreference("general.useragent.override", _userAgent);
+	        ffProfile.setPreference("dom.ipc.plugins.enabled.libflashplayer.so", 0);
         }
+        ffProfile.setPreference("plugin.state.flash", 0);
 
         //install extension
         //String AdMarkerPath = "/home/ec2-user/firefoxExtensions/adMarker.xpi";
-        String AdMarkerPath = "firefoxExtensions/adMarker.xpi";   
+        /*String AdMarkerPath = "firefoxExtensions/adMarker.xpi";   
         try {
 			ffProfile.addExtension(new File(AdMarkerPath));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
         
         //String DoNotDisturbPath = "/home/ec2-user/firefoxExtensions/donotdisturb-1.4.2.xpi";
         String DoNotDisturbPath = "firefoxExtensions/donotdisturb-1.4.2.xpi";
@@ -449,14 +485,19 @@ public class AdShotter2 {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
-        //install flash video auto stopper extension
-        String stopFlashVideoPath = "firefoxExtensions/flashstopper-1.4.2-fx.xpi";
-        try {
-			ffProfile.addExtension(new File(stopFlashVideoPath));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+ 
+        /*
+		if ((_userAgent == null) || (!_userAgent.toLowerCase().contains("mobile"))) {
+
+	        //install flash video auto stopper extension
+			consoleLog("    Not Mobile! Installing flash stopper");
+	        String stopFlashVideoPath = "firefoxExtensions/flashstopper-1.4.2-fx.xpi";
+	        try {
+				ffProfile.addExtension(new File(stopFlashVideoPath));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
         
         String scriptStopperPath = "firefoxExtensions/@asrscriptstopperextension-0.0.1.xpi";
@@ -466,6 +507,7 @@ public class AdShotter2 {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
         
         //set new firefox profile to be used in selenium
         DesiredCapabilities capabilities = DesiredCapabilities.firefox();
@@ -488,6 +530,7 @@ public class AdShotter2 {
         
         
         //Return the initialized remote firefox web driver
+        consoleLog("Done creating driver.");
         return firefoxDriver;
 	}
 	
@@ -625,6 +668,7 @@ public class AdShotter2 {
 	 */
 	private boolean sendSeleniumDriverEscapeCommand(WebDriver activeSeleniumWebDriver, int maximumEscapeAttemptTime) {
 		
+		consoleLog("Beginning stopping and starting page scripts...");
     	//Mark the time we start sending the command
     	long attemptStartTime = System.nanoTime();
     	
@@ -636,16 +680,14 @@ public class AdShotter2 {
     		//Send the escape command. If no error, set the successful flag to true
     		try {
 				Actions builder = new Actions(activeSeleniumWebDriver);
+				consoleLog("    Sending escape key...");
 	        	builder.sendKeys(Keys.ESCAPE).perform();
-				consoleLog("Pausing for 1 seconds");
 				pause(200);
+				consoleLog("    Sending stop command to scriptstopper...");
 				new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
-				consoleLog("Send stop scripts key");
-				consoleLog("Pausing for 1.5 seconds");
 				pause(1500);
-				consoleLog("Send start scripts key");	        	
+				consoleLog("    Sending start command to scriptstopper...");
 				new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
-				consoleLog("Pausing for 1.5 seconds");
 				pause(1500);
 				
 				escapeCommandSuccessful = true;
@@ -656,7 +698,7 @@ public class AdShotter2 {
 				pause(ESCAPEPAUSETIME);
     		}
     	}
-    	consoleLog("Done with stop-start script");
+    	consoleLog("Done starting and stopping scripts.");
     	
     	//Return whether the attempt was successful or not
     	return escapeCommandSuccessful;
@@ -751,9 +793,9 @@ public class AdShotter2 {
 	 */
 	private File captureSeleniumDriverScreenshot(final WebDriver activeSeleniumWebDriver) {
 		
-		consoleLog("Send stop scripts key - Just before screenshot");	        	
+		consoleLog("Beginning to take screenshot...");
+		consoleLog("    Sending stop command to scriptstopper...");	        	
 		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
-		consoleLog("Pausing for .5 seconds");
 		pause(500);
 		
 		//Define the screenshot File variable to hold the final image
@@ -763,6 +805,7 @@ public class AdShotter2 {
     	TimeLimiter timeoutLimiter = new SimpleTimeLimiter();
     	int currentAttempt = 0;
     	while ((screenShot == null) && (currentAttempt < SCREENSHOTATTEMPTS)) {
+    		consoleLog("    Starting attempt: " + (currentAttempt + 1));
     		try {
     		screenShot = timeoutLimiter.callWithTimeout(new Callable<File>() {
 						    public File call() {
@@ -771,14 +814,22 @@ public class AdShotter2 {
 						  }, SCREENSHOTTIMEOUT, TimeUnit.MILLISECONDS, false); 
     		}
     		catch (Exception e) {
-    			consoleLog("Error getting screenshot. -" + e.toString() );
+    			consoleLog("    FAILED: Error getting screenshot. -" + e.toString() );
     			//Ignore any error and try another attempt (if any are left)
     		}
     		++currentAttempt;
     	}
-    	consoleLog("Before start scripts command");
+    	    	
+		consoleLog("    Sending start command to scriptstopper...");	        	
 		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
-		consoleLog("After start scripts command");
+		consoleLog("    Finished with start command.");
+		
+		if (screenShot == null) {
+			consoleLog("Unable to take screenshot.");
+			throw new AdShotRunnerException("Could not take screenshot");
+		}
+		
+		consoleLog("Done taking screenshot.");
 		
     	return screenShot;
 	}
@@ -803,6 +854,11 @@ public class AdShotter2 {
 		cropHeight = (cropHeight < MAXCROPHEIGHT) ? cropHeight : MAXCROPHEIGHT;
 		cropHeight = (originalImage.getHeight() < cropHeight) ? originalImage.getHeight() : cropHeight;
 		int defaultWidth = (treatAsTag) ? originalImage.getWidth() : DEFAULTVIEWWIDTH;
+		
+		if ((_userAgent != null) && (_userAgent.toLowerCase().contains("mobile"))) {
+			defaultWidth = _browserViewWidth;
+		}
+		
 		int cropWidth = (originalImage.getWidth() < defaultWidth) ? originalImage.getWidth() : defaultWidth;
 		BufferedImage croppedImage = originalImage.getSubimage(0, 0, cropWidth, cropHeight);
     	
@@ -885,7 +941,7 @@ public class AdShotter2 {
 	private void consoleLog(String message) {
 		if (VERBOSE) {
 			String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
-			System.out.println(timeStamp + ": " + message);
+			System.out.println(timeStamp + " - " + Thread.currentThread().getId() + ": " + message);
 		}
 	}
 	

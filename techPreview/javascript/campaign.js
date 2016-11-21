@@ -43,10 +43,10 @@ let campaign = {
 
 				//Build the screenshot table rows and insert them into the page
 				let imageTableRows = "";
-				for (var pageURL in jobData.screenshots) {
-					if (jobData.screenshots.hasOwnProperty(pageURL)) {
-						imageTableRows += "<tr><td><a href='" + pageURL + "' target='_blank'>" + pageURL + "</a><br><br>";
-						imageTableRows += '<img style="max-width: 600px;" src="' + jobData.screenshots[pageURL] + '" /></td></tr>';
+				for (var screenshotURL in jobData.screenshots) {
+					if (jobData.screenshots.hasOwnProperty(screenshotURL)) {
+						imageTableRows += "<tr><td><a href='" + jobData.screenshots[screenshotURL] + "' target='_blank'>" + jobData.screenshots[screenshotURL] + "</a><br><br>";
+						imageTableRows += '<img style="max-width: 600px;" src="' + screenshotURL + '" /></td></tr>';
 					}
 				}
 				base.nodeFromID("screenshotsTable").innerHTML = imageTableRows;

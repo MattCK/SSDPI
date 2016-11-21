@@ -150,18 +150,23 @@ public class CampaignRunner implements Runnable {
 				//e.printStackTrace();
 			}
 			++imageIndex;
-			pageAndScreenshotURLs.put(currentAdShot.finalURL(), "https://s3.amazonaws.com/asr-screenshots/" + imageFilename);
+			pageAndScreenshotURLs.put("https://s3.amazonaws.com/asr-screenshots/" + imageFilename, currentAdShot.finalURL());
 		}
 		
 		//Create the powerpoint
 		System.out.println("Creating powerpoint");
-		CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("back1.jpg", "16x9", requestInfo.customer);
-		for (AdShot currentAdShot : adShotList) {
-			powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
+		try {
+			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("back1.jpg", "16x9", requestInfo.customer);
+			for (AdShot currentAdShot : adShotList) {
+				powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
+			}
+			powerPoint.SaveCampaignPowerPoint("powerpoints/" + requestInfo.jobID + ".pptx");
+			FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + requestInfo.jobID + ".pptx", requestInfo.jobID + ".pptx");
+		} catch (Exception e) {
+			System.out.println("Could not create powerpoint");
 		}
-		powerPoint.SaveCampaignPowerPoint("powerpoints/" + requestInfo.jobID + ".pptx");
-		FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + requestInfo.jobID + ".pptx", requestInfo.jobID + ".pptx");
 		System.out.println("Done with powerpoint");
+		System.out.println("Results page: https://techpreview.adshotrunner.com/campaignResults.php?jobID=" + requestInfo.jobID);
 		
 		//Create and upload the job result
 		CampaignResult jobResult = new CampaignResult();
