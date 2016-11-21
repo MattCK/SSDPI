@@ -479,12 +479,13 @@ public class AdShotter2 {
         
         //String DoNotDisturbPath = "/home/ec2-user/firefoxExtensions/donotdisturb-1.4.2.xpi";
         String DoNotDisturbPath = "firefoxExtensions/donotdisturb-1.4.2.xpi";
-        try {
+        //try {
 			ffProfile.addExtension(new File(DoNotDisturbPath));
-		} catch (IOException e) {
+        //}
+        //catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			//e.printStackTrace();
+		//}
  
         /*
 		if ((_userAgent == null) || (!_userAgent.toLowerCase().contains("mobile"))) {
@@ -508,13 +509,21 @@ public class AdShotter2 {
 			e.printStackTrace();
 		}
 		*/
+      
         
         //set new firefox profile to be used in selenium
         DesiredCapabilities capabilities = DesiredCapabilities.firefox();
         //capabilities.setCapability("marionette", true);
         capabilities.setCapability(FirefoxDriver.PROFILE, ffProfile);
-		
+        //capabilities.setCapability(FirefoxDriver.BINARY, "c:\\Program Files\\Mozilla Firefox\\firefox.exe");
+        
+   
 		WebDriver firefoxDriver = null;
+		//added to test gecko driver
+        File geckofile = new File("c:/selenium/geckodriver.exe");
+        //System.setProperty("webdriver.gecko.driver","c:\\selenium\\geckodriver.exe");
+        consoleLog("geckopath: " + geckofile.getAbsolutePath());
+        System.setProperty("webdriver.gecko.driver",geckofile.getAbsolutePath());
         firefoxDriver = new RemoteWebDriver(
 		    			new URL(SELENIUMHUBADDRESS), 
 		    			capabilities);
@@ -795,7 +804,7 @@ public class AdShotter2 {
 		
 		consoleLog("Beginning to take screenshot...");
 		consoleLog("    Sending stop command to scriptstopper...");	        	
-		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
+		//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
 		pause(500);
 		
 		//Define the screenshot File variable to hold the final image
@@ -821,7 +830,7 @@ public class AdShotter2 {
     	}
     	    	
 		consoleLog("    Sending start command to scriptstopper...");	        	
-		new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
+		//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
 		consoleLog("    Finished with start command.");
 		
 		if (screenShot == null) {
