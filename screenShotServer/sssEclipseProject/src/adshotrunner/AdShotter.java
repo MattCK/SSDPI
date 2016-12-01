@@ -590,7 +590,7 @@ public class AdShotter {
         
         try {
 			ffProfile.addExtension(new File(AdMarkerPath));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -70,10 +71,10 @@ public class AdShotter2 {
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 30000;		//in miliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
-	final private static int DEFAULTVIEWHEIGHT = 768;		//in pixels
-	final private static int DEFAULTCROPHEIGHT = 1200;		//in pixels
-	final private static int MAXCROPHEIGHT = 1500;			//in pixels
-	final private static List<Integer> DEFAULTVIEWPORT = Collections.unmodifiableList(Arrays.asList(1366, 768));
+	final private static int DEFAULTVIEWHEIGHT = 2000;		//in pixels
+	final private static int DEFAULTCROPHEIGHT = 3000; //1200;		//in pixels
+	final private static int MAXCROPHEIGHT = 3000; //1500;			//in pixels
+	final private static List<Integer> DEFAULTVIEWPORT = Collections.unmodifiableList(Arrays.asList(1366, 2800));
 	final private static List<Integer> MOBILEVIEWPORT = Collections.unmodifiableList(Arrays.asList(320, 640));
 	//final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Android 6.0.1; Mobile; rv:49.0) Gecko/49.0 Firefox/49.0";
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
@@ -213,7 +214,8 @@ public class AdShotter2 {
 			
 			if ((_userAgent != null) && (_userAgent.toLowerCase().contains("mobile"))) {
 				consoleLog("    Mobile: opening firefox design view");
-				new Actions(firefoxDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m")).perform();
+				//new Actions(firefoxDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m")).perform();
+				firefoxDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m"));
 				pause(100);
 			}
 			
@@ -306,7 +308,7 @@ public class AdShotter2 {
 		
 		//If the AdShot is not to be treated like a tag, create and inject javascript
 		int lowestTagBottom = 0;
-		if (false) { //(!treatAsTag) {
+		if (!treatAsTag) {
 			
 	    	//Send esc to stop any final loading and close possible popups 
 			try {sendSeleniumDriverEscapeCommand(activeSeleniumWebDriver, ESCAPEATTEMPTTIME);}
@@ -314,6 +316,7 @@ public class AdShotter2 {
 				
 				//If the key couldn't be pressed, keep on going
 				consoleLog("FAILED: Could not perform escape key or stop scripts!");
+				//System.out.println(e);
 			}
 		
 	    	//First, get the AdInjecter javascript with the current tags inserted
@@ -345,7 +348,7 @@ public class AdShotter2 {
 			//Mark which ads were injected and store the lowest tags bottom position
 			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
 			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
-			if (injectedTagInfo.get("injectedTagIDs") != null) {
+			if ((injectedTagInfo != null) && (injectedTagInfo.containsKey("injectedTagIDs"))) {
 				adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
 				lowestTagBottom = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
 				consoleLog("    Injected Tags Size: " + adShot.injectedTagImages().size());
@@ -462,32 +465,31 @@ public class AdShotter2 {
         //If a user agent was defined, set it in the browser
         if ((_userAgent != null) && (!_userAgent.isEmpty())) {
 	        ffProfile.setPreference("general.useragent.override", _userAgent);
-	        ffProfile.setPreference("dom.ipc.plugins.enabled.libflashplayer.so", 0);
+	        ffProfile.setPreference("plugin.state.flash", 0);
         }
-        ffProfile.setPreference("plugin.state.flash", 0);
 
         //install extension
         //String AdMarkerPath = "/home/ec2-user/firefoxExtensions/adMarker.xpi";
-        /*String AdMarkerPath = "firefoxExtensions/adMarker.xpi";   
+        String AdMarkerPath = "firefoxExtensions/adMarker.xpi";   
         try {
 			ffProfile.addExtension(new File(AdMarkerPath));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		
         
         //String DoNotDisturbPath = "/home/ec2-user/firefoxExtensions/donotdisturb-1.4.2.xpi";
         String DoNotDisturbPath = "firefoxExtensions/donotdisturb-1.4.2.xpi";
-        //try {
+        try {
 			ffProfile.addExtension(new File(DoNotDisturbPath));
-        //}
-        //catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		//}
+        }
+        catch (Exception e) {
+			//TODO Auto-generated catch block
+			e.printStackTrace();
+		}
  
-        /*
+        
 		if ((_userAgent == null) || (!_userAgent.toLowerCase().contains("mobile"))) {
 
 	        //install flash video auto stopper extension
@@ -495,7 +497,7 @@ public class AdShotter2 {
 	        String stopFlashVideoPath = "firefoxExtensions/flashstopper-1.4.2-fx.xpi";
 	        try {
 				ffProfile.addExtension(new File(stopFlashVideoPath));
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -504,11 +506,11 @@ public class AdShotter2 {
         String scriptStopperPath = "firefoxExtensions/@asrscriptstopperextension-0.0.1.xpi";
         try {
 			ffProfile.addExtension(new File(scriptStopperPath));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		
       
         
         //set new firefox profile to be used in selenium
@@ -563,7 +565,8 @@ public class AdShotter2 {
     	long pageLoadStartTime = System.nanoTime();
     	
     	//Attempt to load the passed page
-    	try {activeSeleniumWebDriver.get(pageURL);} 
+    	//try {activeSeleniumWebDriver.get(pageURL);} 
+    	try {activeSeleniumWebDriver.navigate().to(pageURL);}
     	
     	//If the timeout is reached, just keep moving
     	catch (TimeoutException e) {
@@ -608,11 +611,14 @@ public class AdShotter2 {
 			try {
 				//activeSeleniumDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"t");
 				pause(2000);
-				new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "t")).perform();
-				activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
-				activeSeleniumDriver.switchTo().defaultContent();
+				//new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "t")).perform();
+				activeSeleniumDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, "t"));
+				//activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
+				//activeSeleniumDriver.switchTo().defaultContent();
 				pause(1000);
-				succeeded = activeSeleniumDriver.getCurrentUrl().equals("about:newtab");
+				consoleLog("Current URL:" + activeSeleniumDriver.getCurrentUrl());
+				//succeeded = activeSeleniumDriver.getCurrentUrl().equals("about:newtab");
+				succeeded = true;
 			}
 			catch (Exception e) {
 				++attempts; 
@@ -636,7 +642,8 @@ public class AdShotter2 {
 			try {
 				pause(1500);
 				String startURL = activeSeleniumDriver.getCurrentUrl();
-				new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.TAB)).perform();
+				activeSeleniumDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.TAB));
+				//new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.TAB)).perform();
 				activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
 				activeSeleniumDriver.switchTo().defaultContent();
 				pause(1000);
@@ -658,7 +665,8 @@ public class AdShotter2 {
 	 * @param activeSeleniumDriver	Selenium driver to interact with
 	 */
 	private void closeTab(WebDriver activeSeleniumDriver) {
-		new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "w")).perform();
+		activeSeleniumDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, "w"));
+		//new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "w")).perform();
 		pause(3000);
 		//activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
 		//activeSeleniumDriver.switchTo().defaultContent();
@@ -688,15 +696,17 @@ public class AdShotter2 {
         	
     		//Send the escape command. If no error, set the successful flag to true
     		try {
-				Actions builder = new Actions(activeSeleniumWebDriver);
+				//Actions builder = new Actions(activeSeleniumWebDriver);
 				consoleLog("    Sending escape key...");
-	        	builder.sendKeys(Keys.ESCAPE).perform();
+				activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.ESCAPE);
 				pause(200);
 				consoleLog("    Sending stop command to scriptstopper...");
-				new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
+				//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
+				activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e"));
 				pause(1500);
 				consoleLog("    Sending start command to scriptstopper...");
-				new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
+				activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e"));
+				//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
 				pause(1500);
 				
 				escapeCommandSuccessful = true;
@@ -805,6 +815,7 @@ public class AdShotter2 {
 		consoleLog("Beginning to take screenshot...");
 		consoleLog("    Sending stop command to scriptstopper...");	        	
 		//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
+		activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e"));
 		pause(500);
 		
 		//Define the screenshot File variable to hold the final image
@@ -831,6 +842,7 @@ public class AdShotter2 {
     	    	
 		consoleLog("    Sending start command to scriptstopper...");	        	
 		//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
+		activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e"));
 		consoleLog("    Finished with start command.");
 		
 		if (screenShot == null) {
@@ -949,8 +961,12 @@ public class AdShotter2 {
 	
 	private void consoleLog(String message) {
 		if (VERBOSE) {
+			
+			//Remove gecko driver if present
+			String cleanMessage = message.replaceAll("profile(.*?)appBuild", "");
+			
 			String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
-			System.out.println(timeStamp + " - " + Thread.currentThread().getId() + ": " + message);
+			System.out.println(timeStamp + " - " + Thread.currentThread().getId() + ": " + cleanMessage);
 		}
 	}
 	
