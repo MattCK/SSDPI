@@ -27,17 +27,23 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.Proxy;
+import org.openqa.selenium.Proxy.ProxyType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -194,8 +200,8 @@ public class AdShotter2 {
 	public void takeAdShots(List<AdShot> adShots, boolean treatAsTags) {
 		        
 		//Try to create a web driver to connect with
-		WebDriver firefoxDriver = null;
-		try {firefoxDriver = getSeleniumDriver();}
+		WebDriver remoteWebDriver = null;
+		try {remoteWebDriver = getSeleniumChromeDriver();}
 		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
         
 		//Open each AdShot URL in a new tab up to the max tab amount
@@ -206,7 +212,7 @@ public class AdShotter2 {
 		while ((openTabIndex < MAXOPENTABS) && (openTabIndex < adShots.size())) {
 			int pageLoadTime = (treatAsTags) ? 500 : PAGELOADTIME;
 			consoleLog("    Navigating to initial page: " + adShots.get(openTabIndex).url());
-			try {navigateSeleniumDriverToURL(firefoxDriver, adShots.get(openTabIndex).url(), pageLoadTime);} 
+			try {navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(openTabIndex).url(), pageLoadTime);} 
     		catch (Exception e) {
     			consoleLog("    Couldn't navigate to page: " + adShots.get(openTabIndex).url());
     			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
@@ -214,8 +220,8 @@ public class AdShotter2 {
 			
 			if ((_userAgent != null) && (_userAgent.toLowerCase().contains("mobile"))) {
 				consoleLog("    Mobile: opening firefox design view");
-				//new Actions(firefoxDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m")).perform();
-				firefoxDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m"));
+				//new Actions(remoteWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m")).perform();
+				remoteWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "m"));
 				pause(100);
 			}
 			
@@ -223,12 +229,12 @@ public class AdShotter2 {
 			++openTabIndex;
 			if ((openTabIndex < adShots.size()) && (openTabIndex < MAXOPENTABS)) {
 				consoleLog("    Opening new tab: " + (openTabIndex + 1));
-				openNewTab(firefoxDriver);
+				openNewTab(remoteWebDriver);
 			}
 			
 			//Otherwise, loop back to the front
 			else if ((adShots.size() > 1) && (MAXOPENTABS > 1)) {
-				navigateToNextTab(firefoxDriver);
+				navigateToNextTab(remoteWebDriver);
 			}			
 		}
 				
@@ -245,7 +251,7 @@ public class AdShotter2 {
 			consoleLog("------------- New AdShot --------------");
 			long startTime = System.nanoTime();
 			AdShot currentAdShot = adShots.get(adShotIndex);
-			takeAdShot(firefoxDriver, currentAdShot, treatAsTags);
+			takeAdShot(remoteWebDriver, currentAdShot, treatAsTags);
 			
 			//If no tag images were injected into the page AND alternate URLs exist, try those
 			if ((currentAdShot.injectedTagImages().size() == 0) && (currentAdShot.alternateURLs().size() > 0)) {
@@ -255,13 +261,13 @@ public class AdShotter2 {
 					
 					String alternateURL = urlIterator.next();
 					
-					try {navigateSeleniumDriverToURL(firefoxDriver, alternateURL, PAGELOADTIME);} 
+					try {navigateSeleniumDriverToURL(remoteWebDriver, alternateURL, PAGELOADTIME);} 
 		    		catch (Exception e) {
 		    			consoleLog("Couldn't navigate to page: " + adShots.get(openTabIndex).url());
 		    			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
 		    		}
 					
-					takeAdShot(firefoxDriver, currentAdShot, treatAsTags);
+					takeAdShot(remoteWebDriver, currentAdShot, treatAsTags);
 				}
 			}
 			
@@ -269,13 +275,13 @@ public class AdShotter2 {
 			//put it in the current tab and navigate to the next
 			if ((adShotIndex + MAXOPENTABS) < adShots.size()) {
 				int pageLoadTime = (treatAsTags) ? 500 : PAGELOADTIME;
-				try {navigateSeleniumDriverToURL(firefoxDriver, adShots.get(adShotIndex + MAXOPENTABS).url(), pageLoadTime);} 
+				try {navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(adShotIndex + MAXOPENTABS).url(), pageLoadTime);} 
 	    		catch (Exception e) {
 	    			consoleLog("Couldn't navigate to page: " + adShots.get(adShotIndex).url());
 	    			adShots.get(openTabIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
 	    		}	
 			}
-			if ((adShots.size() > 1) && (MAXOPENTABS > 1)) {navigateToNextTab(firefoxDriver);}			
+			if ((adShots.size() > 1) && (MAXOPENTABS > 1)) {navigateToNextTab(remoteWebDriver);}			
 						
         	long endTime = System.nanoTime();
 			consoleLog("Total Adshot runtime: " + (endTime - startTime)/1000000 + " ms");
@@ -283,7 +289,7 @@ public class AdShotter2 {
 		}
     	
     	//Quit the driver
-        quitWebdriver(firefoxDriver);
+        quitWebdriver(remoteWebDriver);
         
 		return;
 	}
@@ -400,7 +406,7 @@ public class AdShotter2 {
 	 * 
 	 * @return			Initialized selenium webdriver
 	 */
-	private WebDriver getSeleniumDriver() throws MalformedURLException {
+	private WebDriver getSeleniumFirefoxDriver() throws MalformedURLException {
 		
 		//Attempt to create the actual web driver used to connect to selenium
 		consoleLog("Creating driver...");
@@ -411,7 +417,7 @@ public class AdShotter2 {
         
 		//proxy
 		ProxyDetails chosenProxy = getProxyServer();
-		String proxyIPAddress = chosenProxy.ip;
+		String proxyIPAddress = chosenProxy.host;
 		int proxyPort = chosenProxy.port;
 		consoleLog("    Proxy: " + proxyIPAddress + ":" + proxyPort);
 		
@@ -541,8 +547,68 @@ public class AdShotter2 {
         
         
         //Return the initialized remote firefox web driver
-        consoleLog("Done creating driver.");
+        consoleLog("Done creating firefox driver.");
         return firefoxDriver;
+	}
+	
+	/**
+	 * Returns an initialized selenium webdriver. 
+	 *
+	 * The selenium address used is set to the class constant SELENIUMHUBADDRESS.
+	 * The view dimensions are set to the class constants VIEWWIDTH and VIEWHEIGHT.
+	 * The page load time (until an error is thrown) is set to the class constant PAGELOADTIME.
+	 * 
+	 * @return			Initialized selenium webdriver
+	 */
+	private WebDriver getSeleniumChromeDriver() throws MalformedURLException {
+		
+		//Attempt to create the actual web driver used to connect to selenium
+		consoleLog("Creating Chrome driver...");
+        
+		//proxy
+		ProxyDetails chosenProxy = getProxyServer();
+		String proxyHost = chosenProxy.host;
+		int proxyPort = chosenProxy.port;
+		consoleLog("    Proxy: " + proxyHost + ":" + proxyPort);
+		
+		//added to test chrome driver
+        //File chromefile = new File("c:/selenium/chromedriver.exe");
+        //consoleLog("chromepath: " + chromefile.getAbsolutePath());
+        //System.setProperty("webdriver.chrome.driver",chromefile.getAbsolutePath());
+		
+		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+		// Add the WebDriver proxy capability.
+		Proxy chromeProxy = new Proxy();
+		chromeProxy.setProxyType(ProxyType.MANUAL);
+		chromeProxy.setSslProxy(proxyHost + ":" + proxyPort);
+		chromeProxy.setHttpProxy(proxyHost + ":" + proxyPort);
+		capabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+
+		// Add ChromeDriver-specific capabilities through ChromeOptions.
+		ChromeOptions options = new ChromeOptions();
+		//options.addExtensions(new File("/path/to/extension.crx"));
+		
+		options.addArguments("--hide-scrollbars");
+		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+   
+		WebDriver chromeDriver = null;
+        chromeDriver = new RemoteWebDriver(
+		    			new URL(SELENIUMHUBADDRESS), 
+		    			capabilities);
+        
+
+        //Set the viewport size and the time to load before sending an error
+        chromeDriver.manage().window().setPosition(new Point(0,0));
+        //consoleLog("passed width: " + _browserViewWidth);
+        //consoleLog("passed height: " + _browserViewHeight);
+        chromeDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));
+        // when the option below is enabled screenshots timeout.
+        //chromeDriver.manage().timeouts().pageLoadTimeout(PAGELOADTIME, TimeUnit.MILLISECONDS);
+        
+        
+        //Return the initialized remote chrome web driver
+        consoleLog("Done creating chrome driver.");
+        return chromeDriver;
 	}
 	
 	/**
@@ -724,10 +790,10 @@ public class AdShotter2 {
 	}
 	
 	private class ProxyDetails{
-		public String ip;
+		public String host;
 		public int port;
-		public ProxyDetails(String ipAddress, int portNumber){
-			ip = ipAddress;
+		public ProxyDetails(String hostName, int portNumber){
+			host = hostName;
 			port = portNumber;
 		}
 	}
@@ -735,11 +801,12 @@ public class AdShotter2 {
 	private ProxyDetails getProxyServer(){
 		
 		ArrayList<ProxyDetails> proxyList = new ArrayList<ProxyDetails>();
-		proxyList.add(new ProxyDetails("192.210.148.231", 3128));
+		proxyList.add(new ProxyDetails("dangerpenguins.shader.io", 60000));
+		//proxyList.add(new ProxyDetails("192.210.148.231", 3128));
 		//proxyList.add(new ProxyDetails("198.23.217.23", 3128));
-		proxyList.add(new ProxyDetails("104.144.165.103", 3128));
-		proxyList.add(new ProxyDetails("107.173.182.217", 3128));
-		proxyList.add(new ProxyDetails("104.168.23.154", 3128));
+		//proxyList.add(new ProxyDetails("104.144.165.103", 3128));
+		//proxyList.add(new ProxyDetails("107.173.182.217", 3128));
+		//proxyList.add(new ProxyDetails("104.168.23.154", 3128));
 		
 		Random randomGenerator = new Random();
 		int anyFromProxyList = randomGenerator.nextInt(proxyList.size());
