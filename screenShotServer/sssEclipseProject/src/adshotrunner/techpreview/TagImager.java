@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 
 import adshotrunner.AdShot;
 import adshotrunner.AdShotter;
-import adshotrunner.AdShotter2;
+import adshotrunner.AdShotter3;
 import adshotrunner.utilities.FileStorageClient;
 
 public class TagImager implements Runnable {
@@ -33,7 +33,7 @@ public class TagImager implements Runnable {
 		System.out.println("\nIn TagImager - " + urlsWithIDs);
 		System.out.println();
 		
-		AdShotter2 tagShotter = AdShotter2.create(50, 30);
+		AdShotter3 tagShotter = AdShotter3.create(50, 30);
 		
 		HashMap<String, AdShot> adShotsByIDMap = new HashMap<String, AdShot>();
 		for(Map.Entry<String, String> currentURLSet : urlsWithIDs.entrySet()) {

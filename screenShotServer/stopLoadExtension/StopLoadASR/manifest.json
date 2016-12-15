@@ -1,0 +1,25 @@
+{
+   "manifest_version": 2,
+   "background": {
+      "script": "background.js"
+   },
+   "content_scripts": [ {
+      "all_frames": true,
+      "js": [ "script.js" ],
+      "matches": [ "http://*/*", "https://*/*" ],
+      "run_at": "document_start"
+   } ],
+   "description": "Stop pages automatically after a specific amount of time has passed.",
+   "icons": {
+      "128": "128.png",
+      "16": "16.png",
+      "24": "24.png",
+      "32": "32.png",
+      "48": "48.png"
+   },
+   "name": "Stop Load ASR",
+   "options_page": "options.html",
+   "permissions": [ "http://*/*", "https://*/*" ],
+   "update_url": "http://clients2.google.com/service/update2/crx",
+   "version": "0.2.1.3"
+}

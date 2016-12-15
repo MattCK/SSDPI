@@ -278,12 +278,19 @@ function initializeAdInjecter(tags) {
 					adInjecter._hideAdElement(curNode);
 				}
 
-				//If the node is an iframe, find the ads in it too
-				if ((curNode.nodeName == "IFRAME") && (curNode.contentDocument)) {
 
-					//Call the function on the new iframe
-					adInjecter._removeScreenStealersAndRetrieveAds(curNode.contentDocument);
+				try {
+					//If the node is an iframe, find the ads in it too
+					if ((curNode.nodeName == "IFRAME") && (curNode.contentDocument)) {
+
+						//Call the function on the new iframe
+						adInjecter._removeScreenStealersAndRetrieveAds(curNode.contentDocument);
+					}
 				}
+				catch(err) {
+				}
+
+
 			});
 		},
 
@@ -637,7 +644,14 @@ function initializeAdInjecter(tags) {
 			//adInjecter.outputString += "Frame name: " + frameName + "\n";
 
 			//If there is a name, return the frame. Otherwise, return null.
-			if (window.frames[frameName]) {return window.frames[frameName].frameElement;}
+			if (window.frames[frameName]) {
+				try {
+					return window.frames[frameName].frameElement;
+				}
+				catch(err) {
+					return null;
+				}
+			}
 			else {return null;}
 		},
 		_getContainingFrame2: function(containedNode) {

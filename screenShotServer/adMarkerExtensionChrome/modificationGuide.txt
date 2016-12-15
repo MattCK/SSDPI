@@ -1,0 +1,11 @@
+display: none -> flood-opacity: 0.9898
+'display', 'none' -> 'flood-opacity', '0.9898'
+display:none -> flood-opacity: 0.9898
+	 -> hidden = false
+content-script ==> comment out 535 - 536
+visibility:hidden -> visibility: visible
+static-net-filtering ==> comment out fromCompiledContent 1974 -> 2010
+
+
+So far, not neccesary: 
+traffic.js ==> comment out foil functions except last line

@@ -20,7 +20,7 @@ import org.apache.commons.io.FileUtils;
 
 import adshotrunner.AdShot;
 import adshotrunner.AdShotter;
-import adshotrunner.AdShotter2;
+import adshotrunner.AdShotter3;
 import adshotrunner.StoryFinder;
 import adshotrunner.TagImage;
 import adshotrunner.utilities.EmailClient;
@@ -129,8 +129,8 @@ public class CampaignRunner implements Runnable {
 		}
 		
 		//Get the screenshots
-		if (standardAdShots.size() > 0) {AdShotter2.create().takeAdShots(standardAdShots);}
-		if (mobileAdShots.size() > 0) {AdShotter2.createForMobile().takeAdShots(mobileAdShots);}
+		if (standardAdShots.size() > 0) {AdShotter3.create().takeAdShots(standardAdShots);}
+		if (mobileAdShots.size() > 0) {AdShotter3.createForMobile().takeAdShots(mobileAdShots);}
 		
 		//Upload them
 		int imageIndex = 1;

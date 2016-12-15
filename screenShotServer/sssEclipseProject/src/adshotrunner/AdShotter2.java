@@ -39,13 +39,17 @@ import org.openqa.selenium.Proxy.ProxyType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import adshotrunner.errors.AdShotRunnerException;
 
@@ -85,7 +89,7 @@ public class AdShotter2 {
 	//final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Android 6.0.1; Mobile; rv:49.0) Gecko/49.0 Firefox/49.0";
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
-	final private static int MAXOPENTABS = 1;
+	final private static int MAXOPENTABS = 3;
 
 
 	//---------------------------------------------------------------------------------------
@@ -317,13 +321,13 @@ public class AdShotter2 {
 		if (!treatAsTag) {
 			
 	    	//Send esc to stop any final loading and close possible popups 
-			try {sendSeleniumDriverEscapeCommand(activeSeleniumWebDriver, ESCAPEATTEMPTTIME);}
-			catch (Exception e) {
-				
-				//If the key couldn't be pressed, keep on going
-				consoleLog("FAILED: Could not perform escape key or stop scripts!");
-				//System.out.println(e);
-			}
+//			try {sendSeleniumDriverEscapeCommand(activeSeleniumWebDriver, ESCAPEATTEMPTTIME);}
+//			catch (Exception e) {
+//				
+//				//If the key couldn't be pressed, keep on going
+//				consoleLog("FAILED: Could not perform escape key or stop scripts!");
+//				//System.out.println(e);
+//			}
 		
 	    	//First, get the AdInjecter javascript with the current tags inserted
 			consoleLog("Creating Injecter JS...");
@@ -578,16 +582,24 @@ public class AdShotter2 {
 		
 		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 		// Add the WebDriver proxy capability.
-		Proxy chromeProxy = new Proxy();
-		chromeProxy.setProxyType(ProxyType.MANUAL);
-		chromeProxy.setSslProxy(proxyHost + ":" + proxyPort);
-		chromeProxy.setHttpProxy(proxyHost + ":" + proxyPort);
-		capabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+//		Proxy chromeProxy = new Proxy();
+//		chromeProxy.setProxyType(ProxyType.MANUAL);
+//		chromeProxy.setSslProxy(proxyHost + ":" + proxyPort);
+//		chromeProxy.setHttpProxy(proxyHost + ":" + proxyPort);
+//		capabilities.setCapability(CapabilityType.PROXY, chromeProxy);
 
 		// Add ChromeDriver-specific capabilities through ChromeOptions.
 		ChromeOptions options = new ChromeOptions();
 		//options.addExtensions(new File("/path/to/extension.crx"));
 		
+        String AdMarkerPath = "chromeExtensions/adMarker.crx";   
+        try {
+        	//options.addExtensions(new File(AdMarkerPath));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		options.addArguments("--hide-scrollbars");
 		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
    
@@ -632,12 +644,26 @@ public class AdShotter2 {
     	
     	//Attempt to load the passed page
     	//try {activeSeleniumWebDriver.get(pageURL);} 
-    	try {activeSeleniumWebDriver.navigate().to(pageURL);}
+    	//try {activeSeleniumWebDriver.navigate().to(pageURL);}
     	
     	//If the timeout is reached, just keep moving
-    	catch (TimeoutException e) {
+    	//catch (TimeoutException e) {
     		//Just keep moving if the timeout is reached
-    	}
+    	//}
+    	
+    	TimeLimiter timeoutLimiter = new SimpleTimeLimiter();
+		try {
+		timeoutLimiter.callWithTimeout(new Callable<File>() {
+					    public File call() {
+					    	activeSeleniumWebDriver.navigate().to(pageURL);;return null;
+					    }
+					  }, PAGELOADTIME, TimeUnit.MILLISECONDS, false); 
+		}
+		catch (Exception e) {
+			consoleLog("    Navigation timeout. -" + e.toString() );
+			//Ignore any error and try another attempt (if any are left)
+		}
+
     	
     	//If the page seem to load before the load time, give it the difference as extra time through sleep
     	finally {
@@ -675,14 +701,12 @@ public class AdShotter2 {
 		boolean succeeded = false;
 		while (!succeeded && (attempts < 3)) {
 			try {
-				//activeSeleniumDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"t");
-				pause(2000);
-				//new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "t")).perform();
-				activeSeleniumDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, "t"));
-				//activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
-				//activeSeleniumDriver.switchTo().defaultContent();
+				consoleLog("	Sending new tab command");				
+				String response = (String) ((JavascriptExecutor) activeSeleniumDriver).executeScript("window.open('','_blank');");
+				consoleLog("	New tab command sent");
 				pause(1000);
-				consoleLog("Current URL:" + activeSeleniumDriver.getCurrentUrl());
+				
+				//consoleLog("Current URL:" + activeSeleniumDriver.getCurrentUrl());
 				//succeeded = activeSeleniumDriver.getCurrentUrl().equals("about:newtab");
 				succeeded = true;
 			}
@@ -763,17 +787,17 @@ public class AdShotter2 {
     		//Send the escape command. If no error, set the successful flag to true
     		try {
 				//Actions builder = new Actions(activeSeleniumWebDriver);
-				consoleLog("    Sending escape key...");
-				activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.ESCAPE);
-				pause(200);
-				consoleLog("    Sending stop command to scriptstopper...");
+				//consoleLog("    Sending escape key...");
+				//activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.ESCAPE);
+				//pause(200);
+				//consoleLog("    Sending stop command to scriptstopper...");
 				//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e")).perform();
-				activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e"));
-				pause(1500);
-				consoleLog("    Sending start command to scriptstopper...");
-				activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e"));
+				//activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, "e"));
+				//pause(1500);
+				//consoleLog("    Sending start command to scriptstopper...");
+				//activeSeleniumWebDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e"));
 				//new Actions(activeSeleniumWebDriver).sendKeys(Keys.chord(Keys.CONTROL, Keys.ALT, Keys.SHIFT, "e")).perform();
-				pause(1500);
+				//pause(1500);
 				
 				escapeCommandSuccessful = true;
         	}
@@ -1054,3 +1078,81 @@ public class AdShotter2 {
 //---------------------------------------------------------------------------------------
 //-------------------------- Helper Functions and Wrappers-------------------------------
 //---------------------------------------------------------------------------------------
+
+
+/**************************** All input command types ***************************
+activeSeleniumDriver.manage().window().maximize();
+consoleLog("	Sending new tab command");
+//pause(2000);
+
+consoleLog("	Type: javascript");
+String response = (String) ((JavascriptExecutor) activeSeleniumDriver).executeScript("window.open('','_blank');");
+pause(500);
+
+/*consoleLog("	Type: link");
+WebElement link = activeSeleniumDriver.findElement(By.linkText("Gmail"));
+Actions newTab = new Actions(activeSeleniumDriver);
+newTab.keyDown(Keys.CONTROL).keyDown(Keys.SHIFT).click(link).keyUp(Keys.CONTROL).keyUp(Keys.SHIFT).build().perform();
+Thread.sleep(5000);
+
+
+consoleLog("	Type: cssSelector");
+activeSeleniumDriver.findElement(By.cssSelector("body")).sendKeys(Keys.CONTROL +"t");
+pause(500);
+activeSeleniumDriver.findElement(By.cssSelector("body")).sendKeys(Keys.chord(Keys.CONTROL, "t"));
+pause(500);
+
+consoleLog("	Type: Action");
+new Actions(activeSeleniumDriver).sendKeys(Keys.CONTROL +"t").perform();
+pause(500);
+new Actions(activeSeleniumDriver).sendKeys(Keys.chord(Keys.CONTROL, "t")).perform();
+pause(500);
+
+consoleLog("	Type: tag name");
+activeSeleniumDriver.findElement(By.tagName("body")).sendKeys(Keys.CONTROL +"t");
+pause(500);
+activeSeleniumDriver.findElement(By.tagName("body")).sendKeys(Keys.chord(Keys.CONTROL, "t"));
+pause(500);
+
+consoleLog("	Type id");
+activeSeleniumDriver.findElement(By.id("lst-ib")).sendKeys(Keys.SHIFT +"t");
+pause(500);
+activeSeleniumDriver.findElement(By.id("lst-ib")).sendKeys(Keys.chord(Keys.SHIFT, "t"));
+pause(500);
+
+consoleLog("	Type: builder");
+Actions builder = new Actions(activeSeleniumDriver);
+Action select= builder
+        .keyDown(Keys.CONTROL)
+        .sendKeys("t")
+        .keyUp(Keys.CONTROL)
+        .build();
+select.perform();
+pause(500);
+
+consoleLog("	Type: click");
+WebElement tempElement = activeSeleniumDriver.findElement(By.cssSelector("body"));
+tempElement.click();
+tempElement.sendKeys(Keys.chord(Keys.CONTROL, "T"));
+pause(500);
+
+consoleLog("	Sending input command");
+
+//consoleLog("	Type: cssSelector");
+//activeSeleniumDriver.findElement(By.cssSelector("input")).sendKeys("m");
+//pause(500);
+
+//consoleLog("	Type: tag name");
+//activeSeleniumDriver.findElement(By.tagName("input")).sendKeys("m");
+//pause(500);
+
+consoleLog("	Type: id");
+WebDriverWait wait = new WebDriverWait(activeSeleniumDriver, 10000);
+wait.until(ExpectedConditions.visibilityOfElementLocated((By.id("lst-ib"))));
+activeSeleniumDriver.findElement(By.id("lst-ib")).sendKeys("m");
+pause(500);
+
+//activeSeleniumDriver.switchTo().window((String) activeSeleniumDriver.getWindowHandles().toArray()[0]);
+//activeSeleniumDriver.switchTo().defaultContent();
+consoleLog("	New tab command sent");
+*/
