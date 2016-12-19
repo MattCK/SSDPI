@@ -54,7 +54,7 @@ public class MessageQueueClient {
 	*
 	* @param 	 	queueID  				Queue ID to get messages from
 	*/
-	public static HashMap<String, String> getMessages(String queueID) {
+	public static HashMap<String, String> getMessages(String queueID) throws Exception {
 		
         //Instantiate an Amazon SQS client using AdShotRunner's AWS credentials
 		AmazonSQSClient sqsHandle = new AmazonSQSClient(AWSPermitter.getCredentials());
@@ -62,16 +62,14 @@ public class MessageQueueClient {
         //Set the AWS region 
         Region REGION = Region.getRegion(Regions.US_EAST_1);
         sqsHandle.setRegion(REGION);
-		
         
+        //Get the messages from the queue
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueID);
         receiveMessageRequest.setMaxNumberOfMessages(10);
         List<Message> returnedMessages = sqsHandle.receiveMessage(receiveMessageRequest).getMessages();
         		
-        		
-        //Poll the queue for messages, put them into a returnable Map, and return it
+        //Put the messages into a returnable Map and return it
         HashMap<String, String> finalMessages = new HashMap<String, String>();
-        //List<Message> returnedMessages = sqsHandle.receiveMessage(queueID).getMessages();
         for (Message currentMessage : returnedMessages) {
         	finalMessages.put(currentMessage.getReceiptHandle(), currentMessage.getBody());
         }

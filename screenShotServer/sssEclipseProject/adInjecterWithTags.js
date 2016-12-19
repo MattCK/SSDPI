@@ -2,11 +2,13 @@
 * Injects the passed tags into the URLs they are attached to. Full page ads and floating elements are removed.
 */ 
 
-//Tags to be injected into the page. The line 'tags = [{id: '74e8d595-0c33-4279-8b51-7fea14269420', tag: 'http://s3.amazonaws.com/asr-tagimages/172907e8-bb52-4343-8dee-393f960d9cc8.png', placement: 0, width: 300, height: 250},{id: 'a06c767c-a317-4094-8e4f-8582f63f74d8', tag: 'http://s3.amazonaws.com/asr-tagimages/4a88e058-b205-47f3-b0c4-4c275c43a96a.png', placement: 0, width: 728, height: 90},{id: 'd49d9e7a-cf13-4c74-be48-ca8795934f42', tag: 'http://s3.amazonaws.com/asr-tagimages/324d0e4a-53a9-4b03-8700-3d56b44ebfb9.png', placement: 0, width: 300, height: 600},];' is necessary to get the
+//Tags to be injected into the page. The line 'tags = [{id: '53b22c7b-3162-45c0-85e5-9eb6300bcf00', tag: 'http://s3.amazonaws.com/asr-tagimages/b2406ec8-2483-4202-8770-fb3b964e7e71.png', placement: 0, width: 728, height: 90},{id: '27cffcd6-0a3f-42eb-88e6-27329c189245', tag: 'http://s3.amazonaws.com/asr-tagimages/0005de39-6ff6-4aeb-86c6-ad8a48cd99f8.png', placement: 0, width: 300, height: 250},{id: '296660fa-9871-4cd0-9b35-f5b13681ebb6', tag: 'http://s3.amazonaws.com/asr-tagimages/5b707581-c649-4edd-9662-bea67ac6c350.png', placement: 0, width: 728, height: 90},{id: '660918c7-5389-4485-8d6e-4ebb63883430', tag: 'http://s3.amazonaws.com/asr-tagimages/d2876edf-51cc-48f8-852b-bc27abc2b454.png', placement: 0, width: 728, height: 90},{id: 'ff9dfe83-34aa-4ee6-951d-86b0e8533f88', tag: 'http://s3.amazonaws.com/asr-tagimages/8b94f382-2d9c-47c7-8df9-8a71105e90f6.png', placement: 0, width: 300, height: 600},{id: '2a3328d6-c049-4668-a414-a86cf0f35ddc', tag: 'http://s3.amazonaws.com/asr-tagimages/68846233-8fa0-4d70-a16c-5648773ecabe.png', placement: 0, width: 300, height: 600},];' is necessary to get the
 //tags from the calling java instance.
 var tags = [];
-tags = [{id: '74e8d595-0c33-4279-8b51-7fea14269420', tag: 'http://s3.amazonaws.com/asr-tagimages/172907e8-bb52-4343-8dee-393f960d9cc8.png', placement: 0, width: 300, height: 250},{id: 'a06c767c-a317-4094-8e4f-8582f63f74d8', tag: 'http://s3.amazonaws.com/asr-tagimages/4a88e058-b205-47f3-b0c4-4c275c43a96a.png', placement: 0, width: 728, height: 90},{id: 'd49d9e7a-cf13-4c74-be48-ca8795934f42', tag: 'http://s3.amazonaws.com/asr-tagimages/324d0e4a-53a9-4b03-8700-3d56b44ebfb9.png', placement: 0, width: 300, height: 600},];
-//tags = [{tag: 'http://s3.amazonaws.com/asr-tagimages/574b76fb-35fc-4b04-b1e6-4a6511b52a20.png', placement: 0, width: 120, height: 240},{tag: 'http://s3.amazonaws.com/asr-tagimages/c019c2d1-9949-4d02-9dd2-f8321ca614f7.png', placement: 0, width: 250, height: 250},{tag: 'http://s3.amazonaws.com/asr-tagimages/dd394eda-2250-4909-bbce-4a3381eb8bea.png', placement: 0, width: 120, height: 600},{tag: 'http://s3.amazonaws.com/asr-tagimages/f894d0b2-13d2-46b0-9528-442b0dff797b.png', placement: 0, width: 300, height: 250},{tag: 'http://s3.amazonaws.com/asr-tagimages/9be5757d-ba0f-4caa-bc09-6153440be6d2.png', placement: 0, width: 120, height: 60},{tag: 'http://s3.amazonaws.com/asr-tagimages/f0c2df76-2ad6-400e-9509-c7b2e82ba1a6.png', placement: 0, width: 336, height: 280},{tag: 'http://s3.amazonaws.com/asr-tagimages/fcd400c0-7b65-43bb-8da9-d9f12ec23c4b.png', placement: 0, width: 120, height: 90},{tag: 'http://s3.amazonaws.com/asr-tagimages/1ad318d2-6cb3-444b-8d26-33654ac95e54.png', placement: 0, width: 468, height: 60},{tag: 'http://s3.amazonaws.com/asr-tagimages/dab12a71-9060-451c-b16a-0859acbd4144.png', placement: 0, width: 125, height: 125},{tag: 'http://s3.amazonaws.com/asr-tagimages/426fda03-717f-4736-8676-aada462ab97e.png', placement: 0, width: 728, height: 90},{tag: 'http://s3.amazonaws.com/asr-tagimages/a7cdcdec-5eee-4e4c-aede-64854f4a91a8.png', placement: 0, width: 160, height: 600},{tag: 'http://s3.amazonaws.com/asr-tagimages/8a4263c6-b350-4966-b8b2-0401498d0f70.png', placement: 0, width: 88, height: 31},{tag: 'http://s3.amazonaws.com/asr-tagimages/976ec221-37d9-44de-b58f-0ed177026df9.png', placement: 0, width: 180, height: 150},{tag: 'http://s3.amazonaws.com/asr-tagimages/75e36cac-9074-4cbd-89fd-4fa60dcfde35.png', placement: 0, width: 234, height: 60},{tag: 'http://s3.amazonaws.com/asr-tagimages/d19f9609-a09e-4d18-8094-f2166e5bec9e.png', placement: 0, width: 240, height: 400},{tag: 'http://s3.amazonaws.com/asr-tagimages/b26c43f0-072b-4318-8594-f0655297b5be.png', placement: 0, width: 1232, height: 90},{tag: 'http://s3.amazonaws.com/asr-tagimages/c4266d18-bbb9-4d7f-a377-1770243b7fb3.png', placement: 0, width: 230, height: 33},{tag: 'http://s3.amazonaws.com/asr-tagimages/86d5cd75-140f-4d6d-a33b-f167ded0f91e.png', placement: 0, width: 970, height: 250},{tag: 'http://s3.amazonaws.com/asr-tagimages/af3b73d7-0e87-4b36-a65d-9bc04c02114e.png', placement: 0, width: 300, height: 600},{tag: 'http://s3.amazonaws.com/asr-tagimages/7670d3b9-8239-48d4-88e2-ca2464185791.png', placement: 0, width: 500, height: 350},{tag: 'http://s3.amazonaws.com/asr-tagimages/a0b78c50-7ab9-496e-9b34-58b63085f73b.png', placement: 0, width: 550, height: 480},{tag: 'http://s3.amazonaws.com/asr-tagimages/77d875f3-413c-4b98-a479-40d5b7fade7a.png', placement: 0, width: 720, height: 300},{tag: 'http://s3.amazonaws.com/asr-tagimages/94800b64-cb14-41d4-8058-c161555fd6aa.png', placement: 0, width: 120, height: 30},{tag: 'http://s3.amazonaws.com/asr-tagimages/eccc043d-6eb2-4980-85aa-85b5cd9a11d5.png', placement: 0, width: 728, height: 210},{tag: 'http://s3.amazonaws.com/asr-tagimages/9b3256ca-17cb-4e5e-aff8-9264e2944113.png', placement: 0, width: 1, height: 1},{tag: 'http://s3.amazonaws.com/asr-tagimages/ac53d5df-301c-4843-a6a0-e6be66e58895.png', placement: 0, width: 94, height: 15},];
+tags = [{id: '53b22c7b-3162-45c0-85e5-9eb6300bcf00', tag: 'http://s3.amazonaws.com/asr-tagimages/b2406ec8-2483-4202-8770-fb3b964e7e71.png', placement: 0, width: 728, height: 90},{id: '27cffcd6-0a3f-42eb-88e6-27329c189245', tag: 'http://s3.amazonaws.com/asr-tagimages/0005de39-6ff6-4aeb-86c6-ad8a48cd99f8.png', placement: 0, width: 300, height: 250},{id: '296660fa-9871-4cd0-9b35-f5b13681ebb6', tag: 'http://s3.amazonaws.com/asr-tagimages/5b707581-c649-4edd-9662-bea67ac6c350.png', placement: 0, width: 728, height: 90},{id: '660918c7-5389-4485-8d6e-4ebb63883430', tag: 'http://s3.amazonaws.com/asr-tagimages/d2876edf-51cc-48f8-852b-bc27abc2b454.png', placement: 0, width: 728, height: 90},{id: 'ff9dfe83-34aa-4ee6-951d-86b0e8533f88', tag: 'http://s3.amazonaws.com/asr-tagimages/8b94f382-2d9c-47c7-8df9-8a71105e90f6.png', placement: 0, width: 300, height: 600},{id: '2a3328d6-c049-4668-a414-a86cf0f35ddc', tag: 'http://s3.amazonaws.com/asr-tagimages/68846233-8fa0-4d70-a16c-5648773ecabe.png', placement: 0, width: 300, height: 600},];
+
+//Remove the scrollbars
+document.documentElement.style.overflow = 'hidden';
 
 //Initialize and get the adInjecter object
 var adInjecter = initializeAdInjecter(tags);
@@ -210,7 +212,7 @@ function initializeAdInjecter(tags) {
 				//Remove any margin from the top HTML element
 				//---------------------------Should this be here?-----------------------------
 				//-------------------------Yes, weird chicago eatery things-------------------
-				curDocument.getElementsByTagName('html')[0].style.margin = 0;
+				//curDocument.getElementsByTagName('html')[0].style.margin = 0;
 
 				//If the flood value is recognized, store the ad OR
 				//If the node is an uncrawlable IFRAME, use it if its dimensions match a tag
@@ -278,12 +280,19 @@ function initializeAdInjecter(tags) {
 					adInjecter._hideAdElement(curNode);
 				}
 
-				//If the node is an iframe, find the ads in it too
-				if ((curNode.nodeName == "IFRAME") && (curNode.contentDocument)) {
 
-					//Call the function on the new iframe
-					adInjecter._removeScreenStealersAndRetrieveAds(curNode.contentDocument);
+				try {
+					//If the node is an iframe, find the ads in it too
+					if ((curNode.nodeName == "IFRAME") && (curNode.contentDocument)) {
+
+						//Call the function on the new iframe
+						adInjecter._removeScreenStealersAndRetrieveAds(curNode.contentDocument);
+					}
 				}
+				catch(err) {
+				}
+
+
 			});
 		},
 
@@ -373,7 +382,8 @@ function initializeAdInjecter(tags) {
 
 				//Otherwise, if it is very large, return that it is a screen stealer
 				else if (((nodeWidth > adInjecter._LARGENODEWIDTH1) && (nodeHeight > adInjecter._LARGENODEHEIGHT1)) ||
-					((nodeWidth > adInjecter._LARGENODEWIDTH2) && (nodeHeight > adInjecter._LARGENODEHEIGHT2))) {
+					((nodeWidth > adInjecter._LARGENODEWIDTH2) && (nodeHeight > adInjecter._LARGENODEHEIGHT2)) ||
+					(((nodeWidth/window.innerWidth) > 0.96) && (nodeHeight > adInjecter._LARGENODEHEIGHT2))) {
 					return true;
 				}
 			}
@@ -637,7 +647,14 @@ function initializeAdInjecter(tags) {
 			//adInjecter.outputString += "Frame name: " + frameName + "\n";
 
 			//If there is a name, return the frame. Otherwise, return null.
-			if (window.frames[frameName]) {return window.frames[frameName].frameElement;}
+			if (window.frames[frameName]) {
+				try {
+					return window.frames[frameName].frameElement;
+				}
+				catch(err) {
+					return null;
+				}
+			}
 			else {return null;}
 		},
 		_getContainingFrame2: function(containedNode) {

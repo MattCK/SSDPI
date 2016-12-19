@@ -33,7 +33,7 @@ public class TagImager implements Runnable {
 		System.out.println("\nIn TagImager - " + urlsWithIDs);
 		System.out.println();
 		
-		AdShotter3 tagShotter = AdShotter3.create(50, 30);
+		AdShotter3 tagShotter = AdShotter3.create();
 		
 		HashMap<String, AdShot> adShotsByIDMap = new HashMap<String, AdShot>();
 		for(Map.Entry<String, String> currentURLSet : urlsWithIDs.entrySet()) {
@@ -45,12 +45,12 @@ public class TagImager implements Runnable {
 		
 		for(Map.Entry<String, AdShot> adShotEntry : adShotsByIDMap.entrySet()) {
 			System.out.println("Saving a screenshot - URL: " + adShotEntry.getValue().url());
-			int width = adShotEntry.getValue().image().getWidth();
-			int height = adShotEntry.getValue().image().getHeight();
-			BufferedImage croppedAdClip = adShotEntry.getValue().image().getSubimage(425, 75, width - 425, height - 75);
+//			int width = adShotEntry.getValue().image().getWidth();
+//			int height = adShotEntry.getValue().image().getHeight();
+//			BufferedImage croppedAdClip = adShotEntry.getValue().image().getSubimage(425, 75, width - 425, height - 75);
 			String imageFilename = adShotEntry.getKey() + ".png";
 			try {
-				saveImageAsPNG(croppedAdClip, "tagImages/" + imageFilename);
+				saveImageAsPNG(adShotEntry.getValue().image(), "tagImages/" + imageFilename);
 				FileStorageClient.saveFile(FileStorageClient.TAGIMAGESCONTAINER, "tagImages/" + imageFilename, imageFilename);
 			}
 			catch (Exception e) {

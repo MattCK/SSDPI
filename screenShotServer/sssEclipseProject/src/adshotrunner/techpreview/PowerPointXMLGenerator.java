@@ -24,6 +24,8 @@ import javax.imageio.ImageIO;
 //import org.apache.log4j.Logger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Log4jConfigurer;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -66,6 +68,7 @@ public class PowerPointXMLGenerator {
     public boolean CreatePresentation(String size)
     {
         boolean presentationCreated = false;
+        Docx4jProperties.getProperties().setProperty("docx4j.Log4j.Configurator.disabled", "true");
         
         try
         {

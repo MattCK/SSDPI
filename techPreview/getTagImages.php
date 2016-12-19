@@ -46,8 +46,8 @@ foreach ($_POST['tags'] as $currentID => $currentTag) {
 	//Otherwise, store the tag in an html file and add it to the tag list for sending to the sss for processing
 	else {
 		$fileName = USERID . "-" . $currentID . ".html";
-		$styleString = "<style>body { margin: 75px 0 0 425px; padding:0px;}</style>";
-		file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $styleString . $currentTag);
+		$tagPageHTML = "<style>body { margin: 0px; padding:0px;} #adTagContainer {display: table;}</style><div id='adTagContainer'>" . $currentTag . "</div>";
+		file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $tagPageHTML);
 		FileStorageClient::saveFile(FileStorageClient::TAGPAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
 		unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 		$filePages[$currentID] = $fileName;
@@ -98,6 +98,8 @@ function createJSONResponse($success, $message = '', $data = NULL, $focus = '') 
 }
 
 
+//SAVE - Firefox Style String
+//$styleString = "<style>body { margin: 75px 0 0 425px; padding:0px;}</style>";
 
 
 ?>
