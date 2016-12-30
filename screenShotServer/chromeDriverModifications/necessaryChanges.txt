@@ -1,0 +1,22 @@
+The following are the changes to the ChromeDriver source code allowing page timeout to be used.
+The side effect is that most Selenium commands will take as long as the set timeout to complete.
+The AdShotRunner keeps the timeout around 1500 ms except to navigate to a page where it is set
+to around 7000 ms.
+
+navigation_tracker.cc - line 108
+	Change the return statement to always return a kOk status.
+
+	  //return MakeNavigationCheckFailedStatus(status);
+	  return Status(kOk);
+
+
+devtools_client_impl.cc - line 354
+	Change the return statement to return a kTimeout without an error.
+
+      return Status(kTimeout); //, err);
+
+web_view_impl.cc - line 470
+
+	Change the return statement to always return a kOk status.
+
+	  return Status(kOk); //status;

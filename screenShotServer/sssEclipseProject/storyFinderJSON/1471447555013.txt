@@ -1,1 +1,0 @@
-[{"id":"brand_link","href":"https://www.cloudflare.com/5xx-error-landing?utm_source=error_footer","name":null,"onclick":null,"text":"CloudFlare","style":null,"title":null,"className":"cf-footer-item","yPosition":954,"xPosition":870,"width":65,"height":18}]

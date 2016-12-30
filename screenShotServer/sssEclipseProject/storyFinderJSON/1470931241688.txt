@@ -1,1 +1,0 @@
-fail: FAILURE: Unable to connect to URL- http://www.sandmountainreporter.com/sports/ reason: Operation canceled targetURL:http://www.sandmountainreporter.com/sports/

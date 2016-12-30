@@ -1,1 +1,0 @@
-TypeError: undefined is not a function (evaluating 'curParentNode.getAttribute('class')')

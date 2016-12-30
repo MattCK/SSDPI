@@ -60,9 +60,10 @@ public class AdShotter3 {
 	final private static String SELENIUMHUBADDRESS = "http://ec2-54-172-131-29.compute-1.amazonaws.com:4444/wd/hub";
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
 	final private static int JAVASCRIPTWAITTIME = 2000;		//in milliseconds
-	final private static int PAGELOADTIMEOUT = 7000;		//in milliseconds
+	final private static int DEFAULTTIMEOUT = 2000;		//in milliseconds
+	final private static int PAGELOADTIMEOUT = 9000;		//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
-	final private static int SCREENSHOTTIMEOUT = 30000;		//in milliseconds
+	final private static int SCREENSHOTTIMEOUT = 20000;		//in milliseconds
 	//final private static int DEFAULTWINDOWHEIGHT = 1366;		//in pixels
 	//final private static int DEFAULTWINDOWWIDTH = 2800;		//in pixels
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
@@ -446,7 +447,7 @@ public class AdShotter3 {
 		chromeDriver.manage().window().setPosition(new Point(0,0));
 		
 		//Set the page timeout
-		chromeDriver.manage().timeouts().pageLoadTimeout(PAGELOADTIMEOUT, TimeUnit.MILLISECONDS);
+		chromeDriver.manage().timeouts().pageLoadTimeout(DEFAULTTIMEOUT, TimeUnit.MILLISECONDS);
 		
 		//If not using mobile, set the viewport size
 		if (!_useMobile) {chromeDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));}		
@@ -466,15 +467,10 @@ public class AdShotter3 {
 	private void navigateSeleniumDriverToURL(WebDriver activeSeleniumWebDriver, String pageURL) {
 		
 		consoleLog("		Sending navigation command...");
-//		String navigateScript = "setTimeout(function(){window.location.href='" + pageURL + "';}, 200);";
-//		((JavascriptExecutor) activeSeleniumWebDriver).executeScript(navigateScript);
-    	try {activeSeleniumWebDriver.navigate().to(pageURL);}
-    	
-    	//If the timeout is reached, just keep moving
-    	catch (Exception e) {
-    		//Just keep moving if the timeout is reached
-    	}
-		pause(200);
+		activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(PAGELOADTIMEOUT, TimeUnit.MILLISECONDS);
+    	try {activeSeleniumWebDriver.navigate().to(pageURL);} catch(Exception e) {;};
+    	pause(200);
+		activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(DEFAULTTIMEOUT, TimeUnit.MILLISECONDS);
 		consoleLog("		Navigation command sent.");
 	}
 		
@@ -623,7 +619,6 @@ public class AdShotter3 {
 		int currentAttempt = 0;
 		while ((screenShot == null) && (currentAttempt < SCREENSHOTATTEMPTS)) {
 			consoleLog("	Starting attempt: " + (currentAttempt + 1));
-			activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(SCREENSHOTTIMEOUT, TimeUnit.MILLISECONDS);
 			try {
 			screenShot = timeoutLimiter.callWithTimeout(new Callable<File>() {
 							public File call() {
@@ -632,11 +627,8 @@ public class AdShotter3 {
 						  }, SCREENSHOTTIMEOUT, TimeUnit.MILLISECONDS, false); 
 			}
 			catch (Exception e) {
-				consoleLog("	FAILED: Error getting screenshot. -" + e.toString() );
+				consoleLog("	FAILED: Error getting screenshot.");
 				//Ignore any error and try another attempt (if any are left)
-			}
-			finally {
-				activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(PAGELOADTIMEOUT, TimeUnit.MILLISECONDS);
 			}
 			++currentAttempt;
 		}
