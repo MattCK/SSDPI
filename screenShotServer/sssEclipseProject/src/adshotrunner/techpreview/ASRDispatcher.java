@@ -19,7 +19,6 @@ public class ASRDispatcher {
 			try {receivedMessages = MessageQueueClient.getMessages(MessageQueueClient.TAGIMAGEREQUESTS);}
 			catch (Exception e) {} //Do nothing. A connection error occurs seldomly but regularly
 			for (Map.Entry<String, String> entry : receivedMessages.entrySet()) {
-				String requestID = "";
 				List<String> requestURLs = new ArrayList<String>();
 				
 				try {
@@ -49,10 +48,7 @@ public class ASRDispatcher {
 			//Wait two seconds before checking the queues again
         	try {
 				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} catch (InterruptedException e) {}
 
 		}
 

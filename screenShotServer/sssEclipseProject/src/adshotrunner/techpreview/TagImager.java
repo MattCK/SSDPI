@@ -5,13 +5,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 import adshotrunner.AdShot;
-import adshotrunner.AdShotter;
 import adshotrunner.AdShotter3;
 import adshotrunner.utilities.FileStorageClient;
 
@@ -33,7 +31,7 @@ public class TagImager implements Runnable {
 		System.out.println("\nIn TagImager - " + urlsWithIDs);
 		System.out.println();
 		
-		AdShotter3 tagShotter = AdShotter3.create();
+		AdShotter3 tagShotter = AdShotter3.createForTags();
 		
 		HashMap<String, AdShot> adShotsByIDMap = new HashMap<String, AdShot>();
 		for(Map.Entry<String, String> currentURLSet : urlsWithIDs.entrySet()) {
@@ -41,7 +39,7 @@ public class TagImager implements Runnable {
 			System.out.println("AdShot URL: " + adShotsByIDMap.get(currentURLSet.getKey()).url());
 		}
 		
-		tagShotter.takeAdShots(new ArrayList<AdShot>(adShotsByIDMap.values()), true);	
+		tagShotter.takeAdShots(new ArrayList<AdShot>(adShotsByIDMap.values()));	
 		
 		for(Map.Entry<String, AdShot> adShotEntry : adShotsByIDMap.entrySet()) {
 			System.out.println("Saving a screenshot - URL: " + adShotEntry.getValue().url());

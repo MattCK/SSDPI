@@ -60,8 +60,10 @@ public class AdShotter3 {
 	final private static String SELENIUMHUBADDRESS = "http://ec2-54-172-131-29.compute-1.amazonaws.com:4444/wd/hub";
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
 	final private static int JAVASCRIPTWAITTIME = 2000;		//in milliseconds
-	final private static int DEFAULTTIMEOUT = 2000;		//in milliseconds
-	final private static int PAGELOADTIMEOUT = 9000;		//in milliseconds
+	final private static int DEFAULTTIMEOUT = 1000;		//in milliseconds
+	final private static int PAGETIMEOUT = 9000;		//in milliseconds
+	final private static int TAGTIMEOUT = 4000;		//in milliseconds
+	final private static int INITIALMOBILETIMEOUT = 15000;		//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 20000;		//in milliseconds
 	//final private static int DEFAULTWINDOWHEIGHT = 1366;		//in pixels
@@ -90,7 +92,11 @@ public class AdShotter3 {
 	}
 
 	public static AdShotter3 createForMobile() {
-		return new AdShotter3(MOBILEVIEWWIDTH, DEFAULTVIEWHEIGHT, true);
+		return new AdShotter3(MOBILEVIEWWIDTH, DEFAULTVIEWHEIGHT, true, false);
+	}
+
+	public static AdShotter3 createForTags() {
+		return new AdShotter3(DEFAULTVIEWWIDTH, DEFAULTVIEWHEIGHT, false, true);
 	}
 
 
@@ -139,6 +145,11 @@ public class AdShotter3 {
 	 */
 	private Boolean _useMobile;
 
+	/**
+	 * Flag whether or not the AdShotter should treat the AdShots as tags.
+	 */
+	private Boolean _treatAsTags;
+
 
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
@@ -159,7 +170,7 @@ public class AdShotter3 {
 	 */
 	private AdShotter3(int viewWidth, int viewHeight) {
 		
-		this(viewWidth, viewHeight, false);
+		this(viewWidth, viewHeight, false, false);
 	}
 
 	/**
@@ -170,23 +181,21 @@ public class AdShotter3 {
 	 * @param viewWidth		Width of browser viewport
 	 * @param viewHeight	Height of browser viewport
 	 * @param useMobile		Flags whether or not to use a mobile driver
+	 * @param useMobile		Flags whether or not to treat AdShots as tags
 	 */
-	private AdShotter3(int viewWidth, int viewHeight, Boolean useMobile) {
+	private AdShotter3(int viewWidth, int viewHeight, Boolean useMobile, Boolean treatAsTags) {
 		
 		_browserViewWidth = viewWidth;
 		_browserViewHeight = viewHeight;
 		_useMobile = useMobile;
+		_treatAsTags = treatAsTags;
 	}
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
 	//---------------------------------------------------------------------------------------
-	//********************************* Public Methods **************************************	
+	//********************************* Public Methods **************************************		
 	public void takeAdShots(List<AdShot> adShots) {
-		takeAdShots(adShots, false);
-	}
-	
-	public void takeAdShots(List<AdShot> adShots, boolean treatAsTags) {
 				
 		//Try to create a web driver to connect with
 		WebDriver remoteWebDriver = null;
@@ -203,7 +212,6 @@ public class AdShotter3 {
 		consoleLog("Loading initial pages...");
 		Iterator<String> tabIterator = tabHandles.iterator();
 		int adShotIndex = 0;
-		long tabStartTime = System.nanoTime();
 		while (tabIterator.hasNext()) {
 			
 			//Switch to the next tab
@@ -215,7 +223,14 @@ public class AdShotter3 {
 			
 			//Navigate to the initial page
 			consoleLog("	Navigating to initial page: " + adShots.get(adShotIndex).url());
-			try {navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(adShotIndex).url());} 
+			try {
+				if (_useMobile) {
+					navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(adShotIndex).url(), INITIALMOBILETIMEOUT);					
+				}
+				else {
+					navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(adShotIndex).url());
+				}
+			} 
 			catch (Exception e) {
 				consoleLog("	Couldn't navigate to page: " + adShots.get(adShotIndex).url());
 				adShots.get(adShotIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
@@ -224,13 +239,7 @@ public class AdShotter3 {
 			//Iterate to the next AdShot
 			++adShotIndex;
 		}
-		
-		//Pause if still in the load time frame
-		int maxLoadTime = (treatAsTags) ? 7000 : 7000;
-		int currentPageLoadTime = (int) ((System.nanoTime() - tabStartTime)/1000000);	//Divide by a million to move nanoseconds to miliseconds
-		if (currentPageLoadTime < maxLoadTime) {
-			pause(maxLoadTime - currentPageLoadTime);
-		}
+
 		consoleLog("Done loading pages.");
 		
 		//Loop through each AdShot and take the screenshot
@@ -251,7 +260,7 @@ public class AdShotter3 {
 			long startTime = System.nanoTime();
 			AdShot currentAdShot = adShots.get(adShotIndex);
 			consoleLog("URL: " + currentAdShot.url());
-			takeAdShot(remoteWebDriver, currentAdShot, treatAsTags);
+			takeAdShot(remoteWebDriver, currentAdShot);
 			
 			//If no tag images were injected into the page AND alternate URLs exist, try those
 			if ((currentAdShot.injectedTagImages().size() == 0) && (currentAdShot.alternateURLs().size() > 0)) {
@@ -267,7 +276,7 @@ public class AdShotter3 {
 						adShots.get(adShotIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
 					}
 					
-					takeAdShot(remoteWebDriver, currentAdShot, treatAsTags);
+					takeAdShot(remoteWebDriver, currentAdShot);
 				}
 			}
 			
@@ -308,11 +317,11 @@ public class AdShotter3 {
 	 * @param treatAsTag				If true, no javascript is injected into the page
 	 * @throws AdShotRunnerException 	Error and description if taking the ad screenshot failed
 	 */
-	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShot adShot, boolean treatAsTag) throws AdShotRunnerException {
+	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShot adShot) throws AdShotRunnerException {
 		
 		//If the AdShot is not to be treated like a tag, create and inject javascript
 		int lowestTagBottom = 0;
-		if (!treatAsTag) {
+		if (!_treatAsTags) {
 					
 			//First, get the AdInjecter javascript with the current tags inserted
 			consoleLog("Creating Injecter JS...");
@@ -376,7 +385,7 @@ public class AdShotter3 {
 		//Crop the image
 		consoleLog("Cropping screenshot...");
 		try {
-			adShot.setImage(cropAndConvertImageFile(activeSeleniumWebDriver, screenShot, lowestTagBottom, treatAsTag));
+			adShot.setImage(cropAndConvertImageFile(activeSeleniumWebDriver, screenShot, lowestTagBottom));
 			consoleLog("Done cropping.");
 		}
 		catch (Exception e) {
@@ -417,6 +426,19 @@ public class AdShotter3 {
 			
 			//Add the mobile information to the driver options
 			driverOptions.setExperimentalOption("mobileEmulation", mobileEmulation);
+			
+			HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
+			chromePrefs.put("hardware_acceleration_mode.enabled", false);
+			chromePrefs.put("plugins.plugins_disabled", "Adobe Flash Player");
+			chromePrefs.put("plugins.plugins_disabled", new String[] {
+				    "Adobe Flash Player",
+				    "Chrome PDF Viewer"
+				});
+			driverOptions.setExperimentalOption("prefs", chromePrefs);
+			
+			//Turn off video decode hardware acceleration
+			//driverOptions.addArguments("--disable-gpu");
+			driverOptions.addArguments("--disable-bundled-ppapi-flash");
 		}
 		
 		//Set the proxy to use
@@ -435,6 +457,14 @@ public class AdShotter3 {
 			consoleLog("	FAILED: Unable to load AdMarker. -" + e.toString() );
 		}
 
+		//Install the stopper extension
+		/*String ASRLoadStopperPath = "chromeExtensions/loadStopper.crx";   
+		try {
+			driverOptions.addExtensions(new File(ASRLoadStopperPath));
+		} catch (Exception e) {
+			consoleLog("	FAILED: Unable to load ASRLoadStopper. -" + e.toString() );
+		}*/
+
 		//Initialize the actual driver
 		WebDriver chromeDriver = null;
 		driverCapabilities.setCapability(ChromeOptions.CAPABILITY, driverOptions);
@@ -444,10 +474,10 @@ public class AdShotter3 {
 		
 
 		//Set the viewport position
-		chromeDriver.manage().window().setPosition(new Point(0,0));
+		chromeDriver.manage().window().setPosition(new Point(0,20));
 		
 		//Set the page timeout
-		chromeDriver.manage().timeouts().pageLoadTimeout(DEFAULTTIMEOUT, TimeUnit.MILLISECONDS);
+		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
 		
 		//If not using mobile, set the viewport size
 		if (!_useMobile) {chromeDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));}		
@@ -458,6 +488,7 @@ public class AdShotter3 {
 	}
 	
 
+	
 	/**
 	 * Navigates the passed selenium driver to the passed URL.
 	 * 
@@ -466,12 +497,27 @@ public class AdShotter3 {
 	 */
 	private void navigateSeleniumDriverToURL(WebDriver activeSeleniumWebDriver, String pageURL) {
 		
-		consoleLog("		Sending navigation command...");
-		activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(PAGELOADTIMEOUT, TimeUnit.MILLISECONDS);
-    	try {activeSeleniumWebDriver.navigate().to(pageURL);} catch(Exception e) {;};
-    	pause(200);
-		activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(DEFAULTTIMEOUT, TimeUnit.MILLISECONDS);
+		//Use a shorter timeout for tags
+		int navigationTimeout = (_treatAsTags) ? TAGTIMEOUT : PAGETIMEOUT;
+		navigateSeleniumDriverToURL(activeSeleniumWebDriver, pageURL, navigationTimeout);
+	}
+		
+	/**
+	 * Navigates the passed selenium driver to the passed URL.
+	 * 
+	 * @param activeSeleniumWebDriver	Selenium web driver to navigate
+	 * @param pageURL					Page URL to navigate to
+	 * @param navigationTimeout			Time the page should stop loading after in milliseconds
+	 */
+	private void navigateSeleniumDriverToURL(WebDriver activeSeleniumWebDriver, String pageURL, int navigationTimeout) {
+		
+		//Set the navigation command timeout and navigate to the url
+		consoleLog("		Sending navigation command: " + pageURL + "...");
+		setCommandTimeout(activeSeleniumWebDriver, navigationTimeout);
+		((JavascriptExecutor) activeSeleniumWebDriver).executeScript("window.location.href = '" + pageURL + "';");
+		setCommandTimeout(activeSeleniumWebDriver, DEFAULTTIMEOUT);
 		consoleLog("		Navigation command sent.");
+		//activeSeleniumWebDriver.navigate().to(pageURL);
 	}
 		
 	/**
@@ -526,7 +572,6 @@ public class AdShotter3 {
 	 */
 	private void focusTab(WebDriver activeSeleniumWebDriver) {
 		((TakesScreenshot) activeSeleniumWebDriver).getScreenshotAs(OutputType.FILE);
-		pause(100);
 
 	}
 	
@@ -655,13 +700,13 @@ public class AdShotter3 {
 	 * @return							Cropped image
 	 * @throws IOException 
 	 */
-	private BufferedImage cropAndConvertImageFile(final WebDriver activeSeleniumWebDriver, File originalImageFile, int requestedCropHeight, boolean treatAsTag) throws IOException {
+	private BufferedImage cropAndConvertImageFile(final WebDriver activeSeleniumWebDriver, File originalImageFile, int requestedCropHeight) throws IOException {
 		
 		//If this image is a tag, crop it to the tag width and height
 		BufferedImage originalImage = ImageIO.read(originalImageFile);
 		int cropHeight = DEFAULTCROPHEIGHT;
 		int cropWidth = DEFAULTVIEWWIDTH;
-		if (treatAsTag) {
+		if (_treatAsTags) {
 			
 			//Get the tag height and width
 			WebElement tagDiv = activeSeleniumWebDriver.findElement(By.id("adTagContainer"));
@@ -700,7 +745,7 @@ public class AdShotter3 {
 	 * 
 	 * If the driver does not quit after a matter of seconds, program execution continues.
 	 * 
-	 * @param activeSeleniumWebDriver
+	 * @param activeSeleniumWebDriver	Selenium driver to quit
 	 */
 	private void quitWebdriver(WebDriver activeSeleniumWebDriver) {
 		
@@ -719,6 +764,23 @@ public class AdShotter3 {
 			System.out.print(e + " - Attempt to quit webdriver timed out");
 		}
 		consoleLog("Done quitting web driver.");
+	}
+	
+	/**
+	 * Sets the time each chromedriver command runs.
+	 * 
+	 * NOTE: THIS IS FOR USE WITH THE MODIFIED CHROMEDRIVER!!!
+	 * 
+	 * With the chromedriver, pagetimout does not refer to the loading time of a
+	 * page but to the timeout of every command.
+	 * 
+	 * This is due to a bug with the chromedriver.
+	 * 
+	 * @param activeSeleniumWebDriver	Selenium driver to set command timeout on
+	 * @param timeout					Timeout in milliseconds each chromedriver command should run
+	 */
+	private void setCommandTimeout(WebDriver activeSeleniumWebDriver, int timeout) {
+		activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.MILLISECONDS);
 	}
 
 	/**
