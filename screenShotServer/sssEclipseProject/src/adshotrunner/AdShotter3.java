@@ -74,7 +74,7 @@ public class AdShotter3 {
 	final private static int MOBILEPIXELRATIO = 3;			//in pixels
 	final private static int DEFAULTCROPHEIGHT = 2600; ;	//in pixels
 	final private static int MAXCROPHEIGHT = 3000; 			//in pixels
-	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19";
+	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
 	final private static int MAXOPENTABS = 4;
 
@@ -428,17 +428,12 @@ public class AdShotter3 {
 			driverOptions.setExperimentalOption("mobileEmulation", mobileEmulation);
 			
 			HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
-			chromePrefs.put("hardware_acceleration_mode.enabled", false);
-			chromePrefs.put("plugins.plugins_disabled", "Adobe Flash Player");
 			chromePrefs.put("plugins.plugins_disabled", new String[] {
 				    "Adobe Flash Player",
 				    "Chrome PDF Viewer"
 				});
 			driverOptions.setExperimentalOption("prefs", chromePrefs);
-			
-			//Turn off video decode hardware acceleration
-			//driverOptions.addArguments("--disable-gpu");
-			driverOptions.addArguments("--disable-bundled-ppapi-flash");
+		
 		}
 		
 		//Set the proxy to use
