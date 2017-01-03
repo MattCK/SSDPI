@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -59,15 +60,13 @@ public class AdShotter3 {
 	//final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
 	final private static String SELENIUMHUBADDRESS = "http://ec2-54-172-131-29.compute-1.amazonaws.com:4444/wd/hub";
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
-	final private static int JAVASCRIPTWAITTIME = 2000;		//in milliseconds
-	final private static int DEFAULTTIMEOUT = 1000;		//in milliseconds
-	final private static int PAGETIMEOUT = 9000;		//in milliseconds
-	final private static int TAGTIMEOUT = 4000;		//in milliseconds
-	final private static int INITIALMOBILETIMEOUT = 15000;		//in milliseconds
+	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
+	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
+	final private static int PAGETIMEOUT = 8000;			//in milliseconds
+	final private static int TAGTIMEOUT = 4000;				//in milliseconds
+	final private static int INITIALMOBILETIMEOUT = 15000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 20000;		//in milliseconds
-	//final private static int DEFAULTWINDOWHEIGHT = 1366;		//in pixels
-	//final private static int DEFAULTWINDOWWIDTH = 2800;		//in pixels
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 2800;		//in pixels
 	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
@@ -452,13 +451,6 @@ public class AdShotter3 {
 			consoleLog("	FAILED: Unable to load AdMarker. -" + e.toString() );
 		}
 
-		//Install the stopper extension
-		/*String ASRLoadStopperPath = "chromeExtensions/loadStopper.crx";   
-		try {
-			driverOptions.addExtensions(new File(ASRLoadStopperPath));
-		} catch (Exception e) {
-			consoleLog("	FAILED: Unable to load ASRLoadStopper. -" + e.toString() );
-		}*/
 
 		//Initialize the actual driver
 		WebDriver chromeDriver = null;
@@ -582,7 +574,16 @@ public class AdShotter3 {
 	 */
 	private String getProxyDetails(){
 		
-		return "dangerpenguins.shader.io:60000";		
+		ArrayList<String> proxyList = new ArrayList<String>(); 
+		proxyList.add("192.210.148.231:3128");
+		proxyList.add("198.23.217.23:3128");
+		proxyList.add("104.144.165.103:3128");
+		proxyList.add("107.173.182.217:3128");
+		proxyList.add("104.168.23.154:3128");
+		
+		int randomIndex = new Random().nextInt(proxyList.size());
+		return proxyList.get(randomIndex);
+		//return "dangerpenguins.shader.io:60000";		
 	}
 
 	/**
@@ -902,4 +903,13 @@ pause(500);
 //activeSeleniumWebDriver.switchTo().window((String) activeSeleniumWebDriver.getWindowHandles().toArray()[0]);
 //activeSeleniumWebDriver.switchTo().defaultContent();
 consoleLog("	New tab command sent");
+
+//Install the stopper extension
+String ASRLoadStopperPath = "chromeExtensions/loadStopper.crx";   
+try {
+	driverOptions.addExtensions(new File(ASRLoadStopperPath));
+} catch (Exception e) {
+	consoleLog("	FAILED: Unable to load ASRLoadStopper. -" + e.toString() );
+}
+
 */
