@@ -408,6 +408,7 @@ public class AdShotter3 {
 		consoleLog("Creating Chrome driver...");
 		DesiredCapabilities driverCapabilities = DesiredCapabilities.chrome();
 		ChromeOptions driverOptions = new ChromeOptions();
+		HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
 		
 		//If the browser needs to be in mobile mode, set the driver options for it
 		if (_useMobile) {
@@ -426,14 +427,17 @@ public class AdShotter3 {
 			//Add the mobile information to the driver options
 			driverOptions.setExperimentalOption("mobileEmulation", mobileEmulation);
 			
-			HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
+			
 			chromePrefs.put("plugins.plugins_disabled", new String[] {
 				    "Adobe Flash Player",
 				    "Chrome PDF Viewer"
 				});
-			driverOptions.setExperimentalOption("prefs", chromePrefs);
+			
 		
 		}
+		
+		chromePrefs.put("profile.managed_default_content_settings.cookies", new Integer(2));
+		driverOptions.setExperimentalOption("prefs", chromePrefs);
 		
 		//Set the proxy to use
 		String proxyDetails = getProxyDetails();
