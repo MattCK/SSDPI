@@ -81,6 +81,7 @@ public class CampaignRunner implements Runnable {
 			List<String> alternateURLs = new ArrayList<String>();
 			boolean findStory = (currentPage.get("findStory").equals("1"));
 			boolean onlyScreenshot = (currentPage.get("onlyScreenshot").equals("1"));
+			boolean individualTagScreenshots = (currentPage.get("individualTagScreenshots").equals("1"));
 			System.out.println("Request URL: " + pageURL);
 			
 			//If finding a story is requested, set the page URL to the found story
@@ -110,6 +111,15 @@ public class CampaignRunner implements Runnable {
 				if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
 				newAdShot.useMobile(currentPage.get("useMobile").equals("1"));
 				adShotList.add(newAdShot);
+			}
+			
+			else if (individualTagScreenshots) {
+				for (TagImage singleTag: tagImages) {
+					AdShot newAdShot = AdShot.create(pageURL, singleTag);
+					if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
+					newAdShot.useMobile(currentPage.get("useMobile").equals("1"));
+					adShotList.add(newAdShot);
+				}
 			}
 			
 			else {

@@ -104,9 +104,13 @@ let asr = {
 
 		//Build the row cells and insert them
 		rowCells =  "<td><select name='pages[" + asr._rowIndex + "]'>" + asr._menuOptions + "</select></td>";
-		rowCells += "<td><select name='findStory[" + asr._rowIndex + "]'><option value=0>Front Page</option><option value=1>Find me a story</option></select></td>";
-		rowCells += "<td><label><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Get screenshot without inserting tags</label></td>";
+		rowCells += "<td><label><input type='checkbox' name='findStory[" + asr._rowIndex + "]' value='1'>Story</label></td>";
 		rowCells += "<td><label><input type='checkbox' name='useMobile[" + asr._rowIndex + "]' value='1'>Mobile</label></td>";
+		
+		rowCells += "<td><label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='all'>All Creative</label>";
+		rowCells += "    <label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='individual'>Individual Creative Screenshots</label>";
+		rowCells += "    <label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='none'>No Creative</label></td>";
+		
 		rowCells += "<td><input class='button-tiny' type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
 
@@ -134,8 +138,8 @@ let asr = {
 		//Build the row cells and insert them
 		rowCells = "<td class='pageURLTitle'>Page URL: </td>";
 		rowCells += "<td><input type='text' name='pages[" + asr._rowIndex + "]'></td>";
-		rowCells += "<td><label><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>Get screenshot without inserting tags</label></td>";
 		rowCells += "<td><label><input type='checkbox' name='useMobile[" + asr._rowIndex + "]' value='1'>Mobile</label></td>";
+		rowCells += "<td><label><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>No Tags</label></td>";
 		rowCells += "<td><input class='button-tiny' type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
 

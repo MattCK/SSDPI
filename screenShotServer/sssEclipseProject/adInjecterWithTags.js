@@ -2,10 +2,10 @@
 * Injects the passed tags into the URLs they are attached to. Full page ads and floating elements are removed.
 */ 
 
-//Tags to be injected into the page. The line 'tags = [{id: '6191e5bc-7e91-4076-82e9-f9c59973d711', tag: 'http://s3.amazonaws.com/asr-tagimages/6242f96c-e641-4d9e-a1ae-0783c571a089.png', placement: 0, width: 728, height: 90},{id: '6a99a2de-9148-4ade-b3e0-b1d978005eae', tag: 'http://s3.amazonaws.com/asr-tagimages/0a742145-dfae-4078-991c-dac26fd1d402.png', placement: 0, width: 320, height: 50},{id: '8a38ae98-36c1-4c1b-83c5-68c4022e34e9', tag: 'http://s3.amazonaws.com/asr-tagimages/00ece1e0-8c8f-4958-a2cb-2ec913423171.png', placement: 0, width: 300, height: 600},{id: 'd6e85fec-9dc4-4fb6-9bb0-083f014d699d', tag: 'http://s3.amazonaws.com/asr-tagimages/d2532830-20d9-4a67-a8c2-b7d7e26a4e32.png', placement: 0, width: 300, height: 250},];' is necessary to get the
+//Tags to be injected into the page. The line 'tags = [{id: '054e0d9f-d8ed-4661-bed8-f5601d0c5324', tag: 'http://s3.amazonaws.com/asr-tagimages/356e9825-90d6-4269-af5b-50fc5428ede3.png', placement: 0, width: 728, height: 90},];' is necessary to get the
 //tags from the calling java instance.
 var tags = [];
-tags = [{id: '6191e5bc-7e91-4076-82e9-f9c59973d711', tag: 'http://s3.amazonaws.com/asr-tagimages/6242f96c-e641-4d9e-a1ae-0783c571a089.png', placement: 0, width: 728, height: 90},{id: '6a99a2de-9148-4ade-b3e0-b1d978005eae', tag: 'http://s3.amazonaws.com/asr-tagimages/0a742145-dfae-4078-991c-dac26fd1d402.png', placement: 0, width: 320, height: 50},{id: '8a38ae98-36c1-4c1b-83c5-68c4022e34e9', tag: 'http://s3.amazonaws.com/asr-tagimages/00ece1e0-8c8f-4958-a2cb-2ec913423171.png', placement: 0, width: 300, height: 600},{id: 'd6e85fec-9dc4-4fb6-9bb0-083f014d699d', tag: 'http://s3.amazonaws.com/asr-tagimages/d2532830-20d9-4a67-a8c2-b7d7e26a4e32.png', placement: 0, width: 300, height: 250},];
+tags = [{id: '054e0d9f-d8ed-4661-bed8-f5601d0c5324', tag: 'http://s3.amazonaws.com/asr-tagimages/356e9825-90d6-4269-af5b-50fc5428ede3.png', placement: 0, width: 728, height: 90},];
 
 //Remove the scrollbars
 document.documentElement.style.overflow = 'hidden';

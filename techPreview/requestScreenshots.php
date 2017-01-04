@@ -46,9 +46,14 @@ $screenshotRequestObject = ['jobID' => $_POST['jobID'],
 //Add the pages to the final request object
 foreach ($_POST['pages'] as $currentID => $currentPage) {
 	$pageInfo = ['url' => $currentPage];
-	$pageInfo['findStory'] = ($_POST['findStory'][$currentID] && ($_POST['findStory'][$currentID] == 1)) ? 1 : 0;
-	$pageInfo['onlyScreenshot'] = ($_POST['onlyScreenshot'][$currentID]) ? 1 : 0;
+	$pageInfo['findStory'] = ($_POST['findStory'][$currentID]) ? 1 : 0;
 	$pageInfo['useMobile'] = ($_POST['useMobile'][$currentID]) ? 1 : 0;
+
+	$pageInfo['onlyScreenshot'] = ($_POST['screenshotType'][$currentID] == "none") ? 1 : 0;
+	$pageInfo['individualTagScreenshots'] = ($_POST['screenshotType'][$currentID] == "individual") ? 1 : 0;
+	//$pageInfo['onlyScreenshot'] = ($_POST['onlyScreenshot'][$currentID]) ? 1 : 0;
+	//$pageInfo['individualTagScreenshots'] = ($_POST['individualTagScreenshots'][$currentID]) ? 1 : 0;
+
 	$screenshotRequestObject['pages'][] = $pageInfo;
 }
 

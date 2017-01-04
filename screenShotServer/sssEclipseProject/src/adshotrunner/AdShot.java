@@ -23,7 +23,24 @@ import adshotrunner.utilities.URLTool;
 public class AdShot {
 	
 	/**
-	 * Creates an instance of an AdShot using the passed URLs.
+	 * Creates an instance of an AdShot using the passed URL.
+	 * 
+	 * If no protocol precedes the URL, "http" is added.
+	 * 
+	 * If the URL is null or empty, an AdShotRunnerException is thrown.
+	 * 
+	 * @param pageURL			URL where the screenshot should be taken
+	 * @param singleTagImage	Single tag image to include in the screenshot
+	 * @return
+	 */
+	public static AdShot create(String pageURL, TagImage singleTagImage) {
+		HashSet<TagImage> tagImageSet = new HashSet<TagImage>();
+		tagImageSet.add(singleTagImage);
+		return AdShot.create(pageURL, tagImageSet);
+	}
+	
+	/**
+	 * Creates an instance of an AdShot using the passed URL.
 	 * 
 	 * If no protocol precedes the URL, "http" is added.
 	 * 
@@ -35,7 +52,6 @@ public class AdShot {
 	public static AdShot create(String pageURL) {
 		return AdShot.create(pageURL, new HashSet<TagImage>());
 	}
-
 	
 	/**
 	 * Creates an instance of an AdShot using the passed URL and set of tag images.
