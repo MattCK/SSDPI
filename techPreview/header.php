@@ -16,6 +16,7 @@
 	<script src="<?PHP echo JAVASCRIPTURL;?>asr.js" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>tagParser.js" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>campaign.js" language="javascript" type="text/javascript"></script>	
+	<script src="<?PHP echo JAVASCRIPTURL;?>tooltips.js" language="javascript" type="text/javascript"></script>	
 	<script>zip.workerScriptsPath = "<?PHP echo JAVASCRIPTURL;?>";</script>
 </head>
 

@@ -57,6 +57,7 @@ if (USERDFPNETWORKCODE) {
 			<?PHP if (USERDFPNETWORKCODE): ?>
 
 			<h2 id="dfpOrdersHeader">DFP Orders</h2>
+			<img helpIcon="" id="dfpOrdersHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 			<div id="dfpOrdersDiv" class="section"> 
 				<table>
 					<tr>
@@ -93,22 +94,21 @@ if (USERDFPNETWORKCODE) {
 				<div class="textFieldName">Publisher Site:</div>
 				<input id="domain" name="domain" type="text">
 				<input class="button-tiny" id="getMenuButton" type="button" value="Go!" onclick="asr.getMenu()">
-				<!--input id="skipButton" type="button" value="Skip" onclick="asr.toggleDivs()"-->
+				<img helpIcon="" id="domainInputHelpIcon" class="helpIcon" src="images/helpIcon.png" />
 			</div>
 
 			<div id="pagesTableDiv" class="section" style="display: none">
-				<!--div id="domainNameDiv"></div-->
 				<input class="button-tiny"  id="addSiteSectionButton" type="button" value="Add Site Section" onclick="asr.addMenuSectionRow()">
 				<input class="button-tiny"  type="button" value="Add URL" onclick="asr.addURLRow()">
 				<span id="noMenuNotification" style="display: none;">Sections not available for this site</span>
-				<!--input type="button" value="Add All Pages" onclick="asr.addAllPages()"-->
+				<img helpIcon="" id="addPagesHelpIcon" class="helpIcon" src="images/helpIcon.png" />
 				<table id="pagesTable"></table>
-				<!--input id="addTagsButton" type="button" value="Add Tags" onclick="asr.toggleDivs()" disabled-->
 			</div>
 		</form>
 
 
-		<h2>Tags</h2>
+		<h2>Creative</h2>
+		<img helpIcon="" id="creativeHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div class="section">
 		   	<div class="copyPasteTextTitle">Copy and Paste Tag Text:</div>
 		   	<div id="tagTextDiv">
@@ -119,7 +119,6 @@ if (USERDFPNETWORKCODE) {
 				<div id="textFileDropZone" class="dropBox">Drop Text File(s)</div>
 				<div id="zipFileDropZone" class="dropBox">Drop a Zip File</div>
 			</div>
-			<!--input type="button" value="Back to Page Selection" onclick="asr.toggleDivs()"-->
 			
 			<div id="queuedTagDiv" class="yellowBackground" align="center">
 				<span id="queuedTagCountSpan">0</span> <span id="tagsQueuedSpan">Tags Queued</span> &nbsp; 
@@ -161,24 +160,6 @@ orderFilter.addEventListener('onchange', asr.filterOrders);
 
 $(function() {
 	$( "#sortable" ).sortable();
-	//$( "#sortable" ).disableSelection();
-
-	$( document ).tooltip({
-		items: "img, [data-geo], [title]",
-		content: function() {
-			let element = $( this );
-			/*if ( element.is( "[data-geo]" ) ) {
-				let text = element.text();
-				return "<img class='map' alt='" + text +
-				"' src='http://maps.google.com/maps/api/staticmap?" +
-				"zoom=11&size=350x350&maptype=terrain&sensor=false&center=" +
-				text + "'>";
-			}*/
-			if ( element.is( "[rowTag]" ) ) {
-				return "<img src='" + element.attr( "src" ) + "'/>";
-			}
-		}
-	});
 
 	<?PHP if (USERDFPNETWORKCODE): ?>
 

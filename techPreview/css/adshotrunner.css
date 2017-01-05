@@ -115,7 +115,7 @@ h2 {
     font-size:16px;
     font-weight: bold;
     padding-bottom: 10px;
-    /*margin:.2em 0 19px 0;*/
+    display: inline-block;
 }
 
 h2.subtitle,.section h2.subtitle {
@@ -142,6 +142,14 @@ h4,.h4 {
 h5 {
     font-size:15px;
     margin:0 0 4px 0;
+}
+
+.helpIcon {
+	vertical-align: middle;;
+}
+
+.titleHelpIcon {
+	padding-bottom: 5px;
 }
 
 .minor {
@@ -310,19 +318,53 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     padding-bottom: 10px;
 }
 
-#pagesTable {
-    margin-top: 5px;
-}
-
-#pagesTable td {
-    padding-right: 15px;
-    vertical-align: middle;
-}
-
 .pageURLTitle {
     padding-left: 4px;
     font-weight: bold;
 }
+
+#pagesTable {
+    margin-top: 7px;
+    padding: 5px;
+    width: 100%;
+}
+
+#pagesTable td {
+    vertical-align: middle;
+    text-align: center;
+    border-right: 1px solid #c2c2c2;
+}
+
+#pagesTable th, td {
+    padding: 2px 0px 5px 0px;
+}
+
+#pagesTable td:first-child {
+    text-align: left;
+    padding-left: 8px;
+    padding-bottom: 2px;
+}
+
+#pagesTable td:last-child {
+    border-right: none;
+}
+
+#pagesTable tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+#pagesTable tr:nth-child(odd) {
+	background-color: #fff;
+}
+
+#pagesTable input {
+    vertical-align: text-bottom;
+    margin-bottom: 0px;
+}
+
+ #pagesTable tr:hover {
+ 	background-color: #8AFF7F;
+ }
 
 .copyPasteTextTitle {
     font-weight: bold;

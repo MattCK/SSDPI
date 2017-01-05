@@ -107,11 +107,11 @@ let asr = {
 		rowCells += "<td><label><input type='checkbox' name='findStory[" + asr._rowIndex + "]' value='1'>Story</label></td>";
 		rowCells += "<td><label><input type='checkbox' name='useMobile[" + asr._rowIndex + "]' value='1'>Mobile</label></td>";
 		
-		rowCells += "<td><label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='all'>All Creative</label>";
+		rowCells += "<td><label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='all' checked>All Creative</label>";
 		rowCells += "    <label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='individual'>Individual Creative Screenshots</label>";
 		rowCells += "    <label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='none'>No Creative</label></td>";
 		
-		rowCells += "<td><input class='button-tiny' type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
+		rowCells += "<td><input class='button-tiny' type='button' value='Remove' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
 
 		//Increment the row index for the next inserted row
@@ -136,11 +136,15 @@ let asr = {
 		newRow.id = "pageRow" + asr._rowIndex;
 
 		//Build the row cells and insert them
-		rowCells = "<td class='pageURLTitle'>Page URL: </td>";
-		rowCells += "<td><input type='text' name='pages[" + asr._rowIndex + "]'></td>";
+		rowCells = "<td colspan='2' class='pageURLTitle'>Page URL: ";
+		rowCells += "<input type='text' name='pages[" + asr._rowIndex + "]'></td>";
 		rowCells += "<td><label><input type='checkbox' name='useMobile[" + asr._rowIndex + "]' value='1'>Mobile</label></td>";
-		rowCells += "<td><label><input type='checkbox' name='onlyScreenshot[" + asr._rowIndex + "]' value='1'>No Tags</label></td>";
-		rowCells += "<td><input class='button-tiny' type='button' value='Delete' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
+
+		rowCells += "<td><label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='all' checked>All Creative</label>";
+		rowCells += "    <label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='individual'>Individual Creative Screenshots</label>";
+		rowCells += "    <label><input type='radio' name='screenshotType[" + asr._rowIndex + "]' value='none'>No Creative</label></td>";
+		
+		rowCells += "<td><input class='button-tiny' type='button' value='Remove' onClick='asr.deletePageRow(" + asr._rowIndex + ")'></td>";
 		newRow.innerHTML = rowCells;
 
 		//Increment the row index for the next inserted row
@@ -376,7 +380,7 @@ let asr = {
 			imageLIHTML += 			'<div class="tagImageDiv"><img rowTag="" style="max-height: 120px;" src="' + imageURL + '" /></div>';
 			imageLIHTML += 		'</div>';
 			imageLIHTML += 		'<div class="deleteButtonDiv">';
-			imageLIHTML +=  		"<input type='button' class='button-tiny' value='Delete' onClick='asr.deleteTagImageListItem(\"" + tagLIID + "\")'>";
+			imageLIHTML +=  		"<input type='button' class='button-tiny' value='Remove' onClick='asr.deleteTagImageListItem(\"" + tagLIID + "\")'>";
 			imageLIHTML += 		'</div>';
 			imageLIHTML += 	'</div>';
 	        $("#" + tagLIID).html(imageLIHTML);
@@ -490,6 +494,7 @@ let asr = {
 
 				//Hide the orders and show the line items
 				base.hide("dfpOrdersHeader");
+				base.hide("dfpOrdersHelpIcon");
 				base.hide("dfpOrdersDiv");
 				base.show("lineItemsHeader");
 				base.show("lineItemsDiv");

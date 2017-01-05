@@ -131,10 +131,13 @@ function initializeAdInjecter(tags) {
 								if (currentAd.element && currentAd.element.parentNode) {
 									currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
 
-									//Mark the tag as injected and store it in the injected tags ID array
-									sortedTags[currentTagKey][currentTagIterator].injected = true;
-									if (adInjecter.injectedTagIDs.indexOf(currentTag.id) <= -1) {
-										adInjecter.injectedTagIDs[adInjecter.injectedTagIDs.length] = currentTag.id;
+									//Mark the tag as injected and store it in the injected tags ID array									
+									var testImageBox = tagImage.getBoundingClientRect();
+									if (testImageBox.top < 500) {
+										sortedTags[currentTagKey][currentTagIterator].injected = true;
+										if (adInjecter.injectedTagIDs.indexOf(currentTag.id) <= -1) {
+											adInjecter.injectedTagIDs[adInjecter.injectedTagIDs.length] = currentTag.id;
+										}
 									}
 
 									//If this tag image is the lowest on the page so far, store its lower position
