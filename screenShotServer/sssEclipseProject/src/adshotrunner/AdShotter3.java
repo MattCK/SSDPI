@@ -64,7 +64,7 @@ public class AdShotter3 {
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
 	final private static int PAGETIMEOUT = 31000;			//in milliseconds
 	final private static int TAGTIMEOUT = 4000;				//in milliseconds
-	final private static int INITIALMOBILETIMEOUT = 15000;	//in milliseconds
+	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 11000;		//in milliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
@@ -363,13 +363,14 @@ public class AdShotter3 {
 			consoleLog("Done injecting JS.");
 		}
 		
-		System.out.print("Javascript run and ads inserted. Press Enter to continue");
+		//this can be uncommented to test how the javascript ran
+		/*System.out.print("Javascript run and ads inserted. Press Enter to continue");
 		int inChar;
 		try {
 			inChar = System.in.read();
 		} catch (IOException e1) {
 			consoleLog("error reading from command line");
-		}
+		}*/
 		
 		//Take the screenshot 
 		long screenShotStartTime = System.nanoTime();
