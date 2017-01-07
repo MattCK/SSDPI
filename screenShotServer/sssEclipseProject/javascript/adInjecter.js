@@ -127,6 +127,8 @@ function initializeAdInjecter(tags) {
 								//Replace the ad with the tag
 								var tagImage = document.createElement('img');
 								tagImage.src = currentTag.tag;
+								tagImage.style.width = currentAd.width + 'px';
+								tagImage.style.height = currentAd.height + 'px';
 								tagImage.style.floodOpacity = "0.9898";
 								if (currentAd.element && currentAd.element.parentNode) {
 									currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);

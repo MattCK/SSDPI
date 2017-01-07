@@ -62,11 +62,11 @@ public class AdShotter3 {
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
-	final private static int PAGETIMEOUT = 8000;			//in milliseconds
+	final private static int PAGETIMEOUT = 31000;			//in milliseconds
 	final private static int TAGTIMEOUT = 4000;				//in milliseconds
 	final private static int INITIALMOBILETIMEOUT = 15000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
-	final private static int SCREENSHOTTIMEOUT = 20000;		//in milliseconds
+	final private static int SCREENSHOTTIMEOUT = 11000;		//in milliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 2800;		//in pixels
 	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
@@ -363,6 +363,14 @@ public class AdShotter3 {
 			consoleLog("Done injecting JS.");
 		}
 		
+		System.out.print("Javascript run and ads inserted. Press Enter to continue");
+		int inChar;
+		try {
+			inChar = System.in.read();
+		} catch (IOException e1) {
+			consoleLog("error reading from command line");
+		}
+		
 		//Take the screenshot 
 		long screenShotStartTime = System.nanoTime();
 		
@@ -438,6 +446,8 @@ public class AdShotter3 {
 		
 		chromePrefs.put("profile.managed_default_content_settings.cookies", new Integer(2));
 		driverOptions.setExperimentalOption("prefs", chromePrefs);
+		//the below option freezes chrome when injecting the ad injector
+		//driverOptions.addArguments("--disable-web-security");
 		
 		//Set the proxy to use
 		String proxyDetails = getProxyDetails();
@@ -579,11 +589,11 @@ public class AdShotter3 {
 	private String getProxyDetails(){
 		
 		ArrayList<String> proxyList = new ArrayList<String>(); 
-		proxyList.add("192.210.148.231:3128");
-		proxyList.add("198.23.217.23:3128");
-		proxyList.add("104.144.165.103:3128");
+		//proxyList.add("192.210.148.231:3128");
+		//proxyList.add("198.23.217.23:3128");
+		//proxyList.add("104.144.165.103:3128");
 		proxyList.add("107.173.182.217:3128");
-		proxyList.add("104.168.23.154:3128");
+		//proxyList.add("104.168.23.154:3128");
 		
 		int randomIndex = new Random().nextInt(proxyList.size());
 		return proxyList.get(randomIndex);
