@@ -44,88 +44,89 @@ if (USERDFPNETWORKCODE) {
 </div>
 
 <div id="mainContent">
-		<form id="pagesForm">
+	<form id="pagesForm">
 
-			<?PHP if (!USERDFPNETWORKCODE): ?>
-			<div id="dfpInfoDiv" class="section"> 
-				<strong>Google DFP Users:</strong> 
-				AdShotRunner&trade; can retrieve orders, line notes, and creatives from your account. 
-				For more information, call (773) 295-2386 or <a href="mailto:info@adshotrunner.com">email us</a>
-			</div>
-			<?PHP endif; ?>
+		<?PHP if (!USERDFPNETWORKCODE): ?>
+		<div id="dfpInfoDiv" class="section"> 
+			<strong>Google DFP Users:</strong> 
+			AdShotRunner&trade; can retrieve orders, line notes, and creatives from your account. 
+			For more information, call (773) 295-2386 or <a href="mailto:info@adshotrunner.com">email us</a>
+		</div>
+		<?PHP endif; ?>
 
-			<?PHP if (USERDFPNETWORKCODE): ?>
+		<?PHP if (USERDFPNETWORKCODE): ?>
 
-			<h2 id="dfpOrdersHeader">DFP Orders</h2>
-			<img helpIcon="" id="dfpOrdersHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
-			<div id="dfpOrdersDiv" class="section"> 
-				<table>
-					<tr>
-						<td style="width: 100px; font-weight: bold;">Orders:</td>				
-						<td colspan="2"><input id="orderFilter" name="orderFilter" type="text" oninput="asr.filterOrders()" style="width: 588px"></td>
-					</tr>
-					<tr>
-						<td>&nbsp;</td>
-						<td><select id="orderSelect" name="orderSelect" size="8" onchange="asr.displayOrderNotes()" style="width: 600px;"></select></td>
-						<td style="vertical-align: top"><div id="orderNotesDiv" style="padding: 2px 30px"></div></td>
-					</tr>
-					<tr>
-						<td>&nbsp;</td>
-						<td colspan="2"><input id="getOrderDataButton" type="button" value="Get Line Items and Creatives" onclick="asr.requestOrderData()"></td>
-					</tr>
-				</table>
-			</div>
+		<h2 id="dfpOrdersHeader">DFP Orders</h2>
+		<img helpIcon="" id="dfpOrdersHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
+		<div id="dfpOrdersDiv" class="section"> 
+			<table>
+				<tr>
+					<td style="width: 100px; font-weight: bold;">Orders:</td>				
+					<td colspan="2"><input id="orderFilter" name="orderFilter" type="text" oninput="asr.filterOrders()" style="width: 588px"></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td><select id="orderSelect" name="orderSelect" size="8" onchange="asr.displayOrderNotes()" style="width: 600px;"></select></td>
+					<td style="vertical-align: top"><div id="orderNotesDiv" style="padding: 2px 30px"></div></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td colspan="2"><input id="getOrderDataButton" type="button" value="Get Line Items and Creatives" onclick="asr.requestOrderData()"></td>
+				</tr>
+			</table>
+		</div>
 
-			<h2 id="lineItemsHeader" style="display: none;">Line Items</h2>
-			<div id="lineItemsDiv" class="section" style="display: none;"></div> 
-
-
-
-			<?PHP endif; ?>
-
-			<h2>Customer</h2>
-			<div id="customerDiv" class="section">
-				<div class="textFieldName">Name:</div> 
-				<input id="customer" name="customer" type="text">
-			</div>
-
-			<h2 id="campaignPagesHeader">Campaign Pages</h2>
-			<div id="domainInputDiv" class="section">
-				<div class="textFieldName">Publisher Site:</div>
-				<input id="domain" name="domain" type="text">
-				<input class="button-tiny" id="getMenuButton" type="button" value="Go!" onclick="asr.getMenu()">
-				<img helpIcon="" id="domainInputHelpIcon" class="helpIcon" src="images/helpIcon.png" />
-			</div>
-
-			<div id="pagesTableDiv" class="section" style="display: none">
-				<input class="button-tiny"  id="addSiteSectionButton" type="button" value="Add Site Section" onclick="asr.addMenuSectionRow()">
-				<input class="button-tiny"  type="button" value="Add URL" onclick="asr.addURLRow()">
-				<span id="noMenuNotification" style="display: none;">Sections not available for this site</span>
-				<img helpIcon="" id="addPagesHelpIcon" class="helpIcon" src="images/helpIcon.png" />
-				<table id="pagesTable"></table>
-			</div>
-		</form>
+		<h2 id="lineItemsHeader" style="display: none;">Line Items</h2>
+		<div id="lineItemsDiv" class="section" style="display: none;"></div> 
 
 
-		<h2>Creative</h2>
-		<img helpIcon="" id="creativeHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
-		<div class="section">
-		   	<div class="copyPasteTextTitle">Copy and Paste Tag Text:</div>
-		   	<div id="tagTextDiv">
-				<textarea id="tagTextTextbox" rows="10" cols="60"></textarea>
-				<input class="button-tiny" id="tagTextTextboxButton" type="button" value="Add Tags">
-			</div>
-			<div>
-				<div id="textFileDropZone" class="dropBox">Drop Text File(s)</div>
-				<div id="zipFileDropZone" class="dropBox">Drop a Zip File</div>
-			</div>
-			
-			<div id="queuedTagDiv" class="yellowBackground" align="center">
-				<span id="queuedTagCountSpan">0</span> <span id="tagsQueuedSpan">Tags Queued</span> &nbsp; 
-				<input class="button-tiny" id="getTagImagesButton" type="button" value="Get Tag Images" onclick="asr.getTagImages()" disabled>
 
-			</div>
+		<?PHP endif; ?>
 
+		<h2>Customer</h2>
+		<img helpIcon="" id="customerHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
+		<div id="customerDiv" class="section">
+			<div class="textFieldName">Name:</div> 
+			<input id="customer" name="customer" type="text">
+		</div>
+
+		<h2 id="campaignPagesHeader">Campaign Pages</h2>
+		<div id="domainInputDiv" class="section">
+			<div class="textFieldName">Publisher Site:</div>
+			<input id="domain" name="domain" type="text">
+			<input class="button-tiny" id="getMenuButton" type="button" value="Go!" onclick="asr.getMenu()">
+			<img helpIcon="" id="domainInputHelpIcon" class="helpIcon" src="images/helpIcon.png" />
+		</div>
+
+		<div id="pagesTableDiv" class="section" style="display: none">
+			<input class="button-tiny"  id="addSiteSectionButton" type="button" value="Add Site Section" onclick="asr.addMenuSectionRow()">
+			<input class="button-tiny"  type="button" value="Add URL" onclick="asr.addURLRow()">
+			<span id="noMenuNotification" style="display: none;">Sections not available for this site</span>
+			<img helpIcon="" id="addPagesHelpIcon" class="helpIcon" src="images/helpIcon.png" />
+			<table id="pagesTable"></table>
+		</div>
+	</form>
+
+
+	<h2>Creative</h2>
+	<img helpIcon="" id="creativeHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
+	<div class="section">
+	   	<div class="copyPasteTextTitle">Copy and Paste Tag Text:</div>
+	   	<div id="tagTextDiv">
+			<textarea id="tagTextTextbox" rows="10" cols="60"></textarea>
+			<input class="button-tiny" id="tagTextTextboxButton" type="button" value="Add Tags">
+		</div>
+		<div>
+			<div id="textFileDropZone" class="dropBox">Drop Text or Image File(s)</div>
+			<div id="zipFileDropZone" class="dropBox">Drop a Zip File</div>
+		</div>
+		
+		<div id="queuedTagDiv" class="yellowBackground" align="center">
+			<span id="queuedTagCountSpan">0</span> <span id="tagsQueuedSpan">Tags Queued</span> &nbsp; 
+			<input class="button-tiny" id="getTagImagesButton" type="button" value="Get Tag Images" onclick="asr.getTagImages()" disabled>
+		</div>
+
+		<div class="priorityDescriptionDiv">Drag and drop creative images to change priority. (Nearer to the top has higher priority)</div>
 		<ul id="sortable"></ul>
 	</div>
 

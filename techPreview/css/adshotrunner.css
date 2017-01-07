@@ -440,6 +440,11 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     height: 120px;
 }
 
+.priorityDescriptionDiv {
+	text-align: center;
+	padding-bottom: 7px;
+}
+
 .tagImageRowDiv {
     height: 120px;
 }
@@ -507,3 +512,6 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     padding: 10px 0 30px 0;
 }
 
+.ui-tooltip {
+	text-align: left;
+}
