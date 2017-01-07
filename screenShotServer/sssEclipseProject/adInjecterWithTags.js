@@ -2,10 +2,10 @@
 * Injects the passed tags into the URLs they are attached to. Full page ads and floating elements are removed.
 */ 
 
-//Tags to be injected into the page. The line 'tags = [{id: 'b090428d-96a6-4bd2-87ed-69ac2eca0d79', tag: 'http://s3.amazonaws.com/asr-tagimages/68dc57d7-62a9-418c-8f5f-23007f322a3f.png', placement: 0, width: 300, height: 600},{id: '93546b72-f83c-47bf-adc2-48d769d83fd9', tag: 'http://s3.amazonaws.com/asr-tagimages/b8890211-035b-4b9d-9a16-0d14fec6ff2f.png', placement: 0, width: 300, height: 50},{id: '73d18531-946e-4e51-9590-0dda204492b8', tag: 'http://s3.amazonaws.com/asr-tagimages/d04feb69-ad5a-4a1c-b04d-bae06ccbe58e.png', placement: 0, width: 300, height: 250},{id: 'd4bc3db2-2137-45ef-961d-7d64ba580d1f', tag: 'http://s3.amazonaws.com/asr-tagimages/ce9daef1-8e12-4417-9ac1-b3f188f4b4aa.png', placement: 0, width: 728, height: 90},{id: '5195a82e-8849-403e-b5ca-e8f6b5f1661a', tag: 'http://s3.amazonaws.com/asr-tagimages/10eae1e6-d7d9-4483-ab56-46a0930182da.png', placement: 0, width: 320, height: 50},];' is necessary to get the
+//Tags to be injected into the page. The line 'tags = [{id: '13a1c083-2aee-40ae-9733-fa18269d17df', tag: 'http://s3.amazonaws.com/asr-tagimages/68dc57d7-62a9-418c-8f5f-23007f322a3f.png', placement: 0, width: 300, height: 600},];' is necessary to get the
 //tags from the calling java instance.
 var tags = [];
-tags = [{id: 'b090428d-96a6-4bd2-87ed-69ac2eca0d79', tag: 'http://s3.amazonaws.com/asr-tagimages/68dc57d7-62a9-418c-8f5f-23007f322a3f.png', placement: 0, width: 300, height: 600},{id: '93546b72-f83c-47bf-adc2-48d769d83fd9', tag: 'http://s3.amazonaws.com/asr-tagimages/b8890211-035b-4b9d-9a16-0d14fec6ff2f.png', placement: 0, width: 300, height: 50},{id: '73d18531-946e-4e51-9590-0dda204492b8', tag: 'http://s3.amazonaws.com/asr-tagimages/d04feb69-ad5a-4a1c-b04d-bae06ccbe58e.png', placement: 0, width: 300, height: 250},{id: 'd4bc3db2-2137-45ef-961d-7d64ba580d1f', tag: 'http://s3.amazonaws.com/asr-tagimages/ce9daef1-8e12-4417-9ac1-b3f188f4b4aa.png', placement: 0, width: 728, height: 90},{id: '5195a82e-8849-403e-b5ca-e8f6b5f1661a', tag: 'http://s3.amazonaws.com/asr-tagimages/10eae1e6-d7d9-4483-ab56-46a0930182da.png', placement: 0, width: 320, height: 50},];
+tags = [{id: '13a1c083-2aee-40ae-9733-fa18269d17df', tag: 'http://s3.amazonaws.com/asr-tagimages/68dc57d7-62a9-418c-8f5f-23007f322a3f.png', placement: 0, width: 300, height: 600},];
 
 //Remove the scrollbars
 document.documentElement.style.overflow = 'hidden';
