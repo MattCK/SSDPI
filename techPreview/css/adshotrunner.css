@@ -515,3 +515,33 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 .ui-tooltip {
 	text-align: left;
 }
+
+#asrContactForm {
+	text-align: left;
+}
+
+#asrContactForm td {
+	vertical-align: middle;
+}
+
+#asrContactForm td:first-child {
+	font-weight: bold;
+	padding-right: 10px;
+}
+
+#asrContactForm input {
+	margin-bottom: 0;
+    vertical-align: text-bottom;
+}
+
+#asrContactForm input[type="text"] {
+	width: 300px;
+}
+
+#asrContactForm textarea {
+	width: 500px;
+}
+
+#contactSendButton {
+	padding: 0px;
+}

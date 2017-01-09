@@ -18,6 +18,8 @@ public class CampaignResult {
 
 	public String powerPointURL;
 	public String zipURL;
+	
+	public long runtime;
 		
 	public CampaignResult() {}
 	

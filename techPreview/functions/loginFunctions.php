@@ -39,6 +39,9 @@ function loginUser($username, $password) {
 	header("Cache-control: private"); 
 	$_SESSION['userID'] = $curUser->getID();
 	$_SESSION['username'] = $curUser->getUsername();
+	$_SESSION['userFirstName'] = $curUser->getFirstName();
+	$_SESSION['userLastName'] = $curUser->getLastName();
+	$_SESSION['userEmail'] = $curUser->getEmail();
 	$_SESSION['userDFPNetworkCode'] = $curUser->getDFPNetworkCode();
 	
 	//Record the login time

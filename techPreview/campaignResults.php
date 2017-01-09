@@ -42,6 +42,8 @@ require_once('systemSetup.php');
 				<tr><td>Customer: </td><td><span id="customerSpan">Name of Customer</span></td></tr>
 				<tr><td>Publisher Site: </td><td><span id="domainSpan">somedomain.com</span></td></tr>
 				<tr><td>Date: </td><td><span id="dateSpan">01/02/2003</span></td></tr>
+				<tr><td>Screenshot Count: </td><td><span id="screenshotCountSpan">0</span></td></tr>
+				<tr><td>Runtime: </td><td><span id="runtimeSpan">0</span> seconds</td></tr>
 			</table>
 		</div>
 

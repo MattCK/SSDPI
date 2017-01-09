@@ -37,19 +37,23 @@ let campaign = {
 				base.nodeFromID("customerSpan").innerHTML = jobData.customer;
 				base.nodeFromID("domainSpan").innerHTML = jobData.domain;
 				base.nodeFromID("dateSpan").innerHTML = jobData.date;
+				base.nodeFromID("runtimeSpan").innerHTML = jobData.runtime;
 
 				//Set the powerpoint link
 				base.nodeFromID("powerPointLink").href = jobData.powerPointURL;
 
 				//Build the screenshot table rows and insert them into the page
 				let imageTableRows = "";
+				let screenshotCount = 0;
 				for (var screenshotURL in jobData.screenshots) {
 					if (jobData.screenshots.hasOwnProperty(screenshotURL)) {
 						imageTableRows += "<tr><td><a href='" + jobData.screenshots[screenshotURL] + "' target='_blank'>" + jobData.screenshots[screenshotURL] + "</a><br><br>";
 						imageTableRows += '<img style="max-width: 600px;" src="' + screenshotURL + '" /></td></tr>';
+						++screenshotCount;
 					}
 				}
 				base.nodeFromID("screenshotsTable").innerHTML = imageTableRows;
+				base.nodeFromID("screenshotCountSpan").innerHTML = screenshotCount;
 
 				//Hide the campaign submitted div and show the results div
 				base.hide("campaignSubmittedDiv");

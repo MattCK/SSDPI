@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,6 +41,9 @@ public class CampaignRunner implements Runnable {
 	
 	@Override
 	public void run() {
+		
+		//Store the current time to show total runtime at end
+		long campaignStartTime = System.nanoTime();
 		
 		//Put the tag images into a list
 		HashSet<TagImage> tagImages = new HashSet<TagImage>();
@@ -91,7 +95,6 @@ public class CampaignRunner implements Runnable {
 					foundStories = new StoryFinder(URLTool.setProtocol("http",pageURL)).Scorer().getStories(3);
 					System.out.println("StoryFinder found: " + foundStories);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					System.out.println("Error finding story");
 					e.printStackTrace();
 				}
@@ -138,9 +141,17 @@ public class CampaignRunner implements Runnable {
 			else {standardAdShots.add(currentAdShot);}
 		}
 		
+		//Store the post page selection, story finder time
+		long postPageSelectionTime = System.nanoTime();
+		
 		//Get the screenshots
-		if (standardAdShots.size() > 0) {AdShotter3.create().takeAdShots(standardAdShots);}
-		if (mobileAdShots.size() > 0) {AdShotter3.createForMobile().takeAdShots(mobileAdShots);}
+		long standardAdShotRuntime = 0;
+		long mobileAdShotRuntime = 0;
+		if (standardAdShots.size() > 0) {standardAdShotRuntime = AdShotter3.create().takeAdShots(standardAdShots);}
+		if (mobileAdShots.size() > 0) {mobileAdShotRuntime = AdShotter3.createForMobile().takeAdShots(mobileAdShots);}
+		
+		//Store the post AdShots time
+		long postAdShotsTime = System.nanoTime();
 		
 		//Upload them
 		int imageIndex = 1;
@@ -161,6 +172,10 @@ public class CampaignRunner implements Runnable {
 			}
 			++imageIndex;
 			pageAndScreenshotURLs.put("https://s3.amazonaws.com/asr-screenshots/" + imageFilename, currentAdShot.finalURL());
+		
+			//Delete the local file
+			File screenshotFile = new File("screenshots/" + imageFilename);
+			screenshotFile.delete();
 		}
 		
 		//Create the powerpoint
@@ -172,12 +187,24 @@ public class CampaignRunner implements Runnable {
 			}
 			powerPoint.SaveCampaignPowerPoint("powerpoints/" + requestInfo.jobID + ".pptx");
 			FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + requestInfo.jobID + ".pptx", requestInfo.jobID + ".pptx");
+			
+			//Delete the local file
+			File powerPointFile = new File("powerpoints/" + requestInfo.jobID + ".pptx");
+			powerPointFile.delete();
+			
 		} catch (Exception e) {
 			System.out.println("Could not create powerpoint");
 		}
 		System.out.println("Done with powerpoint");
 		System.out.println("Results page: https://techpreview.adshotrunner.com/campaignResults.php?jobID=" + requestInfo.jobID);
 		
+		//Output the total campaign runtime
+		long postUploadTime = System.nanoTime();
+		long totalRuntime = ((postUploadTime - postAdShotsTime) + 
+							  standardAdShotRuntime + mobileAdShotRuntime + 
+							 (postPageSelectionTime - campaignStartTime))/1000000000;
+		System.out.println("Total Campaign Runtime: " + totalRuntime + " s");
+
 		//Create and upload the job result
 		CampaignResult jobResult = new CampaignResult();
 		jobResult.jobID = requestInfo.jobID;
@@ -192,6 +219,10 @@ public class CampaignRunner implements Runnable {
 		jobResult.screenshots = pageAndScreenshotURLs;
 		jobResult.powerPointURL = "https://s3.amazonaws.com/asr-powerpoints/" + requestInfo.jobID + ".pptx";
 		jobResult.zipURL = "";
+		
+		jobResult.runtime = totalRuntime;
+		
+		//Upload the job result
 		try {
 			FileUtils.writeStringToFile(new File("campaignJobs/" + jobResult.jobID), jobResult.toJSON());
 		} catch (IOException e) {
@@ -208,6 +239,7 @@ public class CampaignRunner implements Runnable {
 										 jobResult.powerPointURL, 
 										 adShotList);
 		resultsEmail.send(requestInfo.email);
+
 	}
 	
 	private static void saveImageAsPNG(BufferedImage imageToSave, String filepath) throws IOException {

@@ -569,9 +569,9 @@ var base = {
 	},
 	
 	/**
-	* Turns the passed node into a dialobase.
+	* Turns the passed node into a dialog.
 	*
-	* Returns an object with the member functions 'show' and 'hide' which display or hide the dialobase.
+	* Returns an object with the member functions 'show' and 'hide' which display or hide the dialog.
 	*
 	* @param {String} nodeID				ID of node to turn into dialog
 	* @param {String} title  				Title of dialog
@@ -597,8 +597,6 @@ var base = {
 		if (!isClosable) {
 			dialogOptions.closeOnEscape = false;
 			dialogOptions.open = function (event, ui) {
-				//$(".ui-dialog-titlebar-close", ui.dialog).hide();
-				//$(".ui-dialog-titlebar").hide();
 				$(".ui-dialog-titlebar-close", $(this).parent()).hide();
 			};
 		}
@@ -636,8 +634,8 @@ var base = {
 					<div align="center"> \
 						<div id="messageDiv" style="font-weight:bolder">.</div> \
 						<br> \
-						<input id="messageButtonOne" type="button" value="Continue" onclick="base.messageDialobase.close()"> \
-						<input id="messageButtonTwo" type="button" value="Cancel" onclick="base.messageDialobase.close()" style="margin-left:50px;"> \
+						<input id="messageButtonOne" type="button" value="Continue" onclick="base.messageDialog.close()"> \
+						<input id="messageButtonTwo" type="button" value="Cancel" onclick="base.messageDialog.close()" style="margin-left:50px;"> \
 					</div> \
 				</div>');
 			
@@ -654,7 +652,7 @@ var base = {
 		//Setup the first button
 		this.nodeFromID('messageButtonOne').value = buttonOneLabel;
 		this.nodeFromID('messageButtonOne').onclick = function() {
-			base.messageDialobase.close();
+			base.messageDialog.close();
 			if (buttonOneCallback) {setTimeout(buttonOneCallback, 350);}
 		}
 		
@@ -662,7 +660,7 @@ var base = {
 		if (buttonTwoLabel) {
 			this.nodeFromID('messageButtonTwo').value = buttonTwoLabel;
 			this.nodeFromID('messageButtonTwo').onclick = function() {
-				base.messageDialobase.close();
+				base.messageDialog.close();
 				if (buttonTwoCallback) {setTimeout(buttonTwoCallback, 350);}
 			}
 			this.show('messageButtonTwo');
@@ -672,40 +670,10 @@ var base = {
 		else {this.hide('messageButtonTwo');}
 
 		//Show the panel
-		this.messageDialobase.open();
+		this.messageDialog.open();
 		
 		//Set the focus on the first button
 		this.focus('messageButtonOne');
 	},
 	
-
-	/**
-	* Returns the city/state of the zipcode if found and places them in the passed callback function.
-	*
-	* @param {String} zipcode  					Zipcode to lookup
-	* @param {Function} parentCallback  		Callback method to call on success. Needs two parameters (city, state) which are filled with their respective info or empty strings if no info was found.
-	*/
-	getZipcodeInfo: function(zipcode, parentCallback) {
-
-		//If there are at least 5 characters in the  zipcode, request the info from the server
-		if (zipcode.length >= 5) {
-			
-			//Create the callback function that sets the loading or shows any error messages
-			var callback = function(response) {
-				
-				//If successful, put the info (if available), in the parent callback function
-				if (response.success) {
-					parentCallback(response.data.city, response.data.state);
-				}
-				
-				//If failure, for now do nothinbase. 
-				else {
-					//base.showMessage(response.message, null, function() {focusAndSelect(response.focus);});
-				}
-			}
-				
-			//Make the calculate loading request
-			this.asyncRequest('requests/generalRequests.php', 'request=sendZipcodeInfo&zipcode=' + zipcode.substr(0,5), callback);	
-		}	
-	},
 };

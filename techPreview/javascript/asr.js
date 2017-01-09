@@ -472,11 +472,6 @@ let asr = {
 					if (asr._creatives.hasOwnProperty(creativeID)) {
 						console.log("Tag before: " + asr._creatives[creativeID]);
 
-						//Hack to show off software
-						//if (asr._creatives[creativeID].toLowerCase().substring(0, 4) == "<img") {
-						//	asr._creatives[creativeID] = "<a>" + asr._creatives[creativeID] + "</a>";
-						//}
-
 						asr.addTagsToQueue(tagParser.getTags(asr._creatives[creativeID]));
 						console.log("tag: " + tagParser.getTags(asr._creatives[creativeID]));
 					}

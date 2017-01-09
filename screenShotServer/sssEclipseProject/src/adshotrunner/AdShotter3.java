@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,6 +47,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import adshotrunner.errors.AdShotRunnerException;
+import adshotrunner.utilities.MySQLDatabase;
+import adshotrunner.utilities.URLTool;
 
 /**
  * The AdShotter class inserts passed tags into webpages and returns screenshots.
@@ -62,7 +66,7 @@ public class AdShotter3 {
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
-	final private static int PAGETIMEOUT = 31000;			//in milliseconds
+	final private static int PAGETIMEOUT = 11000;			//in milliseconds
 	final private static int TAGTIMEOUT = 4000;				//in milliseconds
 	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
@@ -75,7 +79,7 @@ public class AdShotter3 {
 	final private static int MAXCROPHEIGHT = 3000; 			//in pixels
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
-	final private static int MAXOPENTABS = 4;
+	final private static int MAXOPENTABS = 1;
 
 
 	//---------------------------------------------------------------------------------------
@@ -194,12 +198,15 @@ public class AdShotter3 {
 	//------------------------------- Modification Methods ----------------------------------
 	//---------------------------------------------------------------------------------------
 	//********************************* Public Methods **************************************		
-	public void takeAdShots(List<AdShot> adShots) {
+	public long takeAdShots(List<AdShot> adShots) {
 				
 		//Try to create a web driver to connect with
 		WebDriver remoteWebDriver = null;
 		try {remoteWebDriver = getSeleniumChromeDriver();}
 		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
+		
+		//Store the time after a driver has been made available to the thread
+		long adShotsStartTime = System.nanoTime();
 		
 		//Open each AdShot URL in a new tab up to the max tab amount
 		consoleLog("Beginning to open tabs...");
@@ -244,7 +251,7 @@ public class AdShotter3 {
 		//Loop through each AdShot and take the screenshot
 		tabIterator = tabHandles.iterator();
 		for (adShotIndex = 0; adShotIndex < adShots.size(); ++adShotIndex) {
-			consoleLog("------------- New AdShot --------------");
+			consoleLog("------------- New AdShot (" + (adShotIndex + 1) + "/" + adShots.size() +  ") --------------");
 
 			if ((adShots.size() > 1) && (MAXOPENTABS > 1)) {
 				String nextTabHandler = tabIterator.next();
@@ -256,7 +263,7 @@ public class AdShotter3 {
 				if (!tabIterator.hasNext()) {tabIterator = tabHandles.iterator();}
 			}			
 
-			long startTime = System.nanoTime();
+			long currentAdShotStartTime = System.nanoTime();
 			AdShot currentAdShot = adShots.get(adShotIndex);
 			consoleLog("URL: " + currentAdShot.url());
 			takeAdShot(remoteWebDriver, currentAdShot);
@@ -289,15 +296,14 @@ public class AdShotter3 {
 				}	
 			}
 						
-			long endTime = System.nanoTime();
-			consoleLog("Total Adshot runtime: " + (endTime - startTime)/1000000 + " ms");
-			consoleLog("------------------------------");
+			long currentAdShotEndTime = System.nanoTime();
+			consoleLog("Total Adshot runtime: " + (currentAdShotEndTime - currentAdShotStartTime)/1000000 + " ms");
 		}
 		
 		//Quit the driver
 		quitWebdriver(remoteWebDriver);
 		
-		return;
+		return System.nanoTime() - adShotsStartTime;
 	}
 
 
@@ -326,7 +332,7 @@ public class AdShotter3 {
 			consoleLog("Creating Injecter JS...");
 			String adInjecterJS = "";
 			try {
-				adInjecterJS = getInjecterJS(adShot.tagImages());
+				adInjecterJS = getInjecterJS(adShot.tagImages(), adShot.url());
 				consoleLog("Done creating Injecter JS.");
 			}
 			catch (Exception e) {
@@ -590,11 +596,11 @@ public class AdShotter3 {
 	private String getProxyDetails(){
 		
 		ArrayList<String> proxyList = new ArrayList<String>(); 
-		//proxyList.add("192.210.148.231:3128");
+		proxyList.add("192.210.148.231:3128");
 		//proxyList.add("198.23.217.23:3128");
-		//proxyList.add("104.144.165.103:3128");
+		proxyList.add("104.144.165.103:3128");
 		proxyList.add("107.173.182.217:3128");
-		//proxyList.add("104.168.23.154:3128");
+		proxyList.add("104.168.23.154:3128");
 		
 		int randomIndex = new Random().nextInt(proxyList.size());
 		return proxyList.get(randomIndex);
@@ -605,9 +611,10 @@ public class AdShotter3 {
 	 * Returns the AdInjecter javascript as a String with the passed tags inserted into it
 	 * 
 	 * @param tags			Tags and their placement rankings
+	 * @param targetURL		URL the tags will be injected into, used for exceptions
 	 * @return				AdInjecter javascript with passed tags inserted into it
 	 */
-	private String getInjecterJS(Set<TagImage> tagImageSet) throws IOException {
+	private String getInjecterJS(Set<TagImage> tagImageSet, String targetURL) throws IOException {
 		
 		//Get the AdInjecter javascript file
 		String adInjecterJS = new String(Files.readAllBytes(Paths.get(ADINJECTERJSPATH)));
@@ -627,6 +634,14 @@ public class AdShotter3 {
 		
 		//Insert the tags into the code by replacing the 'insert tags object' marker with them
 		String finalJS = adInjecterJS.replace("//INSERT TAGS OBJECT//", tagsString);
+		
+		//If an exceptions exists, insert its script into the final string
+		String exceptionScript = "";
+		try {exceptionScript = getAdInjecterException(targetURL); } catch (Exception e) {}
+		if (!exceptionScript.isEmpty()) {
+			finalJS = finalJS.replace("//INSERT EXCEPTION SCRIPT//", exceptionScript);
+		}
+		
 		FileUtils.writeStringToFile(new File("adInjecterWithTags.js"), finalJS);
 		
 		//Return the modified javascript as a String
@@ -776,7 +791,26 @@ public class AdShotter3 {
 		}
 		consoleLog("Done quitting web driver.");
 	}
-	
+
+	public static String getAdInjecterException(String targetURL) throws SQLException {
+		
+		//Get the domain including subdomain of the url. A protocol type is necessary for getDomain.
+		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
+		
+		//Check the database to see if any entries matching the domain exist
+		ResultSet exceptionsSet = MySQLDatabase.executeQuery("SELECT * " + 
+															 "FROM exceptionsAdInjecter " +
+															 "WHERE EAI_url LIKE '" + urlDomain + "%'");
+				
+		//If a match was found, return the script 
+		if (exceptionsSet.next()) {
+			return exceptionsSet.getString("ESF_script");
+		}
+		
+		//Otherwise, return an empty string
+		return "";
+	} 
+
 	/**
 	 * Sets the time each chromedriver command runs.
 	 * 
