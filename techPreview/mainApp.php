@@ -38,7 +38,7 @@ if (USERDFPNETWORKCODE) {
 		<h1>AdShotRunner&trade;: Free Tech Preview</h1> 
 	</div>
 	<div id="logout">
-		<a href="mailto:contact@dangerouspenguins.com">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
+		<a onclick="contactForm.reset(); contactFormDialog.open()">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
 		<a href="logout.php">Logout</a>
 	</div>
 </div>
@@ -138,6 +138,16 @@ if (USERDFPNETWORKCODE) {
 
 </div>
 
+<!-- ------------------------------------------- Contact Form Div ------------------------------------------ -->
+
+<div style="display: none;">
+	<?PHP include("contactForm.php");?>
+</div>
+
+
+<!-- ------------------------------------------------------------------------------------------------------- -->
+
+
 
 
 </body>
@@ -145,7 +155,8 @@ if (USERDFPNETWORKCODE) {
 
 
 <script>
-//Setup listeners
+
+//Setup drag and drop tag listeners
 let textFileDropZone = base.nodeFromID('textFileDropZone');
 textFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
 textFileDropZone.addEventListener('drop', tagParser.handleTagTextFileDrop, false);
@@ -154,18 +165,39 @@ zipFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
 zipFileDropZone.addEventListener('drop', tagParser.handleTagZipFileDrop, false);
 let tagTextTextboxButton = base.nodeFromID("tagTextTextboxButton");
 tagTextTextboxButton.addEventListener('click', tagParser.handleTagTextboxInput, false);
-let orderFilter = base.nodeFromID("orderFilter");
-orderFilter.addEventListener('onchange', asr.filterOrders);
 
+//Reset the contact form in case the user pressed the refresh button
+contactForm.reset();
 
-
+//Make the tag images table sortable, make the contact form a dialog, and, if DFP is enabled, sort and show the orders
+let contactFormDialog = null;
 $(function() {
+
 	$( "#sortable" ).sortable();
+
+	contactFormDialog = base.createDialog("contactFormDiv", "Contact Us", true, 650);
 
 	<?PHP if (USERDFPNETWORKCODE): ?>
 
 	asr.orders = <?PHP echo json_encode($orders) ?>;
 	asr.filterOrders();
+	let orderFilter = base.nodeFromID("orderFilter");
+	orderFilter.addEventListener('onchange', asr.filterOrders);
+
+
+	<?PHP endif; ?>
+
+	<?PHP if ($_GET["domain"]): ?>
+
+		base.nodeFromID("domain").value = "<?PHP echo $_GET["domain"] ?>";
+		asr.getMenu();
+
+	<?PHP endif; ?>
+
+	<?PHP if ($_GET["orderID"]): ?>
+
+		base.nodeFromID("orderSelect").value = "<?PHP echo $_GET["orderID"] ?>";
+		asr.requestOrderData();
 
 	<?PHP endif; ?>
 });

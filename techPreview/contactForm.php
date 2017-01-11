@@ -36,11 +36,11 @@ use AdShotRunner\DFP\DFPCommunicator;
 			<tr>
 				<td>Purpose:</td>
 				<td>
-					<label><input type='radio' name='contactType' value='IDEA' checked>Idea</label>
-					<label><input type='radio' name='contactType' value='ISSUE'>Issue</label>
+					<label><input id="contactIdeaRadio" type='radio' name='contactType' value='IDEA' onclick="contactForm.selectIdea()" checked>Idea</label>
+					<label><input id="contactIssueRadio" type='radio' name='contactType' value='ISSUE' onclick="contactForm.selectIssue()">Issue</label>
 				</td>
 			</tr>
-			<tr>
+			<tr id="contactProblemRow" style="display:none">
 				<td>Problem:</td>
 				<td>
 					<select id="contactProblem" name="contactProblem">
@@ -56,12 +56,23 @@ use AdShotRunner\DFP\DFPCommunicator;
 			</tr>
 			<tr>
 				<td>Description:</td>				
-				<td><textarea rows="4"></textarea></td>
+				<td><textarea id="contactDescription" rows="4"></textarea></td>
 			</tr>
 			<tr>
 				<td>&nbsp;</td>				
-				<td><input type="button" id="contactSendButton" value="Send"></td>
+				<td><input type="button" id="contactSendButton" value="Send" onclick="contactForm.submitForm()"></td>
 			</tr>
 		</table>
 	</form>
+	<div id="contactThankYouDiv" style="display:none;">
+		Thank you for your feedback! It is very important to us.<br><br>
+
+		We will respond within two business days, but usually much sooner.
+	</div>
+	<div id="contactFailureDiv" style="display:none;">
+		Submission failed. Please try again later.<br><br>
+
+		We apologize for this inconvenience. Your feedback is very importan to us. 
+		In the meantime, please email us at: <a href="mailto:contact@dangerouspenguins.com">contact@dangerouspenguins.com</a>
+	</div>
 </div>

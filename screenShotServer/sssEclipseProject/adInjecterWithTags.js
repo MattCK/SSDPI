@@ -2,13 +2,77 @@
 * Injects the passed tags into the URLs they are attached to. Full page ads and floating elements are removed.
 */ 
 
-//Tags to be injected into the page. The line 'tags = [{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', tag: 'http://s3.amazonaws.com/asr-tagimages/07809e6b-9f3a-42aa-8fe0-6ba0adb102d0.png', placement: 0, width: 728, height: 90},{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'http://s3.amazonaws.com/asr-tagimages/f050eb7d-9a0c-4781-849c-bf34629e5695.png', placement: 0, width: 300, height: 250},{id: 'b722d748-dd25-493e-93c5-6fc1991f6392', tag: 'http://s3.amazonaws.com/asr-tagimages/074df31b-25d1-4a19-9b42-c8b8ab780738.png', placement: 0, width: 300, height: 50},{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', tag: 'http://s3.amazonaws.com/asr-tagimages/59b1ba0b-cf8a-4295-b578-fecefd91e907.png', placement: 0, width: 320, height: 50},{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', tag: 'http://s3.amazonaws.com/asr-tagimages/aa0a39ab-1abb-48a3-a2c2-458ae0b54c4f.png', placement: 0, width: 300, height: 600},];' is necessary to get the
+//Tags to be injected into the page. The line 'tags = [{id: 'f694bd6f-f7f6-4fe3-b964-9c01d0485419', tag: 'http://s3.amazonaws.com/asr-tagimages/29414b7f-bc8e-43a4-98d0-845b2383e5ba.png', placement: 0, width: 728, height: 90},{id: 'f9d0e541-68c7-4da8-81cb-ed1fd7b98417', tag: 'http://s3.amazonaws.com/asr-tagimages/8c39875b-2e2c-434d-9240-11bb81c58b7b.png', placement: 0, width: 300, height: 600},{id: '37a7d573-f21b-4f91-9875-8ced48803a31', tag: 'http://s3.amazonaws.com/asr-tagimages/1dbf488c-b107-4048-bb60-dcf096e6315f.png', placement: 0, width: 320, height: 50},{id: '245e16b5-26db-439d-92f1-c81ee522bd58', tag: 'http://s3.amazonaws.com/asr-tagimages/eaf3c5ba-997e-4bf8-8601-508dd30c3dd5.png', placement: 0, width: 300, height: 250},{id: 'f3663408-987f-4334-8de1-85889f1a3b34', tag: 'http://s3.amazonaws.com/asr-tagimages/0b56e399-5f53-48c4-87a9-1cc7b4a235a3.png', placement: 0, width: 300, height: 50},];' is necessary to get the
 //tags from the calling java instance.
 var tags = [];
-tags = [{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', tag: 'http://s3.amazonaws.com/asr-tagimages/07809e6b-9f3a-42aa-8fe0-6ba0adb102d0.png', placement: 0, width: 728, height: 90},{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'http://s3.amazonaws.com/asr-tagimages/f050eb7d-9a0c-4781-849c-bf34629e5695.png', placement: 0, width: 300, height: 250},{id: 'b722d748-dd25-493e-93c5-6fc1991f6392', tag: 'http://s3.amazonaws.com/asr-tagimages/074df31b-25d1-4a19-9b42-c8b8ab780738.png', placement: 0, width: 300, height: 50},{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', tag: 'http://s3.amazonaws.com/asr-tagimages/59b1ba0b-cf8a-4295-b578-fecefd91e907.png', placement: 0, width: 320, height: 50},{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', tag: 'http://s3.amazonaws.com/asr-tagimages/aa0a39ab-1abb-48a3-a2c2-458ae0b54c4f.png', placement: 0, width: 300, height: 600},];
+tags = [{id: 'f694bd6f-f7f6-4fe3-b964-9c01d0485419', tag: 'http://s3.amazonaws.com/asr-tagimages/29414b7f-bc8e-43a4-98d0-845b2383e5ba.png', placement: 0, width: 728, height: 90},{id: 'f9d0e541-68c7-4da8-81cb-ed1fd7b98417', tag: 'http://s3.amazonaws.com/asr-tagimages/8c39875b-2e2c-434d-9240-11bb81c58b7b.png', placement: 0, width: 300, height: 600},{id: '37a7d573-f21b-4f91-9875-8ced48803a31', tag: 'http://s3.amazonaws.com/asr-tagimages/1dbf488c-b107-4048-bb60-dcf096e6315f.png', placement: 0, width: 320, height: 50},{id: '245e16b5-26db-439d-92f1-c81ee522bd58', tag: 'http://s3.amazonaws.com/asr-tagimages/eaf3c5ba-997e-4bf8-8601-508dd30c3dd5.png', placement: 0, width: 300, height: 250},{id: 'f3663408-987f-4334-8de1-85889f1a3b34', tag: 'http://s3.amazonaws.com/asr-tagimages/0b56e399-5f53-48c4-87a9-1cc7b4a235a3.png', placement: 0, width: 300, height: 50},];
+
+//Custom WKYC Top element Exception for preview
+//loop through tags to find 728x90
+var has728x90 = false;
+for (tagIndex in tags) {
+
+    let currentTagObj = tags[tagIndex];
+
+    if (currentTagObj.width == 728 && currentTagObj.height == 90) {
+    	has728x90= true;
+    }
+}
+
+if(window.location.href.includes("wkyc.com") && has728x90)
+{
+	var replaceMeDiv =  document.createElement('div');
+	replaceMeDiv.style.floodOpacity = "0.9898";
+	replaceMeDiv.style.width = '728px';
+	replaceMeDiv.style.height = '90px';
+	var bannerAd = document.getElementById("layout-column_column-1");
+	while (bannerAd.firstChild) {
+		bannerAd.removeChild(bannerAd.firstChild);
+	}
+	bannerAd.appendChild(replaceMeDiv);
+	bannerAd.style.visibility = 'visible';
+	bannerAd.style.width = '728px';
+	bannerAd.style.height = '90px';
+	bannerAd.style.margin = "0 auto";
+	bannerAd.style.marginBottom = "10px";
+}
+//end custom wkyc ad code
+
+
+//Custom WKYC Top element Exception for preview
+//loop through tags to find 728x90
+/*var has728x90 = false;
+for (tagIndex in tags) {
+
+    let currentTagObj = tags[tagIndex];
+
+    if (currentTagObj.width == 728 && currentTagObj.height == 90) {
+    	has728x90= true;
+    }
+}
+
+if(window.location.href.includes("wkyc.com") && has728x90)
+{
+	var replaceMeDiv =  document.createElement('div');
+	replaceMeDiv.style.floodOpacity = "0.9898";
+	replaceMeDiv.style.width = '728px';
+	replaceMeDiv.style.height = '90px';
+	var bannerAd = document.getElementById("layout-column_column-1");
+	while (bannerAd.firstChild) {
+		bannerAd.removeChild(bannerAd.firstChild);
+	}
+	bannerAd.appendChild(replaceMeDiv);
+	bannerAd.style.visibility = 'visible';
+	bannerAd.style.width = '728px';
+	bannerAd.style.height = '90px';
+	bannerAd.style.margin = "0 auto";
+	bannerAd.style.marginBottom = "10px";
+}
+//end custom wkyc ad code*/
 
 //Remove the scrollbars
 document.documentElement.style.overflow = 'hidden';
+
 
 //Initialize and get the adInjecter object
 var adInjecter = initializeAdInjecter(tags);

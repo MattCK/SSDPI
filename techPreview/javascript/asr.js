@@ -65,7 +65,7 @@ let asr = {
 				//Store the domain, hide it, and show the add pages table
 				asr._domain = base.nodeFromID('domain').value;
 				base.hide("domainInputDiv");
-				base.nodeFromID("campaignPagesHeader").innerHTML = "Campaign Pages: " + asr._domain;
+				base.nodeFromID("campaignPagesHeader").innerHTML = "Campaign Pages: <a href='http://" + asr._domain + "' target='_blank'>" + asr._domain + "</a>";
 				base.show("domainNameDiv");
 				base.show("pagesTableDiv");
 
@@ -384,9 +384,12 @@ let asr = {
 			imageLIHTML += 		'</div>';
 			imageLIHTML += 	'</div>';
 	        $("#" + tagLIID).html(imageLIHTML);
-	        --asr._tagsBeingProcessed;
+	        //--asr._tagsBeingProcessed;
 
 			//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+			console.log("pages table length: " + base.nodeFromID("pagesTable").rows.length);
+			console.log("tags being processed: " + asr._tagsBeingProcessed);
+			console.log("queued tags: " + asr._queuedTags.length);
 			if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
 				base.enable("getScreenshotsButton");}
 			else {base.disable("getScreenshotsButton");}

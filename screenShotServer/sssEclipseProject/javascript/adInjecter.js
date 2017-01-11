@@ -7,36 +7,7 @@
 var tags = [];
 //INSERT TAGS OBJECT//
 
-//Custom WKYC Top element Exception for preview
-//loop through tags to find 728x90
-var has728x90 = false;
-for (tagIndex in tags) {
-
-    let currentTagObj = tags[tagIndex];
-
-    if (currentTagObj.width == 728 && currentTagObj.height == 90) {
-    	has728x90= true;
-    }
-}
-
-if(window.location.href.includes("wkyc.com") && has728x90)
-{
-	var replaceMeDiv =  document.createElement('div');
-	replaceMeDiv.style.floodOpacity = "0.9898";
-	replaceMeDiv.style.width = '728px';
-	replaceMeDiv.style.height = '90px';
-	var bannerAd = document.getElementById("layout-column_column-1");
-	while (bannerAd.firstChild) {
-		bannerAd.removeChild(bannerAd.firstChild);
-	}
-	bannerAd.appendChild(replaceMeDiv);
-	bannerAd.style.visibility = 'visible';
-	bannerAd.style.width = '728px';
-	bannerAd.style.height = '90px';
-	bannerAd.style.margin = "0 auto";
-	bannerAd.style.marginBottom = "10px";
-}
-//end custom wkyc ad code
+//INSERT EXCEPTION SCRIPT//
 
 //Remove the scrollbars
 document.documentElement.style.overflow = 'hidden';

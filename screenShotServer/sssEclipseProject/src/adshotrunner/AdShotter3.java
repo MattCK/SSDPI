@@ -792,7 +792,7 @@ public class AdShotter3 {
 		consoleLog("Done quitting web driver.");
 	}
 
-	public static String getAdInjecterException(String targetURL) throws SQLException {
+	private String getAdInjecterException(String targetURL) throws SQLException {
 		
 		//Get the domain including subdomain of the url. A protocol type is necessary for getDomain.
 		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
@@ -804,7 +804,7 @@ public class AdShotter3 {
 				
 		//If a match was found, return the script 
 		if (exceptionsSet.next()) {
-			return exceptionsSet.getString("ESF_script");
+			return exceptionsSet.getString("EAI_script");
 		}
 		
 		//Otherwise, return an empty string

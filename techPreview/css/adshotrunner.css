@@ -545,3 +545,9 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 #contactSendButton {
 	padding: 0px;
 }
+
+/*.ui-dialog-titlebar {
+	background-color: #b2b2b2;
+	background-image: none;
+	border-color: #929292;
+}*/

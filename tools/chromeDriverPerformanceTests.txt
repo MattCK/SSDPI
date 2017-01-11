@@ -1,0 +1,179 @@
+Job Performance Tests
+
+All ran for 20 screenshots of the WKYC homepage
+
+T2 Medium
+	
+	- Single Driver
+
+		- 1 tab
+			- 244 seconds
+			- 249 seconds
+			- 264 seconds
+			- 285 seconds
+			- 258 seconds
+				- Average Time: 260 seconds
+
+	- Double Driver
+
+		- 1 tab
+			- 268, 294 seconds
+			- 277, 268 seconds
+			- 273, 278 seconds
+			- 290, 280 seconds
+			- 267, 266 seconds
+				- Average Time: 276 seconds
+
+	- Triple Driver
+
+		- 1 tab
+			- 337, 353, 358 seconds
+			- 329, 353, 346 seconds
+			- 352, 342, 346 seconds
+			- 413, 375, 348 seconds
+			- 333, 333, 348 seconds
+				- Average Time: 351 seconds
+
+	- Quadruple Driver
+
+		- 1 tab
+			- 442, 441, 410, 409 seconds
+			- 445, 446. 460, 463 seconds
+			- 450, 455, 430, 431 seconds
+			- 456, 475, 411, 428 seconds
+			- 395, 442, 450, 448 seconds
+				- Average Time: 440 seconds
+
+	- Quintuple Driver
+		- Fails opening all five
+
+C3 Extra Large Instance
+
+	- Single Driver
+
+		- 1 tab
+			- 301 seconds
+			- 330 seconds
+			- 281 seconds
+			- 271 seconds
+			- 284 seconds
+				- Average Time: 273 seconds
+
+		- 2 tabs
+			- 308 seconds
+			- 331 seconds
+			- 313 seconds
+			- 337 seconds
+			- 366 seconds
+				- Average Time: 329 seconds
+
+		- 4 tabs
+			- 322 seconds
+			- 404 seconds
+			- 354 seconds
+			- 353 seconds
+			- 338 seconds
+				- Average Time: 354 seconds
+
+	- Double Driver
+
+		- 1 tab
+			- 312, 313 seconds
+			- 306, 308 seconds
+			- 305, 304 seconds
+			- 313, 310 seconds
+			- 305, 304 seconds
+				- Average Time: 308 seconds
+
+		- 2 tabs
+			- 343, 337 seconds
+			- 353, 331 seconds
+			- 359, 336 seconds
+			- 342, 342 seconds
+			- 328, 352 seconds
+				- Average Time: 342 seconds
+
+		- 4 tabs
+			- 371, 369 seconds
+			- 367, 365 seconds
+			- 364, 375 seconds
+			- 382, 385 seconds
+			- 379, 380 seconds
+				- Average Time: 374 seconds
+
+	- Triple Driver
+
+		- 1 tab
+			- 348, 347, 351 seconds
+			- 350, 349, 353 seconds
+			- 384, 387, 401 seconds
+			- 350, 359, 365 seconds
+			- 358, 357, 362 seconds
+				- Average Time: 361 seconds
+
+	- Quadruple Driver
+
+		- 1 tab
+			- 416, 423, 420, 427 seconds
+			- 409, 406, 408, 413 seconds
+			- 419, 426, 422, 425 seconds
+			- 426, 430, 441, 402 seconds
+			- 409, 400, 397, 404 seconds
+				- Average Time: 416 seconds
+
+	- Quintuple Driver
+
+		- 1 tab
+			- (Two didn't run, Error: couldn't connect to Selenium server)
+			- (Three failed, same error)
+			- (One failed, same error, chromedriver started up for it)
+			- 520, 535, 523, 523, 538 seconds (one chromedriver orphaned, looks like six opened)
+			- 519, 507, 521, 509, 521 (eight chromedrivers opened, three orphaned)
+				- Average Time without Errors: 522 seconds
+
+T2 Small (Lots of issues, doesn't seem strong enough for chrome/chromedriver)
+
+	- Single Driver
+
+		- 1 tab
+			- 364 seconds
+			- 319 seconds
+			- 407 seconds
+			- 349 seconds
+			- 442 seconds
+			- Average Time: 376 seconds
+
+	- Double Driver
+
+		- 1 tab
+			- 584, 587 seconds
+			- 495, 512 seconds
+			- 537, 580 seconds
+			- 633, 619 seconds
+			- 1690, 1688 seconds
+				- Major performance issues and error getting screenshots. Some elements didn't load and
+				  multiple screenshots not taken.
+				- Examining the node during execution, there were 2 expected chromedrivers running but
+				  8 instances of Chrome.
+				- After execution, all instances of chromedriver and Chrome disappeared.
+				- Noticed cropping taking a while, which is a server-side function.
+				- Restarted ASRDispatcher.
+			- Failed again
+				- 10 instances of Chrome again. Not sure if this is standard behavior or not. 
+				- Restarting node client jar.
+			- Failed again.
+				- Still 10 instances of Chrome.
+				- Restarted Selenium server jar.
+			- Still taking forever per screenshot
+				- 10 instances of Chrome but 8 at 0%
+				- Restarting node
+			- Still taking forever.
+				- Restarting server
+			- Screenshots taking 90 seconds
+				- Restarting everything
+			- 1080, 1090 seconds: lots of failures - screenshots didn't take, most image elements didn't load
+				- restarting everything one more time
+			- Stopped, too many screenshot failures
+			- Retesting one driver to make sure it still works:
+				- 583 but not all elements loaded
+				- 497, one screenshot without elements 
