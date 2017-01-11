@@ -63,7 +63,7 @@ if ((!navigator.userAgent.toLowerCase().includes("mobile"))) {
 //Run exception on mobile
 if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
 
-	//If a 728x90 tag has been passed, replace the header ad with a 728x90 div
+	//If a 320x50 tag has been passed, replace the header ad with a 320x50 div
 	//and then place a second div inside of the first for the ad injecter to
 	// replace
 	if (found320x50) {
