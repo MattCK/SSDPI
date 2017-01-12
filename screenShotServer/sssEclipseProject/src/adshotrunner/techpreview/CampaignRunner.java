@@ -182,7 +182,8 @@ public class CampaignRunner implements Runnable {
 		//Create the powerpoint
 		System.out.println("Creating powerpoint");
 		try {
-			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("back1.jpg", "16x9", requestInfo.customer);
+			//Font color is passed in with 6 digit hex value in string format
+			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("config/PowerPointBackground.jpg", "16x9", requestInfo.customer, "000000");
 			for (AdShot currentAdShot : adShotList) {
 				powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
 			}

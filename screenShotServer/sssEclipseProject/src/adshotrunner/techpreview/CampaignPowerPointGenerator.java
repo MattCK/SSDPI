@@ -15,6 +15,7 @@ public class CampaignPowerPointGenerator {
 	//private String Name;
 	private PowerPointXMLGenerator CampaignPowerPoint;
 	
+	private String FontColor = "000000";
     private boolean debug = false;
     private String AspectRatio;
     private void dbgmsg(String Msg)
@@ -27,12 +28,13 @@ public class CampaignPowerPointGenerator {
 	
 	//Campaign Aspect Ratio acceptable inputs are "4x3" and "16x9"
 	//
-	public CampaignPowerPointGenerator(String PathToBackgroundImage, String CampaignAspectRatio, String CampaignName){
+	public CampaignPowerPointGenerator(String PathToBackgroundImage, String CampaignAspectRatio, String CampaignName, String CampaignFontColor){
 		//this should create the title slide and set the background image and put the date on the slide
 		//
 		CampaignPowerPoint = new PowerPointXMLGenerator();
 		//BackgroundImage = PathToBackgroundImage;
 		this.AspectRatio = CampaignAspectRatio;
+		this.FontColor = CampaignFontColor;
 		CampaignPowerPoint.CreatePresentation(CampaignAspectRatio);
 		String simpleDate = new SimpleDateFormat("MM-dd-yyyy").format(new Date());
 		
@@ -42,7 +44,7 @@ public class CampaignPowerPointGenerator {
 		TextBoxDetails textTitle = new TextBoxDetails();
 		textTitle.Font = "Arial";
 		textTitle.Text = CampaignName;
-		textTitle.fontColor = textTitle.Red;
+		textTitle.fontColor = this.FontColor;
 		textTitle.x = 40;
 		textTitle.y = 440;
 		textTitle.fontSize = 18;
@@ -53,7 +55,7 @@ public class CampaignPowerPointGenerator {
 		TextBoxDetails textDate = new TextBoxDetails();
 		textDate.Font = "Arial";
 		textDate.Text = simpleDate;
-		textDate.fontColor = textDate.Red;
+		textDate.fontColor = this.FontColor;
 		textDate.x = 40;
 		textDate.y = 465;
 		textDate.fontSize = 12;
@@ -69,7 +71,7 @@ public class CampaignPowerPointGenerator {
 		TextBoxDetails textTitle = new TextBoxDetails();
 		textTitle.Font = "Arial";
 		textTitle.Text = ScreenshotURL;
-		textTitle.fontColor = textTitle.Red;
+		textTitle.fontColor = this.FontColor;
 		textTitle.x = 1;
 		textTitle.y = 1;
 		//textTitle.fontSize = 11;

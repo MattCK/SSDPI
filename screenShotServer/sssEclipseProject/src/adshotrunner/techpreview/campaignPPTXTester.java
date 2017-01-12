@@ -57,7 +57,7 @@ public class campaignPPTXTester {
         	System.out.println("IO Exception on reading the image");
         }
 		
-		CampaignPowerPointGenerator CampaignPowerPoint = new CampaignPowerPointGenerator(BackgroundImagePath, AspectRatio, CampaignName);
+		CampaignPowerPointGenerator CampaignPowerPoint = new CampaignPowerPointGenerator(BackgroundImagePath, AspectRatio, CampaignName, "000000");
 		slideWorked = CampaignPowerPoint.AddScreenshotSlide(ScreenshotUrl01, SSImage01);
 		System.out.println("Adding slide 1 Worked?" + slideWorked.toString());
 		slideWorked = CampaignPowerPoint.AddScreenshotSlide(ScreenshotUrl02, SSImage02);
