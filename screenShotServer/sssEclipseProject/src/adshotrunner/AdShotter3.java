@@ -75,7 +75,9 @@ public class AdShotter3 {
 	final private static int DEFAULTVIEWHEIGHT = 2800;		//in pixels
 	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
 	final private static int MOBILEPIXELRATIO = 3;			//in pixels
-	final private static int DEFAULTCROPHEIGHT = 2600; ;	//in pixels
+	final private static int DEFAULTCROPHEIGHT = 800;		//in pixels
+	final private static int DEFAULTMINIMUMCROP = 800;		//in pixels
+	final private static int MOBILEMINIMUMCROP = 800;		//in pixels
 	final private static int MAXCROPHEIGHT = 3000; 			//in pixels
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
@@ -325,7 +327,7 @@ public class AdShotter3 {
 	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShot adShot) throws AdShotRunnerException {
 		
 		//If the AdShot is not to be treated like a tag, create and inject javascript
-		int lowestTagBottom = 0;
+		int minimumTagCutoff = 0;
 		if (!_treatAsTags) {
 					
 			//First, get the AdInjecter javascript with the current tags inserted
@@ -354,18 +356,65 @@ public class AdShotter3 {
 				adShot.setError(new AdShotRunnerException("Could not execute AdInjecter in page", e)); //return;
 			}
 			
-			//Mark which ads were injected and store the lowest tags bottom position
-			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
-			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
-			if ((injectedTagInfo != null) && (injectedTagInfo.containsKey("injectedTagIDs"))) {
-				adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
-				lowestTagBottom = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
-				consoleLog("	Injected Tags Size: " + adShot.injectedTagImages().size());
-				consoleLog("	Bottom position: " + lowestTagBottom);
+			//Mark which ads were injected and store the minimum cutoff position which is
+			//the lowest bottom position from the first of each tag injected
+			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<ArrayList<Float>>>>(){}.getType();
+			Map<String, ArrayList<ArrayList<Float>>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
+			if (injectedTagInfo != null) {
+				
+				//Mark the tags as injected and determine the lowest bottom position of the first injection of each tag
+				for (Map.Entry<String, ArrayList<ArrayList<Float>>> entry : injectedTagInfo.entrySet()) {
+					
+					//Name the keys for readability and get the TagImage object
+				    String tagID = entry.getKey();
+				    ArrayList<ArrayList<Float>> tagPositions = entry.getValue();
+				    TagImage currentTagImage = getTagImageByID(tagID, adShot.tagImages());
+				    
+				    //Mark the tag as injected
+					adShot.markTagImageAsInjected(tagID);
+					
+					//Get the bottom position of the topmost injection
+					int topTagBottom = 0;
+					for (ArrayList<Float> currentPosition : tagPositions) {
+						
+						//If the position is 0,0 ignore it
+						if ((currentPosition.get(0) != 0) || (currentPosition.get(1) != 0)) {
+							
+							//If the bottom of the current tag is higher than the current highest, store it
+							int currentPositionBottom = Math.round(currentPosition.get(1)) + currentTagImage.height();
+							if ((topTagBottom == 0) || (currentPositionBottom < topTagBottom)) {
+								topTagBottom = currentPositionBottom;
+							}
+						}
+					}
+					consoleLog(tagID + ": " + topTagBottom);
+					
+					//If the current tags bottom boundary is lower than the current minimum crop, replace it
+					if (minimumTagCutoff < topTagBottom) {
+						consoleLog("Changed " + minimumTagCutoff + " to " + topTagBottom);
+						minimumTagCutoff = topTagBottom;
+					}
+				}
+				
 			}
 			else {
 				consoleLog("------------------- Javascript returned empty String -------------------------");
 			}
+			
+			//Add a little margin to the minimum cutoff
+			minimumTagCutoff += 10;
+			consoleLog("Bottom position: " + minimumTagCutoff);
+//			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
+//			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
+//			if ((injectedTagInfo != null) && (injectedTagInfo.containsKey("injectedTagIDs"))) {
+//				adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
+//				minimumTagCutoff = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
+//				consoleLog("	Injected Tags Size: " + adShot.injectedTagImages().size());
+//				consoleLog("	Bottom position: " + minimumTagCutoff);
+//			}
+//			else {
+//				consoleLog("------------------- Javascript returned empty String -------------------------");
+//			}
 			consoleLog("Done injecting JS.");
 		}
 		
@@ -399,7 +448,7 @@ public class AdShotter3 {
 		//Crop the image
 		consoleLog("Cropping screenshot...");
 		try {
-			adShot.setImage(cropAndConvertImageFile(activeSeleniumWebDriver, screenShot, lowestTagBottom));
+			adShot.setImage(cropAndConvertImageFile(activeSeleniumWebDriver, screenShot, minimumTagCutoff));
 			consoleLog("Done cropping.");
 		}
 		catch (Exception e) {
@@ -810,6 +859,16 @@ public class AdShotter3 {
 		//Otherwise, return an empty string
 		return "";
 	} 
+	
+	private TagImage getTagImageByID(String tagID, Set<TagImage> tagImageList) {
+		
+		for (TagImage currentTagImage : tagImageList) {
+			if (currentTagImage.id().equals(tagID)) {return currentTagImage;}
+		}
+		
+		//If the tag wasn't found, return null
+		return null;
+	}
 
 	/**
 	 * Sets the time each chromedriver command runs.

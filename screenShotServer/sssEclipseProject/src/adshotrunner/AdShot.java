@@ -152,7 +152,7 @@ public class AdShot {
 		
 		ArrayList<String> idList = new ArrayList<String>();
 		idList.add(tagImageID);
-		markTagImageAsInjected(tagImageID);
+		markTagImageAsInjected(idList);
 	}
 	
 	/**

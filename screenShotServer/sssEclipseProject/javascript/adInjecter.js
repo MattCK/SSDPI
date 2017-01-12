@@ -4,7 +4,8 @@
 
 //Tags to be injected into the page. The line '//INSERT TAGS OBJECT//' is necessary to get the
 //tags from the calling java instance.
-var tags = [];
+let tags = [];
+//tags = [{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', tag: 'http://s3.amazonaws.com/asr-tagimages/07809e6b-9f3a-42aa-8fe0-6ba0adb102d0.png', placement: 0, width: 728, height: 90},{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'http://s3.amazonaws.com/asr-tagimages/f050eb7d-9a0c-4781-849c-bf34629e5695.png', placement: 0, width: 300, height: 250},{id: 'b722d748-dd25-493e-93c5-6fc1991f6392', tag: 'http://s3.amazonaws.com/asr-tagimages/074df31b-25d1-4a19-9b42-c8b8ab780738.png', placement: 0, width: 300, height: 50},{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', tag: 'http://s3.amazonaws.com/asr-tagimages/59b1ba0b-cf8a-4295-b578-fecefd91e907.png', placement: 0, width: 320, height: 50},{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', tag: 'http://s3.amazonaws.com/asr-tagimages/aa0a39ab-1abb-48a3-a2c2-458ae0b54c4f.png', placement: 0, width: 300, height: 600},];
 //INSERT TAGS OBJECT//
 
 //INSERT EXCEPTION SCRIPT//
@@ -12,13 +13,15 @@ var tags = [];
 //Remove the scrollbars
 document.documentElement.style.overflow = 'hidden';
 
-
 //Initialize and get the adInjecter object
-var adInjecter = initializeAdInjecter(tags);
+let adInjecter = initializeAdInjecter(tags);
 adInjecter.injectTagsIntoPage();
 
+console.log(adInjecter.injectedTags);
+
 //Return the list of injected tags and the lowest tag image bottom position. The position is returned as an array to help clarify java code.
-return JSON.stringify({"injectedTagIDs": adInjecter.injectedTagIDs, "lowestTagPosition": [adInjecter.lowestTagPosition]});
+//return JSON.stringify({"injectedTagIDs": adInjecter.injectedTagIDs, "lowestTagPosition": [adInjecter.lowestTagPosition]});
+return JSON.stringify(adInjecter.injectedTags);
 //console.log(adInjecter.outputString);
 
 
@@ -34,13 +37,16 @@ return JSON.stringify({"injectedTagIDs": adInjecter.injectedTagIDs, "lowestTagPo
 function initializeAdInjecter(tags) {
 
 	//Create the AdInjecter object
-	var adInjecter = {
+	let adInjecter = {
 
 		//Set the object variables
 		_tags: tags,											//Tags to inject into page
 		_ads: [],												//List of ads found on the page
 		_possibleAdElements: [],								//List of unmarked elements the size of a tag. Used if tag not injected.
 		injectedTagIDs: [],										//List of the IDs of the tags that were injected into the page
+		injectedTags: {},										//List of the tags injected into the page and their positions
+																//Associative array of tag IDs to array of x,y position
+																//{TAGID1:[[100,200]], TAGID2:[[200,300],[300,400]]}
 		lowestTagPosition: 0,									//The bottom position of the lowest tag image. Used for screenshot cropping.
 		outputString: "",										//String of output from the different called functions
 		_LARGEADWIDTH: 750,										//Width in pixels for an ad to be considered very large
@@ -59,17 +65,17 @@ function initializeAdInjecter(tags) {
 			adInjecter._removeScreenStealersAndRetrieveAds(document);
 
 			//Get the sorted ads and tags
-			var sortedAds = adInjecter._getAdElementsSortedByPosition(adInjecter._ads); 
-			var sortedPossibleAdElements = adInjecter._getAdElementsSortedByPosition(adInjecter._possibleAdElements); 
-			var sortedTags = adInjecter._getTagsSortedByPlacement(); 
+			let sortedAds = adInjecter._getAdElementsSortedByPosition(adInjecter._ads); 
+			let sortedPossibleAdElements = adInjecter._getAdElementsSortedByPosition(adInjecter._possibleAdElements); 
+			let sortedTags = adInjecter._getTagsSortedByPlacement(); 
 
 			//Inject the tags
 			adInjecter._replaceAdsWithTags(sortedTags, sortedAds);
 
 			//Remove the tags that have been injected and replace the possible ad elements with the rest
-			var anAdWasInjected = false;
+			let anAdWasInjected = false;
 			Object.keys(sortedTags).forEach(function (currentTagKey) {
-				for (var tagIndex = sortedTags[currentTagKey].length - 1; tagIndex >= 0; tagIndex--) {
+				for (let tagIndex = sortedTags[currentTagKey].length - 1; tagIndex >= 0; tagIndex--) {
 					if (sortedTags[currentTagKey][tagIndex].injected) {
 						sortedTags[currentTagKey].splice(tagIndex, 1);
 						anAdWasInjected = true;
@@ -94,12 +100,12 @@ function initializeAdInjecter(tags) {
 				if (sortedAds[currentTagKey] != null) {
 
 					//Loop through each ad and replace it with a tag
-					var currentAdArray = sortedAds[currentTagKey];
-					var currentTagArray = sortedTags[currentTagKey];
-					var currentTagIterator = 0;
+					let currentAdArray = sortedAds[currentTagKey];
+					let currentTagArray = sortedTags[currentTagKey];
+					let currentTagIterator = 0;
 					if (currentTagArray.length > 0) {
 
-						for (var adIndex = 0; adIndex < currentAdArray.length; ++adIndex) {
+						for (let adIndex = 0; adIndex < currentAdArray.length; ++adIndex) {
 
 							adInjecter.outputString += adIndex + ", ";
 
@@ -113,8 +119,8 @@ function initializeAdInjecter(tags) {
 							}
 
 							//Use unique variables for readability
-							var currentAd = currentAdArray[adIndex];
-							var currentTag = currentTagArray[currentTagIterator];
+							let currentAd = currentAdArray[adIndex];
+							let currentTag = currentTagArray[currentTagIterator];
 
 							//If the current ad has a valid element
 							if (currentAd.element) {
@@ -128,7 +134,7 @@ function initializeAdInjecter(tags) {
 								currentAd.element.innerHTML = "";
 
 								//Replace the ad with the tag
-								var tagImage = document.createElement('img');
+								let tagImage = document.createElement('img');
 								tagImage.src = currentTag.tag;
 								tagImage.style.width = currentAd.width + 'px';
 								tagImage.style.height = currentAd.height + 'px';
@@ -136,17 +142,34 @@ function initializeAdInjecter(tags) {
 								if (currentAd.element && currentAd.element.parentNode) {
 									currentAd.element.parentNode.replaceChild(tagImage, currentAd.element);
 
-									//Mark the tag as injected and store it in the injected tags ID array									
-									var testImageBox = tagImage.getBoundingClientRect();
-									if (testImageBox.top < 500) {
+									//Mark the tag as injected and store it in the injected tags ID array.
+									//The maximum top limit fixes the issue when a top ad element does not
+									//load correctly or is not flagged with the flood-opacity tag but
+									//gets injected lower in the page with the flood-opacity tag. It forces
+									//the AdInjecter to replace the element even  								
+									let tagImageBox = tagImage.getBoundingClientRect();
+									if (tagImageBox.top < 500) {
+										
+										//Mark the tag as injected so it does not get replaced by the
+										//second run through matching only position and not flood-opacity
 										sortedTags[currentTagKey][currentTagIterator].injected = true;
+
+										//If the ad has not been stored as injected, add it
 										if (adInjecter.injectedTagIDs.indexOf(currentTag.id) <= -1) {
 											adInjecter.injectedTagIDs[adInjecter.injectedTagIDs.length] = currentTag.id;
 										}
+
+										//If the tag has not been added to the injected tags object, add it
+										if (!adInjecter.injectedTags.hasOwnProperty(currentTag.id)) {
+											adInjecter.injectedTags[currentTag.id] = [];
+										}
+
+										//Add the position of the injected tag to the injected tags object
+										let injectedTagInstances = adInjecter.injectedTags[currentTag.id].length;
+										adInjecter.injectedTags[currentTag.id][injectedTagInstances] = [tagImageBox.left, tagImageBox.top];
 									}
 
 									//If this tag image is the lowest on the page so far, store its lower position
-									var tagImageBox = tagImage.getBoundingClientRect();
 									if (tagImageBox.bottom > adInjecter.lowestTagPosition) {
 										adInjecter.lowestTagPosition = Math.round(tagImageBox.bottom);
 									}
@@ -162,7 +185,7 @@ function initializeAdInjecter(tags) {
 								if (currentAd.element.parentNode) {
 									adInjecter._expandParents(currentAd.element.parentNode, currentAd.width, currentAd.height);
 
-									var targetNode = currentAd.element;
+									let targetNode = currentAd.element;
 									targetNode.style.display = '';
 									while (targetNode = targetNode.parentNode) {
 										targetNode.style.display = '';
@@ -196,9 +219,9 @@ function initializeAdInjecter(tags) {
 			}
 
 			//Get all of the nodes in the passed document
-			var headNodes = [].slice.call(curDocument.head.getElementsByTagName("*"));
-			var bodyNodes = [].slice.call(curDocument.body.getElementsByTagName("*"));
-			var nodes = headNodes.concat(bodyNodes);
+			let headNodes = [].slice.call(curDocument.head.getElementsByTagName("*"));
+			let bodyNodes = [].slice.call(curDocument.body.getElementsByTagName("*"));
+			let nodes = headNodes.concat(bodyNodes);
 
 			//Loop through for each element
 			Array.prototype.forEach.call(nodes, function(curNode) {
@@ -210,12 +233,12 @@ function initializeAdInjecter(tags) {
 				//curNode.style.setProperty('border', 0);
 
 				//Get the basic info from the node
-				var floodOpacity = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('flood-opacity');
-				var nodeBounds = curNode.getBoundingClientRect();
-				var nodeWidth = curNode.offsetWidth;
-				var nodeHeight = curNode.offsetHeight;
-				var zIndex = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('z-index');
-				var xyPosition = adInjecter._getNodePosition(curNode);
+				let floodOpacity = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('flood-opacity');
+				let nodeBounds = curNode.getBoundingClientRect();
+				let nodeWidth = curNode.offsetWidth;
+				let nodeHeight = curNode.offsetHeight;
+				let zIndex = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('z-index');
+				let xyPosition = adInjecter._getNodePosition(curNode);
 
 				//Remove any margin from the top HTML element
 				//---------------------------Should this be here?-----------------------------
@@ -242,7 +265,7 @@ function initializeAdInjecter(tags) {
 
 					//Gets the smallest viewable size of the node
 					//-------------------------------------Clean up this and function-----------------------------
-					var smallestContainerNode = adInjecter._getSmallestContainingNode(curNode);
+					let smallestContainerNode = adInjecter._getSmallestContainingNode(curNode);
 					nodeWidth = smallestContainerNode.offsetWidth;
 					nodeHeight = smallestContainerNode.offsetHeight;
 
@@ -252,7 +275,7 @@ function initializeAdInjecter(tags) {
 					if ((nodeWidth > adInjecter._LARGEADWIDTH) && (nodeHeight > adInjecter._LARGEADHEIGHT)) {
 						if (!adInjecter._areDimensionsOfATag(nodeWidth, nodeHeight)) {
 							adInjecter.outputString += "Hiding large frame ---\n";
-							var farthestIFrame = adInjecter._getFarthestSameDimensionsIFrame(curNode);
+							let farthestIFrame = adInjecter._getFarthestSameDimensionsIFrame(curNode);
 							if (farthestIFrame) {
 								farthestIFrame.style.display = 'none';
 								adInjecter.outputString += "Large IFrame found \n";
@@ -318,7 +341,7 @@ function initializeAdInjecter(tags) {
 			//Hide the passed element node
 			//curNode.style.display = 'none';
 
-			var curParent = curNode.parentNode;
+			let curParent = curNode.parentNode;
 			curNode.style.setProperty('border', 0);
 
 			if (curParent) {
@@ -348,7 +371,7 @@ function initializeAdInjecter(tags) {
 		* @return boolean 					TRUE if a tag exists with the passed dimensions, FALSE otherwise
 		*/
 		_areDimensionsOfATag: function(width, height) {
-			for (var i = 0; i < adInjecter._tags.length; ++i) {
+			for (let i = 0; i < adInjecter._tags.length; ++i) {
 				if ((width == adInjecter._tags[i].width) && (height == adInjecter._tags[i].height)) {
 					//console.log("Are Dimensions: " + width + ", " + height + " (" + adInjecter._tags[i].tag + ")");
 					return true;
@@ -370,15 +393,15 @@ function initializeAdInjecter(tags) {
 		_isFixedPositionScreenStealer: function(curNode) {
 
 			//Get the node info
-			var nodeBounds = curNode.getBoundingClientRect();
-			var nodeWidth = curNode.offsetWidth;
-			var nodeHeight = curNode.offsetHeight;
-			var zIndex = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('z-index');
-			var position = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('position');
-			var topMargin = parseInt(document.defaultView.getComputedStyle(curNode,null).getPropertyValue('margin-top'), 10);
-			var leftMargin = parseInt(document.defaultView.getComputedStyle(curNode,null).getPropertyValue('margin-left'), 10);
-			var topPosition = nodeBounds.top - topMargin;
-			var leftPosition = nodeBounds.left - leftMargin;
+			let nodeBounds = curNode.getBoundingClientRect();
+			let nodeWidth = curNode.offsetWidth;
+			let nodeHeight = curNode.offsetHeight;
+			let zIndex = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('z-index');
+			let position = document.defaultView.getComputedStyle(curNode,null).getPropertyValue('position');
+			let topMargin = parseInt(document.defaultView.getComputedStyle(curNode,null).getPropertyValue('margin-top'), 10);
+			let leftMargin = parseInt(document.defaultView.getComputedStyle(curNode,null).getPropertyValue('margin-left'), 10);
+			let topPosition = nodeBounds.top - topMargin;
+			let leftPosition = nodeBounds.left - leftMargin;
 
 			//If the node has a positive index, a fixed position, 
 			//and is not the dimensions of a tag, see if its a screen stealer
@@ -417,7 +440,7 @@ function initializeAdInjecter(tags) {
 			//Define the sort function that will be used for the ad arrays.
 			//Ads closer to the top right of the screen are put closer to the beginning of the array.
 			//Distance from the top of the screen always takes presidence over distance from the left.
-			var adSortFunction = function(firstAd, secondAd) {
+			let adSortFunction = function(firstAd, secondAd) {
 			    
 			    firstAdFactor = firstAd.yPosition + firstAd.xPosition/1000;
 			    secondAdFactor = secondAd.yPosition + secondAd.xPosition/1000;
@@ -427,12 +450,12 @@ function initializeAdInjecter(tags) {
 
 			//Loop through the ads and add them to the final associative object
 			adInjecter.outputString += "Ad dimensions: ";
-			var sortedAds = {};
+			let sortedAds = {};
 			for (adIndex in adElements) {
 
 				//Get the current ad and figure out its key
-			    var currentAd = adElements[adIndex];
-			    var currentAdKey = currentAd.width + 'x' + currentAd.height;
+			    let currentAd = adElements[adIndex];
+			    let currentAdKey = currentAd.width + 'x' + currentAd.height;
 
 			    //If that key does not exist in the object yet, create it and its associated array
 			    if (sortedAds[currentAdKey] == null) {
@@ -464,17 +487,17 @@ function initializeAdInjecter(tags) {
 			
 			//Define the sort function that will be used for the tag arrays.
 			//Tags are sorted by their placement with lower numbers being placed first in arrays
-			var tagSortFunction = function(firstAd, secondAd) {
+			let tagSortFunction = function(firstAd, secondAd) {
 			    return firstAd.placement - secondAd.placement;
 			};
 
 			//Loop through the tags and add them to the final associative object
-			var sortedTags = {};
+			let sortedTags = {};
 			for (tagIndex in adInjecter._tags) {
 
 				//Get the current tag and figure out its key
-			    var currentTag = adInjecter._tags[tagIndex];
-			    var currentTagKey = currentTag.width + 'x' + currentTag.height;
+			    let currentTag = adInjecter._tags[tagIndex];
+			    let currentTagKey = currentTag.width + 'x' + currentTag.height;
 
 			    //If that key does not exist in the object yet, create it and its associated array
 			    if (sortedTags[currentTagKey] == null) {
@@ -505,8 +528,8 @@ function initializeAdInjecter(tags) {
 
 			//Grab the passed node's dimensions
 			currentNode.style.setProperty('border', 0);
-			var nodeWidth = currentNode.offsetWidth;
-			var nodeHeight = currentNode.offsetHeight;
+			let nodeWidth = currentNode.offsetWidth;
+			let nodeHeight = currentNode.offsetHeight;
 
 			//If the element is smaller than the passed dimensions, increase its size and check its parent
 			if ((nodeWidth < width) || (nodeHeight < height)) {
@@ -536,10 +559,10 @@ function initializeAdInjecter(tags) {
 		_getSmallestContainingNode: function(containedNode) {
 
 			//Start by getting passed node's width and height
-			var smallestNode = containedNode;
-			var smallestNodeWidth = containedNode.offsetWidth;
-			var smallestNodeHeight = containedNode.offsetHeight;
-			var currentNode = smallestNode;
+			let smallestNode = containedNode;
+			let smallestNodeWidth = containedNode.offsetWidth;
+			let smallestNodeHeight = containedNode.offsetHeight;
+			let currentNode = smallestNode;
 
 			//adInjecter.outputString += "Smallest begin: " + currentNode.nodeName + " - " + smallestNodeWidth + 
 			//							"x" + smallestNodeHeight + "\n";
@@ -549,8 +572,8 @@ function initializeAdInjecter(tags) {
 			while (currentNode) {
 
 				//Get the width and height of the currentNode
-				var currentNodeWidth = currentNode.offsetWidth;
-				var currentNodeHeight = currentNode.offsetHeight;
+				let currentNodeWidth = currentNode.offsetWidth;
+				let currentNodeHeight = currentNode.offsetHeight;
 
 				//If the node is greater than 5x5, is not an anchor or object,
 				//and is smaller or equal to previous smallest node, mark it as the smallest
@@ -559,9 +582,9 @@ function initializeAdInjecter(tags) {
 						if ((currentNodeWidth <= smallestNodeWidth) && 
 							(currentNodeHeight <= smallestNodeHeight)) {
 
-							var smallestNode = currentNode;
-							var smallestNodeWidth = currentNodeWidth;
-							var smallestNodeHeight = currentNodeHeight;
+							let smallestNode = currentNode;
+							let smallestNodeWidth = currentNodeWidth;
+							let smallestNodeHeight = currentNodeHeight;
 						}
 					}
 				}
@@ -620,9 +643,9 @@ function initializeAdInjecter(tags) {
 		_getFarthestSameDimensionsIFrame: function(startNode) {
 
 			//Loop through the node's iframes and find the farthest with the same dimensions
-			var nodeWidth = startNode.offsetWidth;
-			var nodeHeight = startNode.offsetHeight;
-			var farthestFrame = null;
+			let nodeWidth = startNode.offsetWidth;
+			let nodeHeight = startNode.offsetHeight;
+			let farthestFrame = null;
 			currentFrame = adInjecter._getContainingFrame2(startNode);
 			adInjecter.outputString += "Starting frame: " + currentFrame + " from " + startNode + "\n";
 			while (currentFrame) {
@@ -648,10 +671,10 @@ function initializeAdInjecter(tags) {
 		_getContainingFrame: function(containedNode) {
 
 			//If the current node is not a document node, grab the containing document
-			var frameDocument = (containedNode.ownerDocument) ? containedNode.ownerDocument : containedNode;
+			let frameDocument = (containedNode.ownerDocument) ? containedNode.ownerDocument : containedNode;
 
 			//Get the name of the frame if one exists
-			var frameName = frameDocument.defaultView.name;
+			let frameName = frameDocument.defaultView.name;
 			//adInjecter.outputString += "Frame name: " + frameName + "\n";
 
 			//If there is a name, return the frame. Otherwise, return null.
@@ -668,12 +691,12 @@ function initializeAdInjecter(tags) {
 		_getContainingFrame2: function(containedNode) {
 
 			//If the current node is not a document node, grab the containing document
-			var frameDocument = (containedNode.ownerDocument) ? containedNode.ownerDocument : containedNode;
+			let frameDocument = (containedNode.ownerDocument) ? containedNode.ownerDocument : containedNode;
 
 			//Get the name of the frame if one exists
 			return frameDocument.defaultView.frameElement;
 
-			var frameName = frameDocument.defaultView.name;
+			let frameName = frameDocument.defaultView.name;
 			//adInjecter.outputString += "Frame name: " + frameName + "\n";
 
 			//If there is a name, return the frame. Otherwise, return null.
@@ -690,12 +713,12 @@ function initializeAdInjecter(tags) {
 		_getNodePosition: function(positionedNode) {
 
 			//Grab the initial locations
-			var boundingRectangle = positionedNode.getBoundingClientRect();
-			var xPosition = boundingRectangle.left;
-			var yPosition = boundingRectangle.top;
+			let boundingRectangle = positionedNode.getBoundingClientRect();
+			let xPosition = boundingRectangle.left;
+			let yPosition = boundingRectangle.top;
 
 			//For each frame we are in, add the frame's coordinates to the base coordinates
-			var curFramElement = positionedNode;
+			let curFramElement = positionedNode;
 			while (curFramElement = adInjecter._getContainingFrame(curFramElement)) {
 				boundingRectangle = curFramElement.getBoundingClientRect();
 				xPosition += boundingRectangle.left;
