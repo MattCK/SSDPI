@@ -56,7 +56,7 @@ use AdShotRunner\DFP\DFPCommunicator;
 			</tr>
 			<tr>
 				<td>Description:</td>				
-				<td><textarea id="contactDescription" rows="4"></textarea></td>
+				<td><textarea id="contactDescription" name="contactDescription" rows="4"></textarea></td>
 			</tr>
 			<tr>
 				<td>&nbsp;</td>				

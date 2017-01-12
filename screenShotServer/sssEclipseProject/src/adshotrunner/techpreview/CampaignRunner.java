@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -155,7 +156,7 @@ public class CampaignRunner implements Runnable {
 		
 		//Upload them
 		int imageIndex = 1;
-		HashMap<String, String>  pageAndScreenshotURLs = new HashMap<String, String>();
+		HashMap<String, String>  pageAndScreenshotURLs = new LinkedHashMap<String, String>();
 		for (AdShot currentAdShot : adShotList) {
 			System.out.println("Saving a screenshot");
 			System.out.println("URL: " + currentAdShot.finalURL());

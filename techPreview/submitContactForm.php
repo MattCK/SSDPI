@@ -14,7 +14,70 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
-use AdShotRunner\Utilities\NotificationClient;
+use AdShotRunner\Utilities\EmailClient;
+
+//Make sure all the necessary information has been passed
+if (($_POST["contactName"]) && ($_POST["contactEmail"]) && ($_POST["contactType"]) && 
+	($_POST["contactProblem"]) && ($_POST["contactDescription"])) {
+
+	//Format the data for datbase insertion
+	$userID = ($_POST["contactUserID"]) ? (int)$_POST["contactUserID"] : 0;
+	$jobID = databaseEscape($_POST["contactJobID"]);
+	$name = databaseEscape($_POST["contactName"]);
+	$email = databaseEscape($_POST["contactEmail"]);
+	$type = databaseEscape($_POST["contactType"]);
+	$problem = databaseEscape($_POST["contactProblem"]);
+	$description = databaseEscape($_POST["contactDescription"]);
+
+	//Store the message in the database
+	databaseQuery("INSERT INTO contactMessages (CNM_USR_id, 
+												CNM_jobID,
+												CNM_name,
+												CNM_email,
+												CNM_type,
+												CNM_problem,
+												CNM_description) 
+				   VALUES ($userID,
+				   		  '$jobID',
+				   		  '$name',
+				   		  '$email',
+				   		  '$type',
+				   		  '$problem',
+				   		  '$description')");
+
+	//Create the email subject
+	$messageType = ($_POST["contactType"] == "IDEA") ? "Idea" :
+													   "Issue - " . $_POST["contactProblem"];
+	$emailSubject = "ASR Contact Message: " . $messageType . " (" . $_POST["contactName"] . ")";
+
+	//Create the email body
+	$emailBody =  "User ID: " . $_POST["contactUserID"] . "\n";
+	$emailBody .= "Job ID: " . $_POST["contactJobID"] . "\n";
+	$emailBody .= "Name: " . $_POST["contactName"] . "\n";
+	$emailBody .= "Email: " . $_POST["contactEmail"] . "\n";
+	$emailBody .= "Type: " . $_POST["contactType"] . "\n";
+	$emailBody .= "Problem: " . $_POST["contactProblem"] . "\n";
+	$emailBody .= "Description: " . $_POST["contactDescription"] . "\n";
+
+	//Send the email
+	EmailClient::sendEmail(EmailClient::CONTACTFORMADDRESS, EmailClient::ASRINFOADDRESS, 
+							$emailSubject, $emailBody);
+
+	//Return a success. 
+	echo createJSONResponse(true);
+
+}
+
+//Otherwise, ask the user to fill out all fields
+else {
+	echo createJSONResponse(false, "Please fill out all the fields.");
+}
+
+exit;
+
+//Add the domain to the database
+$cleanDomainString = "'" . databaseEscape($domain) . "'";
+databaseQuery("INSERT INTO menuGrabberDomains (MGD_domain) VALUES ($cleanDomainString)");
 
 echo createJSONResponse(true, "Menu not found.", array()); exit();
 

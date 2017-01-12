@@ -546,8 +546,14 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 	padding: 0px;
 }
 
-/*.ui-dialog-titlebar {
-	background-color: #b2b2b2;
-	background-image: none;
-	border-color: #929292;
-}*/
+.problemLinkDiv {
+    display: inline-block;
+    height: 17px;
+    vertical-align: middle;
+}
+
+.problemLinkDiv a {
+    border-bottom: 1px dashed;
+    font-size: 85%;
+    margin-left: 2px;
+}

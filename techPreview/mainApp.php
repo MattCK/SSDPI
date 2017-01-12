@@ -58,6 +58,9 @@ if (USERDFPNETWORKCODE) {
 
 		<h2 id="dfpOrdersHeader">DFP Orders</h2>
 		<img helpIcon="" id="dfpOrdersHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
+		<div class="problemLinkDiv">
+			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+		</div>
 		<div id="dfpOrdersDiv" class="section"> 
 			<table>
 				<tr>
@@ -96,6 +99,9 @@ if (USERDFPNETWORKCODE) {
 			<input id="domain" name="domain" type="text">
 			<input class="button-tiny" id="getMenuButton" type="button" value="Go!" onclick="asr.getMenu()">
 			<img helpIcon="" id="domainInputHelpIcon" class="helpIcon" src="images/helpIcon.png" />
+			<div class="problemLinkDiv">
+				<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+			</div>
 		</div>
 
 		<div id="pagesTableDiv" class="section" style="display: none">
@@ -103,6 +109,9 @@ if (USERDFPNETWORKCODE) {
 			<input class="button-tiny"  type="button" value="Add URL" onclick="asr.addURLRow()">
 			<span id="noMenuNotification" style="display: none;">Sections not available for this site</span>
 			<img helpIcon="" id="addPagesHelpIcon" class="helpIcon" src="images/helpIcon.png" />
+			<div class="problemLinkDiv">
+				<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+			</div>
 			<table id="pagesTable"></table>
 		</div>
 	</form>
@@ -110,6 +119,9 @@ if (USERDFPNETWORKCODE) {
 
 	<h2>Creative</h2>
 	<img helpIcon="" id="creativeHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
+	<div class="problemLinkDiv">
+		<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+	</div>
 	<div class="section">
 	   	<div class="copyPasteTextTitle">Copy and Paste Tag Text:</div>
 	   	<div id="tagTextDiv">
@@ -138,14 +150,13 @@ if (USERDFPNETWORKCODE) {
 
 </div>
 
-<!-- ------------------------------------------- Contact Form Div ------------------------------------------ -->
+<!-- ******************************** Contact Form Div ******************************** -->
 
 <div style="display: none;">
 	<?PHP include("contactForm.php");?>
 </div>
 
-
-<!-- ------------------------------------------------------------------------------------------------------- -->
+<!-- ********************************************************************************** -->
 
 
 

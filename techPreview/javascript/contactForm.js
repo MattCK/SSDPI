@@ -57,6 +57,7 @@ var contactForm = {
 						
 			//If failure, hide the form and show the failure text
 			else {
+				alert(response.message);
 				base.hide("asrContactForm");
 				base.show("contactFailureDiv");
 			}

@@ -19,6 +19,8 @@ class EmailClient {
 	const SCREENSHOTADDRESS = 'screenshots@adshotrunner.com';
 	const MATTADDRESS = 'matt@adshotrunner.com';
 	const JUICIOADDRESS = 'juicio@adshotrunner.com';
+	const CONTACTFORMADDRESS = 'contactform@adshotrunner.com';
+	const ASRINFOADDRESS = 'info@adshotrunner.com';
 	
 
 	//--------------------------------------------------------------------------------------

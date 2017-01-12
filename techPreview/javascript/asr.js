@@ -118,6 +118,9 @@ let asr = {
 		asr._rowIndex += 1;
 
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		console.log("Pages table length: " + base.nodeFromID("pagesTable").rows.length);
+		console.log("Tags being processed: " + asr._tagsBeingProcessed);
+		console.log("Queued tags: " + asr._queuedTags.length);
 		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
 			base.enable("getScreenshotsButton");}
 		else {base.disable("getScreenshotsButton");}
@@ -279,6 +282,9 @@ let asr = {
 		formData.append('image', tagImageData);
 		base.asyncRequest(asr._uploadTagImageURL, formData, callback, true);
 
+		//Note we are processing a new tag
+        ++asr._tagsBeingProcessed;
+
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
 		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
 			base.enable("getScreenshotsButton");}
@@ -384,7 +390,7 @@ let asr = {
 			imageLIHTML += 		'</div>';
 			imageLIHTML += 	'</div>';
 	        $("#" + tagLIID).html(imageLIHTML);
-	        //--asr._tagsBeingProcessed;
+	        --asr._tagsBeingProcessed;
 
 			//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
 			console.log("pages table length: " + base.nodeFromID("pagesTable").rows.length);

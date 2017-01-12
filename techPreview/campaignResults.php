@@ -20,7 +20,7 @@ require_once('systemSetup.php');
 		<h1>AdShotRunner&trade;: Free Tech Preview</h1> 
 	</div>
 	<div id="logout">
-		<a href="mailto:contact@dangerouspenguins.com">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
+		<a onclick="contactForm.reset(); contactFormDialog.open()">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </div>
 
@@ -48,11 +48,17 @@ require_once('systemSetup.php');
 		</div>
 
 		<h2>PowerPoint</h2>
+		<div class="problemLinkDiv">
+			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+		</div>
 		<div id="powerPointDiv" class="section">
 			<a id="powerPointLink" href="#">Click to Download PowerPoint of Screenshots</a>
 		</div>
 
 		<h2>Screenshots</h2>
+		<div class="problemLinkDiv">
+			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+		</div>
 		<div id="screenshotsDiv" class="section" align="center">
 			<table id="screenshotsTable"></table>
 		</div>
@@ -60,14 +66,27 @@ require_once('systemSetup.php');
 	</div>
 </div>
 
+<!-- ******************************** Contact Form Div ******************************** -->
 
+<div style="display: none;">
+	<?PHP include("contactForm.php");?>
+</div>
+
+<!-- ********************************************************************************** -->
 
 </body>
 </html>
 
 <script>
+
+//Reset the contact form in case the user pressed the refresh button
+contactForm.reset();
+
+//Set the job ID and start polling for the results JSON file. Turn contact form into dialog.
+let contactFormDialog = null;
 $(function() {
 	campaign.jobID = <?PHP echo "'" . $_GET['jobID'] . "'" ?>;
 	campaign.getResults();
+	contactFormDialog = base.createDialog("contactFormDiv", "Contact Us", true, 650);
 });
 </script>
