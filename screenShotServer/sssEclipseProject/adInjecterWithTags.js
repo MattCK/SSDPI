@@ -2,107 +2,13 @@
 * Injects the passed tags into the URLs they are attached to. Full page ads and floating elements are removed.
 */ 
 
-//Tags to be injected into the page. The line 'tags = [{id: '34ff340a-1056-4416-96b8-3882319919b1', tag: 'http://s3.amazonaws.com/asr-tagimages/f978c9c0-d0ee-481d-a3fa-280cc1b28760.png', placement: 0, width: 300, height: 50},{id: '01276c6f-836d-40b0-9ee1-2c12009e1f28', tag: 'http://s3.amazonaws.com/asr-tagimages/a21f4516-9471-464d-842c-5469bbf136db.png', placement: 0, width: 320, height: 50},{id: 'bc9ad839-7ed3-4ee9-8fc3-f6b9cefb1a35', tag: 'http://s3.amazonaws.com/asr-tagimages/c025118e-b086-4c10-90dc-7cd63af0fa1a.png', placement: 0, width: 300, height: 250},{id: '69627f1b-3771-419d-85f7-f6566604f638', tag: 'http://s3.amazonaws.com/asr-tagimages/a7497dd1-f42a-4c44-84fb-f88ff88cee1d.png', placement: 0, width: 728, height: 90},{id: '762e5173-365c-4fb7-baba-9cfc391af4e8', tag: 'http://s3.amazonaws.com/asr-tagimages/0fb7c955-1556-4499-8046-1bb133df9f29.png', placement: 0, width: 300, height: 600},];' is necessary to get the
+//Tags to be injected into the page. The line 'tags = [{id: 'e0cf3779-3963-46f0-882f-ed7c1b4e652a', tag: 'http://s3.amazonaws.com/asr-tagimages/ece3dd2e-3d42-42ef-b18a-a7996e2296d4.png', placement: 0, width: 300, height: 600},{id: 'e470f8e2-064f-4fe3-940f-97381f5e1153', tag: 'http://s3.amazonaws.com/asr-tagimages/535dd4ff-7bfc-4aad-8731-eb0025327fed.png', placement: 0, width: 300, height: 250},{id: '914ffc54-b087-4973-978a-0f890431e32a', tag: 'http://s3.amazonaws.com/asr-tagimages/5f47b616-f00a-412e-bf50-4d787a302803.png', placement: 0, width: 320, height: 50},{id: 'df698b11-e80b-4337-aa9d-63c57dce1c3a', tag: 'http://s3.amazonaws.com/asr-tagimages/11c16696-2b24-4c7e-81b8-7cd1b329a164.png', placement: 0, width: 300, height: 50},{id: 'abe94f99-eecd-4d4d-8321-2fc6be4979d8', tag: 'http://s3.amazonaws.com/asr-tagimages/f8ed7ab3-afe8-4dc7-9c0e-fcde1b044ab5.png', placement: 0, width: 728, height: 90},];' is necessary to get the
 //tags from the calling java instance.
 let tags = [];
 //tags = [{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', tag: 'http://s3.amazonaws.com/asr-tagimages/07809e6b-9f3a-42aa-8fe0-6ba0adb102d0.png', placement: 0, width: 728, height: 90},{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'http://s3.amazonaws.com/asr-tagimages/f050eb7d-9a0c-4781-849c-bf34629e5695.png', placement: 0, width: 300, height: 250},{id: 'b722d748-dd25-493e-93c5-6fc1991f6392', tag: 'http://s3.amazonaws.com/asr-tagimages/074df31b-25d1-4a19-9b42-c8b8ab780738.png', placement: 0, width: 300, height: 50},{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', tag: 'http://s3.amazonaws.com/asr-tagimages/59b1ba0b-cf8a-4295-b578-fecefd91e907.png', placement: 0, width: 320, height: 50},{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', tag: 'http://s3.amazonaws.com/asr-tagimages/aa0a39ab-1abb-48a3-a2c2-458ae0b54c4f.png', placement: 0, width: 300, height: 600},];
-tags = [{id: '34ff340a-1056-4416-96b8-3882319919b1', tag: 'http://s3.amazonaws.com/asr-tagimages/f978c9c0-d0ee-481d-a3fa-280cc1b28760.png', placement: 0, width: 300, height: 50},{id: '01276c6f-836d-40b0-9ee1-2c12009e1f28', tag: 'http://s3.amazonaws.com/asr-tagimages/a21f4516-9471-464d-842c-5469bbf136db.png', placement: 0, width: 320, height: 50},{id: 'bc9ad839-7ed3-4ee9-8fc3-f6b9cefb1a35', tag: 'http://s3.amazonaws.com/asr-tagimages/c025118e-b086-4c10-90dc-7cd63af0fa1a.png', placement: 0, width: 300, height: 250},{id: '69627f1b-3771-419d-85f7-f6566604f638', tag: 'http://s3.amazonaws.com/asr-tagimages/a7497dd1-f42a-4c44-84fb-f88ff88cee1d.png', placement: 0, width: 728, height: 90},{id: '762e5173-365c-4fb7-baba-9cfc391af4e8', tag: 'http://s3.amazonaws.com/asr-tagimages/0fb7c955-1556-4499-8046-1bb133df9f29.png', placement: 0, width: 300, height: 600},];
+tags = [{id: 'e0cf3779-3963-46f0-882f-ed7c1b4e652a', tag: 'http://s3.amazonaws.com/asr-tagimages/ece3dd2e-3d42-42ef-b18a-a7996e2296d4.png', placement: 0, width: 300, height: 600},{id: 'e470f8e2-064f-4fe3-940f-97381f5e1153', tag: 'http://s3.amazonaws.com/asr-tagimages/535dd4ff-7bfc-4aad-8731-eb0025327fed.png', placement: 0, width: 300, height: 250},{id: '914ffc54-b087-4973-978a-0f890431e32a', tag: 'http://s3.amazonaws.com/asr-tagimages/5f47b616-f00a-412e-bf50-4d787a302803.png', placement: 0, width: 320, height: 50},{id: 'df698b11-e80b-4337-aa9d-63c57dce1c3a', tag: 'http://s3.amazonaws.com/asr-tagimages/11c16696-2b24-4c7e-81b8-7cd1b329a164.png', placement: 0, width: 300, height: 50},{id: 'abe94f99-eecd-4d4d-8321-2fc6be4979d8', tag: 'http://s3.amazonaws.com/asr-tagimages/f8ed7ab3-afe8-4dc7-9c0e-fcde1b044ab5.png', placement: 0, width: 728, height: 90},];
 
-/**
-*  wkyc.com exception script
-*
-*  On desktop Chrome, the top banner ad often is not displayed at all or is displayed 
-*  as a much larger ad size. When the latter occurs, the image is replaced by the
-*  Ad Injecter but is stretched to the larger size.
-*
-*  This script replaces the entire ad div element, and its children, with a dummy
-*  holder div with the correct margin and 728x90 size. A second 728x90 div
-*  is placed inside of it with the flood-opacity set so it will be replaced
-*  by the ad injecter.
-*
-*  The div used on the page has the id 'layout-column_column-1'.
-*/
-
-let found728x90 = false;
-let found320x50 = false;
-//Check to see if a 728x90 or 320x50 tag has been passed by the AdShotter
-for (tagIndex in tags) {
-
-    let currentTag = tags[tagIndex];
-    if ((currentTag.width == 728) && (currentTag.height == 90)) {
-    	found728x90= true;
-    }
-    if ((currentTag.width == 320) && (currentTag.height == 50)) {
-    	found320x50= true;
-    }
-}
-//Get the div holding the banner ad
-//this selector works for mobile and desktop
-let bannerAdDiv = document.querySelector("#layout-column_column-1 div.portlet-body");
-
-//Run exception on desktop browsers (no mobile)
-if ((!navigator.userAgent.toLowerCase().includes("mobile"))) {
-
-	//If a 728x90 tag has been passed, replace the header ad with a 728x90 div
-	//and then place a second div inside of the first for the ad injecter to
-	// replace
-	if (found728x90) {
-
-		//remove all of the elements children
-		while (bannerAdDiv.firstChild) {
-			bannerAdDiv.removeChild(bannerAdDiv.firstChild);
-		}
-
-		//Set the banner ads size, margin, and visibility so that it is centered
-		//and placed correctly.
-		bannerAdDiv.style.visibility = 'visible';
-		bannerAdDiv.style.width = '728px';
-		bannerAdDiv.style.height = '90px';
-		bannerAdDiv.style.margin = "0 auto";
-		bannerAdDiv.style.marginBottom = "10px";
-
-		//Create the ad filler div which will be replaced by the ad injecter
-		//and add it inside the banner ad div
-		let adFillerDiv =  document.createElement('div');
-		adFillerDiv.style.floodOpacity = "0.9898";
-		adFillerDiv.style.width = '728px';
-		adFillerDiv.style.height = '90px';
-		bannerAdDiv.appendChild(adFillerDiv);
-	}
-}
-//Run exception on mobile
-if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
-
-	//If a 320x50 tag has been passed, replace the header ad with a 320x50 div
-	//and then place a second div inside of the first for the ad injecter to
-	// replace
-	if (found320x50) {
-
-		//remove all of the elements children
-		while (bannerAdDiv.firstChild) {
-			bannerAdDiv.removeChild(bannerAdDiv.firstChild);
-		}
-
-		//Set the banner ads size, margin, and visibility so that it is centered
-		//and placed correctly.
-		bannerAdDiv.style.visibility = 'visible';
-		bannerAdDiv.style.width = '320px';
-		bannerAdDiv.style.height = '50px';
-		bannerAdDiv.style.margin = "0 auto";
-		bannerAdDiv.style.marginBottom = "10px";
-		bannerAdDiv.style.martinTop = "10px"
-
-		//Create the ad filler div which will be replaced by the ad injecter
-		//and add it inside the banner ad div
-		let adFillerDiv =  document.createElement('div');
-		adFillerDiv.style.floodOpacity = "0.9898";
-		adFillerDiv.style.width = '320px';
-		adFillerDiv.style.height = '50px';
-		bannerAdDiv.appendChild(adFillerDiv);
-	}
-}
-
-
+//INSERT EXCEPTION SCRIPT//
 
 //Remove the scrollbars
 document.documentElement.style.overflow = 'hidden';

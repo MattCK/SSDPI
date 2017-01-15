@@ -15,7 +15,7 @@ header("Cache-control: private");
 
 //Verify a valid user session exists. If not, return the user to the index page.
 if (!$_SESSION['userID']){
-	header("Location: mainApp.php");
+	header("Location: index.php");
 	exit;
 }
 

@@ -70,10 +70,11 @@ function usernameAlreadyTaken($username) {
 * @param string $password  	The plaint text password of the user to create. This will be hashed before database insertion.
 * @param string $firstName  The first name of the user to create.
 * @param string $lastName  	The last name of the user to create.
+* @param string $company  	The company of the user to create.
 * @param string $email  	The email of the user to create.
 * @return User  		 	Instance of new User on success and NULL on failure.
 */
-function registerUser($username, $password, $firstName, $lastName, $email) {
+function registerUser($username, $password, $firstName, $lastName, $company, $email) {
 
 	//Verify all the info was passed. If not, return NULL.
 	if ((!$username) || (!$password) || (!$firstName) || (!$lastName) || (!$email)) {return NULL;}
@@ -84,14 +85,22 @@ function registerUser($username, $password, $firstName, $lastName, $email) {
 	//Encode the password using sha1 hashing and salt.
 	$hashedPassword = sha1("hyph3n@t1on" . $password);
 	
-	//Create the new user, add the data, and insert it into the system
+	//Create the new user and add the data
 	$newUser = new User();
 	$newUser->setUsername($_POST['email']);
 	$newUser->setPassword($hashedPassword);
 	$newUser->setFirstName($_POST['firstName']);
 	$newUser->setLastName($_POST['lastName']);
+	$newUser->setCompany($_POST['company']);
 	$newUser->setEmail($_POST['email']);
+
+	//Set the default PowerPoint background image. This should not be static here in the production version.
+	$newUser->setPowerPointBackground("DefaultBackground.jpg");
+
+	//Insert the user into the database
 	$newUser = User::insert($newUser);
+
+	//Does this do anything? Is it for versioning in the history table?a
 	$curUser = User::getUser($newUser->getID());
 	$curUser = User::update($curUser);
 	

@@ -15,22 +15,14 @@ require_once('systemSetup.php');
 */
 require_once(FUNCTIONPATH . 'loginFunctions.php');
 
-use Aws\Common\Aws;
-
-//function getAWSFactory() {
-//	return Aws::factory(RESTRICTEDPATH . 'awsFrontendProfile.php');
-//}
-
-
-//If the login form was submitted, attempt to login using those credentials.
-$loginError = false;
-$registrationError = "";
-$passwordResetError = "";
 
 //Set the tab to open at the beginning
 $openTab = 0;
 
 //If the login form was submitted, attempt to login using those credentials.
+$loginError = false;
+$registrationError = "";
+$passwordResetError = "";
 if ($_POST['loginSubmit']) {
 
 	//Attempt to login the user using the supplied username and password
@@ -61,6 +53,9 @@ else if ($_POST['registerSubmit']) {
 	/*else if (strlen($_POST['desiredLogin']) == 0) {
 		$registrationError = "Please enter a desired Login Name.";
 	}*/
+	else if (strlen($_POST['company']) == 0) {
+		$registrationError = "Please enter your company name.";
+	}
 	else if (strlen($_POST['email']) == 0) {
 		$registrationError = "Please enter an email address.";
 	}
@@ -83,7 +78,7 @@ else if ($_POST['registerSubmit']) {
 	else {
 	
 		//Insert the user into the system
-		if (registerUser($_POST['email'], $_POST['newPassword1'], $_POST['firstName'], $_POST['lastName'], $_POST['email'])) {
+		if (registerUser($_POST['email'], $_POST['newPassword1'], $_POST['firstName'], $_POST['lastName'], $_POST['company'], $_POST['email'])) {
 		
 			//If the registration was successful, send an email to verify the account
 			sendVerificationEmail($_POST['email']);
@@ -132,7 +127,7 @@ else {
 $(function() {
 	$( "#tabsDiv" ).tabs({active: <?PHP echo $openTab ?>});
 	
-	 $( "#explanationDiv" ).dialog({
+	$( "#explanationDiv" ).dialog({
 		autoOpen: false,
 		modal: true,
 		width: 500
@@ -209,6 +204,10 @@ $(function() {
 							<tr>
 								<td><strong>Last Name:</strong></td>
 								<td><input type="text" name="lastName" id="lastName" maxlength="24" value="<? if ($registrationError) echo $_POST['lastName'];?>">*</td>
+							</tr>
+							<tr>
+								<td><strong>Company:</strong></td>
+								<td><input type="text" name="company" id="company" maxlength="24" value="<? if ($registrationError) echo $_POST['company'];?>">*</td>
 							</tr>
 							<!--tr>
 								<td><strong>Desired Login Name:</strong></td>

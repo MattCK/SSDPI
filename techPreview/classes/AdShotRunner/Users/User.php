@@ -121,13 +121,17 @@ class User {
 											USR_password,
 											USR_firstName,
 											USR_lastName,
+											USR_company,
 											USR_email,
+											USR_powerPointBackground,
 											USR_verified)
 						 VALUES ('" . databaseEscape($newUser->getUsername()) . "',
 								'" . databaseEscape($newUser->getPassword()) . "',
 								'" . databaseEscape($newUser->getFirstName()) . "',
 								'" . databaseEscape($newUser->getLastName()) . "',
+								'" . databaseEscape($newUser->getCompany()) . "',
 								'" . databaseEscape($newUser->getEmail()) . "',
+								'" . databaseEscape($newUser->getPowerPointBackground()) . "',
 								'" . databaseEscape($newUser->isVerified()) . "')";
 		databaseQuery($addUserQuery);
 		
@@ -182,7 +186,9 @@ class User {
 								USR_password = '" . databaseEscape($modifiedUser->getPassword()) . "',
 								USR_firstName = '" . databaseEscape($modifiedUser->getFirstName()) . "',
 								USR_lastName = '" . databaseEscape($modifiedUser->getLastName()) . "',
+								USR_company = '" . databaseEscape($modifiedUser->getCompany()) . "',
 								USR_email = '" . databaseEscape($modifiedUser->getEmail()) . "',
+								USR_powerPointBackground = '" . databaseEscape($modifiedUser->getPowerPointBackground()) . "',
 								USR_verified = '" . databaseEscape($modifiedUser->isVerified()) . "'
 							WHERE USR_id = " . $modifiedUser->getID();
 		databaseQuery($updateUserQuery);
@@ -356,9 +362,19 @@ class User {
 	private $lastName;
 
 	/**
+	* @var string  Company where the user is employed
+	*/
+	private $company;
+
+	/**
 	* @var string  Email of the user
 	*/
 	private $email;
+
+	/**
+	* @var string  Filename of the background image to use in Powerpoints
+	*/
+	private $powerPointBackground;
 
 	/**
 	* @var boolean  Flags whether or not the user has been verified. TRUE if it has been verified.
@@ -399,14 +415,16 @@ class User {
 	*
 	* @param mixed $userInfo  Associative array with the names of the table fields and their corresponding data
 	*/
-	function __construct($userInfo = NULL){
+	function __construct($userInfo = NULL) {
 		
 		if (($userInfo) && (is_array($userInfo))) {
 			$this->setUsername($userInfo['USR_username']);
 			$this->setPassword($userInfo['USR_password']);
 			$this->setFirstName($userInfo['USR_firstName']);
 			$this->setLastName($userInfo['USR_lastName']);
+			$this->setCompany($userInfo['USR_company']);
 			$this->setEmail($userInfo['USR_email']);
+			$this->setPowerPointBackground($userInfo['USR_powerPointBackground']);
 			$this->setVerifiedStatus($userInfo['USR_verified']);
 		}
 	}
@@ -498,6 +516,23 @@ class User {
 	}
 	
 	/**
+	* Returns the company of the user
+	*
+	* @return string  Company of the user
+	*/
+	public function getCompany(){
+		return $this->company;
+	}
+	/**
+	* Sets the company of the user
+	*
+	* @param string $newCompany  New company for the user 
+	*/
+	public function setCompany($newCompany){
+		$this->company = $newCompany;
+	}
+	
+	/**
 	* Returns the email of the user
 	*
 	* @return string  Email of the user
@@ -512,6 +547,23 @@ class User {
 	*/
 	public function setEmail($newEmail){
 		$this->email = $newEmail;
+	}
+	
+	/**
+	* Returns the filename of the PowerPoint background image
+	*
+	* @return string  Filename of the PowerPoint background image for the user
+	*/
+	public function getPowerPointBackground(){
+		return $this->powerPointBackground;
+	}
+	/**
+	* Sets the filename of the PowerPoint background image
+	*
+	* @param string $newPowerPointBackground  New filename of the PowerPoint background image for the user
+	*/
+	public function setPowerPointBackground($newPowerPointBackground){
+		$this->powerPointBackground = $newPowerPointBackground;
 	}
 	
 	/**

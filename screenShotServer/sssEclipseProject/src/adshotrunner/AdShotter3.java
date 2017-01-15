@@ -66,7 +66,7 @@ public class AdShotter3 {
 	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
-	final private static int PAGETIMEOUT = 11000;			//in milliseconds
+	final private static int PAGETIMEOUT = 12000;			//in milliseconds
 	final private static int TAGTIMEOUT = 4000;				//in milliseconds
 	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;

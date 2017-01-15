@@ -9,11 +9,6 @@
 */
 require_once('systemSetup.php');
 
-/**
-* Verify the session is valid and set the session constants
-*/
-require_once(RESTRICTEDPATH . 'validateSession.php');
-
 use AdShotRunner\DFP\DFPCommunicator;
 
 ?>
@@ -22,16 +17,16 @@ use AdShotRunner\DFP\DFPCommunicator;
 
 <div id="contactFormDiv" class="section"> 
 	<form id="asrContactForm">
-		<input type="hidden" id="contactUserID" name="contactUserID" value="<?PHP echo USERID?>">
+		<input type="hidden" id="contactUserID" name="contactUserID" value="<?PHP if (USERID) {echo USERID;}?>">
 		<input type="hidden" id="contactJobID" name="contactJobID" value="<?PHP echo $_GET['jobID']?>">
 		<table>
 			<tr>
 				<td>Name:</td>				
-				<td><input id="contactName" name="contactName" type="text" value="<?PHP echo USERFIRSTNAME . " " . USERLASTNAME?>"></td>
+				<td><input id="contactName" name="contactName" type="text" value="<?PHP if (USERFIRSTNAME) {echo USERFIRSTNAME . " " . USERLASTNAME;}?>"></td>
 			</tr>
 			<tr>
 				<td>Email:</td>				
-				<td><input id="contactEmail" name="contactEmail" type="text" value="<?PHP echo USEREMAIL?>"></td>
+				<td><input id="contactEmail" name="contactEmail" type="text" value="<?PHP if (USEREMAIL) {echo USEREMAIL;}?>"></td>
 			</tr>
 			<tr>
 				<td>Purpose:</td>

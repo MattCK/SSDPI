@@ -18,6 +18,7 @@ class FileStorageClient {
 	//---------------------------------------------------------------------------------------	
 	const CAMPAIGNJOBS = "asr-campaignjobs";
 	const POWERPOINTS = "asr-powerpoints";
+	const POWERPOINTBACKGROUNDS = "asr-powerpointbackgrounds";
 	const SCREENSHOTSCONTAINER = "asr-screenshots";
 	const TAGIMAGESCONTAINER = "asr-tagimages";
 	const TAGTEXTSCONTAINER = "asr-tagtexts";

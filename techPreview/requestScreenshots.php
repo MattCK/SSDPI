@@ -30,16 +30,17 @@ if (!$_POST['pages']) {
 	echo createJSONResponse(false, "No pages passed."); return;
 }
 
-//Get the user email
+//Get the user's PowerPoint background image filename
 $currentUser = User::getUser(USERID);
-$userEmail = $currentUser->getEmail();
+$powerPointBackground = $currentUser->getPowerPointBackground();
 
 
 //Create the final object of data to turn into JSON
 $screenshotRequestObject = ['jobID' => $_POST['jobID'], 
 							'customer' => $_POST['customer'],
 							'domain' => $_POST['domain'],
-							'email' => $userEmail,
+							'email' => USEREMAIL,
+							'powerPointBackground' => $powerPointBackground,
 							'tagImages' => $_POST['tagImages'],
 							'pages' => []];
 
@@ -51,8 +52,6 @@ foreach ($_POST['pages'] as $currentID => $currentPage) {
 
 	$pageInfo['onlyScreenshot'] = ($_POST['screenshotType'][$currentID] == "none") ? 1 : 0;
 	$pageInfo['individualTagScreenshots'] = ($_POST['screenshotType'][$currentID] == "individual") ? 1 : 0;
-	//$pageInfo['onlyScreenshot'] = ($_POST['onlyScreenshot'][$currentID]) ? 1 : 0;
-	//$pageInfo['individualTagScreenshots'] = ($_POST['individualTagScreenshots'][$currentID]) ? 1 : 0;
 
 	$screenshotRequestObject['pages'][] = $pageInfo;
 }

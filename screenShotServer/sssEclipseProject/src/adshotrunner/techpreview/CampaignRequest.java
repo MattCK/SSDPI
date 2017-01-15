@@ -8,8 +8,9 @@ import com.google.gson.Gson;
 public class CampaignRequest {
 	public String jobID;
 	public String customer;
-	public String email;
 	public String domain;
+	public String email;
+	public String powerPointBackground;
 	public List<String> tagImages;
 	public List<Map<String,String>> pages;
 	

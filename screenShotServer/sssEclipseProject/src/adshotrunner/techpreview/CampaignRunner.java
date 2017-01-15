@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -169,7 +171,6 @@ public class CampaignRunner implements Runnable {
 			catch (Exception e) {
 				System.out.println("Could not save screenshot");
 				System.out.println(e);
-				//e.printStackTrace();
 			}
 			++imageIndex;
 			pageAndScreenshotURLs.put("https://s3.amazonaws.com/asr-screenshots/" + imageFilename, currentAdShot.finalURL());
@@ -179,19 +180,40 @@ public class CampaignRunner implements Runnable {
 			screenshotFile.delete();
 		}
 		
-		//Create the powerpoint
+		//Create the powerpoint filename
 		System.out.println("Creating powerpoint");
+		String pptxCustomerName = requestInfo.customer.trim().replace(' ', '-');
+		String pptxDate = new SimpleDateFormat("MM-dd-yyyy").format(Calendar.getInstance().getTime());
+		String pptxTimestamp = Long.toString(Instant.now().getEpochSecond());
+		pptxTimestamp = pptxTimestamp.substring(pptxTimestamp.length() - 6);
+		String pptxFilename = pptxCustomerName + "-" + pptxDate + "-" + pptxTimestamp + ".pptx";
+		
+		//Get the background file. On fail, use the default one from the config folder.
+		String backgroundFilename = "powerPointBackgrounds/" + requestInfo.powerPointBackground;
+		System.out.println("PPTX Background:" + requestInfo.powerPointBackground);
 		try {
+			URL backgroundURL = new URL("https://s3.amazonaws.com/asr-powerpointbackgrounds/" + requestInfo.powerPointBackground);
+			File backgroundFile = new File(backgroundFilename);		
+			FileUtils.copyURLToFile(backgroundURL, backgroundFile);
+		} catch (Exception e) {
+			//backgroundFilename = "config/PowerPointBackground.jpg";
+			System.out.println("Failed getting background file");
+			System.out.println("URL: " + "https://s3.amazonaws.com/asr-powerpointbackgrounds/" + requestInfo.powerPointBackground);
+		}
+		
+		//Create the powerpoint and add each AdShot as a slide
+		try {
+			
 			//Font color is passed in with 6 digit hex value in string format
-			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator("config/PowerPointBackground.jpg", "16x9", requestInfo.customer, "000000");
+			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator(backgroundFilename, "16x9", requestInfo.customer, "000000");
 			for (AdShot currentAdShot : adShotList) {
 				powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
 			}
-			powerPoint.SaveCampaignPowerPoint("powerpoints/" + requestInfo.jobID + ".pptx");
-			FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + requestInfo.jobID + ".pptx", requestInfo.jobID + ".pptx");
+			powerPoint.SaveCampaignPowerPoint("powerpoints/" + pptxFilename);
+			FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + pptxFilename, pptxFilename);
 			
 			//Delete the local file
-			File powerPointFile = new File("powerpoints/" + requestInfo.jobID + ".pptx");
+			File powerPointFile = new File("powerpoints/" + pptxFilename);
 			powerPointFile.delete();
 			
 		} catch (Exception e) {
@@ -219,7 +241,7 @@ public class CampaignRunner implements Runnable {
 		jobResult.date = new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime());
 		
 		jobResult.screenshots = pageAndScreenshotURLs;
-		jobResult.powerPointURL = "https://s3.amazonaws.com/asr-powerpoints/" + requestInfo.jobID + ".pptx";
+		jobResult.powerPointURL = "https://s3.amazonaws.com/asr-powerpoints/" + pptxFilename;
 		jobResult.zipURL = "";
 		
 		jobResult.runtime = totalRuntime;
