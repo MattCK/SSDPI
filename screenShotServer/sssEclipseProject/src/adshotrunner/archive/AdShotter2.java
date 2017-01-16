@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.archive;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -51,6 +51,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import adshotrunner.AdShot;
+import adshotrunner.TagImage;
 import adshotrunner.errors.AdShotRunnerException;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;

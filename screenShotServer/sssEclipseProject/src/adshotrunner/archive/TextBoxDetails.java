@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package adshotrunner.techpreview;
+package adshotrunner.archive;
 import java.util.Random;
 /**
  *
@@ -26,6 +26,12 @@ public class TextBoxDetails {
     int convertedY = y * 9525;
     
     //the text box size default size needs to be widened for very long text lengths
+    //ms takes what it thinks is the resolution of the slide then takes a number
+    //using subpixels resolution of slide x ms magic number, libre office w/ textbox
+    //if it gets longer than screen, it will recenter textbox instead of keeping point
+    //box gets bigger in all, but libre centers it
+    //rightmost 20 pixels in marked what pixel times elements per pixel
+    //Magic number everyone says is wrong, it's this other number, 
     int calculatedWidth = 5303520;
     if (Text.length() >= 70){
     	calculatedWidth = 8403120;

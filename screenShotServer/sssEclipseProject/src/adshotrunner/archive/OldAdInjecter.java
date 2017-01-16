@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.archive;
 
 import java.io.File;
 import java.io.IOException;

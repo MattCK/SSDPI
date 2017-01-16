@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.tests;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

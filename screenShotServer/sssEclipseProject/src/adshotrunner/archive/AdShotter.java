@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.archive;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;

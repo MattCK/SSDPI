@@ -1,7 +1,9 @@
-package adshotrunner.utilities;
+package adshotrunner.tests;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import adshotrunner.utilities.FileStorageClient;
 
 public class UtilityTester {
 

@@ -3,11 +3,7 @@ package adshotrunner.techpreview;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -23,11 +19,10 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 
 import adshotrunner.AdShot;
-import adshotrunner.AdShotter;
 import adshotrunner.AdShotter3;
 import adshotrunner.StoryFinder;
 import adshotrunner.TagImage;
-import adshotrunner.utilities.EmailClient;
+import adshotrunner.powerpoint.CampaignPowerPoint;
 import adshotrunner.utilities.FileStorageClient;
 import adshotrunner.utilities.URLTool;
 
@@ -190,13 +185,16 @@ public class CampaignRunner implements Runnable {
 		
 		//Get the background file. On fail, use the default one from the config folder.
 		String backgroundFilename = "powerPointBackgrounds/" + requestInfo.powerPointBackground;
+		File backgroundFile;
+		String titleDate = new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime());
 		System.out.println("PPTX Background:" + requestInfo.powerPointBackground);
 		try {
 			URL backgroundURL = new URL("https://s3.amazonaws.com/asr-powerpointbackgrounds/" + requestInfo.powerPointBackground);
-			File backgroundFile = new File(backgroundFilename);		
+			backgroundFile = new File(backgroundFilename);		
 			FileUtils.copyURLToFile(backgroundURL, backgroundFile);
 		} catch (Exception e) {
-			//backgroundFilename = "config/PowerPointBackground.jpg";
+			backgroundFilename = "config/DefaultBackground.jpg";
+			backgroundFile = new File(backgroundFilename);
 			System.out.println("Failed getting background file");
 			System.out.println("URL: " + "https://s3.amazonaws.com/asr-powerpointbackgrounds/" + requestInfo.powerPointBackground);
 		}
@@ -205,11 +203,15 @@ public class CampaignRunner implements Runnable {
 		try {
 			
 			//Font color is passed in with 6 digit hex value in string format
-			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator(backgroundFilename, "16x9", requestInfo.customer, "000000");
+			CampaignPowerPoint powerPoint = new CampaignPowerPoint(requestInfo.customer, titleDate, "FFFFFF", backgroundFile);
 			for (AdShot currentAdShot : adShotList) {
-				powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
+				powerPoint.addSlide(currentAdShot);
 			}
-			powerPoint.SaveCampaignPowerPoint("powerpoints/" + pptxFilename);
+//			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator(backgroundFilename, "16x9", requestInfo.customer, "000000");
+//			for (AdShot currentAdShot : adShotList) {
+//				powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
+//			}
+			powerPoint.save("powerpoints/" + pptxFilename);
 			FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + pptxFilename, pptxFilename);
 			
 			//Delete the local file

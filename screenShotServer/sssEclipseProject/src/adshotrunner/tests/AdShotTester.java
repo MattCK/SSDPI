@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.tests;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+
+import adshotrunner.archive.AdShotter;
 
 /**
  * Used to unit test AdShotRunner

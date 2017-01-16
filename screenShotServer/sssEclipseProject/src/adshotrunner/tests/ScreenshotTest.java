@@ -1,4 +1,4 @@
-package adshotrunner.techpreview;
+package adshotrunner.tests;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;

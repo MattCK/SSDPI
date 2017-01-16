@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.tests;
 
 import java.io.File;
 import java.net.MalformedURLException;

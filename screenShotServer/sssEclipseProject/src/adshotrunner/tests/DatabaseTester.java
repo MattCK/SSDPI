@@ -1,4 +1,4 @@
-package adshotrunner.techpreview;
+package adshotrunner.tests;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

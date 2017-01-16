@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.archive;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import org.apache.commons.io.IOUtils;
+
+import adshotrunner.StoryFinder;
 
 public class ComponentTester {
 

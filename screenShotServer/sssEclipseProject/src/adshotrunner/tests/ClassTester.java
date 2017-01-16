@@ -1,4 +1,4 @@
-package adshotrunner;
+package adshotrunner.tests;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;

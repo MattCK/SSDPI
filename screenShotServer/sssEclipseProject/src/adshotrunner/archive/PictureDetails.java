@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package adshotrunner.techpreview;
+package adshotrunner.archive;
 
 import java.util.Random;
 
