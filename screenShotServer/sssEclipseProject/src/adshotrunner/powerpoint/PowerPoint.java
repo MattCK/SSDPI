@@ -87,11 +87,17 @@ class PowerPoint {
 	 * Image file to use for the presentation background
 	 */
 	private File _backgroundImage;
-	
+
+	/**
+	 * Background image part. Inserted into every slide. 
+	 */
+	private BinaryPartAbstractImage _backgroundImagePart;
+
 	/**
 	 * List of slides inside the PowerPoint in insertion order
 	 */
 	private ArrayList<SlidePart> _slides;
+	
 	
 
 
@@ -186,12 +192,17 @@ class PowerPoint {
 	//********************************* Private Methods *************************************
 	private void setSlideBackground(SlidePart slide) throws Exception {
 		
-		//Turn the background image into an image part for the slide
-		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage
+		//Insert the background image into the presentation if it does not exist yet
+		if (_backgroundImagePart == null) {
+			
+			//Turn the background image into an image part for the presentation
+			_backgroundImagePart = BinaryPartAbstractImage
 				.createImagePart(_package, slide, _backgroundImage);
 
+		}
+		
 		//Create a relationship between the slide and the image
-		Relationship imageSlideRelationship = slide.addTargetPart(imagePart);
+		Relationship imageSlideRelationship = slide.addTargetPart(_backgroundImagePart);
 		
 		//Create a properties map to specify the new relationship
 		java.util.HashMap<String, String> relationshipProperty = new java.util.HashMap<String, String>();
