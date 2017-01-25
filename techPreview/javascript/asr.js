@@ -13,8 +13,9 @@ let asr = {
 	_domain: '',										//Stores the domain to get screenshots for
 	_getMenuURL: 'getMenu.php',							//URL of request page used to retrieve the menu for the domain
 	_getTagImagesURL: 'getTagImages.php',				//URL of request page to turn tags into images
-	_uploadTagImageURL: 'uploadTagImage.php',					//URL of request page to upload tag image and store it
+	_uploadTagImageURL: 'uploadTagImage.php',			//URL of request page to upload tag image and store it
 	_requestScreenshotsURL: 'requestScreenshots.php',	//URL of request page to send information to in order to create screenshots
+	_uploadBackgroundImageURL: 'uploadBackgroundImage.php',	//URL of request page to upload PowerPoint background image and store it
 	_storeTagTextURL: 'storeTagText.php',				//URL of request page that stores tag text for analysis
 	_getOrderDataURL: 'getOrderData.php',				//URL of request page to get line items and creatives for an order
 	_menuItems: [],										//List of menu items returned from the get menu request
@@ -516,6 +517,23 @@ let asr = {
 		
 		//Make the request
 		base.asyncRequest(asr._getOrderDataURL, 'orderID=' + orderID, callback);
+	},
+
+	/**
+	* Uploads the PowerPoint background image to the server where it is placed in official tag image storage
+	*/
+	uploadPowerPointBackground: function() {
+
+		//Do nothing for now
+		let callback = function(response) {
+			console.log("Background image uploaded");
+		}
+		
+		var formData = new FormData();
+		formData.append('backgroundTitle', base.nodeFromID("backgroundTitle").value;
+		formData.append('backgroundFontColor', base.nodeFromID("backgroundFontColor").value;
+		formData.append('backgroundImage', base.nodeFromID("backgroundImage").files[0];
+		base.asyncRequest(asr._uploadBackgroundImageURL, formData, callback, true);
 	},
 
 	/**

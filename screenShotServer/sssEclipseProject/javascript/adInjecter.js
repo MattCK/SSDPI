@@ -49,8 +49,8 @@ function initializeAdInjecter(tags) {
 																//{TAGID1:[[100,200]], TAGID2:[[200,300],[300,400]]}
 		lowestTagPosition: 0,									//The bottom position of the lowest tag image. Used for screenshot cropping.
 		outputString: "",										//String of output from the different called functions
-		_LARGEADWIDTH: 750,										//Width in pixels for an ad to be considered very large
-		_LARGEADHEIGHT: 249,									//Height in pixels for an ad to be considered very large
+		_LARGEADWIDTH: 971,										//Width in pixels for an ad to be considered very large
+		_LARGEADHEIGHT: 274,									//Height in pixels for an ad to be considered very large
 		_LARGENODEWIDTH1: 900,									//Width in pixels for an individual node to be considered large
 		_LARGENODEHEIGHT1: 300,									//Height in pixels for an individual node to be considered large
 		_LARGENODEWIDTH2: 400,									//Width in pixels for an individual node to be considered large
@@ -148,7 +148,7 @@ function initializeAdInjecter(tags) {
 									//gets injected lower in the page with the flood-opacity tag. It forces
 									//the AdInjecter to replace the element even  								
 									let tagImageBox = tagImage.getBoundingClientRect();
-									if (tagImageBox.top < 500) {
+									//if (tagImageBox.top < 500) {
 										
 										//Mark the tag as injected so it does not get replaced by the
 										//second run through matching only position and not flood-opacity
@@ -167,7 +167,7 @@ function initializeAdInjecter(tags) {
 										//Add the position of the injected tag to the injected tags object
 										let injectedTagInstances = adInjecter.injectedTags[currentTag.id].length;
 										adInjecter.injectedTags[currentTag.id][injectedTagInstances] = [tagImageBox.left, tagImageBox.top];
-									}
+									//}
 
 									//If this tag image is the lowest on the page so far, store its lower position
 									if (tagImageBox.bottom > adInjecter.lowestTagPosition) {

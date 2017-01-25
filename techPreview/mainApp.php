@@ -94,6 +94,18 @@ if (USERDFPNETWORKCODE) {
 			<input id="customer" name="customer" type="text">
 		</div>
 
+		<h2>PowerPoint Background</h2>
+		<div id="powerPointBackgroundDiv" class="section">
+			<div class="textFieldName">Name:</div> 
+			<input id="backgroundTitle" name="backgroundTitle" type="text"><br/>
+			<div class="textFieldName">Font Color:</div> 
+			<input id="backgroundFontColor" name="backgroundFontColor" type="text"><br/>
+			<div class="textFieldName">Image:</div> 
+			<input type="file" name="backgroundImage" accept="image/*"><br/>
+			<div class="textFieldName">&nbsp;</div> 
+			<input class="button-tiny" id="saveBackgroundButton" type="button" value="Save" onclick="asr.uploadPowerPointBackground()">
+		</div>
+
 		<h2 id="campaignPagesHeader">Campaign Pages</h2>
 		<div id="domainInputDiv" class="section">
 			<div class="textFieldName">Publisher Site:</div>
@@ -188,6 +200,13 @@ $(function() {
 	$( "#sortable" ).sortable();
 
 	contactFormDialog = base.createDialog("contactFormDiv", "Contact Us", true, 650);
+
+	$("#backgroundFontColor").spectrum({
+		color: "#000000",
+		preferredFormat: "hex",
+	    showPaletteOnly: true,
+	    showPalette: true,
+   	});
 
 	<?PHP if (USERDFPNETWORKCODE): ?>
 
