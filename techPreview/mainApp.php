@@ -57,10 +57,12 @@ if (USERDFPNETWORKCODE) {
 		<?PHP if (USERDFPNETWORKCODE): ?>
 
 		<h2 id="dfpOrdersHeader">DFP Orders</h2>
+		<h2 id="lineItemsHeader" style="display: none;">Line Items</h2>
 		<img helpIcon="" id="dfpOrdersHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div class="problemLinkDiv">
 			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
 		</div>
+		
 		<div id="dfpOrdersDiv" class="section"> 
 			<table>
 				<tr>
@@ -79,7 +81,6 @@ if (USERDFPNETWORKCODE) {
 			</table>
 		</div>
 
-		<h2 id="lineItemsHeader" style="display: none;">Line Items</h2>
 		<div id="lineItemsDiv" class="section" style="display: none;"></div> 
 
 

@@ -123,7 +123,7 @@ class User {
 											USR_lastName,
 											USR_company,
 											USR_email,
-											USR_powerPointBackground,
+											USR_PPB_id,
 											USR_verified)
 						 VALUES ('" . databaseEscape($newUser->getUsername()) . "',
 								'" . databaseEscape($newUser->getPassword()) . "',
@@ -131,7 +131,7 @@ class User {
 								'" . databaseEscape($newUser->getLastName()) . "',
 								'" . databaseEscape($newUser->getCompany()) . "',
 								'" . databaseEscape($newUser->getEmail()) . "',
-								'" . databaseEscape($newUser->getPowerPointBackground()) . "',
+								'" . databaseEscape($newUser->getPowerPointBackgroundID()) . "',
 								'" . databaseEscape($newUser->isVerified()) . "')";
 		databaseQuery($addUserQuery);
 		
@@ -188,7 +188,7 @@ class User {
 								USR_lastName = '" . databaseEscape($modifiedUser->getLastName()) . "',
 								USR_company = '" . databaseEscape($modifiedUser->getCompany()) . "',
 								USR_email = '" . databaseEscape($modifiedUser->getEmail()) . "',
-								USR_powerPointBackground = '" . databaseEscape($modifiedUser->getPowerPointBackground()) . "',
+								USR_PPB_id = '" . databaseEscape($modifiedUser->getPowerPointBackgroundID()) . "',
 								USR_verified = '" . databaseEscape($modifiedUser->isVerified()) . "'
 							WHERE USR_id = " . $modifiedUser->getID();
 		databaseQuery($updateUserQuery);
@@ -372,9 +372,9 @@ class User {
 	private $email;
 
 	/**
-	* @var string  Filename of the background image to use in Powerpoints
+	* @var int  ID of the background image to use in Powerpoints (in powerPointBackgrounds table)
 	*/
-	private $powerPointBackground;
+	private $powerPointBackgroundID;
 
 	/**
 	* @var boolean  Flags whether or not the user has been verified. TRUE if it has been verified.
@@ -424,7 +424,7 @@ class User {
 			$this->setLastName($userInfo['USR_lastName']);
 			$this->setCompany($userInfo['USR_company']);
 			$this->setEmail($userInfo['USR_email']);
-			$this->setPowerPointBackground($userInfo['USR_powerPointBackground']);
+			$this->setPowerPointBackgroundID($userInfo['USR_PPB_id']);
 			$this->setVerifiedStatus($userInfo['USR_verified']);
 		}
 	}
@@ -550,20 +550,20 @@ class User {
 	}
 	
 	/**
-	* Returns the filename of the PowerPoint background image
+	* Returns the ID of the PowerPoint background image (in powerPointBackgrounds table)
 	*
-	* @return string  Filename of the PowerPoint background image for the user
+	* @return string  ID of the PowerPoint background image (in powerPointBackgrounds table)
 	*/
-	public function getPowerPointBackground(){
-		return $this->powerPointBackground;
+	public function getPowerPointBackgroundID(){
+		return $this->powerPointBackgroundID;
 	}
 	/**
-	* Sets the filename of the PowerPoint background image
+	* Sets the ID of the PowerPoint background image (in powerPointBackgrounds table)
 	*
-	* @param string $newPowerPointBackground  New filename of the PowerPoint background image for the user
+	* @param string $newPowerPointBackground  New ID of the PowerPoint background image (in powerPointBackgrounds table)
 	*/
-	public function setPowerPointBackground($newPowerPointBackground){
-		$this->powerPointBackground = $newPowerPointBackground;
+	public function setPowerPointBackground($newPowerPointBackgroundID){
+		$this->powerPointBackgroundID = $newPowerPointBackgroundID;
 	}
 	
 	/**

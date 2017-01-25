@@ -5,6 +5,7 @@ $mapping = array(
     'AdShotRunner\DFP\DFPCommunicator' => __DIR__ . '/AdShotRunner/DFP/DFPCommunicator.php',
     'AdShotRunner\Menu\MenuGrabber' => __DIR__ . '/AdShotRunner/Menu/MenuGrabber.php',
     'AdShotRunner\PhantomJS\PhantomJSCommunicator' => __DIR__ . '/AdShotRunner/PhantomJS/PhantomJSCommunicator.php',
+    'AdShotRunner\PowerPoint\PowerPointBackground' => __DIR__ . '/AdShotRunner/PowerPoint/PowerPointBackground.php',
     'AdShotRunner\Users\User' => __DIR__ . '/AdShotRunner/Users/User.php',
     'AdShotRunner\Utilities\EmailClient' => __DIR__ . '/AdShotRunner/Utilities/EmailClient.php',
     'AdShotRunner\Utilities\FileStorageClient' => __DIR__ . '/AdShotRunner/Utilities/FileStorageClient.php',
