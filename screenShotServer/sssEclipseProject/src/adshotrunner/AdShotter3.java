@@ -645,11 +645,11 @@ public class AdShotter3 {
 	private String getProxyDetails(){
 		
 		ArrayList<String> proxyList = new ArrayList<String>(); 
-		proxyList.add("192.210.148.231:3128");
-		//proxyList.add("198.23.217.23:3128");
-		proxyList.add("104.144.165.103:3128");
-		proxyList.add("107.173.182.217:3128");
-		proxyList.add("104.168.23.154:3128");
+		proxyList.add("107.173.4.76:3128");
+		proxyList.add("75.127.11.133:3128");
+		proxyList.add("107.173.2.10:3128");
+		proxyList.add("192.227.252.94:3128");
+		proxyList.add("192.241.106.83:3128");
 		
 		int randomIndex = new Random().nextInt(proxyList.size());
 		return proxyList.get(randomIndex);
