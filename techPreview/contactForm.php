@@ -40,6 +40,7 @@ use AdShotRunner\DFP\DFPCommunicator;
 				<td>
 					<select id="contactProblem" name="contactProblem">
 						<option value="NONECHOSEN" selected>Choose...</option>
+						<option value="POWERPOINTBACKGROUND">Problem uploading PowerPoint background image</option>
 						<option value="SECTIONS">Sections for site are incomplete or incorrect</option>
 						<option value="CREATIVEUPLOAD">Problem uploading creative</option>
 						<option value="CREATIVEIMAGE">Creative images are incorrect or fail to load</option>

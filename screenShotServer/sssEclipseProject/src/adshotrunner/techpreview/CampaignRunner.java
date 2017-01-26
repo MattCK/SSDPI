@@ -203,7 +203,7 @@ public class CampaignRunner implements Runnable {
 		try {
 			
 			//Font color is passed in with 6 digit hex value in string format
-			CampaignPowerPoint powerPoint = new CampaignPowerPoint(requestInfo.customer, titleDate, "FFFFFF", backgroundFile);
+			CampaignPowerPoint powerPoint = new CampaignPowerPoint(requestInfo.customer, titleDate, requestInfo.powerPointFontColor, backgroundFile);
 			for (AdShot currentAdShot : adShotList) {
 				powerPoint.addSlide(currentAdShot);
 			}

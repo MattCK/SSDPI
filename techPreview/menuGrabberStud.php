@@ -19,8 +19,8 @@ use AdShotRunner\Menu\MenuGrabber;
 header("Content-Type: text/plain");
 
 $domainMenuGrabber = new MenuGrabber();
-$domainMenuGrabber->deleteManyDomains(["hypebot.com"]);
-$domainMenus = $domainMenuGrabber->getDomainMenus(["hypebot.com"]);
+$domainMenuGrabber->deleteManyDomains(["nytimes.com"]);
+$domainMenus = $domainMenuGrabber->getDomainMenus(["nytimes.com"]);
 
 echo "\n\n\nDone!!!";
 

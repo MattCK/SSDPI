@@ -55,7 +55,7 @@ class MenuGrabber {
 	/**
 	* Instantiates class and grabs the menu label weights from the database.
 	*/
-	private function __construct() {
+	function __construct() {
 		
 		//Retrieve and store the menu label weight information
 		$this->setMenuLabelWeights($this->retrieveMenuLabelWeightsFromDatabase());
@@ -363,7 +363,7 @@ class MenuGrabber {
 										LEFT JOIN menuGrabberMenus ON MGM_MGD_id = MGD_id
 										LEFT JOIN menuGrabberItems ON MGI_MGM_id = MGM_id
 										WHERE MGD_domain IN ($cleanDomainString)
-										ORDER BY MGM_score DESC");
+										ORDER BY MGM_score DESC, MGI_label ASC");
 
 		//Create the final array and loop through the results, creating the menu structures
 		$domainMenus = [];

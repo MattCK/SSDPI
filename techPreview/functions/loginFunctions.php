@@ -94,9 +94,6 @@ function registerUser($username, $password, $firstName, $lastName, $company, $em
 	$newUser->setCompany($_POST['company']);
 	$newUser->setEmail($_POST['email']);
 
-	//Set the default PowerPoint background image. This should not be static here in the production version.
-	$newUser->setPowerPointBackground("DefaultBackground.jpg");
-
 	//Insert the user into the database
 	$newUser = User::insert($newUser);
 

@@ -278,7 +278,7 @@ let asr = {
 			console.log("Image uploaded");
 		}
 		
-		var formData = new FormData();
+		let formData = new FormData();
 		formData.append('imageID', newUUID);
 		formData.append('image', tagImageData);
 		base.asyncRequest(asr._uploadTagImageURL, formData, callback, true);
@@ -431,7 +431,7 @@ let asr = {
 		//Loop through the orders and add each whose name matches the filter field
 		let filterText = base.nodeFromID("orderFilter").value;
 		let orderOptions = "";
-		for (var orderID in asr.orders) {
+		for (let orderID in asr.orders) {
 			if (asr.orders.hasOwnProperty(orderID)) {
 
 				//Create the order label
@@ -478,7 +478,7 @@ let asr = {
 				asr._creatives = response.data.creatives;
 
 				//Add the creatives to the queue
-				for (var creativeID in asr._creatives) {
+				for (let creativeID in asr._creatives) {
 					if (asr._creatives.hasOwnProperty(creativeID)) {
 						console.log("Tag before: " + asr._creatives[creativeID]);
 
@@ -488,7 +488,7 @@ let asr = {
 				}
 
 				//Put the line items in the line items div
-				for (var lineItemName in asr._lineItems) {
+				for (let lineItemName in asr._lineItems) {
 					if (asr._lineItems.hasOwnProperty(lineItemName)) {
 						base.nodeFromID("lineItemsDiv").innerHTML += "<strong>" + lineItemName + " - </strong>" + asr._lineItems[lineItemName] + "<br><br>";
 					}
@@ -524,15 +524,46 @@ let asr = {
 	*/
 	uploadPowerPointBackground: function() {
 
+		//Verify the fields were filled in
+		if (base.nodeFromID("newBackgroundTitle").value.length == 0) {alert("Enter a name for the PowerPoint"); return;}
+		if (base.nodeFromID("newBackgroundImage").value.length == 0) {alert("Choose an image for the background"); return;}
+
+		//Disable the save button
+		base.disable("uploadBackgroundButton");
+
 		//Do nothing for now
 		let callback = function(response) {
-			console.log("Background image uploaded");
+
+			//If successful, store the items, create the HTML options, and show the pages table
+			if (response.success) {
+				
+				//Set the background info to the newly uploaded one
+				let newBackgroundInfo = response.data;
+				base.nodeFromID("backgroundTitleDiv").innerHTML = newBackgroundInfo.title;
+				base.nodeFromID("fontColorDiv").style.backgroundColor = "#" + newBackgroundInfo.fontColor;
+				base.nodeFromID("backgroundThumbnailImage").src = "https://s3.amazonaws.com/asr-powerpointbackgrounds/thumbnails/" + newBackgroundInfo.thumbnailFilename;
+	
+				//Set the hidden input fields
+				base.nodeFromID("backgroundTitle").value = newBackgroundInfo.title;
+				base.nodeFromID("backgroundFontColor").value = newBackgroundInfo.fontColor;
+				base.nodeFromID("backgroundFilename").value = newBackgroundInfo.filename;
+			}
+						
+			//If failure, show us the message returned from the server.
+			else {
+				alert(response.message);
+			}
+
+			//Re-enable the save button, hide the upload form, and show the change button
+			base.enable("uploadBackgroundButton");
+			base.hide("uploadBackgroundDiv");
+			base.show("changeBackgroundButtonDiv");
 		}
 		
-		var formData = new FormData();
-		formData.append('backgroundTitle', base.nodeFromID("backgroundTitle").value;
-		formData.append('backgroundFontColor', base.nodeFromID("backgroundFontColor").value;
-		formData.append('backgroundImage', base.nodeFromID("backgroundImage").files[0];
+		let formData = new FormData();
+		formData.append('backgroundTitle', base.nodeFromID("newBackgroundTitle").value);
+		formData.append('backgroundFontColor', base.nodeFromID("newBackgroundFontColor").value.substring(1));
+		formData.append('backgroundImage', base.nodeFromID("newBackgroundImage").files[0]);
 		base.asyncRequest(asr._uploadBackgroundImageURL, formData, callback, true);
 	},
 

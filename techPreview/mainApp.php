@@ -14,8 +14,20 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\Users\User;
+use AdShotRunner\PowerPoint\PowerPointBackground;
 use AdShotRunner\DFP\DFPCommunicator;
 
+//Get the powerpoint background and font info for the user
+$currentUser = User::getUser(USERID);
+$defaultBackground = PowerPointBackground::getPowerPointBackground($currentUser->getPowerPointBackgroundID());
+$backgroundTitle = $defaultBackground->getTitle();
+$powerPointFontColor = $defaultBackground->getFontColor();
+$backgroundFilename = $defaultBackground->getFilename();
+$backgroundThumbnailFilename = $defaultBackground->getThumbnailFilename();
+$backgroundURL = "https://s3.amazonaws.com/asr-powerpointbackgrounds/thumbnails/" . $backgroundThumbnailFilename;
+
+//If the user has a DFP network code, get their orders
 $orders = null;
 if (USERDFPNETWORKCODE) {
 
@@ -95,15 +107,44 @@ if (USERDFPNETWORKCODE) {
 		</div>
 
 		<h2>PowerPoint Background</h2>
+		<img helpIcon="" id="powerPointBackgroundHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
+		<div class="problemLinkDiv">
+			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+		</div>
 		<div id="powerPointBackgroundDiv" class="section">
-			<div class="textFieldName">Name:</div> 
-			<input id="backgroundTitle" name="backgroundTitle" type="text"><br/>
-			<div class="textFieldName">Font Color:</div> 
-			<input id="backgroundFontColor" name="backgroundFontColor" type="text"><br/>
-			<div class="textFieldName">Image:</div> 
-			<input type="file" name="backgroundImage" accept="image/*"><br/>
-			<div class="textFieldName">&nbsp;</div> 
-			<input class="button-tiny" id="saveBackgroundButton" type="button" value="Save" onclick="asr.uploadPowerPointBackground()">
+			<input id="backgroundTitle" name="backgroundTitle" type="hidden" value="<?PHP echo $backgroundTitle?>">
+			<input id="backgroundFontColor" name="backgroundFontColor" type="hidden" value="<?PHP echo $powerPointFontColor?>">
+			<input id="backgroundFilename" name="backgroundFilename" type="hidden" value="<?PHP echo $backgroundFilename?>">
+
+			<div id="currentBackgroundDiv">
+				<div id="backgroundImageDiv">
+					<img id="backgroundThumbnailImage" rowTag="" style="max-height: 80px;" src="<?PHP echo $backgroundURL?>" /><br/>
+				</div>
+				<div id="backgroundInfoDiv">
+					<div id="backgroundTitleDiv" class="backgroundTitle"><?PHP echo $backgroundTitle?></div>
+					<div class="backgroundFontColor">
+						<div class="fontColorText">Font Color: </div>
+						<div id="fontColorDiv" class="fontColorDiv" style="background-color: #<?PHP echo $powerPointFontColor?>"></div>
+					</div>
+				</div>
+			</div>
+
+			<div id="changeBackgroundButtonDiv">
+				<input class="button-tiny" type="button" value="Change" onclick="base.hide('changeBackgroundButtonDiv'); base.show('uploadBackgroundDiv');">
+			</div>
+
+			<div id="uploadBackgroundDiv" style="display: none">
+				<table>
+					<tr><td>Name:</td>
+						<td><input id="newBackgroundTitle" name="newBackgroundTitle" type="text" maxlength="64"></td></tr>
+					<tr><td>Font Color:</td>
+						<td><input id="newBackgroundFontColor" name="newBackgroundFontColor" type="text" value="#000000"></td></tr>
+					<tr><td>Image:</td>
+						<td><input type="file" id="newBackgroundImage" name="newBackgroundImage" accept="image/*"></td></tr>
+					<tr><td>&nbsp;</td>
+						<td><input class="button-tiny" id="uploadBackgroundButton" type="button" value="Save" onclick="asr.uploadPowerPointBackground()"></td></tr>
+				</table>
+			</div>
 		</div>
 
 		<h2 id="campaignPagesHeader">Campaign Pages</h2>
@@ -201,7 +242,7 @@ $(function() {
 
 	contactFormDialog = base.createDialog("contactFormDiv", "Contact Us", true, 650);
 
-	$("#backgroundFontColor").spectrum({
+	$("#newBackgroundFontColor").spectrum({
 		color: "#000000",
 		preferredFormat: "hex",
 	    showPaletteOnly: true,

@@ -562,7 +562,7 @@ class User {
 	*
 	* @param string $newPowerPointBackground  New ID of the PowerPoint background image (in powerPointBackgrounds table)
 	*/
-	public function setPowerPointBackground($newPowerPointBackgroundID){
+	public function setPowerPointBackgroundID($newPowerPointBackgroundID){
 		$this->powerPointBackgroundID = $newPowerPointBackgroundID;
 	}
 	

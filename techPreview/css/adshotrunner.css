@@ -318,6 +318,71 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     padding-bottom: 10px;
 }
 
+#powerPointBackgroundDiv {
+    display: flex;
+}
+
+#currentBackgroundDiv {
+    display: inline-block;
+    margin-right: 25px;
+}
+
+#backgroundImageDiv {
+    float: left;
+}
+
+#backgroundImageDiv img {
+    float: left;
+    border: 1px solid #6D6D6D;
+}
+
+#backgroundInfoDiv {
+    float: right;
+    margin: 18px 15px;
+}
+
+#backgroundInfoDiv .backgroundFontColor {
+    margin-top: 8px;
+}
+
+#backgroundInfoDiv .backgroundTitle {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#backgroundInfoDiv .fontColorText {
+    float: left;
+    padding-top: 5px;
+}
+
+#backgroundInfoDiv .fontColorDiv {
+    width: 20px;
+    height: 20px;
+    margin-left: 70px;
+    border: 1px solid #555;
+}
+
+#changeBackgroundButtonDiv {
+    float: right;
+    margin-top: 24px;
+}
+
+#uploadBackgroundDiv {
+    float: right;
+    background-color: #F7F7F7;
+    border: 1px solid #6d6d6d;
+}
+
+#uploadBackgroundDiv table {
+    margin: 20px -10px 10px 20px;
+
+}
+
+#uploadBackgroundDiv td:first-child {
+    font-weight: bold;
+    padding-right: 10px;
+}
+
 .pageURLTitle {
     padding-left: 4px;
     font-weight: bold;

@@ -1,4 +1,5 @@
 <?PHP
+
 /**
 * Uploads the background image to storage, saves it in the database, and sets the user's default background to it
 *
@@ -15,17 +16,46 @@ require_once('systemSetup.php');
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
 use AdShotRunner\PowerPoint\PowerPointBackground;
+use AdShotRunner\Users\User;
+
+//Verify the information was passed
+if (!$_POST['backgroundTitle']) {
+	echo createJSONResponse(false, "Enter a name for the background image"); return;
+}
+
+if (!$_POST['backgroundFontColor']) {
+	echo createJSONResponse(false, "No font color passed"); return;
+}
+
+if (!$_FILES['backgroundImage']) {
+	echo createJSONResponse(false, "Choose a background image file"); return;
+}
 
 //Store and save the image and its information
 $newBackground = PowerPointBackground::create(	$_POST['backgroundTitle'], 
-												$_POST['fontColor'], 
+												$_POST['backgroundFontColor'], 
 												$_FILES['backgroundImage']['name'], 
 												$_FILES['backgroundImage']['tmp_name'], 
 												USERID);
 
 
+//Set the new background as the current user's default
+$currentUser = User::getUser(USERID);
+$currentUser->setPowerPointBackgroundID($newBackground->getID());
+User::update($currentUser);
 
-echo "{}"; return;
+//Put the new background info into an array to return
+$newBackgroundInfo = 	[
+							"id" => $newBackground->getID(),
+							"title" => $newBackground->getTitle(),
+							"fontColor" => $newBackground->getFontColor(),
+							"filename" => $newBackground->getFilename(),
+							"thumbnailFilename" => $newBackground->getThumbnailFilename()
+						];
+
+
+
+echo createJSONResponse(true, "", $newBackgroundInfo); return;
 
 
 //echo createJSONResponse(true, "Menu not found.", array());

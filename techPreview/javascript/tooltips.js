@@ -25,6 +25,11 @@ $(function() {
 			else if (elementID == "customerHelpIcon") {
 				return "The customer name will appear in the final PowerPoint and in the campaign results email.";
 			}
+			else if (elementID == "powerPointBackgroundHelpIcon") {
+				return "Choose the background image and font color to be used in the finished PowerPoint.<br><br>\
+						<strong>Recommended image sizes: </strong>1280x720, 1920x1080<br><br>\
+						The chosen font color should be easy to read against the background image.";
+			}
 			else if (elementID == "domainInputHelpIcon") {
 				return "Enter the domain URL of the publisher.<br><br>(Ex: nytimes.com, chicagotribune.com)";
 			}

@@ -11,6 +11,7 @@ public class CampaignRequest {
 	public String domain;
 	public String email;
 	public String powerPointBackground;
+	public String powerPointFontColor;
 	public List<String> tagImages;
 	public List<Map<String,String>> pages;
 	

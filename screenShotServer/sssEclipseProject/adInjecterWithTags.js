@@ -2,13 +2,199 @@
 * Injects the passed tags into the URLs they are attached to. Full page ads and floating elements are removed.
 */ 
 
-//Tags to be injected into the page. The line 'tags = [{id: '571d6629-33e2-4cfb-b926-b31a7879eda2', tag: 'http://s3.amazonaws.com/asr-tagimages/95517c81-79ff-49e0-8499-368276c59cbf.png', placement: 0, width: 300, height: 600},{id: '6c4f50c5-43a4-4c04-881c-5466c7521df0', tag: 'http://s3.amazonaws.com/asr-tagimages/d6120f11-373a-40ce-b5c2-62fe2c77edb3.png', placement: 0, width: 300, height: 50},{id: '2d9867ea-cb83-4315-b21f-093cd26dd786', tag: 'http://s3.amazonaws.com/asr-tagimages/4a913b3b-5eeb-41b7-b644-019f0cd5cf0d.png', placement: 0, width: 728, height: 90},{id: '5ed65619-4fb7-43fe-b09f-43cf0496a306', tag: 'http://s3.amazonaws.com/asr-tagimages/67f5fbb2-f99b-49e6-9a05-6ef1aa626e04.png', placement: 0, width: 300, height: 250},{id: '5787ec24-90b2-48a1-bf03-f68c085d39de', tag: 'http://s3.amazonaws.com/asr-tagimages/5f43bf1c-849a-4820-8e47-5ce64acf5852.png', placement: 0, width: 320, height: 50},];' is necessary to get the
+//Tags to be injected into the page. The line 'tags = [{id: '7e88101e-573f-4333-b952-391f64357e6a', tag: 'http://s3.amazonaws.com/asr-tagimages/0a57bcc0-9040-4fd1-8645-01418a8af4b5.png', placement: 0, width: 970, height: 250},{id: 'ee77beb4-6538-4264-bf34-4c9b89e248ca', tag: 'http://s3.amazonaws.com/asr-tagimages/428ea90d-30d2-4aa2-a2ac-edc292ba7cdc.png', placement: 0, width: 300, height: 600},];' is necessary to get the
 //tags from the calling java instance.
 let tags = [];
 //tags = [{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', tag: 'http://s3.amazonaws.com/asr-tagimages/07809e6b-9f3a-42aa-8fe0-6ba0adb102d0.png', placement: 0, width: 728, height: 90},{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'http://s3.amazonaws.com/asr-tagimages/f050eb7d-9a0c-4781-849c-bf34629e5695.png', placement: 0, width: 300, height: 250},{id: 'b722d748-dd25-493e-93c5-6fc1991f6392', tag: 'http://s3.amazonaws.com/asr-tagimages/074df31b-25d1-4a19-9b42-c8b8ab780738.png', placement: 0, width: 300, height: 50},{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', tag: 'http://s3.amazonaws.com/asr-tagimages/59b1ba0b-cf8a-4295-b578-fecefd91e907.png', placement: 0, width: 320, height: 50},{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', tag: 'http://s3.amazonaws.com/asr-tagimages/aa0a39ab-1abb-48a3-a2c2-458ae0b54c4f.png', placement: 0, width: 300, height: 600},];
-tags = [{id: '571d6629-33e2-4cfb-b926-b31a7879eda2', tag: 'http://s3.amazonaws.com/asr-tagimages/95517c81-79ff-49e0-8499-368276c59cbf.png', placement: 0, width: 300, height: 600},{id: '6c4f50c5-43a4-4c04-881c-5466c7521df0', tag: 'http://s3.amazonaws.com/asr-tagimages/d6120f11-373a-40ce-b5c2-62fe2c77edb3.png', placement: 0, width: 300, height: 50},{id: '2d9867ea-cb83-4315-b21f-093cd26dd786', tag: 'http://s3.amazonaws.com/asr-tagimages/4a913b3b-5eeb-41b7-b644-019f0cd5cf0d.png', placement: 0, width: 728, height: 90},{id: '5ed65619-4fb7-43fe-b09f-43cf0496a306', tag: 'http://s3.amazonaws.com/asr-tagimages/67f5fbb2-f99b-49e6-9a05-6ef1aa626e04.png', placement: 0, width: 300, height: 250},{id: '5787ec24-90b2-48a1-bf03-f68c085d39de', tag: 'http://s3.amazonaws.com/asr-tagimages/5f43bf1c-849a-4820-8e47-5ce64acf5852.png', placement: 0, width: 320, height: 50},];
+tags = [{id: '7e88101e-573f-4333-b952-391f64357e6a', tag: 'http://s3.amazonaws.com/asr-tagimages/0a57bcc0-9040-4fd1-8645-01418a8af4b5.png', placement: 0, width: 970, height: 250},{id: 'ee77beb4-6538-4264-bf34-4c9b89e248ca', tag: 'http://s3.amazonaws.com/asr-tagimages/428ea90d-30d2-4aa2-a2ac-edc292ba7cdc.png', placement: 0, width: 300, height: 600},];
 
-//INSERT EXCEPTION SCRIPT//
+/**
+*  wkyc.com exception script
+*
+*  On desktop Chrome, the top banner ad often is not displayed at all or is displayed 
+*  as a much larger ad size. When the latter occurs, the image is replaced by the
+*  Ad Injecter but is stretched to the larger size.
+*
+*  This script replaces the entire ad div element, and its children, with a dummy
+*  holder div with the correct margin and 728x90 size. A second 728x90 div
+*  is placed inside of it with the flood-opacity set so it will be replaced
+*  by the ad injecter.
+*
+*  The div used on the page has the id 'layout-column_column-1'.
+*/
+
+//-------------------------- Testing Tags (Comment out before upload!!!)
+/*
+tags = [
+	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', tag: 'http://s3.amazonaws.com/asr-tagimages/07809e6b-9f3a-42aa-8fe0-6ba0adb102d0.png', placement: 0, width: 728, height: 90},
+	{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'http://s3.amazonaws.com/asr-tagimages/f050eb7d-9a0c-4781-849c-bf34629e5695.png', placement: 0, width: 300, height: 250},
+	//{id: 'b722d748-dd25-493e-93c5-6fc1991f6392', tag: 'http://s3.amazonaws.com/asr-tagimages/074df31b-25d1-4a19-9b42-c8b8ab780738.png', placement: 0, width: 300, height: 50},
+	//{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', tag: 'http://s3.amazonaws.com/asr-tagimages/59b1ba0b-cf8a-4295-b578-fecefd91e907.png', placement: 0, width: 320, height: 50},
+	//{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', tag: 'http://s3.amazonaws.com/asr-tagimages/aa0a39ab-1abb-48a3-a2c2-458ae0b54c4f.png', placement: 0, width: 300, height: 600}
+];//*/
+
+//Check to see if a 728x90 or 320x50 tag has been passed by the AdShotter
+let found728x90 = false;
+let found320x50 = false;
+let found300x250 = false;
+let found300x600 = false;
+for (tagIndex in tags) {
+
+    let currentTag = tags[tagIndex];
+    if ((currentTag.width == 728) && (currentTag.height == 90)) {
+    	found728x90 = true;
+    }
+    if ((currentTag.width == 320) && (currentTag.height == 50)) {
+    	found320x50 = true;
+    }
+    if ((currentTag.width == 300) && (currentTag.height == 250)) {
+    	found300x250 = true;
+    }
+    if ((currentTag.width == 300) && (currentTag.height == 600)) {
+    	found300x600 = true;
+    }
+}
+
+//Get the div holding the banner ad
+//this selector works for mobile and desktop
+let bannerAdDiv = document.querySelector("#layout-column_column-1 div.portlet-body");
+
+//Get the desktop right column ad if it exists
+let columnAd = document.querySelector("#layout-column_column-3 .mod-wrapper.ad-300");
+
+//See if this is a desktop story article
+let isStoryArticle = (document.querySelector(".story-utility-bar")) ? true: false;
+
+//Run exception on desktop browsers (no mobile)
+if ((!navigator.userAgent.toLowerCase().includes("mobile"))) {
+
+	//////////////////////////// Banner Ad Desktop ///////////////////////////////
+
+	//If a 728x90 tag has been passed, replace the header ad with a 728x90 div
+	//and then place a second div inside of the first for the ad injecter to
+	// replace
+	if (found728x90) {
+
+		//remove all of the elements children
+		while (bannerAdDiv.firstChild) {
+			bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+		}
+
+		//Set the banner ads size, margin, and visibility so that it is centered
+		//and placed correctly.
+		bannerAdDiv.style.visibility = 'visible';
+		bannerAdDiv.style.width = '728px';
+		bannerAdDiv.style.height = '90px';
+		bannerAdDiv.style.margin = "0 auto";
+		bannerAdDiv.style.marginBottom = "10px";
+
+		//Create the ad filler div which will be replaced by the ad injecter
+		//and add it inside the banner ad div
+		let adFillerDiv =  document.createElement('div');
+		adFillerDiv.style.floodOpacity = "0.9898";
+		adFillerDiv.style.width = '728px';
+		adFillerDiv.style.height = '90px';
+		bannerAdDiv.appendChild(adFillerDiv);
+	}
+
+	//Otherwise, hide the 728x90 in case it doesn't load correctly
+	else {
+		bannerAdDiv.parentElement.parentElement.parentElement.style.display = 'none';
+	}
+
+	//////////////////////////// Column Ad Desktop ///////////////////////////////
+
+	//If there is a side column, a 300x250 tag, BUT NOT a 300x600, 
+	//replace the ad element with a filler
+	if ((columnAd) && (found300x250) && (!found300x600)) {
+
+		console.log("Column and 300x50");
+		//remove all of the elements children
+		while (columnAd.firstChild) {
+			columnAd.removeChild(columnAd.firstChild);
+		}
+
+		//Set the banner ads size, margin, and visibility so that it is centered
+		//and placed correctly.
+		columnAd.style.visibility = 'visible';
+		columnAd.style.width = '300px';
+		columnAd.style.height = '250px';
+		columnAd.style.margin = "0 auto";
+		columnAd.style.marginLeft = "20px";
+		columnAd.parentElement.style.marginLeft = "20px";
+		//columnAd.style.marginBottom = "10px";
+
+		//Create the ad filler div which will be replaced by the ad injecter
+		//and add it inside the banner ad div
+		let adFillerDiv =  document.createElement('div');
+		adFillerDiv.style.floodOpacity = "0.9898";
+		adFillerDiv.style.width = '300px';
+		adFillerDiv.style.height = '250px';
+		columnAd.appendChild(adFillerDiv);
+	}
+
+	//If there is a side column, a 300x600 tag, BUT NOT a 300x250, 
+	//replace the ad element with a filler
+	else if ((columnAd) && (found300x600) && (!found300x250)) {
+
+		//remove all of the elements children
+		while (columnAd.firstChild) {
+			columnAd.removeChild(columnAd.firstChild);
+		}
+
+		//Set the banner ads size, margin, and visibility so that it is centered
+		//and placed correctly.
+		columnAd.style.visibility = 'visible';
+		columnAd.style.width = '300px';
+		columnAd.style.height = '600px';
+		columnAd.style.margin = "0 auto";
+		columnAd.style.marginLeft = "20px";
+		columnAd.parentElement.style.marginLeft = "20px";
+		//columnAd.style.marginBottom = "10px";
+
+		//Create the ad filler div which will be replaced by the ad injecter
+		//and add it inside the banner ad div
+		let adFillerDiv =  document.createElement('div');
+		adFillerDiv.style.floodOpacity = "0.9898";
+		adFillerDiv.style.width = '300px';
+		adFillerDiv.style.height = '600px';
+		columnAd.appendChild(adFillerDiv);
+	}
+}
+
+//Run exception on mobile
+if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
+
+	//If a 320x50 tag has been passed, replace the header ad with a 320x50 div
+	//and then place a second div inside of the first for the ad injecter to
+	// replace
+	if (found320x50) {
+
+		//Remove all of the elements children
+		while (bannerAdDiv.firstChild) {
+			bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+		}
+
+		//Set the banner ads size, margin, and visibility so that it is centered
+		//and placed correctly.
+		bannerAdDiv.style.visibility = 'visible';
+		bannerAdDiv.style.width = '320px';
+		bannerAdDiv.style.height = '50px';
+		bannerAdDiv.style.margin = "0 auto";
+		bannerAdDiv.style.marginBottom = "10px";
+		bannerAdDiv.style.martinTop = "10px"
+
+		//Create the ad filler div which will be replaced by the ad injecter
+		//and add it inside the banner ad div
+		let adFillerDiv =  document.createElement('div');
+		adFillerDiv.style.floodOpacity = "0.9898";
+		adFillerDiv.style.width = '320px';
+		adFillerDiv.style.height = '50px';
+		bannerAdDiv.appendChild(adFillerDiv);
+	}
+}
+
+
 
 //Remove the scrollbars
 document.documentElement.style.overflow = 'hidden';

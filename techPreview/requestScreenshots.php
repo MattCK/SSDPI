@@ -32,7 +32,7 @@ if (!$_POST['pages']) {
 
 //Get the user's PowerPoint background image filename
 $currentUser = User::getUser(USERID);
-$powerPointBackground = $currentUser->getPowerPointBackground();
+$powerPointBackground = "DefaultBackground.jpg"; //$currentUser->getPowerPointBackground();
 
 
 //Create the final object of data to turn into JSON
@@ -40,7 +40,8 @@ $screenshotRequestObject = ['jobID' => $_POST['jobID'],
 							'customer' => $_POST['customer'],
 							'domain' => $_POST['domain'],
 							'email' => USEREMAIL,
-							'powerPointBackground' => $powerPointBackground,
+							'powerPointBackground' => $_POST['backgroundFilename'],
+							'powerPointFontColor' => $_POST['backgroundFontColor'],
 							'tagImages' => $_POST['tagImages'],
 							'pages' => []];
 

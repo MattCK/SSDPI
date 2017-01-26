@@ -41,6 +41,8 @@ if ($_POST['domain']) {
 	if ($cleanMenuItemString) {
 		databaseQuery("INSERT IGNORE INTO exceptionsMenuGrabberItems (EMI_EMD_id, EMI_label, EMI_url) 
 					   VALUES $cleanMenuItemString");
+		echo "Query: " . "INSERT IGNORE INTO exceptionsMenuGrabberItems (EMI_EMD_id, EMI_label, EMI_url) 
+					   VALUES $cleanMenuItemString";
 	}
 
 	echo "Inserted!!!<br><br>";
