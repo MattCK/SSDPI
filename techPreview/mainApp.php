@@ -14,6 +14,7 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Users\User;
 use AdShotRunner\PowerPoint\PowerPointBackground;
 use AdShotRunner\DFP\DFPCommunicator;
@@ -25,16 +26,17 @@ $backgroundTitle = $defaultBackground->getTitle();
 $powerPointFontColor = $defaultBackground->getFontColor();
 $backgroundFilename = $defaultBackground->getFilename();
 $backgroundThumbnailFilename = $defaultBackground->getThumbnailFilename();
-$backgroundURL = "https://s3.amazonaws.com/asr-powerpointbackgrounds/thumbnails/" . $backgroundThumbnailFilename;
+$backgroundURL = "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() . "/thumbnails/" . $backgroundThumbnailFilename;
 
 //If the user has a DFP network code, get their orders
 $orders = null;
 if (USERDFPNETWORKCODE) {
 
-	$dfpCommunicator = DFPCommunicator::create("1041453671893-6u2tkvf48t1d761c40niul48e94f27pr.apps.googleusercontent.com", 
-											   "VdC_QJfGyZCt0Q-dUJl47CnQ", 
-											   "1/YI_KIXNvTmidUf756JE_4bu9qXlD_j_1azY_E6iLfb0", 
-											   USERDFPNETWORKCODE, "AdShotRunner");
+	$dfpCommunicator = DFPCommunicator::create(ASRProperties::dfpClientID(), 
+											   ASRProperties::dfpClientSecret(), 
+											   ASRProperties::dfpRefreshToken(), 
+											   USERDFPNETWORKCODE, 
+											   ASRProperties::dfpApplicationName());
 
 	$orders = $dfpCommunicator->getOrders();
 }
@@ -62,7 +64,7 @@ if (USERDFPNETWORKCODE) {
 		<div id="dfpInfoDiv" class="section"> 
 			<strong>Google DFP Users:</strong> 
 			AdShotRunner&trade; can retrieve orders, line notes, and creatives from your account. 
-			For more information, call (773) 295-2386 or <a href="mailto:info@adshotrunner.com">email us</a>
+			For more information, call (773) 295-2386 or <a href="mailto:<?PHP echo ASRProperties::emailAddressInfo()?>">email us</a>
 		</div>
 		<?PHP endif; ?>
 

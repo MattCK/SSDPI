@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import adshotrunner.utilities.MySQLDatabase;
+import adshotrunner.utilities.ASRDatabase;
 import adshotrunner.utilities.URLTool;
 
 public class DatabaseTester {
@@ -25,7 +25,7 @@ public class DatabaseTester {
 		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
 		
 		//Check the database to see if any entries matching the domain exist
-		ResultSet exceptionsSet = MySQLDatabase.executeQuery("SELECT * " + 
+		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
 															 "FROM exceptionsStoryFinder " +
 															 "WHERE ESF_url LIKE '" + urlDomain + "%'");
 				

@@ -8,6 +8,7 @@
 
 namespace AdShotRunner\Menu;
 
+use AdShotRunner\Database\ASRDatabase;
 use AdShotRunner\Utilities\WebPageCommunicator;
 use AdShotRunner\PhantomJS\PhantomJSCommunicator;
 
@@ -271,11 +272,11 @@ class MenuGrabber {
 
 		//Clean up the domains for the query
 		$cleanDomains = [];
-		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . databaseEscape($curDomain) . "'";}
+		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . ASRDatabase::escape($curDomain) . "'";}
 		$cleanDomainString = implode(',', $cleanDomains);
 
 		//Get the domains' menus from the database (if any exist)
-		$menuResults = databaseQuery("	SELECT *
+		$menuResults = ASRDatabase::executeQuery("	SELECT *
 										FROM exceptionsMenuGrabberDomains
 										LEFT JOIN exceptionsMenuGrabberItems ON EMI_EMD_id = EMD_id
 										WHERE EMD_domain IN ($cleanDomainString)");
@@ -354,11 +355,11 @@ class MenuGrabber {
 
 		//Clean up the domains for the query
 		$cleanDomains = [];
-		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . databaseEscape($curDomain) . "'";}
+		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . ASRDatabase::escape($curDomain) . "'";}
 		$cleanDomainString = implode(',', $cleanDomains);
 
 		//Get the domains' menus from the database (if any exist)
-		$menuResults = databaseQuery("	SELECT *
+		$menuResults = ASRDatabase::executeQuery("	SELECT *
 										FROM menuGrabberDomains
 										LEFT JOIN menuGrabberMenus ON MGM_MGD_id = MGD_id
 										LEFT JOIN menuGrabberItems ON MGI_MGM_id = MGM_id
@@ -422,21 +423,21 @@ class MenuGrabber {
 			$this->deleteDomain($domain);
 
 			//Add the domain to the database
-			$cleanDomainString = "'" . databaseEscape($domain) . "'";
-			databaseQuery("INSERT INTO menuGrabberDomains (MGD_domain) VALUES ($cleanDomainString)");
+			$cleanDomainString = "'" . ASRDatabase::escape($domain) . "'";
+			ASRDatabase::executeQuery("INSERT INTO menuGrabberDomains (MGD_domain) VALUES ($cleanDomainString)");
 
 			//Get the domain insert ID
-			$domainID = databaseLastInsertID();
+			$domainID = ASRDatabase::lastInsertID();
 
 			//Loop through the menus, adding each to the database with their items
 			foreach ($domainMenus as $menuKey => $menu) {
 
 				//Insert the menu and its score
-				$cleanScoreString = "'" . databaseEscape($menu['score']) . "'";
-				databaseQuery("INSERT INTO menuGrabberMenus (MGM_MGD_id, MGM_score) VALUES ($domainID, $cleanScoreString)");
+				$cleanScoreString = "'" . ASRDatabase::escape($menu['score']) . "'";
+				ASRDatabase::executeQuery("INSERT INTO menuGrabberMenus (MGM_MGD_id, MGM_score) VALUES ($domainID, $cleanScoreString)");
 
 				//Get the menu insert ID
-				$menuID = databaseLastInsertID();
+				$menuID = ASRDatabase::lastInsertID();
 
 				//Create the value string of menu items
 				$cleanMenuItems = [];
@@ -460,14 +461,14 @@ class MenuGrabber {
 					$domainInfo[$domain][$menuKey]['items'][$itemKey]['url'] = $curURL;
 
 					$cleanMenuItems[] = "($menuID, '" . 
-								  		  databaseEscape($item['label']) . "', '" . 
-								  		  databaseEscape($curURL) . "')";
+								  		  ASRDatabase::escape($item['label']) . "', '" . 
+								  		  ASRDatabase::escape($curURL) . "')";
 				}
 				$cleanMenuItemString = implode(',', $cleanMenuItems);
 
 				//Insert the items into the database
 				if ($cleanMenuItemString) {
-					databaseQuery("INSERT IGNORE INTO menuGrabberItems (MGI_MGM_id, MGI_label, MGI_url) 
+					ASRDatabase::executeQuery("INSERT IGNORE INTO menuGrabberItems (MGI_MGM_id, MGI_label, MGI_url) 
 								   VALUES $cleanMenuItemString");
 				}
 			}
@@ -690,7 +691,7 @@ class MenuGrabber {
 	private function retrieveMenuLabelWeightsFromDatabase() {
 		
 		//Retrieve the labels and weights from the database table and return them in an associative array
-		$menuWeightsResult = databaseQuery("SELECT * FROM menuGrabberLabelWeights");
+		$menuWeightsResult = ASRDatabase::executeQuery("SELECT * FROM menuGrabberLabelWeights");
 		$labelWeights = array();
 		while ($curRow = $menuWeightsResult->fetch_assoc()) {
 		    $labelWeights[strtolower($curRow['MLW_name'])] = $curRow['MLW_weight'];
@@ -740,11 +741,11 @@ class MenuGrabber {
 		
 		//Clean up the domains for the query
 		$cleanDomains = [];
-		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . databaseEscape($curDomain) . "'";}
+		foreach ($domains as $curDomain) {$cleanDomains[] = "'" . ASRDatabase::escape($curDomain) . "'";}
 		$cleanDomainString = implode(',', $cleanDomains);
 
 		//Delete all the domains, their menus, and their menu items
-		databaseQuery("DELETE FROM menuGrabberDomains WHERE MGD_domain IN ($cleanDomainString)");
+		ASRDatabase::executeQuery("DELETE FROM menuGrabberDomains WHERE MGD_domain IN ($cleanDomainString)");
 	}
 		
 	//---------------------------------------------------------------------------------------

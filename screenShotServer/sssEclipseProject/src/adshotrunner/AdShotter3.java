@@ -47,7 +47,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import adshotrunner.errors.AdShotRunnerException;
-import adshotrunner.utilities.MySQLDatabase;
+import adshotrunner.system.ASRProperties;
+import adshotrunner.utilities.ASRDatabase;
 import adshotrunner.utilities.URLTool;
 
 /**
@@ -62,8 +63,9 @@ public class AdShotter3 {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	//final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
-	final private static String SELENIUMHUBADDRESS = "http://ec2-54-172-131-29.compute-1.amazonaws.com:4444/wd/hub";
-	final private static String ADINJECTERJSPATH = "javascript/adInjecter.js";
+	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL();
+	final private static String ADINJECTERJSPATH = ASRProperties.pathForAdInjecterJavascript();
+	final private static String ADMARKERPATH = ASRProperties.pathForAdMarkerExtension();
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
 	final private static int PAGETIMEOUT = 12000;			//in milliseconds
@@ -445,6 +447,9 @@ public class AdShotter3 {
 		//Store the final URL
 		adShot.setFinalURL(activeSeleniumWebDriver.getCurrentUrl());
 		
+		//Store the pageTitle
+		adShot.setPageTitle(activeSeleniumWebDriver.getTitle());
+		
 		//Crop the image
 		consoleLog("Cropping screenshot...");
 		try {
@@ -514,9 +519,8 @@ public class AdShotter3 {
 		driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
 		
 		//Install the AdMarker extension to mark ad elements
-		String AdMarkerPath = "chromeExtensions/adMarker.crx";   
 		try {
-			driverOptions.addExtensions(new File(AdMarkerPath));
+			driverOptions.addExtensions(new File(ADMARKERPATH));
 		} catch (Exception e) {
 			consoleLog("	FAILED: Unable to load AdMarker. -" + e.toString() );
 		}
@@ -847,7 +851,7 @@ public class AdShotter3 {
 		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
 		
 		//Check the database to see if any entries matching the domain exist
-		ResultSet exceptionsSet = MySQLDatabase.executeQuery("SELECT * " + 
+		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
 															 "FROM exceptionsAdInjecter " +
 															 "WHERE EAI_url LIKE '" + urlDomain + "%'");
 				

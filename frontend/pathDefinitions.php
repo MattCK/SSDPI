@@ -19,21 +19,12 @@ define('BASEPATH', __DIR__ . '/');
 //Path to restricted system files
 define('RESTRICTEDPATH', BASEPATH . '/restricted/');
 
-//Path to restricted documents
-//define('DOCUMENTSPATH', SYSTEMPATH . '/documents//');
-
 //Path to function files
 define('FUNCTIONPATH', BASEPATH . '/functions//');
 
 //Path to class files
 //define('CLASSPATH', BASEPATH . '/library/classes//');
 define('CLASSPATH', BASEPATH . '/classes/');
-
-//Path to content files
-//define('CONTENTPATH', BASEPATH . '/content//');
-
-//Path to Java files
-//define('JAVAPATH', BASEPATH . '/java//');
 
 //Path to third parth files
 define('THIRDPARTYPATH', BASEPATH . '/thirdParty/');

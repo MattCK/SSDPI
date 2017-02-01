@@ -10,10 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -24,21 +24,17 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import org.apache.commons.io.FileUtils;
 
-import adshotrunner.errors.AdShotRunnerException;
-import adshotrunner.utilities.URLTool;
-import adshotrunner.utilities.MySQLDatabase;
-
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+
+import adshotrunner.errors.AdShotRunnerException;
+import adshotrunner.system.ASRProperties;
+import adshotrunner.utilities.ASRDatabase;
+import adshotrunner.utilities.URLTool;
 
 /**
  * The StoryFinder class attempts to retrieve a feature story from the passed URL. This story
@@ -85,24 +81,13 @@ public class StoryFinder {
         	//StoryFinder.consoleLog("getLinkJSONFromUrl width: " + viewWidth);
         	//StoryFinder.consoleLog("getLinkJSONFromUrl height: " + viewHeight);
             Process p = Runtime.getRuntime().exec(new String[]{
-	            "phantomjs/phantomjs", 
-	            "javascript/retrievePossibleStoriesFromURL.js",
+	            ASRProperties.pathForPhantomJS(), 
+	            ASRProperties.pathForPossibleStoriesJavascript(),
 	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass        	
             });
             //Get the string returned from phantomjs
-            String thisLine = "";
             BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            //StoryFinder.consoleLog("after the to call the readbuffer");
-           // while ((thisLine = commandLineInput.readLine()) != null) {
-            //	phantomJSResponse += thisLine;
-            //}
-            String[] commandArray = new String[]{
-    	            "phantomjs/phantomjs", 
-    	            "javascript/retrievePossibleStoriesFromURL.js",
-    	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass};
-            //StoryFinder.consoleLog("RunString: " + Arrays.toString(commandArray));
             phantomJSResponse = commandLineInput.readLine();
-            //StoryFinder.consoleLog("FirstLineRead: " + phantomJSResponse);
         }
         catch (IOException e) {
 			throw new AdShotRunnerException("Could not execute phantomjs", e);
@@ -249,7 +234,7 @@ public class StoryFinder {
 		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
 		
 		//Check the database to see if any entries matching the domain exist
-		ResultSet exceptionsSet = MySQLDatabase.executeQuery("SELECT * " + 
+		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
 															 "FROM exceptionsStoryFinder " +
 															 "WHERE ESF_url LIKE '" + urlDomain + "%'");
 				
@@ -302,13 +287,6 @@ public class StoryFinder {
 	 */
 	private List<StoryLink> getStoryLinksFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
 		
-		//Turn the returned JSON into an array of objects
-		/*try {
-			FileUtils.writeStringToFile(new File("storyFinderJSON/" + new Date().getTime() + ".json"), linkJSON);
-			//StoryFinder.consoleLog("Saved StoryFinder JSON");
-		} catch (IOException e) {
-			StoryFinder.consoleLog("Could not save StoryFinder JSON");
-		}*/
 		Gson gson = new Gson();
 		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
 		ArrayList<StoryLink> storyLinkList = new ArrayList<StoryLink>();
@@ -924,7 +902,7 @@ public class StoryFinder {
 							else{
 								//if none of the scoring worked return the whole list
 								//this is here just to make it easier to follow
-								storyLinkScores = storyLinkScores;
+								//storyLinkScores = storyLinkScores;
 							}
 						}
 					}

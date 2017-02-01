@@ -8,6 +8,8 @@
 
 namespace AdShotRunner\Users;
 
+use AdShotRunner\Database\ASRDatabase;
+
 /**
 * The User class controls the flow of information between the system and the database concerning user information. 
 *
@@ -46,7 +48,7 @@ class User {
 		
 		//Get the info from the users table
 		$getUserQuery = "SELECT * FROM users WHERE USR_id = $userID";
-		$userResult = databaseQuery($getUserQuery);
+		$userResult = ASRDatabase::executeQuery($getUserQuery);
 		$userInfo = $userResult->fetch_assoc();
 
 		//If no data was returned, return NULL.
@@ -75,8 +77,8 @@ class User {
 		if (!$username) {return NULL;}
 		
 		//Get the info from the users table
-		$getUserQuery = "SELECT * FROM users WHERE USR_username LIKE '" . databaseEscape($username) . "'";
-		$userResult = databaseQuery($getUserQuery);
+		$getUserQuery = "SELECT * FROM users WHERE USR_username LIKE '" . ASRDatabase::escape($username) . "'";
+		$userResult = ASRDatabase::executeQuery($getUserQuery);
 		$userInfo = $userResult->fetch_assoc();
 
 		//If no data was returned, return NULL.
@@ -86,8 +88,8 @@ class User {
 		$userDFPNetworkCode = NULL;
 		$emailSubdomain = array_pop(explode("@", $userInfo['USR_email']));
 		if ($emailSubdomain) {
-			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . databaseEscape($emailSubdomain) . "'";
-			$dfpNetworkCodeResult = databaseQuery($getDFPNetworkCodeQuery);
+			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . ASRDatabase::escape($emailSubdomain) . "'";
+			$dfpNetworkCodeResult = ASRDatabase::executeQuery($getDFPNetworkCodeQuery);
 			$networkCodeInfo = $dfpNetworkCodeResult->fetch_assoc();
 			if ($networkCodeInfo) {$userDFPNetworkCode = $networkCodeInfo['DNC_networkCode'];}
 		}
@@ -125,25 +127,25 @@ class User {
 											USR_email,
 											USR_PPB_id,
 											USR_verified)
-						 VALUES ('" . databaseEscape($newUser->getUsername()) . "',
-								'" . databaseEscape($newUser->getPassword()) . "',
-								'" . databaseEscape($newUser->getFirstName()) . "',
-								'" . databaseEscape($newUser->getLastName()) . "',
-								'" . databaseEscape($newUser->getCompany()) . "',
-								'" . databaseEscape($newUser->getEmail()) . "',
-								'" . databaseEscape($newUser->getPowerPointBackgroundID()) . "',
-								'" . databaseEscape($newUser->isVerified()) . "')";
-		databaseQuery($addUserQuery);
+						 VALUES ('" . ASRDatabase::escape($newUser->getUsername()) . "',
+								'" . ASRDatabase::escape($newUser->getPassword()) . "',
+								'" . ASRDatabase::escape($newUser->getFirstName()) . "',
+								'" . ASRDatabase::escape($newUser->getLastName()) . "',
+								'" . ASRDatabase::escape($newUser->getCompany()) . "',
+								'" . ASRDatabase::escape($newUser->getEmail()) . "',
+								'" . ASRDatabase::escape($newUser->getPowerPointBackgroundID()) . "',
+								'" . ASRDatabase::escape($newUser->isVerified()) . "')";
+		ASRDatabase::executeQuery($addUserQuery);
 		
 		//Set the id in the User
-		$newUser->setID(databaseLastInsertID());
+		$newUser->setID(ASRDatabase::lastInsertID());
 
 		//Get the user's DFP network code if one exists and set it
 		$userDFPNetworkCode = NULL;
 		$emailSubdomain = array_pop(explode("@", $newUser->getEmail()));
 		if ($emailSubdomain) {
-			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . databaseEscape($emailSubdomain) . "'";
-			$dfpNetworkCodeResult = databaseQuery($getDFPNetworkCodeQuery);
+			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . ASRDatabase::escape($emailSubdomain) . "'";
+			$dfpNetworkCodeResult = ASRDatabase::executeQuery($getDFPNetworkCodeQuery);
 			$networkCodeInfo = $dfpNetworkCodeResult->fetch_assoc();
 			if ($networkCodeInfo) {$userDFPNetworkCode = $networkCodeInfo['DNC_networkCode'];}
 		}
@@ -182,16 +184,16 @@ class User {
 
 		//Update the info in the table
 		$updateUserQuery = "UPDATE users 
-							SET USR_username = '" . databaseEscape($modifiedUser->getUsername()) . "',
-								USR_password = '" . databaseEscape($modifiedUser->getPassword()) . "',
-								USR_firstName = '" . databaseEscape($modifiedUser->getFirstName()) . "',
-								USR_lastName = '" . databaseEscape($modifiedUser->getLastName()) . "',
-								USR_company = '" . databaseEscape($modifiedUser->getCompany()) . "',
-								USR_email = '" . databaseEscape($modifiedUser->getEmail()) . "',
-								USR_PPB_id = '" . databaseEscape($modifiedUser->getPowerPointBackgroundID()) . "',
-								USR_verified = '" . databaseEscape($modifiedUser->isVerified()) . "'
+							SET USR_username = '" . ASRDatabase::escape($modifiedUser->getUsername()) . "',
+								USR_password = '" . ASRDatabase::escape($modifiedUser->getPassword()) . "',
+								USR_firstName = '" . ASRDatabase::escape($modifiedUser->getFirstName()) . "',
+								USR_lastName = '" . ASRDatabase::escape($modifiedUser->getLastName()) . "',
+								USR_company = '" . ASRDatabase::escape($modifiedUser->getCompany()) . "',
+								USR_email = '" . ASRDatabase::escape($modifiedUser->getEmail()) . "',
+								USR_PPB_id = '" . ASRDatabase::escape($modifiedUser->getPowerPointBackgroundID()) . "',
+								USR_verified = '" . ASRDatabase::escape($modifiedUser->isVerified()) . "'
 							WHERE USR_id = " . $modifiedUser->getID();
-		databaseQuery($updateUserQuery);
+		ASRDatabase::executeQuery($updateUserQuery);
 		
 		//Return the user
 		return $modifiedUser;
@@ -223,7 +225,7 @@ class User {
 							 SET USR_archived = 1,
 							 	 USR_USR_id = '" . CURUSERID . "'
 							 WHERE USR_id = " . $userID;
-		databaseQuery($archiveUserQuery);
+		ASRDatabase::executeQuery($archiveUserQuery);
 		
 		//Send the archived user
 		$curUser = User::getUser($userID);
@@ -249,8 +251,8 @@ class User {
 		//Set the login info in the the userLogins table
 		$userLoginDeleteQuery = "DELETE FROM userLogins WHERE LGN_USR_id = " . $userID;
 		$userLoginQuery = "INSERT INTO userLogins (LGN_USR_id) VALUES ('$userID')"; 
-		databaseQuery($userLoginDeleteQuery);
-		databaseQuery($userLoginQuery);
+		ASRDatabase::executeQuery($userLoginDeleteQuery);
+		ASRDatabase::executeQuery($userLoginQuery);
 		
 		//Send success if we made it this far
 		return TRUE;
@@ -276,10 +278,10 @@ class User {
 		
 		//Look for the user and password in the database
 		$searchQuery = "SELECT * FROM users
-					    WHERE USR_username LIKE '" . databaseEscape($username) . "' AND 
-							  USR_password = '" . databaseEscape($password) . "' AND
+					    WHERE USR_username LIKE '" . ASRDatabase::escape($username) . "' AND 
+							  USR_password = '" . ASRDatabase::escape($password) . "' AND
 							  USR_archived = 0";
-		$userResult = databaseQuery($searchQuery);
+		$userResult = ASRDatabase::executeQuery($searchQuery);
 		$userInfo = $userResult->fetch_assoc();
 		
 		//If no data was returned, return NULL.
@@ -289,8 +291,8 @@ class User {
 		$userDFPNetworkCode = NULL;
 		$emailSubdomain = array_pop(explode("@", $userInfo['USR_email']));
 		if ($emailSubdomain) {
-			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . databaseEscape($emailSubdomain) . "'";
-			$dfpNetworkCodeResult = databaseQuery($getDFPNetworkCodeQuery);
+			$getDFPNetworkCodeQuery = "SELECT * FROM dfpNetworkCodes WHERE DNC_subdomain LIKE '" . ASRDatabase::escape($emailSubdomain) . "'";
+			$dfpNetworkCodeResult = ASRDatabase::executeQuery($getDFPNetworkCodeQuery);
 			$networkCodeInfo = $dfpNetworkCodeResult->fetch_assoc();
 			if ($networkCodeInfo) {$userDFPNetworkCode = $networkCodeInfo['DNC_networkCode'];}
 		}
@@ -324,8 +326,8 @@ class User {
 		//Set the login info in the the userlogins table
 		$userLoginDeleteQuery = "DELETE FROM userlogins WHERE LGN_USR_id = " . $userID;
 		$userLoginQuery = "INSERT INTO userlogins (LGN_USR_id) VALUES ('$userID')"; 
-		databaseQuery($userLoginDeleteQuery);
-		databaseQuery($userLoginQuery);
+		ASRDatabase::executeQuery($userLoginDeleteQuery);
+		ASRDatabase::executeQuery($userLoginQuery);
 		
 		//Send success if we made it this far
 		return TRUE;

@@ -15,6 +15,7 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\PowerPoint\PowerPointBackground;
 use AdShotRunner\Users\User;
 

@@ -10,6 +10,7 @@ import java.util.TreeSet;
 
 import adshotrunner.AdShot;
 import adshotrunner.TagImage;
+import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.EmailClient;
 
 public class CampaignEmail {
@@ -81,8 +82,8 @@ public class CampaignEmail {
 							  _customerName + " - " + _campaignDomain + " - " + _campaignDate;
 
 		//Send the email
-		EmailClient.sendEmail(EmailClient.SCREENSHOTADDRESS, emailAddress, emailSubject, 
-															 getPlainText(), getHTMLText());
+		EmailClient.sendEmail(ASRProperties.emailAddressScreenshots(), emailAddress, emailSubject, 
+															 		   getPlainText(), getHTMLText());
 	}
 	
 	private String getIntroText() {

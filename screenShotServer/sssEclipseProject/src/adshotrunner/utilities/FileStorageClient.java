@@ -17,13 +17,13 @@ public class FileStorageClient {
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	final public static String CAMPAIGNJOBS = "asr-campaignjobs";
+	/*final public static String CAMPAIGNJOBS = "asr-campaignjobs";
 	final public static String POWERPOINTS = "asr-powerpoints";
 	final public static String POWERPOINTBACKGROUNDS = "asr-powerpointbackgrounds";
 	final public static String SCREENSHOTSCONTAINER = "asr-screenshots";
 	final public static String TAGIMAGESCONTAINER = "asr-tagimages";
 	final public static String TAGTEXTSCONTAINER = "asr-tagtexts";
-	final public static String TAGPAGESCONTAINER = "asr-tagpages";
+	final public static String TAGPAGESCONTAINER = "asr-tagpages";*/
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------
@@ -39,7 +39,7 @@ public class FileStorageClient {
 	public static void saveFile(String containerName, String fileToSave, String newFilename) {
         
         //Instantiate an Amazon S3 client using AdShotRunner's AWS credentials
-        AmazonS3 s3client = new AmazonS3Client(AWSPermitter.getCredentials());
+        AmazonS3 s3client = new AmazonS3Client(AWSConnector.getCredentials());
         
         //Upload the file
         File fileToUpload = new File(fileToSave);
@@ -55,7 +55,7 @@ public class FileStorageClient {
 	public static void deleteFile(String containerName, String filename) {
         
         //Instantiate an Amazon S3 client using AdShotRunner's AWS credentials
-        AmazonS3 s3client = new AmazonS3Client(AWSPermitter.getCredentials());
+        AmazonS3 s3client = new AmazonS3Client(AWSConnector.getCredentials());
         
         //Delete the file
         s3client.deleteObject(new DeleteObjectRequest(containerName, filename));	        

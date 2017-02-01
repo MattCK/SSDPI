@@ -11,6 +11,8 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 
+import adshotrunner.system.ASRProperties;
+
 /**
  * The MessageQueueClient sends and retrieves messages from selected queue
  */
@@ -19,8 +21,8 @@ public class MessageQueueClient {
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	final public static String TAGIMAGEREQUESTS = "https://sqs.us-east-1.amazonaws.com/469658404108/TagImageRequests";
-	final public static String SCREENSHOTREQUESTS = "https://sqs.us-east-1.amazonaws.com/469658404108/ScreenShotRequests";
+	//final public static String TAGIMAGEREQUESTS = "https://sqs.us-east-1.amazonaws.com/469658404108/TagImageRequests";
+	//final public static String SCREENSHOTREQUESTS = "https://sqs.us-east-1.amazonaws.com/469658404108/ScreenShotRequests";
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------
@@ -35,11 +37,12 @@ public class MessageQueueClient {
 	public static void sendMessage(String queueID, String message) {
 		
         //Instantiate an Amazon SQS client using AdShotRunner's AWS credentials
-		AmazonSQSClient sqsHandle = new AmazonSQSClient(AWSPermitter.getCredentials());
+		AmazonSQSClient sqsHandle = new AmazonSQSClient(AWSConnector.getCredentials());
            
         //Set the AWS region 
-        Region REGION = Region.getRegion(Regions.US_EAST_1);
-        sqsHandle.setRegion(REGION);
+        Regions awsRegions = Regions.fromName(ASRProperties.awsRegion());
+        Region emailRegion = Region.getRegion(awsRegions);
+        sqsHandle.setRegion(emailRegion);
         
         //Send the message  
         SendMessageResult sendResult = sqsHandle.sendMessage(new SendMessageRequest()
@@ -57,11 +60,12 @@ public class MessageQueueClient {
 	public static HashMap<String, String> getMessages(String queueID) throws Exception {
 		
         //Instantiate an Amazon SQS client using AdShotRunner's AWS credentials
-		AmazonSQSClient sqsHandle = new AmazonSQSClient(AWSPermitter.getCredentials());
+		AmazonSQSClient sqsHandle = new AmazonSQSClient(AWSConnector.getCredentials());
            
         //Set the AWS region 
-        Region REGION = Region.getRegion(Regions.US_EAST_1);
-        sqsHandle.setRegion(REGION);
+        Regions awsRegions = Regions.fromName(ASRProperties.awsRegion());
+        Region emailRegion = Region.getRegion(awsRegions);
+        sqsHandle.setRegion(emailRegion);
         
         //Get the messages from the queue
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueID);
@@ -86,11 +90,12 @@ public class MessageQueueClient {
 	public static void deleteMessage(String queueID, String messageID) {
 		
         //Instantiate an Amazon SQS client using AdShotRunner's AWS credentials
-		AmazonSQSClient sqsHandle = new AmazonSQSClient(AWSPermitter.getCredentials());
+		AmazonSQSClient sqsHandle = new AmazonSQSClient(AWSConnector.getCredentials());
            
         //Set the AWS region 
-        Region REGION = Region.getRegion(Regions.US_EAST_1);
-        sqsHandle.setRegion(REGION);
+        Regions awsRegions = Regions.fromName(ASRProperties.awsRegion());
+        Region emailRegion = Region.getRegion(awsRegions);
+        sqsHandle.setRegion(emailRegion);
         
         //Delete the message
         sqsHandle.deleteMessage(queueID, messageID);        

@@ -1,6 +1,6 @@
 <?PHP 
 
-//require_once('class.MySQLDatabase.php');
+//require_once('class.ASRDatabase.php');
 //require_once('class.MenuGrabber.php');
 /**
 * Define paths to use throughout the system
@@ -48,7 +48,7 @@ Class menuGrabberProxy Extends menuGrabber {
 	public function retrieveDomainListFromDatabase() {
 		
 		//Retrieve the 
-		$domainGrabResult = databaseQuery("SELECT * FROM menuDomains");
+		$domainGrabResult = ASRDatabase::executeQuery("SELECT * FROM menuDomains");
 		$domainList = array();
 		while ($curRow = $domainGrabResult->fetch_assoc()) {
 		    $domainList[$curRow['MND_domain']] = $curRow['MND_lastUpdated'];
@@ -59,7 +59,7 @@ Class menuGrabberProxy Extends menuGrabber {
 }
 
 header("Content-Type: text/plain");
-//$database = new MySQLDatabase('adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com', 'adshotrunner', 'xbSAb2G92E', 'adshotrunner');
+//$database = new ASRDatabase('adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com', 'adshotrunner', 'xbSAb2G92E', 'adshotrunner');
 
 $menuGrabberProxy = new MenuGrabberProxy();
 

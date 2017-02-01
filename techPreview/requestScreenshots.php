@@ -14,6 +14,7 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Utilities\FileStorageClient;
 use AdShotRunner\Utilities\MessageQueueClient;
 use AdShotRunner\Users\User;
@@ -29,11 +30,6 @@ if (!$_POST['tagImages']) {
 if (!$_POST['pages']) {
 	echo createJSONResponse(false, "No pages passed."); return;
 }
-
-//Get the user's PowerPoint background image filename
-$currentUser = User::getUser(USERID);
-$powerPointBackground = "DefaultBackground.jpg"; //$currentUser->getPowerPointBackground();
-
 
 //Create the final object of data to turn into JSON
 $screenshotRequestObject = ['jobID' => $_POST['jobID'], 
@@ -58,13 +54,13 @@ foreach ($_POST['pages'] as $currentID => $currentPage) {
 }
 
 //Create the queue request
-MessageQueueClient::sendMessage(MessageQueueClient::SCREENSHOTREQUESTS, json_encode($screenshotRequestObject));
+MessageQueueClient::sendMessage(ASRProperties::queueForScreenshotRequests(), json_encode($screenshotRequestObject));
 
 //Store the job status
 $jobStatus = ['jobID' => $_POST['jobID'], 
 			  'queued' => true];
 file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $_POST['jobID'], json_encode($jobStatus));
-FileStorageClient::saveFile(FileStorageClient::CAMPAIGNJOBS, RESTRICTEDPATH . 'temporaryFiles/' . $_POST['jobID'], $_POST['jobID']);
+FileStorageClient::saveFile(ASRProperties::containerForCampaignJobs(), RESTRICTEDPATH . 'temporaryFiles/' . $_POST['jobID'], $_POST['jobID']);
 
 echo createJSONResponse(true, "", json_encode($screenshotRequestObject)); return;
 /**

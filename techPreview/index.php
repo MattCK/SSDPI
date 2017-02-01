@@ -15,6 +15,7 @@ require_once('systemSetup.php');
 */
 require_once(FUNCTIONPATH . 'loginFunctions.php');
 
+use AdShotRunner\System\ASRProperties;
 
 //Set the tab to open at the beginning
 $openTab = 0;
@@ -140,7 +141,7 @@ $(function() {
 		<h1>AdShotRunner&trade;: Free Tech Preview</h1> 
 	</div>
 	<div id="logout">
-		<a href="mailto:contact@dangerouspenguins.com">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
+		<a href="mailto:<?PHP echo ASRProperties::emailAddressContact()?>">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </div>
 

@@ -14,16 +14,18 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\DFP\DFPCommunicator;
 
 //Check to see if an order was passed
 if (!$_REQUEST['orderID']) {echo createJSONResponse(false, 'No order ID was passed.'); return;}
 
 
-$dfpCommunicator = DFPCommunicator::create("1041453671893-6u2tkvf48t1d761c40niul48e94f27pr.apps.googleusercontent.com", 
-										   "VdC_QJfGyZCt0Q-dUJl47CnQ", 
-										   "1/YI_KIXNvTmidUf756JE_4bu9qXlD_j_1azY_E6iLfb0", 
-										   USERDFPNETWORKCODE, "AdShotRunner");
+$dfpCommunicator = DFPCommunicator::create(ASRProperties::dfpClientID(), 
+										   ASRProperties::dfpClientSecret(), 
+										   ASRProperties::dfpRefreshToken(), 
+										   USERDFPNETWORKCODE, 
+										   ASRProperties::dfpApplicationName());
 
 $dfpCommunicator->getLineItemsAndCreative($_REQUEST['orderID'], $lineItems, $creatives);
 

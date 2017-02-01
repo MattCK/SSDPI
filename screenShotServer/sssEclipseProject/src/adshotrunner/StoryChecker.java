@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import adshotrunner.system.ASRProperties;
+
 /**
  * The StoryChecker scores the text of a passed URL according to how negative
  * its contents is.
@@ -62,8 +64,8 @@ public class StoryChecker {
 
 			// Run the retrieve anchors js file with phantomjs
 			Process p = Runtime.getRuntime().exec(
-					new String[] { "phantomjs/phantomjs",
-							"javascript/retrieveHTMLWithoutAnchorsFromURL.js", url });
+					new String[] {ASRProperties.pathForPhantomJS(),
+								  ASRProperties.pathForHTMLWithoutAnchorsJavascript(), url });
 
 			// Get the string returned from phantomjs
 			BufferedReader commandLineInput = new BufferedReader(
@@ -157,10 +159,4 @@ public class StoryChecker {
 
 		return negativeWordList;
 	}
-
-	/**
-	 * Private to force use of static functions.
-	 */
-	private StoryChecker() {}
-
 }

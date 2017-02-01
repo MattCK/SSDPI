@@ -1,7 +1,6 @@
 <?PHP
 /**
-* This page setups the system's connection to the database, defines its paths, loads autoloaders, 
-* and verifies/defines session data.
+* This page defines the system paths and loads autoloaders.
 *
 * @package AdShotRunner
 * @subpackage System
@@ -29,7 +28,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . THIRDPARTYPATH);
 /**
 * Connect to the database
 */
-require_once(RESTRICTEDPATH . 'databaseSetup.php');
+//require_once(RESTRICTEDPATH . 'databaseSetup.php');
 
 use Aws\Common\Aws;
 

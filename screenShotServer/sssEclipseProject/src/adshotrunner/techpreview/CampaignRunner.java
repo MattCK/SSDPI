@@ -23,6 +23,7 @@ import adshotrunner.AdShotter3;
 import adshotrunner.StoryFinder;
 import adshotrunner.TagImage;
 import adshotrunner.powerpoint.CampaignPowerPoint;
+import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.FileStorageClient;
 import adshotrunner.utilities.URLTool;
 
@@ -160,18 +161,21 @@ public class CampaignRunner implements Runnable {
 			String imageFilename = requestInfo.jobID + "-" + imageIndex + ".png";		
 			
 			try {
-				saveImageAsPNG(currentAdShot.image(), "screenshots/" + imageFilename);
-				FileStorageClient.saveFile(FileStorageClient.SCREENSHOTSCONTAINER, "screenshots/" + imageFilename, imageFilename);
+				saveImageAsPNG(currentAdShot.image(), ASRProperties.pathForTemporaryFiles() + imageFilename);
+				FileStorageClient.saveFile(ASRProperties.containerForScreenshots(), 
+						ASRProperties.pathForTemporaryFiles() + imageFilename, imageFilename);
 			}
 			catch (Exception e) {
 				System.out.println("Could not save screenshot");
 				System.out.println(e);
 			}
 			++imageIndex;
-			pageAndScreenshotURLs.put("https://s3.amazonaws.com/asr-screenshots/" + imageFilename, currentAdShot.finalURL());
+			pageAndScreenshotURLs.put("https://s3.amazonaws.com/" + ASRProperties.containerForScreenshots() + 
+									  "/" + imageFilename, 
+									  currentAdShot.finalURL());
 		
 			//Delete the local file
-			File screenshotFile = new File("screenshots/" + imageFilename);
+			File screenshotFile = new File(ASRProperties.pathForTemporaryFiles() + imageFilename);
 			screenshotFile.delete();
 		}
 		
@@ -184,19 +188,21 @@ public class CampaignRunner implements Runnable {
 		String pptxFilename = pptxCustomerName + "-" + pptxDate + "-" + pptxTimestamp + ".pptx";
 		
 		//Get the background file. On fail, use the default one from the config folder.
-		String backgroundFilename = "powerPointBackgrounds/" + requestInfo.powerPointBackground;
+		String backgroundFilename = ASRProperties.pathForTemporaryFiles() + requestInfo.powerPointBackground;
 		File backgroundFile;
 		String titleDate = new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime());
 		System.out.println("PPTX Background:" + requestInfo.powerPointBackground);
 		try {
-			URL backgroundURL = new URL("https://s3.amazonaws.com/asr-powerpointbackgrounds/" + requestInfo.powerPointBackground);
+			URL backgroundURL = new URL("https://s3.amazonaws.com/" + ASRProperties.containerForPowerPointBackgrounds() + 
+									   "/" + requestInfo.powerPointBackground);
 			backgroundFile = new File(backgroundFilename);		
 			FileUtils.copyURLToFile(backgroundURL, backgroundFile);
 		} catch (Exception e) {
-			backgroundFilename = "config/DefaultBackground.jpg";
+			backgroundFilename = ASRProperties.pathForDefaultBackground();
 			backgroundFile = new File(backgroundFilename);
 			System.out.println("Failed getting background file");
-			System.out.println("URL: " + "https://s3.amazonaws.com/asr-powerpointbackgrounds/" + requestInfo.powerPointBackground);
+			System.out.println("URL: " + "https://s3.amazonaws.com/" + ASRProperties.containerForPowerPointBackgrounds() + 
+					   		   "/" + requestInfo.powerPointBackground);
 		}
 		
 		//Create the powerpoint and add each AdShot as a slide
@@ -207,22 +213,19 @@ public class CampaignRunner implements Runnable {
 			for (AdShot currentAdShot : adShotList) {
 				powerPoint.addSlide(currentAdShot);
 			}
-//			CampaignPowerPointGenerator powerPoint = new CampaignPowerPointGenerator(backgroundFilename, "16x9", requestInfo.customer, "000000");
-//			for (AdShot currentAdShot : adShotList) {
-//				powerPoint.AddScreenshotSlide(currentAdShot.finalURL(), currentAdShot.image());
-//			}
-			powerPoint.save("powerpoints/" + pptxFilename);
-			FileStorageClient.saveFile(FileStorageClient.POWERPOINTS, "powerpoints/" + pptxFilename, pptxFilename);
+			powerPoint.save(ASRProperties.pathForTemporaryFiles() + pptxFilename);
+			FileStorageClient.saveFile(ASRProperties.containerForPowerPoints(), 
+									   ASRProperties.pathForTemporaryFiles() + pptxFilename, pptxFilename);
 			
 			//Delete the local file
-			File powerPointFile = new File("powerpoints/" + pptxFilename);
+			File powerPointFile = new File(ASRProperties.pathForTemporaryFiles() + pptxFilename);
 			powerPointFile.delete();
 			
 		} catch (Exception e) {
 			System.out.println("Could not create powerpoint");
 		}
 		System.out.println("Done with powerpoint");
-		System.out.println("Results page: https://techpreview.adshotrunner.com/campaignResults.php?jobID=" + requestInfo.jobID);
+		System.out.println("Results page: https://" + ASRProperties.asrDomain() + "/campaignResults.php?jobID=" + requestInfo.jobID);
 		
 		//Output the total campaign runtime
 		long postUploadTime = System.nanoTime();
@@ -243,25 +246,32 @@ public class CampaignRunner implements Runnable {
 		jobResult.date = new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime());
 		
 		jobResult.screenshots = pageAndScreenshotURLs;
-		jobResult.powerPointURL = "https://s3.amazonaws.com/asr-powerpoints/" + pptxFilename;
+		jobResult.powerPointURL = "https://s3.amazonaws.com/" + ASRProperties.containerForPowerPoints() +  
+								  "/" + pptxFilename;
 		jobResult.zipURL = "";
 		
 		jobResult.runtime = totalRuntime;
 		
 		//Upload the job result
 		try {
-			FileUtils.writeStringToFile(new File("campaignJobs/" + jobResult.jobID), jobResult.toJSON());
+			FileUtils.writeStringToFile(new File(ASRProperties.pathForTemporaryFiles() + jobResult.jobID), 
+										jobResult.toJSON());
 		} catch (IOException e) {
 			System.out.println("Could not save job result");
 		}
-		FileStorageClient.saveFile(FileStorageClient.CAMPAIGNJOBS, "campaignJobs/" + jobResult.jobID, jobResult.jobID);
+		FileStorageClient.saveFile(ASRProperties.containerForCampaignJobs(), 
+								   ASRProperties.pathForTemporaryFiles() + jobResult.jobID, jobResult.jobID);
 		
+		//Delete the local file
+		File jobResultFile = new File(ASRProperties.pathForTemporaryFiles() + jobResult.jobID);
+		jobResultFile.delete();
+
 		//Send the notification email
 		CampaignEmail resultsEmail = CampaignEmail.createCampaignEmail(
 										 requestInfo.customer, 
 										 requestInfo.domain, 
 										 new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime()), 
-										 "http://techpreview.adshotrunner.com/campaignResults.php?jobID=" + requestInfo.jobID, 
+										 "https://" + ASRProperties.asrDomain() + "/campaignResults.php?jobID=" + requestInfo.jobID, 
 										 jobResult.powerPointURL, 
 										 adShotList);
 		resultsEmail.send(requestInfo.email);

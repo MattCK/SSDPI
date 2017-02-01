@@ -14,6 +14,8 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
+use AdShotRunner\Database\ASRDatabase;
 use AdShotRunner\Utilities\EmailClient;
 
 //Make sure all the necessary information has been passed
@@ -22,15 +24,15 @@ if (($_POST["contactName"]) && ($_POST["contactEmail"]) && ($_POST["contactType"
 
 	//Format the data for datbase insertion
 	$userID = ($_POST["contactUserID"]) ? (int)$_POST["contactUserID"] : 0;
-	$jobID = databaseEscape($_POST["contactJobID"]);
-	$name = databaseEscape($_POST["contactName"]);
-	$email = databaseEscape($_POST["contactEmail"]);
-	$type = databaseEscape($_POST["contactType"]);
-	$problem = databaseEscape($_POST["contactProblem"]);
-	$description = databaseEscape($_POST["contactDescription"]);
+	$jobID = ASRDatabase::escape($_POST["contactJobID"]);
+	$name = ASRDatabase::escape($_POST["contactName"]);
+	$email = ASRDatabase::escape($_POST["contactEmail"]);
+	$type = ASRDatabase::escape($_POST["contactType"]);
+	$problem = ASRDatabase::escape($_POST["contactProblem"]);
+	$description = ASRDatabase::escape($_POST["contactDescription"]);
 
 	//Store the message in the database
-	databaseQuery("INSERT INTO contactMessages (CNM_USR_id, 
+	ASRDatabase::executeQuery("INSERT INTO contactMessages (CNM_USR_id, 
 												CNM_jobID,
 												CNM_name,
 												CNM_email,
@@ -60,7 +62,7 @@ if (($_POST["contactName"]) && ($_POST["contactEmail"]) && ($_POST["contactType"
 	$emailBody .= "Description: " . $_POST["contactDescription"] . "\n";
 
 	//Send the email
-	EmailClient::sendEmail(EmailClient::CONTACTFORMADDRESS, EmailClient::ASRINFOADDRESS, 
+	EmailClient::sendEmail(ASRProperties::emailAddressContact(), ASRProperties::emailAddressInfo(), 
 							$emailSubject, $emailBody);
 
 	//Return a success. 
@@ -73,37 +75,6 @@ else {
 	echo createJSONResponse(false, "Please fill out all the fields.");
 }
 
-exit;
-
-//Add the domain to the database
-$cleanDomainString = "'" . databaseEscape($domain) . "'";
-databaseQuery("INSERT INTO menuGrabberDomains (MGD_domain) VALUES ($cleanDomainString)");
-
-echo createJSONResponse(true, "Menu not found.", array()); exit();
-
-//Check to see if a domain was passed
-if (!$_REQUEST['domain']) {echo createJSONResponse(false, 'No domain was passed.'); return;}
-
-//Get the menus
-$domainMenuGrabber = new MenuGrabber();
-$domainMenu = $domainMenuGrabber->getBestDomainMenu($_REQUEST['domain']);
-
-//If a menu was returned, return it
-if (count($domainMenu) > 0) {echo createJSONResponse(true, "Domain found", $domainMenu);}
-
-//Otherwise check to see if the domain is bad
-else {
-
-	//Try to grab the webpage
-	$webCommunicator = new WebPageCommunicator();
-	$domainResponse = $webCommunicator->getURLResponse($_REQUEST['domain']);
-
-	//If no response was returned, return the error
-	if ($domainResponse == "") {echo createJSONResponse(false, 'Website unreachable. Check the domain URL.'); return;}
-
-	//Otherwise, the system couldn't find any menu. Simply return an empty array.
-	else {echo createJSONResponse(true, "Menu not found.", array());}
-}
 
 /**
 * Creates a standard JSON response object to return to the client.

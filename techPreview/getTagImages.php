@@ -14,6 +14,7 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Utilities\FileStorageClient;
 use AdShotRunner\Utilities\MessageQueueClient;
 use AdShotRunner\Utilities\WebPageCommunicator;
@@ -39,7 +40,9 @@ foreach ($_POST['tags'] as $currentID => $currentTag) {
 		imagepng(imagecreatefromstring($tagImage), RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 
 		//Store the image
-		FileStorageClient::saveFile(FileStorageClient::TAGIMAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
+		//echo ASRProperties::containerForTagPages() . "\n";
+		//echo "Path: " . RESTRICTEDPATH . 'temporaryFiles/' . $fileName . "\n";
+		FileStorageClient::saveFile(ASRProperties::containerForTagImages(), RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
 		unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 	}
 
@@ -48,7 +51,7 @@ foreach ($_POST['tags'] as $currentID => $currentTag) {
 		$fileName = USERID . "-" . $currentID . ".html";
 		$tagPageHTML = "<style>body { margin: 0px; padding:0px;} #adTagContainer {display: table;}</style><div id='adTagContainer'>" . $currentTag . "</div>";
 		file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $tagPageHTML);
-		FileStorageClient::saveFile(FileStorageClient::TAGPAGESCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
+		FileStorageClient::saveFile(ASRProperties::containerForTagPages(), RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
 		unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 		$filePages[$currentID] = $fileName;
 	}
@@ -57,7 +60,7 @@ foreach ($_POST['tags'] as $currentID => $currentTag) {
 //Create the queue request and add it
 if (count($filePages) > 0) {
 	$requestObject = $filePages;
-	MessageQueueClient::sendMessage(MessageQueueClient::TAGIMAGEREQUESTS, json_encode($requestObject));
+	MessageQueueClient::sendMessage(ASRProperties::queueForTagImageRequests(), json_encode($requestObject));
 }
 
 echo "{}"; return;

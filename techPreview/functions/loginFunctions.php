@@ -8,8 +8,9 @@
 /**
 * 
 */
-
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Utilities\EmailClient;
+use AdShotRunner\PowerPoint\PowerPointBackground;
 use AdShotRunner\Users\User;
 
 /**
@@ -82,6 +83,7 @@ function registerUser($username, $password, $firstName, $lastName, $company, $em
 	//Re-verify the username is available.
 	if (usernameAlreadyTaken($username)) {return NULL;}
 	
+
 	//Encode the password using sha1 hashing and salt.
 	$hashedPassword = sha1("hyph3n@t1on" . $password);
 	
@@ -97,9 +99,18 @@ function registerUser($username, $password, $firstName, $lastName, $company, $em
 	//Insert the user into the database
 	$newUser = User::insert($newUser);
 
+	//Create the PowerPoint background for the user
+	$newBackground = PowerPointBackground::create(	ASRProperties::powerPointDefaultTitle(), 
+													ASRProperties::powerPointDefaultFont(), 
+													ASRProperties::powerPointDefaultBackgroundImage(), 
+													RESTRICTEDPATH . ASRProperties::powerPointDefaultBackgroundImage(), 
+													$newUser->getID());
+	$newUser->setPowerPointBackgroundID($newBackground->getID());
+	$newUser = User::update($newUser);
+
 	//Does this do anything? Is it for versioning in the history table?a
-	$curUser = User::getUser($newUser->getID());
-	$curUser = User::update($curUser);
+	//$curUser = User::getUser($newUser->getID());
+	//$curUser = User::update($curUser);
 	
 	//Return the new user
 	return $newUser;
@@ -155,11 +166,11 @@ function sendVerificationEmail($username) {
 
 	//Create the email body
 	$emailBody = "Thank you for registering for the AdShotRunner Tech Preview. In order to verify your account, please click the following link or copy and paste it into your browser:\n\n";
-	$emailBody .= "http://adshotrunnertechbeta.elasticbeanstalk.com/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
+	$emailBody .= "http://" . ASRProperties::asrDomain() . "/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
 	$emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
 
 	//Set the email addresses
-	$fromEmailAddress = "donotreply@adshotrunner.com";
+	$fromEmailAddress = ASRProperties::emailAddressDoNotReply();
 	$toEmailAddress = $curUser->getEmail();
 
 	//Send the email
@@ -193,11 +204,11 @@ function sendPasswordResetEmail($username) {
 
 	//Create the email body
 	$emailBody = "You have requested to reset your password. In order to proceed, please click the following link or copy and paste it into your browser:\n\n";
-	$emailBody .= "http://adshotrunnertechbeta.elasticbeanstalk.com/resetPassword.php?id=" . $curUser->getID() . "&v=" . $resetVerificationCode;
+	$emailBody .= "http://" + ASRProperties::asrDomain() + "/resetPassword.php?id=" . $curUser->getID() . "&v=" . $resetVerificationCode;
 	$emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
 
 	//Set the email addresses
-	$fromEmailAddress = "donotreply@adshotrunner.com";
+	$fromEmailAddress = ASRProperties::emailAddressDoNotReply();
 	$toEmailAddress = $curUser->getEmail();
 
 	//Send the email

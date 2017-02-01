@@ -9,6 +9,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.MessageQueueClient;
 
 public class ASRDispatcher {
@@ -16,7 +17,7 @@ public class ASRDispatcher {
 	public static void main(String[] args) {
 		while (true) {
 			HashMap<String, String> receivedMessages = new HashMap<String, String>();
-			try {receivedMessages = MessageQueueClient.getMessages(MessageQueueClient.TAGIMAGEREQUESTS);}
+			try {receivedMessages = MessageQueueClient.getMessages(ASRProperties.queueForTagImageRequests());}
 			catch (Exception e) {} //Do nothing. A connection error occurs seldomly but regularly
 			for (Map.Entry<String, String> entry : receivedMessages.entrySet()) {
 				List<String> requestURLs = new ArrayList<String>();
@@ -31,10 +32,10 @@ public class ASRDispatcher {
 					new TagImager(urlsWithIDs);
 				} catch (Exception e) {System.out.println(e);}
 								
-				MessageQueueClient.deleteMessage(MessageQueueClient.TAGIMAGEREQUESTS, entry.getKey());
+				MessageQueueClient.deleteMessage(ASRProperties.queueForTagImageRequests(), entry.getKey());
 			}
 
-			try {receivedMessages = MessageQueueClient.getMessages(MessageQueueClient.SCREENSHOTREQUESTS);}
+			try {receivedMessages = MessageQueueClient.getMessages(ASRProperties.queueForScreenshotRequests());}
 			catch (Exception e) {receivedMessages = new HashMap<String, String>();} //Do nothing. A connection error occurs seldomly but regularly
 			for (Map.Entry<String, String> entry : receivedMessages.entrySet()) {				
 				try {
@@ -42,7 +43,7 @@ public class ASRDispatcher {
 					new CampaignRunner(request);
 				} catch (Exception e) {System.out.println(e);}
 								
-				MessageQueueClient.deleteMessage(MessageQueueClient.SCREENSHOTREQUESTS, entry.getKey());
+				MessageQueueClient.deleteMessage(ASRProperties.queueForScreenshotRequests(), entry.getKey());
 			}
 			
 			//Wait two seconds before checking the queues again

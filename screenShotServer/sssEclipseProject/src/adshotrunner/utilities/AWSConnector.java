@@ -1,25 +1,26 @@
 package adshotrunner.utilities;
 
-import java.io.File;
-import java.io.IOException;
-
-import adshotrunner.errors.AdShotRunnerException;
-
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.PropertiesCredentials;
+
+import adshotrunner.system.ASRProperties;
 
 /**
- * The AWSPermitter class generates credentials to connect to the Amazon Web Services API
+ * The AWSConnector class generates credentials to connect to the Amazon Web Services API
  */
-public class AWSPermitter {
+public class AWSConnector {
 	
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	final private static String CREDENTIALSPATH = "config/awsCredentials";
-	final private static String ACCESSKEY = "----";
-	final private static String SECRETKEY = "----";
+	final private static String ACCESSKEY = ASRProperties.awsAccessKey();
+	final private static String SECRETKEY = ASRProperties.awsSecretKey();
+	
+	//---------------------------------------------------------------------------------------
+	//-------------------------------- Static Variables -------------------------------------
+	//---------------------------------------------------------------------------------------	
+	//***************************** Private Static Variables ********************************
+	private static AWSCredentials asrAWSCredentials = null;
 	
 	//---------------------------------------------------------------------------------------
 	//--------------------------------- Static Methods --------------------------------------
@@ -31,8 +32,10 @@ public class AWSPermitter {
 	 * @return				AWS credentials for API interaction
 	 */
 	public static AWSCredentials getCredentials() {
-		AWSCredentials credentials = getCredentialsFromFile();
-		return credentials;
+		if (asrAWSCredentials == null) {
+			asrAWSCredentials = new BasicAWSCredentials(ACCESSKEY, SECRETKEY);
+		}
+		return asrAWSCredentials;
 	}
 
 	//***************************** Private Static Methods ***********************************
@@ -45,10 +48,10 @@ public class AWSPermitter {
 	 * 
 	 * @return				AWS credentials for API interaction
 	 */
-	private static AWSCredentials getBasicCredentials() {
+	/*private static AWSCredentials getBasicCredentials() {
 		AWSCredentials credentials = new BasicAWSCredentials(ACCESSKEY, SECRETKEY);
 		return credentials;
-	}
+	}*/
 
 	/**
 	 * Returns credentials based on the profile credential file.
@@ -57,7 +60,7 @@ public class AWSPermitter {
 	 * 
 	 * @return				AWS credentials for API interaction (set to null on failure)
 	 */
-	private static AWSCredentials getCredentialsFromFile() {
+	/*private static AWSCredentials getCredentialsFromFile() {
 		File credentialsFile = new File(CREDENTIALSPATH);  
 		AWSCredentials credentials = null;
 		
@@ -67,7 +70,7 @@ public class AWSPermitter {
 		
 		//Return the final credentials
 		return credentials;
-	}
+	}*/
 
 
 }

@@ -9,6 +9,8 @@ import com.amazonaws.services.simpleemail.model.Destination;
 import com.amazonaws.services.simpleemail.model.Message;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 
+import adshotrunner.system.ASRProperties;
+
 /**
  * The EmailClient sends emails to the intended recipients from the stated email address
  */
@@ -17,9 +19,7 @@ public class EmailClient {
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	final public static String SCREENSHOTADDRESS = "screenshots@adshotrunner.com";
-	final public static String MATTADDRESS = "matt@adshotrunner.com";
-	final public static String JUICIOADDRESS = "juicio@adshotrunner.com";
+	//final public static String SCREENSHOTADDRESS = "screenshots@adshotrunner.com";
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------
@@ -53,11 +53,12 @@ public class EmailClient {
         SendEmailRequest emailRequest = new SendEmailRequest().withSource(fromAddress).withDestination(emailDestination).withMessage(emailMessage);
     
         //Instantiate an Amazon SES client using AdShotRunner's AWS credentials
-        AmazonSimpleEmailServiceClient sesHandle = new AmazonSimpleEmailServiceClient(AWSPermitter.getCredentials());
+        AmazonSimpleEmailServiceClient sesHandle = new AmazonSimpleEmailServiceClient(AWSConnector.getCredentials());
            
         //Set the AWS region 
-        Region REGION = Region.getRegion(Regions.US_EAST_1);
-        sesHandle.setRegion(REGION);
+        Regions awsRegions = Regions.fromName(ASRProperties.awsRegion());
+        Region emailRegion = Region.getRegion(awsRegions);
+        sesHandle.setRegion(emailRegion);
    
         //Send the email.
         sesHandle.sendEmail(emailRequest);  

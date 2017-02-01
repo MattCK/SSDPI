@@ -9,7 +9,7 @@
 */
 require_once('systemSetup.php');
 
-use AdShotRunner\DFP\DFPCommunicator;
+use AdShotRunner\System\ASRProperties;
 
 ?>
 
@@ -17,16 +17,16 @@ use AdShotRunner\DFP\DFPCommunicator;
 
 <div id="contactFormDiv" class="section"> 
 	<form id="asrContactForm">
-		<input type="hidden" id="contactUserID" name="contactUserID" value="<?PHP if (USERID) {echo USERID;}?>">
+		<input type="hidden" id="contactUserID" name="contactUserID" value="<?PHP if (defined("USERID")) {echo USERID;}?>">
 		<input type="hidden" id="contactJobID" name="contactJobID" value="<?PHP echo $_GET['jobID']?>">
 		<table>
 			<tr>
 				<td>Name:</td>				
-				<td><input id="contactName" name="contactName" type="text" value="<?PHP if (USERFIRSTNAME) {echo USERFIRSTNAME . " " . USERLASTNAME;}?>"></td>
+				<td><input id="contactName" name="contactName" type="text" value="<?PHP if (defined("USERFIRSTNAME")) {echo USERFIRSTNAME . " " . USERLASTNAME;}?>"></td>
 			</tr>
 			<tr>
 				<td>Email:</td>				
-				<td><input id="contactEmail" name="contactEmail" type="text" value="<?PHP if (USEREMAIL) {echo USEREMAIL;}?>"></td>
+				<td><input id="contactEmail" name="contactEmail" type="text" value="<?PHP if (defined("USEREMAIL")) {echo USEREMAIL;}?>"></td>
 			</tr>
 			<tr>
 				<td>Purpose:</td>
@@ -69,6 +69,6 @@ use AdShotRunner\DFP\DFPCommunicator;
 		Submission failed. Please try again later.<br><br>
 
 		We apologize for this inconvenience. Your feedback is very importan to us. 
-		In the meantime, please email us at: <a href="mailto:contact@dangerouspenguins.com">contact@dangerouspenguins.com</a>
+		In the meantime, please email us at: <a href="mailto:<?PHP echo ASRProperties::emailAddressContact()?>"><?PHP echo ASRProperties::emailAddressContact()?></a>
 	</div>
 </div>

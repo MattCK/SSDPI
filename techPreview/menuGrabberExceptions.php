@@ -17,9 +17,9 @@ if ($_POST['domain']) {
 	//Remove the protocol from the domain if it exists
 	$domain = preg_replace('#^https?://#', '', $_POST['domain']);
 
-	databaseQuery("DELETE FROM exceptionsMenuGrabberDomains WHERE EMD_domain = '$domain'");
-	databaseQuery("INSERT INTO exceptionsMenuGrabberDomains (EMD_domain) VALUES ('$domain')");
-	$domainID = databaseLastInsertID();
+	ASRDatabase::executeQuery("DELETE FROM exceptionsMenuGrabberDomains WHERE EMD_domain = '$domain'");
+	ASRDatabase::executeQuery("INSERT INTO exceptionsMenuGrabberDomains (EMD_domain) VALUES ('$domain')");
+	$domainID = ASRDatabase::lastInsertID();
 
 	//Create the value string of menu items
 	$cleanMenuItems = [];
@@ -31,15 +31,15 @@ if ($_POST['domain']) {
 			$url = preg_replace('#^https?://#', '', $url);
 
 			$cleanMenuItems[] = "($domainID, '" . 
-						  		  databaseEscape($_POST['label'][$urlIndex]) . "', '" . 
-						  		  databaseEscape($url) . "')";
+						  		  ASRDatabase::escape($_POST['label'][$urlIndex]) . "', '" . 
+						  		  ASRDatabase::escape($url) . "')";
 		}
 	}
 	$cleanMenuItemString = implode(',', $cleanMenuItems);
 
 
 	if ($cleanMenuItemString) {
-		databaseQuery("INSERT IGNORE INTO exceptionsMenuGrabberItems (EMI_EMD_id, EMI_label, EMI_url) 
+		ASRDatabase::executeQuery("INSERT IGNORE INTO exceptionsMenuGrabberItems (EMI_EMD_id, EMI_label, EMI_url) 
 					   VALUES $cleanMenuItemString");
 		echo "Query: " . "INSERT IGNORE INTO exceptionsMenuGrabberItems (EMI_EMD_id, EMI_label, EMI_url) 
 					   VALUES $cleanMenuItemString";

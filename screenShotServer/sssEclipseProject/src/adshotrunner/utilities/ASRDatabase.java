@@ -6,15 +6,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MySQLDatabase {
+import adshotrunner.system.ASRProperties;
+
+public class ASRDatabase {
 	
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	final public static String DATABASEURL = "jdbc:mysql://adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com/adshotrunner";
-	final public static String DATABASEUSERNAME = "adshotrunner";
-	final public static String DATABASEPASSWORD = "xbSAb2G92E";
+	final private static String DATABASEURL = "jdbc:mysql://" + ASRProperties.asrDatabaseHost() + "/" + 
+															   ASRProperties.asrDatabase();
+	final private static String DATABASEUSERNAME = ASRProperties.asrDatabaseUsername();
+	final private static String DATABASEPASSWORD = ASRProperties.asrDatabasePassword();
 	
+	//---------------------------------------------------------------------------------------
+	//-------------------------------- Static Variables -------------------------------------
+	//---------------------------------------------------------------------------------------	
+	//***************************** Private Static Variables ********************************
+	private static Connection databaseConnection = null;
+
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------
 	//--------------------------------------------------------------------------------------
@@ -29,7 +38,13 @@ public class MySQLDatabase {
 
 	//**************************** Private Static Methods **********************************
 	private static Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(DATABASEURL, DATABASEUSERNAME, DATABASEPASSWORD);
+		
+		//If a connection has not been initialized, do so
+		if (databaseConnection == null) {
+			databaseConnection = DriverManager.getConnection(DATABASEURL, DATABASEUSERNAME, DATABASEPASSWORD);
+		}
+		
+		return databaseConnection;
 	}
 
 }

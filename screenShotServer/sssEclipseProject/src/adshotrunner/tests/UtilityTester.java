@@ -16,7 +16,7 @@ public class UtilityTester {
 		catch(Exception e) {
 			System.out.println(e);
 		}*/
-		try {
+		/*try {
 			FileStorageClient.saveFile(FileStorageClient.TAGIMAGESCONTAINER, "ScreenShot1109332778578.png", "testUpload.png");
 			System.out.println("Image uploaded");
 			FileStorageClient.deleteFile(FileStorageClient.TAGIMAGESCONTAINER, "testUpload.png");
@@ -24,7 +24,7 @@ public class UtilityTester {
 		}
 		catch(Exception e) {
 			System.out.println(e);
-		}
+		}*/
 
 		/*try {
 			NotificationClient.sendNotice(NotificationClient.FRONTEND, "TESTER", "Message text");

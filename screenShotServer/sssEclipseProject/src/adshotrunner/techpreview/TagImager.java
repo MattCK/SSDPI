@@ -11,11 +11,12 @@ import javax.imageio.ImageIO;
 
 import adshotrunner.AdShot;
 import adshotrunner.AdShotter3;
+import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.FileStorageClient;
 
 public class TagImager implements Runnable {
 
-	final public static String TAGPAGESPATH = "http://s3.amazonaws.com/asr-tagpages/";
+	final public static String TAGPAGESPATH = "http://s3.amazonaws.com/" + ASRProperties.containerForTagPages() + "/";
 
 	private Map<String, String> urlsWithIDs;
 	private Thread imagerThread;
@@ -48,8 +49,14 @@ public class TagImager implements Runnable {
 //			BufferedImage croppedAdClip = adShotEntry.getValue().image().getSubimage(425, 75, width - 425, height - 75);
 			String imageFilename = adShotEntry.getKey() + ".png";
 			try {
-				saveImageAsPNG(adShotEntry.getValue().image(), "tagImages/" + imageFilename);
-				FileStorageClient.saveFile(FileStorageClient.TAGIMAGESCONTAINER, "tagImages/" + imageFilename, imageFilename);
+				saveImageAsPNG(adShotEntry.getValue().image(), ASRProperties.pathForTemporaryFiles() + imageFilename);
+				FileStorageClient.saveFile(ASRProperties.containerForTagImages(), 
+										   ASRProperties.pathForTemporaryFiles() + imageFilename, imageFilename);
+				
+				//Delete the local file
+				File tagImageFile = new File(ASRProperties.pathForTemporaryFiles() + imageFilename);
+				tagImageFile.delete();
+
 			}
 			catch (Exception e) {
 				System.out.println("Could not save screenshot");

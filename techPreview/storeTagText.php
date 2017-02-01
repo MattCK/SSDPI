@@ -14,6 +14,7 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Utilities\FileStorageClient;
 
 if (!$_POST['tagText']) {echo "{}"; return;}
@@ -21,7 +22,7 @@ if (!$_POST['tagText']) {echo "{}"; return;}
 $fileName = USERID . "-" . uniqid() . ".txt";
 
 file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $_POST['tagText']);
-FileStorageClient::saveFile(FileStorageClient::TAGTEXTSCONTAINER, RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
+FileStorageClient::saveFile(ASRProperties::containerForTagTexts(), RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
 unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 echo "{}";
 

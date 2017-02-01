@@ -117,6 +117,11 @@ public class AdShot {
 	private String _finalURL;
 	
 	/**
+	 * The page title of the final URL. Default: null
+	 */
+	private String _pageTitle;
+	
+	/**
 	 * Possible error that occurred during the screenshot attempt. Default: null
 	 */
 	private Exception _error;
@@ -228,6 +233,11 @@ public class AdShot {
 	public String finalURL() {return _finalURL;}
 	
 	/**
+	 * @return	Page title after redirects of the final screenshot. Default: null
+	 */
+	public String pageTitle() {return _pageTitle;}
+	
+	/**
 	 * @return	Possible error that occurred during screenshot attempt. Default: null
 	 */
 	public Exception error() {return _error;}
@@ -249,6 +259,12 @@ public class AdShot {
 	 * @param String	Final URL after redirects
 	 */
 	public void setFinalURL(String newURL) {_finalURL = newURL;}
+	
+	/**
+	 * Sets the page title of the site's URL after redirects
+	 * @param String	Page title after redirects
+	 */
+	public void setPageTitle(String newPageTitle) {_pageTitle = newPageTitle;}
 	
 	/**
 	 * Sets error that occurred during screenshot attempt.

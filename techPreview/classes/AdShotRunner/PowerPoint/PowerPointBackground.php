@@ -8,6 +8,8 @@
 
 namespace AdShotRunner\PowerPoint;
 
+use AdShotRunner\System\ASRProperties;
+use AdShotRunner\Database\ASRDatabase;
 use AdShotRunner\Utilities\FileStorageClient;
 
 /**
@@ -44,7 +46,7 @@ class PowerPointBackground {
 		
 		//Get the info from the powerPointBackgrounds table
 		$getBackgroundQuery = "SELECT * FROM powerPointBackgrounds WHERE PPB_id = $powerPointBackgroundID";
-		$getBackgroundResult = databaseQuery($getBackgroundQuery);
+		$getBackgroundResult = ASRDatabase::executeQuery($getBackgroundQuery);
 		$backgroundInfo = $getBackgroundResult->fetch_assoc();;
 
 		//If no data was returned, return NULL.
@@ -83,7 +85,7 @@ class PowerPointBackground {
 		if (!$imageType) {return NULL;}
 
 		//If the image extension type is not jpg, png, or bmp, return NULL
-		if (($imageType != "jpg") && ($imageType != "png") && ($imageType != "bmp")) {
+		if (($imageType != "jpg") && ($imageType != "jpeg") && ($imageType != "png") && ($imageType != "bmp")) {
 			return NULL;
 		}
 
@@ -92,14 +94,14 @@ class PowerPointBackground {
 		$newFilename = $namePart[0] . "-" . $userID . "-" . time() . "." . $imageType;
 
 		//Save the background image
-		FileStorageClient::saveFile(FileStorageClient::POWERPOINTBACKGROUNDS, $imageFilename, $newFilename);
+		FileStorageClient::saveFile(ASRProperties::containerForPowerPointBackgrounds(), $imageFilename, $newFilename);
 
 		//Create the thumbnail
 		$thumbnailFilename = $namePart[0] . "-" . $userID . "-" . time() . "_thumbnail.png";
 		self::createPNGThumbnail($imageFilename, RESTRICTEDPATH . 'temporaryFiles/' . $thumbnailFilename);
 
 		//Save the thumbnail and delete the local file
-		FileStorageClient::saveFile(FileStorageClient::POWERPOINTBACKGROUNDS, 
+		FileStorageClient::saveFile(ASRProperties::containerForPowerPointBackgrounds(), 
 									RESTRICTEDPATH . 'temporaryFiles/' . $thumbnailFilename, 
 									"thumbnails/" . $thumbnailFilename);
 		unlink(RESTRICTEDPATH . 'temporaryFiles/' . $thumbnailFilename);
@@ -111,16 +113,16 @@ class PowerPointBackground {
 																		PPB_filename,
 																		PPB_thumbnailFilename,
 																		PPB_USR_id)
-								 	VALUES ('" . databaseEscape($title) . "',
-											'" . databaseEscape($fontColor) . "',
-											'" . databaseEscape($originalImageFilename) . "',
-											'" . databaseEscape($newFilename) . "',
-											'" . databaseEscape($thumbnailFilename) . "',
-											'" . databaseEscape($userID) . "')";
-		databaseQuery($insertBackgroundQuery);
+								 	VALUES ('" . ASRDatabase::escape($title) . "',
+											'" . ASRDatabase::escape($fontColor) . "',
+											'" . ASRDatabase::escape($originalImageFilename) . "',
+											'" . ASRDatabase::escape($newFilename) . "',
+											'" . ASRDatabase::escape($thumbnailFilename) . "',
+											'" . ASRDatabase::escape($userID) . "')";
+		ASRDatabase::executeQuery($insertBackgroundQuery);
 
 		//Return the newly created PowerPointBackground
-		return self::getPowerPointBackground(databaseLastInsertID());
+		return self::getPowerPointBackground(ASRDatabase::lastInsertID());
 	}
 
 	/**
@@ -145,7 +147,7 @@ class PowerPointBackground {
 		$archiveBackgroundQuery = "	UPDATE powerPointBackgrounds 
 							 	  	SET PPB_archived = 1
 							 		WHERE PPB_id = " . $powerPointBackgroundID;
-		databaseQuery($archiveBackgroundQuery);
+		ASRDatabase::executeQuery($archiveBackgroundQuery);
 		
 		//Send the archived background
 		return self::getPowerPointBackground($powerPointBackgroundID);

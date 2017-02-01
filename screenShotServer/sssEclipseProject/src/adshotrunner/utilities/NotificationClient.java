@@ -6,6 +6,8 @@ import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 
+import adshotrunner.system.ASRProperties;
+
 /**
  * The NotificationClient sends notices to the defined group
  */
@@ -14,8 +16,8 @@ public class NotificationClient {
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
-	final public static String FRONTEND = "arn:aws:sns:us-east-1:469658404108:Frontend";
-	final public static String SSS = "arn:aws:sns:us-east-1:469658404108:ScreenShotServer";
+	//final public static String FRONTEND = "arn:aws:sns:us-east-1:469658404108:Frontend";
+	//final public static String SSS = "arn:aws:sns:us-east-1:469658404108:ScreenShotServer";
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------
@@ -31,11 +33,12 @@ public class NotificationClient {
 	public static void sendNotice(String groupID, String subject, String message) {
         
         //Instantiate an Amazon SNS client using AdShotRunner's AWS credentials
-		AmazonSNSClient snsHandle = new AmazonSNSClient(AWSPermitter.getCredentials());
+		AmazonSNSClient snsHandle = new AmazonSNSClient(AWSConnector.getCredentials());
            
         //Set the AWS region 
-        Region REGION = Region.getRegion(Regions.US_EAST_1);
-        snsHandle.setRegion(REGION);
+        Regions awsRegions = Regions.fromName(ASRProperties.awsRegion());
+        Region emailRegion = Region.getRegion(awsRegions);
+        snsHandle.setRegion(emailRegion);
 		
 		//Create the request to publish the notification with the passed arguments
 		PublishRequest publishRequest = new PublishRequest(groupID, message, subject);

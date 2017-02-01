@@ -6,16 +6,17 @@
 * @subpackage System
 */
 
-use AdShotRunner\Database\MySQLDatabase;
+use AdShotRunner\System\ASRProperties;
+use AdShotRunner\Database\ASRDatabase;
 
 //Database connection details
-$host = 'adshotrunner.c4gwips6xiw8.us-east-1.rds.amazonaws.com';
-$username = 'adshotrunner';
-$password = 'xbSAb2G92E';
-$database = 'adshotrunner';
+$host = ASRProperties::asrDatabaseHost();
+$username = ASRProperties::asrDatabaseUsername();
+$password = ASRProperties::asrDatabasePassword();
+$database = ASRProperties::asrDatabase();
 
 //Connect to the server
-$asrDatabase = new MySQLDatabase($host, $username, $password, $database);
+$asrDatabase = NULL; //new ASRDatabase($host, $username, $password, $database);
 
 //The server should be set to GMT, but this confirms it will be by manually setting the environmental variable
 putenv("TZ=GMT");
@@ -66,7 +67,7 @@ function databaseEscape($unformattedString) {
 /**
 * Returns the primary AdShotRunner database object.
 *
-* @retval 	MySQLDatabase  	Global AdShotRunner database object
+* @retval 	ASRDatabase  	Global AdShotRunner database object
 */
 function getASRDatabase() {
 

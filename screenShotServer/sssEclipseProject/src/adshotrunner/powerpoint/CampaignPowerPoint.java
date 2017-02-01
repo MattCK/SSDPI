@@ -3,12 +3,15 @@ package adshotrunner.powerpoint;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 
 import adshotrunner.AdShot;
+import adshotrunner.TagImage;
 
 public class CampaignPowerPoint {
 
@@ -18,7 +21,7 @@ public class CampaignPowerPoint {
 	final private static int SLIDEWIDTH = 960;					//PowerPoint screen width. Magic number, not sure from where
 	final private static int SLIDEHEIGHT = 540;					//PowerPoint screen height. Magic number, not sure from where
 
-	final private static String DEFAULTFONTTYPE = "Arial";			//Default font type
+	final private static String DEFAULTFONTTYPE = "Arial";		//Default font type
 	final private static String DEFAULTFONTCOLOR = "000000";	//Default font color
 
 	final private static String TITLEFONTTYPE = "Arial";		//Font type for first slide campaign title
@@ -34,7 +37,7 @@ public class CampaignPowerPoint {
 	final private static int DATEWIDTH = 500;					//Width for first slide campaign date
 	
 	final private static int SCREENSHOTTOPMARGIN = 25;			//Top margin of an AdShot screenshot
-	final private static int SCREENSHOTSIDEMARGIN = 30;			//Left and right side margin of an AdShot screenshot
+	final private static int SCREENSHOTSIDEMARGIN = 40;			//Left and right side margin of an AdShot screenshot
 	final private static int SCREENSHOTBOTTOMMARGIN = 10;		//Bottom margin of an AdShot screenshot
 	
 	//---------------------------------------------------------------------------------------
@@ -117,7 +120,9 @@ public class CampaignPowerPoint {
 		SlidePart newSlide = _powerPoint.addNewSlide();
 		
 		//Add the text
-		_powerPoint.addTextToSlide(newSlide, slideAdShot.finalURL(), 1, 1, 800, DEFAULTFONTTYPE, 10, _fontColor);
+		_powerPoint.addTextToSlide(newSlide, getSlideDescription(slideAdShot), 1, 1, 800, DEFAULTFONTTYPE, 10, _fontColor);
+		_powerPoint.addTextToSlide(newSlide, slideAdShot.pageTitle(), 1, 15, 800, DEFAULTFONTTYPE, 10, _fontColor);
+		//_powerPoint.addTextToSlide(newSlide, slideAdShot.finalURL(), 1, 1, 800, DEFAULTFONTTYPE, 10, _fontColor);
 		
 		//Get the new dimensions of the screenshot
 		int targetWidth = SLIDEWIDTH - (SCREENSHOTSIDEMARGIN * 2);
@@ -172,6 +177,30 @@ public class CampaignPowerPoint {
 		finalDimensions.put("width", finalWidth);
 		finalDimensions.put("height", finalHeight);
 		return finalDimensions;
+	}
+	
+	private String getSlideDescription(AdShot targetAdShot) {
+		
+		//Begin by determining if the AdShot was for desktop or mobile
+		String adShotDescription = (targetAdShot.mobile()) ? "Mobile" : "Desktop";
+		
+		//Put all the AdShot tag dimensions in a set to preserve uniqueness
+		Set<String> tagDimensions = new HashSet<String>(); 
+		for (TagImage currentTag : targetAdShot.tagImages()) {
+			tagDimensions.add(currentTag.width() + "x" + currentTag.height());
+		}
+		
+		//Put all the tag dimensions in a string separated by commas
+		String tagDimensionsText = "";
+		for (String currentDimension : tagDimensions) {
+			if (!tagDimensionsText.isEmpty()) {tagDimensionsText += ",";}
+			tagDimensionsText += currentDimension;
+		}
+		
+		//If tags were found, add them to the description
+		if (!tagDimensionsText.isEmpty()) {adShotDescription += ": " + tagDimensionsText;}
+		
+		return adShotDescription;
 	}
 	
 	//---------------------------------------------------------------------------------------
