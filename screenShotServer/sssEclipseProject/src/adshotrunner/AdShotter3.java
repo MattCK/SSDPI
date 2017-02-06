@@ -77,10 +77,8 @@ public class AdShotter3 {
 	final private static int DEFAULTVIEWHEIGHT = 2800;		//in pixels
 	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
 	final private static int MOBILEPIXELRATIO = 3;			//in pixels
-	final private static int DEFAULTCROPHEIGHT = 800;		//in pixels
-	final private static int DEFAULTMINIMUMCROP = 800;		//in pixels
-	final private static int MOBILEMINIMUMCROP = 800;		//in pixels
-	final private static int MAXCROPHEIGHT = 3000; 			//in pixels
+	final private static int MINIMUMCROPHEIGHT = 800;		//in pixels
+	final private static int MAXIMUMCROPHEIGHT = 3000; 			//in pixels
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
 	final private static int MAXOPENTABS = 1;
@@ -328,8 +326,15 @@ public class AdShotter3 {
 	 */
 	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShot adShot) throws AdShotRunnerException {
 		
+		//This is the shortest the screenshot should be cropped
+		//It represents the lowest bottom y position of all tags
+		//first injections. In other words, the bottom of all
+		//the first appearances of the tags.
+		//We say 'requested' since it might be below or above 
+		//the crop minimum and maximums.
+		int requestedCropHeight = 0;
+
 		//If the AdShot is not to be treated like a tag, create and inject javascript
-		int minimumTagCutoff = 0;
 		if (!_treatAsTags) {
 					
 			//First, get the AdInjecter javascript with the current tags inserted
@@ -358,8 +363,7 @@ public class AdShotter3 {
 				adShot.setError(new AdShotRunnerException("Could not execute AdInjecter in page", e)); //return;
 			}
 			
-			//Mark which ads were injected and store the minimum cutoff position which is
-			//the lowest bottom position from the first of each tag injected
+			//Get the list of tags that were injected and the positions they were injected from the AdInjecter
 			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<ArrayList<Float>>>>(){}.getType();
 			Map<String, ArrayList<ArrayList<Float>>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
 			if (injectedTagInfo != null) {
@@ -368,15 +372,15 @@ public class AdShotter3 {
 				for (Map.Entry<String, ArrayList<ArrayList<Float>>> entry : injectedTagInfo.entrySet()) {
 					
 					//Name the keys for readability and get the TagImage object
-				    String tagID = entry.getKey();
-				    ArrayList<ArrayList<Float>> tagPositions = entry.getValue();
-				    TagImage currentTagImage = getTagImageByID(tagID, adShot.tagImages());
+				    String currentTagID = entry.getKey();											//ID of TagImage
+				    TagImage currentTagImage = getTagImageByID(currentTagID, adShot.tagImages());	//TagImage from ID
+				    ArrayList<ArrayList<Float>> tagPositions = entry.getValue();	//List of x,y positions of tag injections
 				    
-				    //Mark the tag as injected
-					adShot.markTagImageAsInjected(tagID);
-					
-					//Get the bottom position of the topmost injection
-					int topTagBottom = 0;
+					//In all the places the current tag was injected,
+					//get the bottom y position of the highest injected location.
+					//If you're looking at the page, it's the bottom y coordinate
+					//of the ad highest on the screen.
+					int highestTagBottomYPosition = 0;
 					for (ArrayList<Float> currentPosition : tagPositions) {
 						
 						//If the position is 0,0 ignore it
@@ -384,19 +388,27 @@ public class AdShotter3 {
 							
 							//If the bottom of the current tag is higher than the current highest, store it
 							int currentPositionBottom = Math.round(currentPosition.get(1)) + currentTagImage.height();
-							if ((topTagBottom == 0) || (currentPositionBottom < topTagBottom)) {
-								topTagBottom = currentPositionBottom;
+							if ((highestTagBottomYPosition == 0) || (currentPositionBottom < highestTagBottomYPosition)) {
+								highestTagBottomYPosition = currentPositionBottom;
 							}
 						}
 					}
-					consoleLog(tagID + ": " + topTagBottom);
 					
-					//If the current tags bottom boundary is lower than the current minimum crop, replace it
-					if (minimumTagCutoff < topTagBottom) {
-						consoleLog("Changed " + minimumTagCutoff + " to " + topTagBottom);
-						minimumTagCutoff = topTagBottom;
+					//Compare the lowest y position of the current tag to the 
+					//lowest y position of all the tags so far.
+					//If it is lower, make it the requested crop height
+					if (requestedCropHeight < highestTagBottomYPosition) {
+						requestedCropHeight = highestTagBottomYPosition;
+					}
+					
+					//If the image is within the maximum crop height, 
+					//mark it as injected (appears in the screenshot)
+					if ((highestTagBottomYPosition > 0) && (highestTagBottomYPosition < MAXIMUMCROPHEIGHT)) {
+						consoleLog("Tag bottom: " + highestTagBottomYPosition);
+						adShot.markTagImageAsInjected(currentTagID);
 					}
 				}
+				
 				
 			}
 			else {
@@ -404,8 +416,8 @@ public class AdShotter3 {
 			}
 			
 			//Add a little margin to the minimum cutoff
-			minimumTagCutoff += 10;
-			consoleLog("Bottom position: " + minimumTagCutoff);
+			requestedCropHeight += 10;
+			consoleLog("Bottom position: " + requestedCropHeight);
 //			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
 //			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
 //			if ((injectedTagInfo != null) && (injectedTagInfo.containsKey("injectedTagIDs"))) {
@@ -453,7 +465,7 @@ public class AdShotter3 {
 		//Crop the image
 		consoleLog("Cropping screenshot...");
 		try {
-			adShot.setImage(cropAndConvertImageFile(activeSeleniumWebDriver, screenShot, minimumTagCutoff));
+			adShot.setImage(cropAndConvertImageFile(activeSeleniumWebDriver, screenShot, requestedCropHeight));
 			consoleLog("Done cropping.");
 		}
 		catch (Exception e) {
@@ -783,7 +795,7 @@ public class AdShotter3 {
 		
 		//If this image is a tag, crop it to the tag width and height
 		BufferedImage originalImage = ImageIO.read(originalImageFile);
-		int cropHeight = DEFAULTCROPHEIGHT;
+		int cropHeight = MINIMUMCROPHEIGHT;
 		int cropWidth = DEFAULTVIEWWIDTH;
 		if (_treatAsTags) {
 			
@@ -798,9 +810,9 @@ public class AdShotter3 {
 		else {
 			
 			//Determine the crop height
-			cropHeight = ((requestedCropHeight < 1) || (requestedCropHeight < DEFAULTCROPHEIGHT)) ? 
-					DEFAULTCROPHEIGHT : requestedCropHeight;
-			cropHeight = (cropHeight < MAXCROPHEIGHT) ? cropHeight : MAXCROPHEIGHT;
+			cropHeight = (requestedCropHeight < MINIMUMCROPHEIGHT) ? 
+					MINIMUMCROPHEIGHT : requestedCropHeight;
+			cropHeight = (cropHeight < MAXIMUMCROPHEIGHT) ? cropHeight : MAXIMUMCROPHEIGHT;
 			cropHeight = (originalImage.getHeight() < cropHeight) ? originalImage.getHeight() : cropHeight;
 			
 			//Determine the width

@@ -233,7 +233,7 @@ let asr = {
 		    ++asr._tagsBeingProcessed;
 
 		    //Start checking for the image to be done.
-			asr.loadTagImage("https://s3.amazonaws.com/asr-tagimages/" + newUUID + ".png", "tagLI" + newUUID);
+			asr.loadTagImage("https://s3.amazonaws.com/asr-production/tagimages/" + newUUID + ".png", "tagLI" + newUUID);
 		}	
 
 		//Remove the queued tags
@@ -271,7 +271,7 @@ let asr = {
 	    $("#sortable").sortable('refresh');
 
 	    //Start checking for the image to be done.
-		asr.loadTagImage("https://s3.amazonaws.com/asr-tagimages/" + newUUID + ".png", "tagLI" + newUUID);
+		asr.loadTagImage("https://s3.amazonaws.com/asr-production/tagimages/" + newUUID + ".png", "tagLI" + newUUID);
 
 		//Do nothing for now
 		let callback = function(response) {
@@ -541,7 +541,7 @@ let asr = {
 				let newBackgroundInfo = response.data;
 				base.nodeFromID("backgroundTitleDiv").innerHTML = newBackgroundInfo.title;
 				base.nodeFromID("fontColorDiv").style.backgroundColor = "#" + newBackgroundInfo.fontColor;
-				base.nodeFromID("backgroundThumbnailImage").src = "https://s3.amazonaws.com/asr-powerpointbackgrounds/thumbnails/" + newBackgroundInfo.thumbnailFilename;
+				base.nodeFromID("backgroundThumbnailImage").src = "https://s3.amazonaws.com/asr-production/powerpointbackgrounds/thumbnails/" + newBackgroundInfo.thumbnailFilename;
 	
 				//Set the hidden input fields
 				base.nodeFromID("backgroundTitle").value = newBackgroundInfo.title;
