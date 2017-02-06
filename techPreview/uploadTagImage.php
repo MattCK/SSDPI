@@ -14,6 +14,7 @@ require_once('systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Utilities\FileStorageClient;
 
 //Conver the image to a png

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 
@@ -36,7 +37,7 @@ public class CampaignPowerPoint {
 	final private static int DATEYPOSITION = 465;				//Y position for first slide campaign date
 	final private static int DATEWIDTH = 500;					//Width for first slide campaign date
 	
-	final private static int SCREENSHOTTOPMARGIN = 25;			//Top margin of an AdShot screenshot
+	final private static int SCREENSHOTTOPMARGIN = 50;			//Top margin of an AdShot screenshot
 	final private static int SCREENSHOTSIDEMARGIN = 40;			//Left and right side margin of an AdShot screenshot
 	final private static int SCREENSHOTBOTTOMMARGIN = 10;		//Bottom margin of an AdShot screenshot
 	
@@ -120,22 +121,25 @@ public class CampaignPowerPoint {
 		SlidePart newSlide = _powerPoint.addNewSlide();
 		
 		//Add the text
-		_powerPoint.addTextToSlide(newSlide, getSlideDescription(slideAdShot), 1, 1, 800, DEFAULTFONTTYPE, 10, _fontColor);
-		_powerPoint.addTextToSlide(newSlide, slideAdShot.pageTitle(), 1, 15, 800, DEFAULTFONTTYPE, 10, _fontColor);
+		_powerPoint.addTextToSlide(newSlide, getSlideDescription(slideAdShot), 30, 1, 800, DEFAULTFONTTYPE, 15, _fontColor);
+		_powerPoint.addTextToSlide(newSlide, StringEscapeUtils.escapeXml(slideAdShot.pageTitle()), 30, 25, 800, DEFAULTFONTTYPE, 10, _fontColor);
 		//_powerPoint.addTextToSlide(newSlide, slideAdShot.finalURL(), 1, 1, 800, DEFAULTFONTTYPE, 10, _fontColor);
 		
 		//Get the new dimensions of the screenshot
 		int targetWidth = SLIDEWIDTH - (SCREENSHOTSIDEMARGIN * 2);
-		int targetHeight = SLIDEHEIGHT - (SCREENSHOTTOPMARGIN + SCREENSHOTBOTTOMMARGIN);
+		int targetHeight = SLIDEHEIGHT - SCREENSHOTTOPMARGIN - SCREENSHOTBOTTOMMARGIN;
 		Map<String, Integer> screenshotDimensions = resizeImageDimensions(slideAdShot.image().getWidth(), 
 																		  slideAdShot.image().getHeight(), 
 																		  targetWidth, targetHeight);
 		int finalWidth = screenshotDimensions.get("width");
 		int finalHeight = screenshotDimensions.get("height");
+		System.out.println("Width: " + slideAdShot.image().getWidth() + " - " + targetWidth + " to " + finalWidth);
+		System.out.println("Height: " + slideAdShot.image().getHeight() + " - " + targetHeight + " to " + finalHeight);
 		
 		//Determine the x,y position of the screenshot
 		int xPosition = (SLIDEWIDTH - finalWidth)/2;
-		int yPosition = ((SLIDEHEIGHT - finalHeight)/2) + SCREENSHOTTOPMARGIN - SCREENSHOTBOTTOMMARGIN;
+		int yPosition = SCREENSHOTTOPMARGIN;
+		//int yPosition = ((SLIDEHEIGHT - finalHeight)/2) + SCREENSHOTTOPMARGIN - SCREENSHOTBOTTOMMARGIN;
 		
 		//Insert the screenshot
 		_powerPoint.addImageToSlide(newSlide, slideAdShot.image(), xPosition, yPosition, finalWidth, finalHeight);
@@ -186,7 +190,7 @@ public class CampaignPowerPoint {
 		
 		//Put all the AdShot tag dimensions in a set to preserve uniqueness
 		Set<String> tagDimensions = new HashSet<String>(); 
-		for (TagImage currentTag : targetAdShot.tagImages()) {
+		for (TagImage currentTag : targetAdShot.injectedTagImages()) {
 			tagDimensions.add(currentTag.width() + "x" + currentTag.height());
 		}
 		
