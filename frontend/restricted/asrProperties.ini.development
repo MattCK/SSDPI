@@ -1,0 +1,46 @@
+[asrDatabase]
+host = adshotrunner.cluster-c4t6dlrvkzqt.us-east-1.rds.amazonaws.com
+username = asrdevelopment
+password = UsxtAOl8lPIdWvFY
+database = asrdevelopment
+
+[aws]
+accessKey = AKIAJPNEN7DC3T7LDEWQ
+secretKey = 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
+region = us-east-1
+
+[dfp]
+clientID = 87580729053-440hmqq2n12nn5ragk167gg2kntkqitb.apps.googleusercontent.com
+clientSecret = Z_0nedbeCe8dqQZQW6Fq_Z1S
+refreshToken = 1/YI_KIXNvTmidUf756JE_4bu9qXlD_j_1azY_E6iLfb0
+applicationName = AdShotRunner
+
+[domains]
+asrDomain = development.adshotrunner.com
+
+[emailAddresses]
+contact = contact@adshotrunner.com
+doNotReply = donotreply@adshotrunner.com
+info = info@adshotrunner.com
+
+[messageQueues]
+tagImageRequests = https://sqs.us-east-1.amazonaws.com/469658404108/development-TagImageRequests
+screenshotRequests = https://sqs.us-east-1.amazonaws.com/469658404108/development-ScreenShotRequests
+
+[notificationGroups]
+frontend = arn:aws:sns:us-east-1:469658404108:Frontend
+SSS = arn:aws:sns:us-east-1:469658404108:ScreenShotServer
+
+[powerPoint]
+defaultBackgroundImage = DefaultBackground.jpg
+defaultTitle = Default
+defaultFont = FFFFFF
+
+[storageContainers]
+campaignJobs = asr-development/campaignjobs
+powerPoints = asr-development/powerpoints
+powerPointBackgrounds = asr-development/powerpointbackgrounds
+screenshots = asr-development/screenshots
+tagImages = asr-development/tagimages
+tagPages = asr-development/tagpages
+tagTexts = asr-development/tagtexts

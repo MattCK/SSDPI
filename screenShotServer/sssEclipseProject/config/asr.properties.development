@@ -1,0 +1,36 @@
+asrDatabaseHost = adshotrunner.cluster-c4t6dlrvkzqt.us-east-1.rds.amazonaws.com
+asrDatabaseUsername = asrdevelopment
+asrDatabasePassword = UsxtAOl8lPIdWvFY
+asrDatabase = asrdevelopment
+
+asrDomain = development.adshotrunner.com
+
+awsAccessKey = AKIAJPNEN7DC3T7LDEWQ
+awsSecretKey = 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
+awsRegion = us-east-1
+
+emailAddressScreenshots = screenshots@adshotrunner.com
+
+containerForCampaignJobs = asr-development/campaignjobs
+containerForPowerPoints = asr-development/powerpoints
+containerForPowerPointBackgrounds = asr-development/powerpointbackgrounds
+containerForScreenshots = asr-development/screenshots
+containerForTagImages = asr-development/tagimages
+containerForTagPages = asr-development/tagpages
+containerForTagTexts = asr-development/tagtexts
+
+notificationGroupForFrontend = arn:aws:sns:us-east-1:469658404108:Frontend
+notificationGroupForSSS = arn:aws:sns:us-east-1:469658404108:ScreenShotServer
+
+pathForAdInjecterJavascript = javascript/adInjecter.js
+pathForAdMarkerExtension = chromeExtensions/adMarker.crx
+pathForDefaultBackground = config/DefaultBackground.jpg
+pathForHTMLWithoutAnchorsJavascript = javascript/retrieveHTMLWithoutAnchorsFromURL.js
+pathForPhantomJS = phantomjs/phantomjs
+pathForPossibleStoriesJavascript = javascript/retrievePossibleStoriesFromURL.js
+pathForTemporaryFiles = temporaryFiles/
+
+queueForScreenshotRequests = https://sqs.us-east-1.amazonaws.com/469658404108/development-ScreenShotRequests
+queueForTagImageRequests = https://sqs.us-east-1.amazonaws.com/469658404108/development-TagImageRequests
+
+seleniumHubURL = http://34.198.249.162:4444/wd/hub
