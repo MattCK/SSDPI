@@ -17,7 +17,7 @@ require_once('systemSetup.php');
 	
 <div id="header">
 	<div id="title">
-		<h1>AdShotRunner&trade;: Free Tech Preview</h1> 
+		<h1>AdShotRunner&trade;: Tech Preview</h1> 
 	</div>
 	<div id="logout">
 		<a onclick="contactForm.reset(); contactFormDialog.open()">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;

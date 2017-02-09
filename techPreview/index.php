@@ -138,7 +138,7 @@ $(function() {
 
 <div id="header">
 	<div id="title">
-		<h1>AdShotRunner&trade;: Free Tech Preview</h1> 
+		<h1>AdShotRunner&trade;: Tech Preview</h1> 
 	</div>
 	<div id="logout">
 		<a href="mailto:<?PHP echo ASRProperties::emailAddressContact()?>">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;

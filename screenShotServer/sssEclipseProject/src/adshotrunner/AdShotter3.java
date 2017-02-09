@@ -66,6 +66,7 @@ public class AdShotter3 {
 	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL();
 	final private static String ADINJECTERJSPATH = ASRProperties.pathForAdInjecterJavascript();
 	final private static String ADMARKERPATH = ASRProperties.pathForAdMarkerExtension();
+	final private static String PROXIESJSONPATH = ASRProperties.pathForProxiesJSON();
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
 	final private static int PAGETIMEOUT = 12000;			//in milliseconds
@@ -77,7 +78,7 @@ public class AdShotter3 {
 	final private static int DEFAULTVIEWHEIGHT = 2800;		//in pixels
 	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
 	final private static int MOBILEPIXELRATIO = 3;			//in pixels
-	final private static int MINIMUMCROPHEIGHT = 800;		//in pixels
+	final private static int MINIMUMCROPHEIGHT = 1560;		//in pixels
 	final private static int MAXIMUMCROPHEIGHT = 3000; 			//in pixels
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
@@ -522,13 +523,17 @@ public class AdShotter3 {
 		//the below option freezes chrome when injecting the ad injector
 		//driverOptions.addArguments("--disable-web-security");
 		
-		//Set the proxy to use
+		//Set the proxy to use. If it is not empty, set the proxy capability3
 		String proxyDetails = getProxyDetails();
-		Proxy chromeProxy = new Proxy();
-		chromeProxy.setProxyType(ProxyType.MANUAL);
-		chromeProxy.setSslProxy(proxyDetails);
-		chromeProxy.setHttpProxy(proxyDetails);
-		driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+		if (!proxyDetails.isEmpty()) {
+			consoleLog("Using proxy: " + proxyDetails);
+			Proxy chromeProxy = new Proxy();
+			chromeProxy.setProxyType(ProxyType.MANUAL);
+			chromeProxy.setSslProxy(proxyDetails);
+			chromeProxy.setHttpProxy(proxyDetails);
+			driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+		}
+		else {consoleLog("WARNING!!! NOT USING A PROXY!");}
 		
 		//Install the AdMarker extension to mark ad elements
 		try {
@@ -658,18 +663,28 @@ public class AdShotter3 {
 	 * 
 	 * @return	Proxy details in the format hostname::portnumber
 	 */
-	private String getProxyDetails(){
+	private String getProxyDetails() {
 		
-		ArrayList<String> proxyList = new ArrayList<String>(); 
-		proxyList.add("107.173.4.76:3128");
-		proxyList.add("75.127.11.133:3128");
-		proxyList.add("107.173.2.10:3128");
-		proxyList.add("192.227.252.94:3128");
-		proxyList.add("192.241.106.83:3128");
+		//Get the proxies JSON from the proxies file. On failure, return an empty string.
+		String proxiesJSON;
+		try {
+			proxiesJSON = new String(Files.readAllBytes(Paths.get(PROXIESJSONPATH)));
+		} catch (IOException e) {
+			consoleLog("Error: could not read proxies file");
+			e.printStackTrace();
+			return "";
+		}
 		
-		int randomIndex = new Random().nextInt(proxyList.size());
-		return proxyList.get(randomIndex);
-		//return "dangerpenguins.shader.io:60000";		
+		//Get the array of proxies
+		Type stringListType = new TypeToken<ArrayList<String>>(){}.getType();
+		List<String> proxies = new Gson().fromJson(proxiesJSON, stringListType);
+		
+		//If the list is empty, simply return an empty string
+		if (proxies.isEmpty()) {return "";}
+		
+		//Return a random proxy from the list
+		int randomIndex = new Random().nextInt(proxies.size());
+		return proxies.get(randomIndex);
 	}
 
 	/**

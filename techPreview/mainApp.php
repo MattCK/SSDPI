@@ -49,7 +49,7 @@ if (USERDFPNETWORKCODE) {
 	
 <div id="header">
 	<div id="title">
-		<h1>AdShotRunner&trade;: Free Tech Preview</h1> 
+		<h1>AdShotRunner&trade;: Tech Preview</h1> 
 	</div>
 	<div id="logout">
 		<a onclick="contactForm.reset(); contactFormDialog.open()">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -240,10 +240,17 @@ contactForm.reset();
 let contactFormDialog = null;
 $(function() {
 
+	//Setup the paths in the ASR javascript object to the tag and powerpoint background images
+	asr.tagImagesURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForTagImages() ?>/";
+	asr.powerPointBackgroundsURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() ?>/";
+
+	//Make the tag image list sortable
 	$( "#sortable" ).sortable();
 
+	//Make the contact form a "pop-up" dialog
 	contactFormDialog = base.createDialog("contactFormDiv", "Contact Us", true, 650);
 
+	//Create the color selector for the final PowerPoint
 	$("#newBackgroundFontColor").spectrum({
 		color: "#000000",
 		preferredFormat: "hex",

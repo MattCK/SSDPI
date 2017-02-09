@@ -3,7 +3,7 @@
 /**
 * File to define paths, setup dependencies, and connect to database
 */
-require_once('systemSetup.php');
+require_once('../systemSetup.php');
 
 /**
 * Verify the session is valid and set the session constants

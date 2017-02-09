@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title>AdShotRunner&trade;: Free Tech Preview</title>
+	<title>AdShotRunner&trade;: Tech Preview</title>
 	<!--link rel="shortcut icon" href="favicon.ico" -->
 	<link href="<?PHP echo CSSURL;?>jquery-ui.min.css" rel="stylesheet" type="text/css">
 	<link href="<?PHP echo CSSURL;?>jquery-ui.structure.min.css" rel="stylesheet" type="text/css">

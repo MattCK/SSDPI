@@ -62,6 +62,7 @@ public class ASRProperties {
 	public static String pathForHTMLWithoutAnchorsJavascript() {return getProperties().getProperty("pathForHTMLWithoutAnchorsJavascript");}
 	public static String pathForPhantomJS() {return getProperties().getProperty("pathForPhantomJS");}
 	public static String pathForPossibleStoriesJavascript() {return getProperties().getProperty("pathForPossibleStoriesJavascript");}
+	public static String pathForProxiesJSON() {return getProperties().getProperty("pathForProxiesJSON");}
 	public static String pathForTemporaryFiles() {return getProperties().getProperty("pathForTemporaryFiles");}
 	
 	//Message queues

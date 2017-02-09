@@ -10,6 +10,8 @@
 */
 let asr = {
 
+	tagImagesURL: '',									//URL to where tag images are stored
+	powerPointBackgroundsURL: '',						//URL to where PowerPoint background images are stored
 	_domain: '',										//Stores the domain to get screenshots for
 	_getMenuURL: 'getMenu.php',							//URL of request page used to retrieve the menu for the domain
 	_getTagImagesURL: 'getTagImages.php',				//URL of request page to turn tags into images
@@ -233,7 +235,7 @@ let asr = {
 		    ++asr._tagsBeingProcessed;
 
 		    //Start checking for the image to be done.
-			asr.loadTagImage("https://s3.amazonaws.com/asr-production/tagimages/" + newUUID + ".png", "tagLI" + newUUID);
+			asr.loadTagImage(asr.tagImagesURL + newUUID + ".png", "tagLI" + newUUID);
 		}	
 
 		//Remove the queued tags
@@ -271,7 +273,7 @@ let asr = {
 	    $("#sortable").sortable('refresh');
 
 	    //Start checking for the image to be done.
-		asr.loadTagImage("https://s3.amazonaws.com/asr-production/tagimages/" + newUUID + ".png", "tagLI" + newUUID);
+		asr.loadTagImage(asr.tagImagesURL + newUUID + ".png", "tagLI" + newUUID);
 
 		//Do nothing for now
 		let callback = function(response) {
@@ -541,7 +543,7 @@ let asr = {
 				let newBackgroundInfo = response.data;
 				base.nodeFromID("backgroundTitleDiv").innerHTML = newBackgroundInfo.title;
 				base.nodeFromID("fontColorDiv").style.backgroundColor = "#" + newBackgroundInfo.fontColor;
-				base.nodeFromID("backgroundThumbnailImage").src = "https://s3.amazonaws.com/asr-production/powerpointbackgrounds/thumbnails/" + newBackgroundInfo.thumbnailFilename;
+				base.nodeFromID("backgroundThumbnailImage").src = asr.powerPointBackgroundsURL + "thumbnails/" + newBackgroundInfo.thumbnailFilename;
 	
 				//Set the hidden input fields
 				base.nodeFromID("backgroundTitle").value = newBackgroundInfo.title;
