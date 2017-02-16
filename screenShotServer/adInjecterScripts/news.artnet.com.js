@@ -14,7 +14,7 @@
 /*
 tags = [
 	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', tag: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', placement: 0, width: 994, height: 250},
-	{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x448.jpg', placement: 0, width: 300, height: 448},
+	{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', tag: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x480.jpg', placement: 0, width: 300, height: 480},
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', tag: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', placement: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', tag: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', placement: 0, width: 300, height: 600}
 ];//*/
@@ -25,7 +25,7 @@ let found320x50 = false;
 let found300x250 = false;
 let found300x600 = false;
 let found994x250 = false;
-let found300x448 = false
+let found300x480 = false
 
 for (tagIndex in tags) {
 
@@ -39,8 +39,8 @@ for (tagIndex in tags) {
     if ((currentTag.width == 994) && (currentTag.height == 250)) {
     	found994x250 = true;
     }
-    if ((currentTag.width == 300) && (currentTag.height == 448)) {
-    	found300x448 = true;
+    if ((currentTag.width == 300) && (currentTag.height == 480)) {
+    	found300x480 = true;
     }
     if ((currentTag.width == 300) && (currentTag.height == 250)) {
     	found300x250 = true;
@@ -147,9 +147,9 @@ if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
 
 	//////////////////////////// large mobile Ad Desktop ///////////////////////////////
 
-	//If there is a side column, a 300x250 tag, BUT NOT a 300x448, 
+	//If there is a side column, a 300x250 tag, BUT NOT a 300x480, 
 	//replace the ad element with a filler
-	if ((largeMobileAd) && (found300x250) && (!found300x448)) {
+	if ((largeMobileAd) && (found300x250) && (!found300x480)) {
 
 		console.log("Column and 300x50");
 		//remove all of the elements children
@@ -176,9 +176,9 @@ if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
 		largeMobileAd.appendChild(adFillerDiv);
 	}
 
-	//If there is a side column, a 300x448 tag, BUT NOT a 300x250, 
+	//If there is a side column, a 300x480 tag, BUT NOT a 300x250, 
 	//replace the ad element with a filler
-	else if ((largeMobileAd) && (found300x448) && (!found300x250)) {
+	else if ((largeMobileAd) && (found300x480) && (!found300x250)) {
 
 		//remove all of the elements children
 		while (largeMobileAd.firstChild) {
@@ -189,7 +189,7 @@ if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
 		//and placed correctly.
 		largeMobileAd.style.visibility = 'visible';
 		largeMobileAd.style.width = '300px';
-		largeMobileAd.style.height = '448px';
+		largeMobileAd.style.height = '480px';
 		largeMobileAd.style.margin = "0 auto";
 		//largeMobileAd.style.marginLeft = "20px";
 		//largeMobileAd.parentElement.style.marginLeft = "20px";
@@ -200,7 +200,7 @@ if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
 		let adFillerDiv =  document.createElement('div');
 		adFillerDiv.style.floodOpacity = "0.9898";
 		adFillerDiv.style.width = '300px';
-		adFillerDiv.style.height = '448px';
+		adFillerDiv.style.height = '480px';
 		largeMobileAd.appendChild(adFillerDiv);
 	}
 }

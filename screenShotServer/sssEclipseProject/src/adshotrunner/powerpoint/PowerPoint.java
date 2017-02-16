@@ -32,6 +32,7 @@ class PowerPoint {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------
 	final private static SlideSizesWellKnown DEFAULTRATIO = SlideSizesWellKnown.SCREEN16x9;	//Slide ratio (16x9)
+	final private static boolean OUTLINESCREENSHOT = true;	//Set whether screenhots should be outlined PowerPoint
 
 	//---------------------------------------------------------------------------------------
 	//-------------------------------- Static Variables -------------------------------------
@@ -163,7 +164,7 @@ class PowerPoint {
         String relationshipID = imagePart.getSourceRelationship().getId();
         
         //Get the picture XML template
-        String pictureTemplate = TemplateCreator.picture(relationshipID, xPosition, yPosition, width, height);
+        String pictureTemplate = TemplateCreator.picture(relationshipID, xPosition, yPosition, width, height, OUTLINESCREENSHOT);
 		
 		//Add the image to the slide
         Object pictureObject = org.docx4j.XmlUtils.unmarshalString(pictureTemplate, Context.jcPML, Pic.class);

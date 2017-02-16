@@ -5,6 +5,8 @@ import java.util.Random;
 class TemplateCreator {
 
 	final private static int POINTSPERPIXEL = 9525;	//Microsoft defined points per pixel in a PowerPoint
+	final private static String OUTLINECOLOR = "ffffff";	//set outline color to black
+	final private static int OUTLINEWIDTH = 9525;	//set outline color to one pixel as defined by points per pixel
 	
 	public static String background() {
 	    return "<p:bg xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\">" +
@@ -18,7 +20,7 @@ class TemplateCreator {
 		    	"</p:bg>";
 	}
 	
-	public static String picture(String relationshipID, int xPosition, int yPosition, int width, int height) {
+	public static String picture(String relationshipID, int xPosition, int yPosition, int width, int height, boolean outline) {
 		
 		//Convert the position and dimensions into their point equivalents
 	    int xPositionPoint = xPosition * POINTSPERPIXEL;
@@ -28,6 +30,18 @@ class TemplateCreator {
 	    
 	    //Generate a random ID for the picture
 	    int pictureID = Math.abs(new Random().nextInt());
+	    
+	    String outlineXML = "";
+	    
+	    if (outline){
+	    	outlineXML =           
+	    						   "<a:ln w=\"" + OUTLINEWIDTH + "\">"
+	    						   + "<a:solidFill>"
+	    						   + "<a:srgbClr val=\"" + OUTLINECOLOR + "\"/>"
+	    						   + "</a:solidFill>"
+	    						   + "<a:round/>"
+	    						   +"</a:ln>";
+	    	}
 		
 	    //Return the picture XML
 	    return			
@@ -53,6 +67,7 @@ class TemplateCreator {
 	                + "<a:prstGeom prst=\"rect\">"
 	                  + "<a:avLst/>"
 	                + "</a:prstGeom>"
+	                + outlineXML
 	              + "</p:spPr>"
 	            + "</p:pic>";		
 	}
