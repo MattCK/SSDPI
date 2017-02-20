@@ -105,7 +105,7 @@ if (USERDFPNETWORKCODE) {
 		<img helpIcon="" id="customerHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div id="customerDiv" class="section">
 			<div class="textFieldName">Name:</div> 
-			<input id="customer" name="customer" type="text">
+			<input id="customer" name="customer" type="text" oninput="asr.checkCustomerCompletion()">
 		</div>
 
 		<h2>PowerPoint Background</h2>
@@ -200,7 +200,7 @@ if (USERDFPNETWORKCODE) {
 
 	<div align="center">
 		<div id="getScreenShotsDiv" class="section" align="center">
-			<input class="button-tiny" id="getScreenshotsButton" type="button" value="Get screenshots" onclick="asr.requestScreenshots()" disabled="">
+			<input class="button-tiny" id="getScreenshotsButton" type="button" value="Get screenshots" onclick="asr.requestScreenshots()" disabled>
 		</div>
 	</div>
 
@@ -227,9 +227,13 @@ if (USERDFPNETWORKCODE) {
 let textFileDropZone = base.nodeFromID('textFileDropZone');
 textFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
 textFileDropZone.addEventListener('drop', tagParser.handleTagTextFileDrop, false);
+textFileDropZone.addEventListener('dragleave', tagParser.handleDragLeave, false);
+
 let zipFileDropZone = base.nodeFromID('zipFileDropZone');
 zipFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
 zipFileDropZone.addEventListener('drop', tagParser.handleTagZipFileDrop, false);
+zipFileDropZone.addEventListener('dragleave', tagParser.handleDragLeave, false);
+
 let tagTextTextboxButton = base.nodeFromID("tagTextTextboxButton");
 tagTextTextboxButton.addEventListener('click', tagParser.handleTagTextboxInput, false);
 
@@ -243,6 +247,9 @@ $(function() {
 	//Setup the paths in the ASR javascript object to the tag and powerpoint background images
 	asr.tagImagesURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForTagImages() ?>/";
 	asr.powerPointBackgroundsURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() ?>/";
+
+	//Enable all of the submit buttons in case they were disabled and the user did a refresh
+	asr.enableSubmitButtons();
 
 	//Make the tag image list sortable
 	$( "#sortable" ).sortable();

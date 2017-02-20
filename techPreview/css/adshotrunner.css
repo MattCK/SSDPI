@@ -312,6 +312,10 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     padding-top: 6px;
 }
 
+.customerFieldEmpty {
+    background-color: #ffd8d8;
+}
+
 #domainNameDiv {
     font-weight: bold; 
     font-size: 16px;
@@ -458,6 +462,10 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 .dropBox:hover {
     border: 2px dashed rgba(0,0,0,.5);
     color: rgba(0,0,0,.5);
+}
+
+.dropBoxHasDragOver {
+    background-color: #D4F4F4;
 }
 
 #textFileDropZone {
@@ -621,4 +629,8 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     border-bottom: 1px dashed;
     font-size: 85%;
     margin-left: 2px;
+}
+
+.ui-dialog-title {
+    text-align: left;
 }

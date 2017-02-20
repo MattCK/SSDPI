@@ -57,10 +57,23 @@ else {
 <?PHP include_once(BASEPATH . "header.php");?>
 
 <body>
-	<div align="center" style="padding-top: 50px">
+	
+<div id="header">
+	<div id="title">
+		<h1>AdShotRunner&trade;: Tech Preview</h1> 
+	</div>
+</div>
+
+<div id="mainContent">
+
+	<h2>Account Verification</h2>
+	<div id="verificationDiv" class="section" style="text-align: center;">
 		<?PHP echo $finalMessage ?>
 		<br><br>
-		<a href="/">Click here</a> to return to the homepage.
+		<a href="/">Click here</a> to return to the Login Page.
 	</div>
+
+</div>
+
 </body>
 </html>

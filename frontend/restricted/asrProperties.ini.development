@@ -13,6 +13,9 @@ region = us-east-1
 clientID = 87580729053-440hmqq2n12nn5ragk167gg2kntkqitb.apps.googleusercontent.com
 clientSecret = Z_0nedbeCe8dqQZQW6Fq_Z1S
 refreshToken = 1/YI_KIXNvTmidUf756JE_4bu9qXlD_j_1azY_E6iLfb0
+;clientID = 87580729053-440hmqq2n12nn5ragk167gg2kntkqitb.apps.googleusercontent.com
+;clientSecret = Z_0nedbeCe8dqQZQW6Fq_Z1S
+;refreshToken = 1/YI_KIXNvTmidUf756JE_4bu9qXlD_j_1azY_E6iLfb0
 applicationName = AdShotRunner
 
 [domains]

@@ -8,8 +8,20 @@
 
 namespace AdShotRunner\DFP;
 
-require_once 'Google/Api/Ads/Dfp/Lib/DfpUser.php';
-require_once 'Google/Api/Ads/Dfp/Util/v201608/StatementBuilder.php';
+use Google\AdsApi\Common\OAuth2TokenBuilder;
+use Google\AdsApi\Dfp\DfpServices;
+use Google\AdsApi\Dfp\DfpSession;
+use Google\AdsApi\Dfp\DfpSessionBuilder;
+use Google\AdsApi\Dfp\Util\v201702\StatementBuilder;
+use Google\AdsApi\Dfp\v201702\OrderService;
+use Google\AdsApi\Dfp\v201702\CompanyService;
+use Google\AdsApi\Dfp\v201702\LineItemService;
+use Google\AdsApi\Dfp\v201702\LineItemCreativeAssociationService;
+use Google\AdsApi\Dfp\v201702\CreativeService;
+
+//require_once 'Google/Api/Ads/Dfp/Lib/DfpUser.php';
+//require_once 'Google/Api/Ads/Dfp/Util/v201608/StatementBuilder.php';
+
 
 /**
 * The DFPCommunicator communicates with Google's Doubleclick-For-Publishers using their API.
@@ -39,20 +51,34 @@ class DFPCommunicator {
 		try {
 
 			//Store the DFP user (client) credentials into an associative array 
-			$outh2Credentials = array(
-				'client_id' => $clientID,
-				'client_secret' => $clientSecret,
-				'refresh_token' => $refreshToken
-			);
+			// $outh2Credentials = array(
+			// 	'client_id' => $clientID,
+			// 	'client_secret' => $clientSecret,
+			// 	'refresh_token' => $refreshToken
+			// );
 
-			//Attempt to initialize the user and connect it to DFP
-			$user = new \DfpUser(null, $applicationName, $networkCode, null, $oauth2Credentials);
+			// //Attempt to initialize the user and connect it to DFP
+			// $user = new \DfpUser(null, $applicationName, $networkCode, null, $oauth2Credentials);
 
-			//Set logging to default. Strange: there does not seem to be at the moment a way to turn it off if desired.
-			$user->LogDefault();
+			// //Set logging to default. Strange: there does not seem to be at the moment a way to turn it off if desired.
+			// $user->LogDefault();
 
-			//Return the DFPCommunicator with the initialized user
-			return new DFPCommunicator($user);
+			//Generate the OAuth token for authentication
+			$dfpOAuth2Credential = (new OAuth2TokenBuilder())
+									->withClientId($clientID)
+									->withClientSecret($clientSecret)
+									->withRefreshToken($refreshToken)
+									->build();
+
+			//Construct an API session for the selected network
+			$dfpSession = (new DfpSessionBuilder())
+							->withNetworkCode($networkCode)
+							->withApplicationName($applicationName)
+							->withOAuth2Credential($dfpOAuth2Credential)
+							->build();
+
+			//Return the DFPCommunicator with the initialized session
+			return new DFPCommunicator($dfpSession);
 
 		} 
 
@@ -67,9 +93,9 @@ class DFPCommunicator {
 	//---------------------------------------------------------------------------------------	
 	//******************************** Private Variables ************************************
 	/**
-	* @var DfpUser		Initialized DFP user used to retrieve orders, line items, and creatives
+	* @var DfpSession		Initialized DFP session used to retrieve orders, line items, and creatives
 	*/
-	private $_dfpUser;
+	private $_dfpSession;
 
 
 	//---------------------------------------------------------------------------------------
@@ -78,11 +104,11 @@ class DFPCommunicator {
 	/**
 	* Sets private members of newly constructed object.
 	*
-	* @param 	DfpUser		initializedDFPUser			Initialized and functional DfpUser used to connect to DFP API
+	* @param 	DfpSession		initializedDFPSession	Initialized and functional DfpSession used to connect to DFP API
 	*/
-	private function __construct($initializedDFPUser) {
+	private function __construct($initializedDFPSession) {
 		
-		$this->setDFPUser($initializedDFPUser);
+		$this->setDFPSession($initializedDFPSession);
 	}
 
 
@@ -111,54 +137,74 @@ class DFPCommunicator {
 	public function getOrders() {
 
 		//Get the DfpUser instantiated for this instance
-		$user = $this->getDFPUser();
+		//$user = $this->getDFPUser();
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
 
 		//Get the order service for the network
-		$orderService = $user->GetService('OrderService', 'v201608');
+		//$orderService = $user->GetService('OrderService', 'v201608');
+		$orderService = $dfpServices->get($dfpSession, OrderService::class);
 
 		//Create the statement to select all orders
-		$statementBuilder = new \StatementBuilder();
+		$statementBuilder = new StatementBuilder();
 		$statementBuilder->Where('status = :status AND isArchived = :isArchived')->OrderBy('id ASC')->WithBindVariableValue('status', 'APPROVED')->WithBindVariableValue('isArchived', 0);
 
 		//Get the orders from DFP
 		$orderResults = $orderService->getOrdersByStatement($statementBuilder->ToStatement());
 
-		//Get the company service for the network
-		$companyService = $user->GetService('CompanyService', 'v201608');
-
-		//Build the where clause to get company information for the orders
-		$companyWhereClause = "";
-		if (isset($orderResults->results)) {
-		    foreach ($orderResults->results as $order) {
-			    if ($companyWhereClause != "") {$companyWhereClause .= " OR ";}
-			    $companyWhereClause .= "(companyId = " . $order->advertiserId . ")";
-			    if ($order->agencyId) {$companyWhereClause .= " OR (companyId = " . $order->agencyId . ")";}
-			}
-		}
-
-		//Create the statement to get all companies for the orders
-		if ($companyWhereClause != "") {
-			$statementBuilder = new \StatementBuilder();
-			$statementBuilder->Where("(" . $companyWhereClause . ")");
-			$companyResults = $companyService->
-				              getCompaniesByStatement($statementBuilder->ToStatement());
-		}
-
-		//Format the company names
+		//----------------------------------------------------------------//
+		//Some DFP clients do not allow access to their client companies
+		//information. In such a case, the DFP call will fail. 
+		//If this occurs, the advertiserName and agencyName in the final
+		//object will be set to an empty string
+		//----------------------------------------------------------------//
+		$companyService = $dfpServices->get($dfpSession, CompanyService::class);
 		$companyNames = [];
-		if (isset($companyResults->results)) {
-		    foreach ($companyResults->results as $company) {
-		    	$companyNames[$company->id] = $company->name;
-		    }
+		if (false) { //(USERDFPNETWORKCODE != 4408) {
+		try { 
+
+			//Build the where clause to get company information for the orders
+			$companyWhereClause = "";
+			if ($orderResults->getResults()) {
+				foreach ($orderResults->getResults() as $order) {
+				    if ($companyWhereClause != "") {$companyWhereClause .= " OR ";}
+				    $companyWhereClause .= "(companyId = " . $order->getAdvertiserId() . ")";
+				    if ($order->getAgencyId()) {$companyWhereClause .= " OR (companyId = " . $order->getAgencyId() . ")";}
+				 }
+			}
+
+			//Create the statement to get all companies for the orders
+			if ($companyWhereClause != "") {
+				$statementBuilder = new StatementBuilder();
+				$statementBuilder->Where("(" . $companyWhereClause . ")");
+				$companyResults = $companyService->
+					              getCompaniesByStatement($statementBuilder->ToStatement());
+			}
+
+			//Format the company names
+			$companyNames = [];
+			if ($companyResults->getResults()) {
+			    foreach ($companyResults->getResults() as $company) {
+			    	$companyNames[$company->getId()] = $company->getName();
+			    }
+			}
+		} catch (Exception $e) {
+			//Fail silently
+		}
 		}
 
 		//Format the returned orders
 		$finalOrders = [];
-		if (isset($orderResults->results)) {
-		    foreach ($orderResults->results as $order) {
-		    	$finalOrders[$order->id] = ['name' => $order->name, 'notes' => $order->notes,
-		    								'advertiserName' => $companyNames[$order->advertiserId]];
-		    	$finalOrders[$order->id]['agencyName'] = ($order->agencyId) ? $companyNames[$order->agencyId] : "";
+		if ($orderResults->getResults()) {
+		    foreach ($orderResults->getResults() as $order) {
+				$finalOrders[$order->getId()] = ['name' => $order->getName(), 'notes' => $order->getNotes()];
+
+				if (count($companyNames) > 0) {
+					$finalOrders[$order->getId()]['advertiserName'] = $companyNames[$order->getAdvertiserId()];
+					$finalOrders[$order->getId()]['agencyName'] = ($order->getAgencyId()) ? $companyNames[$order->getAgencyId()] : "";
+		    	}
 		    }
 		}
 		return $finalOrders;
@@ -178,27 +224,33 @@ class DFPCommunicator {
 	public function getLineItemsAndCreative($orderID, &$lineItems, &$creatives) {
 
 		//Get the DfpUser instantiated for this instance
-		$user = $this->getDFPUser();
+		//$user = $this->getDFPUser();
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
 
 		//Get the line item service for the network
-		$lineItemService = $user->GetService('LineItemService', 'v201608');
+		//$lineItemService = $user->GetService('LineItemService', 'v201608');
+		$lineItemService = $dfpServices->get($dfpSession, LineItemService::class);
 
 		//Create the statement to select all line items for the passed order ID
-		$statementBuilder = new \StatementBuilder();
+		$statementBuilder = new StatementBuilder();
 		$statementBuilder->Where('orderId = ' . $orderID)->OrderBy('id ASC');
 		$lineItemResults = $lineItemService->getLineItemsByStatement($statementBuilder->ToStatement());
 
 		//Store the line items by name => notes and separately store their IDs for LICA search
 		$lineItemIDs = [];
-		if (isset($lineItemResults->results)) {
-		    foreach ($lineItemResults->results as $lineItem) {
-		        $lineItems[$lineItem->name] = $lineItem->notes;
-		        $lineItemIDs[] = $lineItem->id;
+		if ($lineItemResults->getResults()) {
+		    foreach ($lineItemResults->getResults() as $lineItem) {
+		        $lineItems[$lineItem->getName()] = ($lineItem->getNotes()) ? $lineItem->getNotes() : "";
+		        $lineItemIDs[] = $lineItem->getId();
 		    }
 		}
 
 		//Get the LICA service for the network
-		$lineItemCreativeAssociationService = $user->GetService('LineItemCreativeAssociationService', 'v201608');
+		//$lineItemCreativeAssociationService = $user->GetService('LineItemCreativeAssociationService', 'v201608');
+		$lineItemCreativeAssociationService = $dfpServices->get($dfpSession, LineItemCreativeAssociationService::class);
 
 		//Build the where clause of line items to find LICAs for
 		$licaWhereClause = "";
@@ -208,7 +260,7 @@ class DFPCommunicator {
 		}
 
 		//Create the statement to select all LICAs for the passed line items
-		$statementBuilder = new \StatementBuilder();
+		$statementBuilder = new StatementBuilder();
 		$statementBuilder->Where("(" . $licaWhereClause . ")")
 		->OrderBy('lineItemId ASC, creativeId ASC');
 		$licaResults = $lineItemCreativeAssociationService->
@@ -217,15 +269,16 @@ class DFPCommunicator {
 
 		//Store the creative IDs from the LICAs
 		$creativeIDs = [];
-		if (isset($licaResults->results)) {
-		    foreach ($licaResults->results as $lica) {
-		        $creativeIDs[] = $lica->creativeId;
+		if ($licaResults->getResults()) {
+		    foreach ($licaResults->getResults() as $lica) {
+		        $creativeIDs[] = $lica->getCreativeId();
 		    }
 		}
 		$creativeIDs = array_unique($creativeIDs);
 
 		//Get the creative service for the network
-		$creativeService = $user->GetService('CreativeService', 'v201608');
+		//$creativeService = $user->GetService('CreativeService', 'v201608');
+		$creativeService = $dfpServices->get($dfpSession, CreativeService::class);
 
 		//Build the where clause of creative IDs to find the creatives
 		$creativeWhereClause = "";
@@ -235,20 +288,27 @@ class DFPCommunicator {
 		}
 
 		//Create the statement to select creatives for the passed IDs
-		$statementBuilder = new \StatementBuilder();
+		$statementBuilder = new StatementBuilder();
 		$statementBuilder->Where("(" . $creativeWhereClause . ")")->OrderBy('id ASC');
 		$creativeResults = $creativeService->getCreativesByStatement($statementBuilder->ToStatement());
 
 		//Output the creative
-		if (isset($creativeResults->results)) {
-		    foreach ($creativeResults->results as $creative) {
+		if ($creativeResults->getResults()) {
+		    foreach ($creativeResults->getResults() as $creative) {
+
+		    	//Check which methods the object has
+				$createiveHasHTML = method_exists($creative, "getHtmlSnippet");
+				$creativeHasExpanded = method_exists($creative, "getExpandedSnippet");
+				$creativeHasImageAsset = method_exists($creative, "getPrimaryImageAsset");
 
 		    	$tag = "";
-		    	if (isset($creative->expandedSnippet)) {$tag = $creative->expandedSnippet;}
-		    	else if (isset($creative->htmlSnippet)) {$tag = $creative->htmlSnippet;}
-		    	else if (isset($creative->primaryImageAsset)) {$tag = "<img src='" . $creative->primaryImageAsset->assetUrl . "' />";}
+		    	if ($creativeHasExpanded && $creative->getExpandedSnippet()) {$tag = $creative->getExpandedSnippet();}
+		    	else if ($createiveHasHTML && $creative->getHtmlSnippet()) {$tag = $creative->getHtmlSnippet();}
+		    	else if ($creativeHasImageAsset && $creative->getPrimaryImageAsset()) {
+		    		$tag = "<img src='" . $creative->getPrimaryImageAsset()->getAssetUrl() . "' />";
+		    	}
 
-		        $creatives[$creative->id] = $tag;
+		        if ($tag != "") {$creatives[$creative->getId()] = $tag;}
 		    }
 		}
 	}
@@ -258,20 +318,20 @@ class DFPCommunicator {
 	//----------------------------------- Accessors -----------------------------------------
 	//---------------------------------------------------------------------------------------
 	/**
-	* Returns the instantiated DfpUser of the instance
+	* Returns the instantiated DfpSession of the instance
 	*
-	* @return DfpUser	Instantiated DfpUser of the instance
+	* @return DfpSession	Instantiated DfpSession of the instance
 	*/
-	private function getDFPUser(){
-		return $this->_dfpUser;
+	private function getDFPSession(){
+		return $this->_dfpSession;
 	}
 	/**
-	* Sets the instantiated DfpUser of the instance
+	* Sets the instantiated DfpSession of the instance
 	*
-	* @param DfpUser 	$newDFPUser  New instantiated DfpUser of the instance 
+	* @param DfpSession 	$newDFPSession  New instantiated DfpSession of the instance 
 	*/
-	private function setDFPUser($newDFPUser){
-		$this->_dfpUser = $newDFPUser;
+	private function setDFPSession($newDFPSession){
+		$this->_dfpSession = $newDFPSession;
 	}
 
 

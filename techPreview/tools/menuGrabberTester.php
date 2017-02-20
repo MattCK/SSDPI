@@ -26,7 +26,7 @@ let menuIndex = 0;
 function getDomainMenus() {
 
 	//Create the callback function that will show the table
-	let callback = function(response) {
+	let onSuccessCallback = function(response) {
 		
 		base.enable("getMenusButton");
 		if (response.success) {
@@ -53,8 +53,9 @@ function getDomainMenus() {
 	}
 	
 	//Make the request
+	//CHECKED
 	base.disable("getMenusButton");
-	base.asyncRequest("getDomainMenus.php", 'domains=' + base.nodeFromID('domainList').value, callback);
+	base.asyncRequest("getDomainMenus.php", 'domains=' + base.nodeFromID('domainList').value, onSuccessCallback);
 }
 
 function rotatePage(rotateAmount) {

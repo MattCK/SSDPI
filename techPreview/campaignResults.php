@@ -36,14 +36,21 @@ require_once('systemSetup.php');
 
 	<div id="campaignResultsDiv" style="display: none">
 
-		<h2>Campaign Details</h2>
+		<div>
+			<div>
+				<h2>Campaign Details</h2>
+			</div>
+			<div style="float:right; margin-top: -32px">
+				<input class="button-tiny" type="button" value="Start a New Campaign" onclick="window.open('/', '_blank');">
+			</div>
+		</div>
 		<div id="campaignDetailsDiv" class="section">
 			<table>
 				<tr><td>Customer: </td><td><span id="customerSpan">Name of Customer</span></td></tr>
 				<tr><td>Publisher Site: </td><td><span id="domainSpan">somedomain.com</span></td></tr>
 				<tr><td>Date: </td><td><span id="dateSpan">01/02/2003</span></td></tr>
 				<tr><td>Screenshot Count: </td><td><span id="screenshotCountSpan">0</span></td></tr>
-				<tr><td>Runtime: </td><td><span id="runtimeSpan">0</span> seconds</td></tr>
+				<tr style="display:none"><td>Runtime: </td><td><span id="runtimeSpan">0</span> seconds</td></tr>
 			</table>
 		</div>
 

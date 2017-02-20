@@ -6,7 +6,7 @@
 */
 
 //Base object for all system functions and variables
-var base = {
+let base = {
 
 	/**
 	* Returns the node in the DOM with the passed ID. Returns NULL on failure.
@@ -213,12 +213,12 @@ var base = {
 	onTabFocus: function(evt, tabElementPossibilities, tabShiftElementPossibilities) {
 		
 		//Get the charCode and target passed
-		var charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
-		var targetElement = (evt.target) ? evt.target : evt.srcElement;
+		let charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
+		let targetElement = (evt.target) ? evt.target : evt.srcElement;
 
 		//If alt is pressed but not shift, try to focus on the possibilities
 		if ((tabElementPossibilities) && ((evt.altKey) || (charCode == 9)) && (!evt.shiftKey)) {
-			var curIndex = 0;
+			let curIndex = 0;
 			while (curIndex < tabElementPossibilities.length) {
 				curElementID = tabElementPossibilities[curIndex];
 				if ((nodeFromID(curElementID)) && (isShown(curElementID)) && (isEnabled(curElementID))) {
@@ -233,7 +233,7 @@ var base = {
 
 		//If alt is pressed with shift, try to focus on those possibilities
 		else if ((tabShiftElementPossibilities) && ((evt.altKey) || (charCode == 9)) && (evt.shiftKey)) {
-			var curIndex = 0;
+			let curIndex = 0;
 			while (curIndex < tabShiftElementPossibilities.length) {
 				curElementID = tabShiftElementPossibilities[curIndex];
 				if ((nodeFromID(curElementID)) && (isShown(curElementID)) && (isEnabled(curElementID))) {
@@ -253,8 +253,8 @@ var base = {
 	numberMask: function(evt, allowDecimal) {
 			
 		//Get the char code and target from the keypress event
-		var charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
-		var targetElement = (evt.target) ? evt.target : evt.srcElement;
+		let charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
+		let targetElement = (evt.target) ? evt.target : evt.srcElement;
 		
 		//If a alt is pressed ignore everything
 		if (evt.altKey) {return false;}
@@ -279,9 +279,9 @@ var base = {
 	dateMask: function(evt) {
 
 		//Get the char code and target from the keypress event
-		var charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
-		var targetElement = (evt.target) ? evt.target : evt.srcElement;
-		var targetValue = (!targetElement.value) ? targetElement.innerHTML.trim() : targetElement.value;
+		let charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
+		let targetElement = (evt.target) ? evt.target : evt.srcElement;
+		let targetValue = (!targetElement.value) ? targetElement.innerHTML.trim() : targetElement.value;
 
 		//If a alt is pressed ignore everything
 		if (evt.altKey) {return false;}
@@ -296,7 +296,7 @@ var base = {
 		
 		//If the key pressed is a '/', verify it is the first or second. If not return false
 		if (charCode == 47) {
-			var slashMatches = targetValue.match(/\//g);
+			let slashMatches = targetValue.match(/\//g);
 			if (slashMatches && (slashMatches.length >= 2)) {return false;}
 		}
 		
@@ -312,9 +312,9 @@ var base = {
 	dateFormat: function(evt) {
 
 		//Get the char code and target from the keypress event
-		var charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
-		var targetElement = (evt.target) ? evt.target : evt.srcElement;
-		var targetValue = (!targetElement.value) ? targetElement.innerHTML.trim() : targetElement.value;
+		let charCode = (evt.which || (evt.which == 0))  ? evt.which : evt.keyCode;
+		let targetElement = (evt.target) ? evt.target : evt.srcElement;
+		let targetValue = (!targetElement.value) ? targetElement.innerHTML.trim() : targetElement.value;
 
 		//If delete or backspace was pressed, do nothing for now.
 		if ((charCode == 8) || (charCode == 127)) {return;}
@@ -332,7 +332,7 @@ var base = {
 		}
 		
 		//Split the date into its parts
-		var dateParts = targetValue.split('/');
+		let dateParts = targetValue.split('/');
 		
 		//If the first part is greater than 12, replace it with 12
 		if (dateParts[0] > 12) {
@@ -350,7 +350,7 @@ var base = {
 	insertTodaysDate: function(evt) {
 
 		//Get the target from the keypress event
-		var targetElement = (evt.target) ? evt.target : evt.srcElement;
+		let targetElement = (evt.target) ? evt.target : evt.srcElement;
 		
 		//Insert today's date into the target
 		targetElement.value = base.getTodaysDate();	
@@ -359,11 +359,11 @@ var base = {
 	getTodaysDate: function() {
 
 		//Format today's date
-		var todaysDate = new Date();
-		var incrementedMonth = todaysDate.getMonth() + 1;
-		var currentDay = (todaysDate.getDate() < 10) ? "0" + todaysDate.getDate() : todaysDate.getDate();
-		var currentMonth = (incrementedMonth < 10) ? "0" + incrementedMonth : incrementedMonth;
-		var currentYear = todaysDate.getFullYear();
+		let todaysDate = new Date();
+		let incrementedMonth = todaysDate.getMonth() + 1;
+		let currentDay = (todaysDate.getDate() < 10) ? "0" + todaysDate.getDate() : todaysDate.getDate();
+		let currentMonth = (incrementedMonth < 10) ? "0" + incrementedMonth : incrementedMonth;
+		let currentYear = todaysDate.getFullYear();
 		
 		//Add slashes and return it
 		return currentMonth + '/' + currentDay + '/' + currentYear;	
@@ -372,7 +372,7 @@ var base = {
 	enableButtonOnTextInput: function(evt, buttonID) {
 		
 		//Get the target from the keypress event
-		var targetElement = (evt.target) ? evt.target : evt.srcElement;
+		let targetElement = (evt.target) ? evt.target : evt.srcElement;
 		
 		//If there is at least one character, enable the button. Otherwise, disable it.
 		if (targetElement.value.length > 0) {this.enable(buttonID);}
@@ -438,44 +438,50 @@ var base = {
 	/**
 	* Sends a request to the server and executes the callback function on the returned data. 
 	* The basic usage uses POST unless otherwise flagged. The function expects a JSON response.
-	* The callback takes a single argument, 'data', the returned data converted to a JSON object.
+	* The on success callback takes a single argument, 'data', the returned data converted to a JSON object.
 	* 
 	*
-	* @param {String} url  					URL to send the request to
-	* @param {String} headers  				Post headers to send. This can be a string or an associated array with keys as names and values as data.
-	* @param {Function} callbackFunction  	Function to call on request return. Takes a single argument for the data returned from the server.
-	* @param {Boolean} useUnprocessedData  	Flags whether or not to process the data DEFAULT: false
-	* @param {Boolean} useGET  				On true, the request is sent via GET. Otherwise, it is sent via POST (including when omitted).
+	* @param {String} 	url  					URL to send the request to
+	* @param {String}  	headers  				Post headers to send. This can be a string or an associated array with keys as names and values as data.
+	* @param {Function} onSuccessFunction  		Function to call on successful request. Takes a single argument for the JSON returned from the server.
+	* @param {Function} onFailFunction  		Function to call on a failed request. Returns two arguements: textStatus and errorThrown
+	* @param {Boolean} 	useUnprocessedData  	Flags whether or not to process the data DEFAULT: false
+	* @param {Boolean} 	useGET  				On true, the request is sent via GET. Otherwise, it is sent via POST (including when omitted).
 	*/
-	asyncRequest: function(url, headers, callbackFunction, useUnprocessedData, useGET) {
+	asyncRequest: function(url, headers, onSuccessFunction, onFailFunction, useUnprocessedData, useGET) {
 		
 		//Set the GET/POST communication type based on the passed argument
-		var communicationType = (useGET) ? 'GET' : 'POST';
+		let communicationType = (useGET) ? 'GET' : 'POST';
 					
 		//Flag whether or not to use raw data. This is opposite what's expected.
-		var processFlag = (useUnprocessedData) ? false : true;
-		var contentTypeFlag = (useUnprocessedData) ? false : null;
+		let processFlag = (useUnprocessedData) ? false : true;
 		
 		//Set the options
-		var ajaxOptions = {
+		let ajaxOptions = {
 			url: url,
 			data: headers,
 			processData: processFlag,
-			success: callbackFunction,
+			success: onSuccessFunction,
 			type: communicationType,
 			dataType: 'json',
-		};
+		};0
 		
 		//If unprocessed data needs to be sent, remove content type
 		if (useUnprocessedData) {ajaxOptions.contentType = false;}
 		
 		//Setup and make the AJAX call
 		$.ajax(ajaxOptions)
-		 .fail(function( jqXHR, textStatus, errorThrown ) {
-			var errorHTML = '<strong>An error has occurred.</strong><br><br>';
-			errorHTML += 'Error: ' + errorThrown + '<br><br>';
-			errorHTML += 'Response: ' + jqXHR.responseText + '<br><br>';
-			alert(errorHTML);
+		 .fail(function(jqXHR, textStatus, errorThrown) {
+		 	if (onFailFunction) {onFailFunction(textStatus, errorThrown);}
+		 	else {
+				let errorHTML = "There was difficulty communicating with the server.<br/><br/>";
+				errorHTML += "Check your internet connection and try refreshing your browser.<br/><br/>";
+				errorHTML += "If the problem persists, please contact us.";
+				base.showMessage(errorHTML, "A Problem has Occurred");
+
+				console.log("An error occurred: " + textStatus);
+				console.log("Error Thrown: " + errorThrown);
+			}
 			//base.showMessage(errorHTML);
 		});	
 	},
@@ -503,7 +509,7 @@ var base = {
 		if (!timeDelay) {timeDelay = 300;}
 				
 		//Define the basic options to pass to the autocomplete function
-		var autoCompleteOptions = {
+		let autoCompleteOptions = {
 			minLength: minStringLength,
 			delay: timeDelay,
 			source: function (request, response) {
@@ -511,7 +517,7 @@ var base = {
 					response(data);
 				}, "json")
 				 .fail(function(jqXHR, textStatus, errorThrown) {
-					var errorHTML = '<strong>An error has occurred.</strong><br><br>';
+					let errorHTML = '<strong>An error has occurred.</strong><br><br>';
 					errorHTML += 'Error: ' + errorThrown + '<br><br>';
 					errorHTML += 'Response: ' + jqXHR.responseText + '<br><br>';
 					base.showMessage(errorHTML);
@@ -545,7 +551,7 @@ var base = {
 		
 		//Modify the appearance
 		$.ui.autocomplete.prototype._renderMenu = function(ul, items) {
-			var thisMenu = this,
+			let thisMenu = this,
 			currentCategory = "";
 			$.each(items, function(index, item) {
 				if ((item.category) && (item.category != currentCategory)) {
@@ -585,7 +591,7 @@ var base = {
 		if (!nodeID) {return false;}
 				
 		//Define the basic options to pass to the dialog function
-		var dialogOptions = {
+		let dialogOptions = {
 			title: title,
 			width: width,
 			autoOpen: false,
@@ -614,66 +620,33 @@ var base = {
 	/**
 	* Displays a message to the current user. 
 	* 
-	* The message can be text or html. If no button one label is specified, "Continue" is used for the text. If a second button label is passed, the second
-	* button is shown. Either button closes the dialog and executes the respective callback, if one was passed.
+	* The message can be text or html. 
 	*
 	* @param {String} messageHTML  			HTML/Text to show in the message div
-	* @param {String} buttonOneLabel  		Label to set the first button to
-	* @param {String} buttonOneCallback  	Function to call after the first button is pressed
-	* @param {String} buttonTwoLabel  		Label to set the second button to
-	* @param {String} buttonTwoCallback  	Function to call after the second button is pressed
+	* @param {String} dialogTitle  			Optional title to show in dialog top title bar
 	*/
-	showMessage: function(messageHTML, buttonOneLabel, buttonOneCallback, buttonTwoLabel, buttonTwoCallback) {
+	showMessage: function(messageHTML, dialogTitle) {
 		
 		//If the message dialog does not exist, create it
 		if ($('#messageDialog').length == 0) {
 			
 			//Insert message dialog div to the end of the document
 			$(document.body).append('\
-				<div id="messageDialog" style="display:none;background:#FFCFCF;padding:5px;font-size:9px;"> \
+				<div id="messageDialog"> \
 					<div align="center"> \
-						<div id="messageDiv" style="font-weight:bolder">.</div> \
-						<br> \
-						<input id="messageButtonOne" type="button" value="Continue" onclick="base.messageDialog.close()"> \
-						<input id="messageButtonTwo" type="button" value="Cancel" onclick="base.messageDialog.close()" style="margin-left:50px;"> \
+						<div id="messageDiv"></div> \
 					</div> \
 				</div>');
-			
+
 			//Turn div into dialog and store it
-			this.messageDialog = this.createDialog('messageDialog', null, false, 450);
+			this.messageDialog = this.createDialog('messageDialog', dialogTitle, true, 600);
 		}
 		
-		//If a button one label was not passed, set it to 'Continue'
-		if (!buttonOneLabel) {buttonOneLabel = 'Continue';}
-
 		//Insert the message HTML into the div
 		this.nodeFromID('messageDiv').innerHTML = messageHTML;
 		
-		//Setup the first button
-		this.nodeFromID('messageButtonOne').value = buttonOneLabel;
-		this.nodeFromID('messageButtonOne').onclick = function() {
-			base.messageDialog.close();
-			if (buttonOneCallback) {setTimeout(buttonOneCallback, 350);}
-		}
-		
-		//If a second button label was passed, setup the second button and show it
-		if (buttonTwoLabel) {
-			this.nodeFromID('messageButtonTwo').value = buttonTwoLabel;
-			this.nodeFromID('messageButtonTwo').onclick = function() {
-				base.messageDialog.close();
-				if (buttonTwoCallback) {setTimeout(buttonTwoCallback, 350);}
-			}
-			this.show('messageButtonTwo');
-		}
-		
-		//Otherwise, hide the second button
-		else {this.hide('messageButtonTwo');}
-
 		//Show the panel
 		this.messageDialog.open();
-		
-		//Set the focus on the first button
-		this.focus('messageButtonOne');
 	},
 	
 };

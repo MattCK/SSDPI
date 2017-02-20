@@ -23,7 +23,7 @@ let campaign = {
 	getResults: function() {
 
 		//Create the callback function that will show the table
-		let callback = function(jobData) {
+		let onSuccessCallback = function(jobData) {
 
 			//If the job is queued, run it again in the predefined timeout
 			if (jobData.queued) {
@@ -66,9 +66,15 @@ let campaign = {
 				console.log("error: " + jobData);
 			}
 		}
+
+		//If there was a problem contacting the server or getting malformed response, simply re-request the results
+		let onFailureCallback = function() {
+			setTimeout(campaign.getResults, campaign._QUEUETIMEOUT);
+		}
 		
 		//Make the request
-		base.asyncRequest(campaign._campaignJobURL + '?jobID=' + campaign.jobID, '', callback);
+		//CHECKED WITH FAIL
+		base.asyncRequest(campaign._campaignJobURL, '?jobID=' + campaign.jobID, onSuccessCallback, onFailureCallback);
 	},
 
 }

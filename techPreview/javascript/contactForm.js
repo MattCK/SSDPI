@@ -47,7 +47,7 @@ var contactForm = {
 		}
 
 		//Create the callback function that will either show the feedback thanks text or error text
-		let callback = function(response) {
+		let onSuccessCallback = function(response) {
 			
 			//If successful, hide the form and show the thank you text
 			if (response.success) {
@@ -62,9 +62,17 @@ var contactForm = {
 				base.show("contactFailureDiv");
 			}
 		}
-		
+
+		//If there was a problem connecting with the server, notify the user
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to submit contact form.");
+		}
+
 		//Make the request
-		base.asyncRequest(contactForm._submitFormURL, base.serializeForm('asrContactForm'), callback);
+		//CHECKED WITH FAIL
+		base.asyncRequest(contactForm._submitFormURL, base.serializeForm('asrContactForm'), onSuccessCallback);
 	},
 
 	/**

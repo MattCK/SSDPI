@@ -158,6 +158,9 @@ let tagParser = {
 		event.stopPropagation();
 		event.preventDefault();
 
+		//Remove the drag styling
+		base.nodeFromID(this.id).classList.remove("dropBoxHasDragOver");
+
 		//Store the files
 		let files = event.dataTransfer.files;
 
@@ -216,6 +219,9 @@ let tagParser = {
 		//Prepare for the file processing
 		event.stopPropagation();
 		event.preventDefault();
+
+		//Remove the drag styling
+		base.nodeFromID(this.id).classList.remove("dropBoxHasDragOver");
 
 		//Store the files
 		let files = event.dataTransfer.files;
@@ -283,6 +289,17 @@ let tagParser = {
 	* Stops any propogation on a file drop area
 	*/
 	handleDragOver: function(event) {
+		base.nodeFromID(this.id).classList.add("dropBoxHasDragOver");
+		event.stopPropagation();
+		event.preventDefault();
+	},
+
+
+	/**
+	* Handles the drag leave. Used for CSS styling.
+	*/
+	handleDragLeave: function(event) {
+		base.nodeFromID(this.id).classList.remove("dropBoxHasDragOver");
 		event.stopPropagation();
 		event.preventDefault();
 	},

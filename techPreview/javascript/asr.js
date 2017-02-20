@@ -31,6 +31,19 @@ let asr = {
 	_creatives: [],										//Array of creative IDs and their content
 	orders: {},											//Array of order IDs with 'name' and 'notes' properties
 
+	checkCustomerCompletion: function() {
+
+		/*if (base.nodeFromID("customer").value == "") {
+			base.nodeFromID("customer").classList.add("customerFieldEmpty");
+		}
+		else {
+			base.nodeFromID("customer").classList.remove("customerFieldEmpty");
+		}*/
+		asr.setGetScreenshotsButtonStatus();
+
+		
+	},
+
 	/**
 	* Requests the menu for the domain stored in the domain input field. If a menu is returned, its items are
 	* stored and an HTML options string for them is stored for inserting into menus. Finally, the domain
@@ -49,7 +62,7 @@ let asr = {
 		base.nodeFromID('domain').value = targetDomain;
 
 		//Callback that on success stores menu items, puts them into and HTML options string, and shows pages table
-		let callback = function(response) {
+		let onSuccessCallback = function(response) {
 			
 			//If successful, store the items, create the HTML options, and show the pages table
 			if (response.success) {
@@ -88,9 +101,21 @@ let asr = {
 			base.enable("getMenuButton");
 			base.enable("domain");
 		}
+
+		//If there was a problem connecting with the server, notify the user and enable the input field/button
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to get the site sections.");
+
+			//Re-enable the call button
+			base.enable("getMenuButton");
+			base.enable("domain");
+		}
 		
 		//Make the request
-		base.asyncRequest(asr._getMenuURL, 'domain=' + base.nodeFromID('domain').value, callback);
+		//CHECKED WITH FAIL
+		base.asyncRequest(asr._getMenuURL, 'domain=' + base.nodeFromID('domain').value, onSuccessCallback, onFailCallback);
 	},
 
 	/**
@@ -121,12 +146,7 @@ let asr = {
 		asr._rowIndex += 1;
 
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
-		console.log("Pages table length: " + base.nodeFromID("pagesTable").rows.length);
-		console.log("Tags being processed: " + asr._tagsBeingProcessed);
-		console.log("Queued tags: " + asr._queuedTags.length);
-		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
-			base.enable("getScreenshotsButton");}
-		else {base.disable("getScreenshotsButton");}
+		asr.setGetScreenshotsButtonStatus();
 	},
 
 	/**
@@ -157,9 +177,7 @@ let asr = {
 		asr._rowIndex += 1;
 
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
-		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
-			base.enable("getScreenshotsButton");}
-		else {base.disable("getScreenshotsButton");}
+		asr.setGetScreenshotsButtonStatus();
 	},
 
 	/*
@@ -205,9 +223,7 @@ let asr = {
 		rowToDelete.parentNode.removeChild(rowToDelete);
 	
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
-		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
-			base.enable("getScreenshotsButton");}
-		else {base.disable("getScreenshotsButton");}
+		asr.setGetScreenshotsButtonStatus();
 	},
 
 	/**
@@ -239,21 +255,27 @@ let asr = {
 		}	
 
 		//Remove the queued tags
-		let callback = function(response) {
+		let onSuccessCallback = function(response) {
 			asr._queuedTags = [];
 			base.nodeFromID("queuedTagCountSpan").innerHTML = 0;
 			console.log(response.data);
 			base.nodeFromID("queuedTagDiv").className = "yellowBackground";
 		}
 		
+		//If there was a problem connecting with the server, notify the user
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to get tag images.");
+		}
+		
 		//Make the request to get images for the tags
+		//CHECKED WITH FAIL
 		base.disable("getTagImagesButton");
-		base.asyncRequest(asr._getTagImagesURL, {'tags': tagsByID}, callback);
+		base.asyncRequest(asr._getTagImagesURL, {'tags': tagsByID}, onSuccessCallback, onFailCallback);
 
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
-		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
-			base.enable("getScreenshotsButton");}
-		else {base.disable("getScreenshotsButton");}
+		asr.setGetScreenshotsButtonStatus();
 	},
 
 	/**
@@ -276,22 +298,29 @@ let asr = {
 		asr.loadTagImage(asr.tagImagesURL + newUUID + ".png", "tagLI" + newUUID);
 
 		//Do nothing for now
-		let callback = function(response) {
+		let onSuccessCallback = function(response) {
 			console.log("Image uploaded");
 		}
 		
+		//If there was a problem connecting with the server, notify the user and enable the input field/button
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to upload the tag image.");
+		}
+		
+		//Create the request object for the raw form data
+		//CHECKED WITH FAIL
 		let formData = new FormData();
 		formData.append('imageID', newUUID);
 		formData.append('image', tagImageData);
-		base.asyncRequest(asr._uploadTagImageURL, formData, callback, true);
+		base.asyncRequest(asr._uploadTagImageURL, formData, onSuccessCallback, onFailCallback, true);
 
 		//Note we are processing a new tag
         ++asr._tagsBeingProcessed;
 
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
-		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
-			base.enable("getScreenshotsButton");}
-		else {base.disable("getScreenshotsButton");}
+		asr.setGetScreenshotsButtonStatus();
 	},
 
 	/**
@@ -316,12 +345,13 @@ let asr = {
 			tagHeader += "tagImages[" + sortedIndex + "]=" + currentImage + "&";
 		}
 
-		//Create the callback function that will navigate to the job queued page
-		let callback = function(response) {
+		//Create the onSuccessCallback function that will navigate to the job queued page
+		let onSuccessCallback = function(response) {
 			
 			//If successful, navigate to the queued job page
 			if (response.success) {
-				window.open('/campaignResults.php?jobID=' + jobID, '_blank');
+				window.location.href = '/campaignResults.php?jobID=' + jobID;
+				//window.open('/campaignResults.php?jobID=' + jobID, '_blank');
 			}
 						
 			//If failure, simply output to the console for the time being
@@ -330,9 +360,20 @@ let asr = {
 				console.log(response.data);
 			}
 		}
+
+		//If there was a problem connecting with the server, notify the user and enable the input field/button
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to request screenshots.");
+		}
 		
+
 		//Make the request
-		base.asyncRequest(asr._requestScreenshotsURL, 'jobID=' + jobID + '&' + tagHeader + '&' + base.serializeForm('pagesForm'), callback);
+		//CHECKED WITH FAIL
+		base.asyncRequest(asr._requestScreenshotsURL, 
+						 'jobID=' + jobID + '&' + tagHeader + '&' + base.serializeForm('pagesForm'), 
+						  onSuccessCallback, onFailCallback);
 	},
 
 	addTagsToQueue: function(tagTextArray) {
@@ -341,9 +382,7 @@ let asr = {
 		if (asr._queuedTags.length > 0) {base.enable("getTagImagesButton");}
 
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
-		if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
-			base.enable("getScreenshotsButton");}
-		else {base.disable("getScreenshotsButton");}
+		asr.setGetScreenshotsButtonStatus();
 
 		//Turn the tag queue process tag div green
 		base.nodeFromID("queuedTagDiv").className = "greenBackground";
@@ -357,14 +396,22 @@ let asr = {
 	storeTagText: function(tagText) {
 
 		//Regardless of response, stay silent
-		let callback = function(response) {
+		let onSuccessCallback = function(response) {
 			
 			//Regardless of success, act silent
 			console.log(response);
 		}
+
+		//If there was a problem connecting with the server, do nothing
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Regardless of failure, act silent
+			console.log(textStatus + ": " + errorThrown);
+		}
 		
 		//Make the request
-		base.asyncRequest(asr._storeTagTextURL, {tagText: tagText}, callback);
+		//CHECKED WITH FAIL
+		base.asyncRequest(asr._storeTagTextURL, {tagText: tagText}, onSuccessCallback, onFailCallback);
 	},
 
 	/**
@@ -396,12 +443,7 @@ let asr = {
 	        --asr._tagsBeingProcessed;
 
 			//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
-			console.log("pages table length: " + base.nodeFromID("pagesTable").rows.length);
-			console.log("tags being processed: " + asr._tagsBeingProcessed);
-			console.log("queued tags: " + asr._queuedTags.length);
-			if ((base.nodeFromID("pagesTable").rows.length > 0) && (asr._tagsBeingProcessed == 0) && (asr._queuedTags.length == 0)) {
-				base.enable("getScreenshotsButton");}
-			else {base.disable("getScreenshotsButton");}
+			asr.setGetScreenshotsButtonStatus();
 		};
 
 		//If the image was not loaded, check again in a few seconds
@@ -437,8 +479,11 @@ let asr = {
 			if (asr.orders.hasOwnProperty(orderID)) {
 
 				//Create the order label
-				let orderName = asr.orders[orderID].name + " - " + asr.orders[orderID].advertiserName;
-				if (asr.orders[orderID].agencyName != "") {orderName += " (" + asr.orders[orderID].agencyName + ")";}
+				let orderName = asr.orders[orderID].name;
+				if (asr.orders[orderID].advertiserName) {
+					orderName += " - " + asr.orders[orderID].advertiserName;
+					if (asr.orders[orderID].agencyName) {orderName += " (" + asr.orders[orderID].agencyName + ")";}
+				}
 				orderName += " - " + orderID;
 
 				//If there is no filter text or the filter text is in the order's name, add the order
@@ -467,8 +512,8 @@ let asr = {
 		if (!orderID) {return;}
 		base.disable("getOrderDataButton");
 
-		//Create the callback function that will display the information
-		let callback = function(response) {
+		//Create the onSuccessCallback function that will display the information
+		let onSuccessCallback = function(response) {
 
 			base.enable("getOrderDataButton");
 			
@@ -497,7 +542,7 @@ let asr = {
 				}
 
 				//Place the advertiser name in the customer field
-				base.nodeFromID("customer").value = asr.orders[orderID].advertiserName;
+				if (asr.orders[orderID].advertiserName) {base.nodeFromID("customer").value = asr.orders[orderID].advertiserName;}
 
 				//Hide the orders and show the line items
 				base.hide("dfpOrdersHeader");
@@ -510,15 +555,28 @@ let asr = {
 				asr.getTagImages();
 			}
 						
-			//If failure, simply output to the console for the time being
+			//If failure, simply output to the console for the time being and enable the submit button
 			else {
-				console.log('in failure');
+				console.log('in get order data failure');
 				console.log(response.data);
+				base.enable("getOrderDataButton");
 			}
 		}
 		
+		//If there was a problem connecting with the server, notify the user and enable the input field/button
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to get the line items and creative.");
+
+			console.log('in get order data failure');
+			console.log(response.data);
+			base.enable("getOrderDataButton");
+		}
+
 		//Make the request
-		base.asyncRequest(asr._getOrderDataURL, 'orderID=' + orderID, callback);
+		//CHECKED WITH FAIL
+		base.asyncRequest(asr._getOrderDataURL, 'orderID=' + orderID, onSuccessCallback, onFailCallback);
 	},
 
 	/**
@@ -534,7 +592,7 @@ let asr = {
 		base.disable("uploadBackgroundButton");
 
 		//Do nothing for now
-		let callback = function(response) {
+		let onSuccessCallback = function(response) {
 
 			//If successful, store the items, create the HTML options, and show the pages table
 			if (response.success) {
@@ -561,12 +619,84 @@ let asr = {
 			base.hide("uploadBackgroundDiv");
 			base.show("changeBackgroundButtonDiv");
 		}
-		
+
+		//If there was a problem connecting with the server, notify the user and enable the submit button
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to upload the PowerPoint background image.");
+
+			//Re-enable the submit button
+			base.enable("uploadBackgroundButton");
+		}
+
+		//Create the request object for the image raw data
+		//CHECKED WITH FAIL
 		let formData = new FormData();
 		formData.append('backgroundTitle', base.nodeFromID("newBackgroundTitle").value);
 		formData.append('backgroundFontColor', base.nodeFromID("newBackgroundFontColor").value.substring(1));
 		formData.append('backgroundImage', base.nodeFromID("newBackgroundImage").files[0]);
-		base.asyncRequest(asr._uploadBackgroundImageURL, formData, callback, true);
+		base.asyncRequest(asr._uploadBackgroundImageURL, formData, onSuccessCallback, onFailCallback, true);
+	},
+
+	setGetScreenshotsButtonStatus: function() {
+
+		//Enable the request screenshots button if:
+		//		- A customer name has been entered
+		//		- At least one page has been added
+		//		- There are no tags being processed
+		//		- There are no tags in the queue
+		if ((base.nodeFromID("customer").value != "") && 
+			(base.nodeFromID("pagesTable").rows.length > 0) && 
+			(asr._tagsBeingProcessed == 0) && 
+			(asr._queuedTags.length == 0)) {
+
+			base.enable("getScreenshotsButton");
+		}
+
+		//Otherwise, disable it
+		else {base.disable("getScreenshotsButton");}
+	},
+
+	/**
+	* Display a "problem communicating with the server" error message.
+	*
+	* The displayed message includes a link to open the contact form.
+	*
+	* If a "while" clause is returned, it is placed after the word "while" in the first line.
+	* Example: 	"There was difficulty communicating with the server."
+	* 			"There was difficulty communicating with the server while trying to get site sections."
+	*
+	* In the second example, "trying to get site sections" is passed. Including the word "while"
+	* is not necessary.
+	*
+	* @param {Integer} whileClause  	Description of the error to be placed after the word "while"
+	*/
+	showErrorMessage: function(whileClause) {
+
+		//If a "while" clause was passed, create the proper text
+		let whileText = "";
+		if (whileClause) {whileText = " while " + whileClause;}
+
+		//Build the error message and show it
+		let errorHTML = "There was difficulty communicating with the server" + whileText + ".<br/><br/>";
+		errorHTML += "Check your internet connection and try refreshing your browser.<br/><br/>";
+		errorHTML += "If the problem persists, please <a onclick='contactForm.reset(); contactFormDialog.open()'>Contact Us</a> us.";
+		base.showMessage(errorHTML, "A Problem has Occurred");
+	},
+
+	/**
+	* Enables all of the submit buttons on the page. This is useful for when the user refreshes the page.
+	* Firefox and Chrome do not re-enable the buttons if they were disabled by Javascript.
+	*/
+	enableSubmitButtons: function() {
+
+		base.enable("getMenuButton");
+		base.enable("domain");
+		base.enable("getTagImagesButton");
+		base.enable("getOrderDataButton");
+		base.enable("uploadBackgroundButton");
+		base.disable("getScreenshotsButton");
 	},
 
 	/**
