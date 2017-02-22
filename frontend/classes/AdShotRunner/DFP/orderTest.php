@@ -55,6 +55,25 @@ $statementBuilder->Where('status = :status AND isArchived = :isArchived')->Order
 $orderResults = $orderService->getOrdersByStatement($statementBuilder->ToStatement());
 
 
+$lineItemService = $dfpServices->get($session, LineItemService::class);
+    $lineItemWhereClause = "";
+    foreach ($orderResults->getResults() as $order) {
+        if ($lineItemWhereClause != "") {$lineItemWhereClause .= " OR ";}
+        $lineItemWhereClause .= "(orderID = " . $order->getId() . ")";
+    }
+    $lineItemWhereClause = "($lineItemWhereClause) AND status = 'READY'";
+    //echo "Line item Query: $lineItemWhereClause \n";
+     $statementBuilder = new StatementBuilder();
+   $statementBuilder->Where($lineItemWhereClause);
+    $lineItemResults = $lineItemService->getLineItemsByStatement($statementBuilder->ToStatement());
+    $ordersWithLineItems = [];
+    foreach ($lineItemResults->getResults() as $currentLineItem) {
+        $ordersWithLineItems[] = $currentLineItem->getOrderId();
+    }
+    $ordersWithLineItems = array_unique($ordersWithLineItems);
+    //print_r($ordersWithLineItems);
+
+
 //print_r($orderResults);
 
 // $companyService = $dfpServices->get($session, CompanyService::class);
@@ -101,25 +120,36 @@ $orderResults = $orderService->getOrdersByStatement($statementBuilder->ToStateme
     $finalOrders = [];
     //if (isset($orderResults->results)) {
         foreach ($orderResults->getResults() as $order) {
-          $finalOrders[$order->getId()] = ['name' => $order->getName(), 'notes' => $order->getNotes()];
+          if (in_array($order->getId(), $ordersWithLineItems)) {
+            //echo $order->getId() . " has line items \n";
+            $finalOrders[$order->getId()] = ['name' => $order->getName(), 'notes' => $order->getNotes()];
 
-          if (count($companyNames) > 0) {
-            $finalOrders[$order->getId()]['advertiserName'] = $companyNames[$order->getAdvertiserId()];
-            $finalOrders[$order->getId()]['agencyName'] = ($order->getAgencyId()) ? $companyNames[$order->getAgencyId()] : "";
+            if (count($companyNames) > 0) {
+              $finalOrders[$order->getId()]['advertiserName'] = $companyNames[$order->getAdvertiserId()];
+              $finalOrders[$order->getId()]['agencyName'] = ($order->getAgencyId()) ? $companyNames[$order->getAgencyId()] : "";
+            }
+          }
+          else {
+            //echo $order->getId() . " has no line items \n";
           }
         }
     //}
     //print_r($finalOrders);
-
+   // exit();
 
 $lineItemService = $dfpServices->get($session, LineItemService::class);
 
-$orderID = "180800017"; //"778532670";
+$orderID = "210376057"; //"210217177"; //"209058337"; //"189447817"; //"180872017"; //"180808537"; //"778532670";
 
       //Create the statement to select all line items for the passed order ID
     $statementBuilder = new StatementBuilder();
-    $statementBuilder->Where('orderId = ' . $orderID)->OrderBy('id ASC');
+    //$statementBuilder->Where('orderId = ' . $orderID)->OrderBy('id ASC');
+    // $statementBuilder->Where('orderID = :orderID AND status = :status')->WithBindVariableValue('orderID', $orderID)->WithBindVariableValue('status', "READY");
+
+    $statementBuilder->Where('orderID = :orderID')->WithBindVariableValue('orderID', $orderID);
+
     $lineItemResults = $lineItemService->getLineItemsByStatement($statementBuilder->ToStatement());
+    echo "Line item count: " . count($lineItemResults->getResults()) . "\n";
 
     //Store the line items by name => notes and separately store their IDs for LICA search
     $lineItemIDs = [];
@@ -144,7 +174,9 @@ $lineItemCreativeAssociationService = $dfpServices->get($session, LineItemCreati
 
     //Create the statement to select all LICAs for the passed line items
     $statementBuilder = new StatementBuilder();
-    $statementBuilder->Where("(" . $licaWhereClause . ")")
+    // $statementBuilder->Where("(" . $licaWhereClause . ")")
+    // ->OrderBy('lineItemId ASC, creativeId ASC');
+    $statementBuilder->Where("(" . $licaWhereClause . ") AND status = 'ACTIVE'")
     ->OrderBy('lineItemId ASC, creativeId ASC');
     $licaResults = $lineItemCreativeAssociationService->
                   getLineItemCreativeAssociationsByStatement(
@@ -173,25 +205,61 @@ $creativeService = $dfpServices->get($session, CreativeService::class);
     $statementBuilder->Where("(" . $creativeWhereClause . ")")->OrderBy('id ASC');
     $creativeResults = $creativeService->getCreativesByStatement($statementBuilder->ToStatement());
 
-print_r($creativeResults);exit;
+//print_r($creativeResults->getResults());
+//$creativeClass = get_class($creativeResults->getResults()[2]);
+//print_r(get_class_methods($creativeClass));
+//print_r($creativeResults->getResults()[2]->getCreativeTemplateVariableValues());
+//print_r($creativeResults->getResults()[2]->getCreativeTemplateVariableValues()[0]->getAsset()->getAssetUrl());
+//print_r(get_class_methods($creativeResults->getResults()[2]->getCreativeTemplateVariableValues()[0]->getAsset()));
 
-    //Output the creative
-    //if (isset($creativeResults->results)) {
+
+    if ($creativeResults->getResults()) {
         foreach ($creativeResults->getResults() as $creative) {
-          echo "Creative class: " . get_class($creative) . "\n";
-          echo "HTML exists: " . method_exists($creative, "getHtmlSnippet") . "\n";
-          echo "Expanded exists: " . method_exists($creative, "getExpandedSnippet") . "\n\n";
 
-$hasHTML = method_exists($creative, "getHtmlSnippet");
-$hasExpanded = method_exists($creative, "getExpandedSnippet");
+          echo "Creative class: " . get_class($creative) . "\n";
+          $classParts = explode("\\", get_class($creative));
+          echo array_pop($classParts) . "\n";
+
+          //DFP returns an array of different creative objects. In order to know
+          //what type of object each is, some reflection is necessary. For the time
+          //being, checking the methods is the clearest. In the future, using the
+          //class name might become prefer.
+          rable.
+        $createiveHasHTML = method_exists($creative, "getHtmlSnippet");
+        $creativeHasExpanded = method_exists($creative, "getExpandedSnippet");
+        $creativeHasPrimaryImageAsset = method_exists($creative, "getPrimaryImageAsset");
+        $creativeHasImageURL = method_exists($creative, "getImageURL");
+        $creativeHasVariableAsset = false;
+        $creativeVariableAssetURL = "";
+        if (method_exists($creative, "getCreativeTemplateVariableValues")) {
+          $templateVariables = $creative->getCreativeTemplateVariableValues();
+          foreach($templateVariables as $currentVariable) {
+            if (method_exists($currentVariable, "getAsset")) {
+              $creativeAsset = $currentVariable->getAsset();
+              if (method_exists($creativeAsset, "getAssetUrl")) {
+                $creativeHasVariableAsset = true;
+                $creativeVariableAssetURL = $creativeAsset->getAssetURL();
+              }
+            }
+          }
+        }
 
           $tag = "";
-          if ($hasExpanded && $creative->getExpandedSnippet()) {$tag = $creative->getExpandedSnippet();}
-          else if ($hasHTML && $creative->getHtmlSnippet()) {$tag = $creative->getHtmlSnippet();}
-          else if ($creative->getPrimaryImageAsset()) {$tag = "<img src='" . $creative->getPrimaryImageAsset()->getAssetUrl() . "' />";}
+          if ($creativeHasExpanded && $creative->getExpandedSnippet()) {$tag = $creative->getExpandedSnippet();}
+          else if ($createiveHasHTML && $creative->getHtmlSnippet()) {$tag = $creative->getHtmlSnippet();}
+          else if ($creativeHasPrimaryImageAsset && $creative->getPrimaryImageAsset()) {
+            $tag = "<img src='" . $creative->getPrimaryImageAsset()->getAssetUrl() . "' />";
+          }
+          else if ($creativeHasImageURL && $creative->getImageURL()) {
+            $tag = "<img src='" . $creative->getImageURL() . "' />";
+          }
+          else if ($creativeHasVariableAsset) {
+            $tag = "<img src='" . $creativeVariableAssetURL . "' />";
+          }
 
-          $creatives[$creative->getId()] = $tag;
+            $creatives[$creative->getId()] = $tag;
         }
-    //}
+    }
 
         print_r($creatives);
+

@@ -136,9 +136,6 @@ class DFPCommunicator {
 	*/
 	public function getOrders() {
 
-		//Get the DfpUser instantiated for this instance
-		//$user = $this->getDFPUser();
-
 		//Get the DfpSession instantiated for this instance and a services object
 		$dfpSession = $this->getDFPSession();
 		$dfpServices = new DfpServices();
@@ -154,6 +151,25 @@ class DFPCommunicator {
 		//Get the orders from DFP
 		$orderResults = $orderService->getOrdersByStatement($statementBuilder->ToStatement());
 
+		//Query DFP for all active line items for the orders.
+		//We only want to return orders with READY line items.
+		$lineItemService = $dfpServices->get($dfpSession, LineItemService::class);
+		$lineItemWhereClause = "";
+		foreach ($orderResults->getResults() as $order) {
+			if ($lineItemWhereClause != "") {$lineItemWhereClause .= " OR ";}
+			$lineItemWhereClause .= "(orderID = " . $order->getId() . ")";
+		}
+		$statementBuilder = new StatementBuilder();
+		$statementBuilder->Where("($lineItemWhereClause) AND status = 'READY'");
+		$lineItemResults = $lineItemService->getLineItemsByStatement($statementBuilder->ToStatement());
+
+		//Put all the ids of orders with READY line items into an array
+		$ordersWithREADYLineItems = [];
+		foreach ($lineItemResults->getResults() as $currentLineItem) {
+			$ordersWithREADYLineItems[] = $currentLineItem->getOrderId();
+		}
+		$ordersWithREADYLineItems = array_unique($ordersWithREADYLineItems);
+
 		//----------------------------------------------------------------//
 		//Some DFP clients do not allow access to their client companies
 		//information. In such a case, the DFP call will fail. 
@@ -162,49 +178,57 @@ class DFPCommunicator {
 		//----------------------------------------------------------------//
 		$companyService = $dfpServices->get($dfpSession, CompanyService::class);
 		$companyNames = [];
-		if (false) { //(USERDFPNETWORKCODE != 4408) {
-		try { 
+		if (USERDFPNETWORKCODE != 4408) {
+			try { 
 
-			//Build the where clause to get company information for the orders
-			$companyWhereClause = "";
-			if ($orderResults->getResults()) {
-				foreach ($orderResults->getResults() as $order) {
-				    if ($companyWhereClause != "") {$companyWhereClause .= " OR ";}
-				    $companyWhereClause .= "(companyId = " . $order->getAdvertiserId() . ")";
-				    if ($order->getAgencyId()) {$companyWhereClause .= " OR (companyId = " . $order->getAgencyId() . ")";}
-				 }
-			}
+				//Build the where clause to get company information for the orders
+				$companyWhereClause = "";
+				if ($orderResults->getResults()) {
+					foreach ($orderResults->getResults() as $order) {
 
-			//Create the statement to get all companies for the orders
-			if ($companyWhereClause != "") {
-				$statementBuilder = new StatementBuilder();
-				$statementBuilder->Where("(" . $companyWhereClause . ")");
-				$companyResults = $companyService->
-					              getCompaniesByStatement($statementBuilder->ToStatement());
-			}
+						//If the order has READY line items, add it to the clause
+						if (in_array($order->getId(), $ordersWithREADYLineItems)) {
+						    if ($companyWhereClause != "") {$companyWhereClause .= " OR ";}
+						    $companyWhereClause .= "(companyId = " . $order->getAdvertiserId() . ")";
+						    if ($order->getAgencyId()) {$companyWhereClause .= " OR (companyId = " . $order->getAgencyId() . ")";}
+						}
+					 }
+				}
 
-			//Format the company names
-			$companyNames = [];
-			if ($companyResults->getResults()) {
-			    foreach ($companyResults->getResults() as $company) {
-			    	$companyNames[$company->getId()] = $company->getName();
-			    }
+				//Create the statement to get all companies for the orders
+				if ($companyWhereClause != "") {
+					$statementBuilder = new StatementBuilder();
+					$statementBuilder->Where("(" . $companyWhereClause . ")");
+					$companyResults = $companyService->
+						              getCompaniesByStatement($statementBuilder->ToStatement());
+				}
+
+				//Format the company names
+				$companyNames = [];
+				if ($companyResults->getResults()) {
+				    foreach ($companyResults->getResults() as $company) {
+				    	$companyNames[$company->getId()] = $company->getName();
+				    }
+				}
+			} catch (Exception $e) {
+				//Fail silently
 			}
-		} catch (Exception $e) {
-			//Fail silently
-		}
 		}
 
 		//Format the returned orders
 		$finalOrders = [];
 		if ($orderResults->getResults()) {
 		    foreach ($orderResults->getResults() as $order) {
-				$finalOrders[$order->getId()] = ['name' => $order->getName(), 'notes' => $order->getNotes()];
 
-				if (count($companyNames) > 0) {
-					$finalOrders[$order->getId()]['advertiserName'] = $companyNames[$order->getAdvertiserId()];
-					$finalOrders[$order->getId()]['agencyName'] = ($order->getAgencyId()) ? $companyNames[$order->getAgencyId()] : "";
-		    	}
+				//Only include orders with READY line items
+				if (in_array($order->getId(), $ordersWithREADYLineItems)) {
+					$finalOrders[$order->getId()] = ['name' => $order->getName(), 'notes' => $order->getNotes()];
+
+					if (count($companyNames) > 0) {
+						$finalOrders[$order->getId()]['advertiserName'] = $companyNames[$order->getAdvertiserId()];
+						$finalOrders[$order->getId()]['agencyName'] = ($order->getAgencyId()) ? $companyNames[$order->getAgencyId()] : "";
+			    	}
+			    }
 		    }
 		}
 		return $finalOrders;
@@ -223,20 +247,16 @@ class DFPCommunicator {
 	*/
 	public function getLineItemsAndCreative($orderID, &$lineItems, &$creatives) {
 
-		//Get the DfpUser instantiated for this instance
-		//$user = $this->getDFPUser();
-
 		//Get the DfpSession instantiated for this instance and a services object
 		$dfpSession = $this->getDFPSession();
 		$dfpServices = new DfpServices();
 
 		//Get the line item service for the network
-		//$lineItemService = $user->GetService('LineItemService', 'v201608');
 		$lineItemService = $dfpServices->get($dfpSession, LineItemService::class);
 
 		//Create the statement to select all line items for the passed order ID
 		$statementBuilder = new StatementBuilder();
-		$statementBuilder->Where('orderId = ' . $orderID)->OrderBy('id ASC');
+		$statementBuilder->Where("orderId = $orderID AND status = 'READY'")->OrderBy('id ASC');
 		$lineItemResults = $lineItemService->getLineItemsByStatement($statementBuilder->ToStatement());
 
 		//Store the line items by name => notes and separately store their IDs for LICA search
@@ -249,7 +269,6 @@ class DFPCommunicator {
 		}
 
 		//Get the LICA service for the network
-		//$lineItemCreativeAssociationService = $user->GetService('LineItemCreativeAssociationService', 'v201608');
 		$lineItemCreativeAssociationService = $dfpServices->get($dfpSession, LineItemCreativeAssociationService::class);
 
 		//Build the where clause of line items to find LICAs for
@@ -261,8 +280,8 @@ class DFPCommunicator {
 
 		//Create the statement to select all LICAs for the passed line items
 		$statementBuilder = new StatementBuilder();
-		$statementBuilder->Where("(" . $licaWhereClause . ")")
-		->OrderBy('lineItemId ASC, creativeId ASC');
+		$statementBuilder->Where("($licaWhereClause) AND status = 'ACTIVE'")
+						 ->OrderBy('lineItemId ASC, creativeId ASC');
 		$licaResults = $lineItemCreativeAssociationService->
 		              getLineItemCreativeAssociationsByStatement(
 		              $statementBuilder->ToStatement());
@@ -296,19 +315,48 @@ class DFPCommunicator {
 		if ($creativeResults->getResults()) {
 		    foreach ($creativeResults->getResults() as $creative) {
 
-		    	//Check which methods the object has
-				$createiveHasHTML = method_exists($creative, "getHtmlSnippet");
-				$creativeHasExpanded = method_exists($creative, "getExpandedSnippet");
-				$creativeHasImageAsset = method_exists($creative, "getPrimaryImageAsset");
+		    	//Get the creative object's class
+		    	//Get the full class, separate it by \, take the last part and make it uppercase
+		    	//This will remove the full class path and return only the class name in uppercase
+		    	$creativeClass = strtoupper(array_pop(explode("\\", get_class($creative))));
 
+		    	//Based on the creative class type, get the appropriate tag
 		    	$tag = "";
-		    	if ($creativeHasExpanded && $creative->getExpandedSnippet()) {$tag = $creative->getExpandedSnippet();}
-		    	else if ($createiveHasHTML && $creative->getHtmlSnippet()) {$tag = $creative->getHtmlSnippet();}
-		    	else if ($creativeHasImageAsset && $creative->getPrimaryImageAsset()) {
-		    		$tag = "<img src='" . $creative->getPrimaryImageAsset()->getAssetUrl() . "' />";
+		    	switch ($creativeClass) {
+		    		case "IMAGECREATIVE":
+		    			$tag = "<img src='" . $creative->getPrimaryImageAsset()->getAssetUrl() . "' />";
+		    			break;
+		    		case "THIRDPARTYCREATIVE":
+		    			$htmlSnippet = $creative->getSnippet();
+		    			$expandedSnippet = $creative->getExpandedSnippet();
+		    			$tag = ($expandedSnippet) ? $expandedSnippet : $htmlSnippet;
+		    			break;
+		    		case "CUSTOMCREATIVE":
+						$tag = $creative->getHtmlSnippet();
+		    			break;
+		    		case "TEMPLATECREATIVE":
+						$templateVariables = $creative->getCreativeTemplateVariableValues();
+						foreach($templateVariables as $currentVariable) {
+							if (method_exists($currentVariable, "getAsset")) {
+								$tag = "<img src='" . $currentVariable->getAsset()->getAssetURL() . "' />";
+							}
+						}
+		    			break;
+		    		case "INTERNALREDIRECTCREATIVE":
+		    			$tag = "<img src='" . $creative->getInternalRedirectUrl() . "' />";
+		    			break;
+		    		case "FLASHCREATIVE":
+		    			$tag = "<img src='" . $creative->getFallbackImageAsset()->getAssetUrl() . "' />";
+		    			break;
+		    		case "IMAGEREDIRECTCREATIVE":
+		    			$tag = "<img src='" . $creative->getImageUrl() . "' />";
+		    			break;
 		    	}
 
-		        if ($tag != "") {$creatives[$creative->getId()] = $tag;}
+
+		    	//If a tag/image was found, include it in the final list.
+		    	//If not, ignore it for now (i.e. the UnsupportedCreative type)
+		        if ($tag) {$creatives[$creative->getId()] = $tag;}
 		    }
 		}
 	}

@@ -74,7 +74,7 @@ let campaign = {
 		
 		//Make the request
 		//CHECKED WITH FAIL
-		base.asyncRequest(campaign._campaignJobURL, '?jobID=' + campaign.jobID, onSuccessCallback, onFailureCallback);
+		base.asyncRequest(campaign._campaignJobURL, 'jobID=' + campaign.jobID, onSuccessCallback, onFailureCallback);
 	},
 
 }
