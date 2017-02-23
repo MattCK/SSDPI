@@ -5,7 +5,7 @@ import java.util.Random;
 class TemplateCreator {
 
 	final private static int POINTSPERPIXEL = 9525;	//Microsoft defined points per pixel in a PowerPoint
-	final private static String OUTLINECOLOR = "ffffff";	//set outline color to black
+	final private static String OUTLINECOLOR = "000000";	//set outline color to black
 	final private static int OUTLINEWIDTH = 9525;	//set outline color to one pixel as defined by points per pixel
 	
 	public static String background() {

@@ -71,6 +71,7 @@ public class AdShotter3 {
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
 	final private static int PAGETIMEOUT = 12000;			//in milliseconds
 	final private static int TAGTIMEOUT = 4000;				//in milliseconds
+	final private static int TAGALLOWFINISHTIME = 15000;	//in milliseconds
 	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 11000;		//in milliseconds
@@ -432,6 +433,11 @@ public class AdShotter3 {
 //			}
 			consoleLog("Done injecting JS.");
 		}
+		else {
+			//this is to allow ads to finish their play loops
+			//ensuring the tag images are taken at a time when the ads look good.
+			pause(TAGALLOWFINISHTIME);
+		}
 		
 		//this can be uncommented to test how the javascript ran
 		/*System.out.print("Javascript run and ads inserted. Press Enter to continue");
@@ -521,7 +527,8 @@ public class AdShotter3 {
 		chromePrefs.put("profile.managed_default_content_settings.cookies", new Integer(2));
 		driverOptions.setExperimentalOption("prefs", chromePrefs);
 		//the below option freezes chrome when injecting the ad injector
-		//driverOptions.addArguments("--disable-web-security");
+		//driverOptions.addArguments("disable-web-security");
+		//driverOptions.addArguments("user-data-dir=/tmp/chromeprofile");
 		
 		//Set the proxy to use. If it is not empty, set the proxy capability3
 		String proxyDetails = getProxyDetails();

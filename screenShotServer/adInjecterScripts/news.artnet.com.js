@@ -51,7 +51,7 @@ for (tagIndex in tags) {
 //Get the div holding the banner ad
 //this selector works for mobile and desktop
 
-let bannerAdDiv = document.querySelector("li div.artnet-ads-ad.widget-1.widget-odd.widget");
+let bannerAdDiv = document.querySelector("section div ul li div.artnet-ads-ad.widget-1.widget-odd.widget");
 let largeMobileAd = document.querySelector("div.embedded-ad.visible-sm.visible-xs.ad-loaded");
 
 
