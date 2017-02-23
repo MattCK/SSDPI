@@ -45,163 +45,192 @@ for (tagIndex in tags) {
     if ((currentTag.width == 300) && (currentTag.height == 250)) {
     	found300x250 = true;
     }
+     if ((currentTag.width == 300) && (currentTag.height == 600)) {
+    	found300x600 = true;
+    }
 
 }
 
 //Get the div holding the banner ad
 //this selector works for mobile and desktop
 
-let bannerAdDiv = document.querySelector("section div ul li div.artnet-ads-ad.widget-1.widget-odd.widget");
+let bannerAdDiv = document.getElementById("content").querySelector("li div.artnet-ads-ad.widget-1.widget-odd.widget");
 let largeMobileAd = document.querySelector("div.embedded-ad.visible-sm.visible-xs.ad-loaded");
+let halfPagePutDiv = document.querySelector("div.sidebar").querySelector("li div.artnet-ads-ad.widget-1.widget-odd.widget");
+let halfPageRemoveDiv = document.querySelector("div.sidebar").querySelector("li.artnet-ads-ad.widget-1.widget-odd.widget-container.piklist-universal-widget.sticky-container");
 
+//only run exceptions if any creative is present
+if (tags.length > 0){
+	//Run exception on desktop browsers (no mobile)
+	if ((!navigator.userAgent.toLowerCase().includes("mobile"))) {
 
-//Run exception on desktop browsers (no mobile)
-if ((!navigator.userAgent.toLowerCase().includes("mobile"))) {
+		//////////////////////////// Banner Ad Desktop ///////////////////////////////
 
-	//////////////////////////// Banner Ad Desktop ///////////////////////////////
+		//If a 970x250 tag has been passed, replace the header ad with a 728x90 div
+		//and then place a second div inside of the first for the ad injecter to
+		// replace
 
-	//If a 970x250 tag has been passed, replace the header ad with a 728x90 div
-	//and then place a second div inside of the first for the ad injecter to
-	// replace
+		if (found994x250) {
 
-	if (found994x250) {
+			//remove all of the elements children
+			while (bannerAdDiv.firstChild) {
+				bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+			}
 
-		//remove all of the elements children
-		while (bannerAdDiv.firstChild) {
-			bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+			//Set the banner ads size, margin, and visibility so that it is centered
+			//and placed correctly.
+			bannerAdDiv.style.visibility = 'visible';
+			bannerAdDiv.style.width = '994px';
+			bannerAdDiv.style.height = '250px';
+			bannerAdDiv.style.margin = "0 auto";
+			bannerAdDiv.style.marginBottom = "10px";
+
+			//Create the ad filler div which will be replaced by the ad injecter
+			//and add it inside the banner ad div
+			let adFillerDiv =  document.createElement('div');
+			adFillerDiv.style.floodOpacity = "0.9898";
+			adFillerDiv.style.width = '994px';
+			adFillerDiv.style.height = '250px';
+			bannerAdDiv.appendChild(adFillerDiv);
 		}
 
-		//Set the banner ads size, margin, and visibility so that it is centered
-		//and placed correctly.
-		bannerAdDiv.style.visibility = 'visible';
-		bannerAdDiv.style.width = '994px';
-		bannerAdDiv.style.height = '250px';
-		bannerAdDiv.style.margin = "0 auto";
-		bannerAdDiv.style.marginBottom = "10px";
+		if (found970x250) {
 
-		//Create the ad filler div which will be replaced by the ad injecter
-		//and add it inside the banner ad div
-		let adFillerDiv =  document.createElement('div');
-		adFillerDiv.style.floodOpacity = "0.9898";
-		adFillerDiv.style.width = '994px';
-		adFillerDiv.style.height = '250px';
-		bannerAdDiv.appendChild(adFillerDiv);
+			//remove all of the elements children
+			while (bannerAdDiv.firstChild) {
+				bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+			}
+
+			//Set the banner ads size, margin, and visibility so that it is centered
+			//and placed correctly.
+			bannerAdDiv.style.visibility = 'visible';
+			bannerAdDiv.style.width = '970px';
+			bannerAdDiv.style.height = '250px';
+			bannerAdDiv.style.margin = "0 auto";
+			bannerAdDiv.style.marginBottom = "10px";
+
+			//Create the ad filler div which will be replaced by the ad injecter
+			//and add it inside the banner ad div
+			let adFillerDiv =  document.createElement('div');
+			adFillerDiv.style.floodOpacity = "0.9898";
+			adFillerDiv.style.width = '970px';
+			adFillerDiv.style.height = '250px';
+			bannerAdDiv.appendChild(adFillerDiv);
+		}
+
+		//these shrink the ads for the individual creative option
+		//so that the wrong ad is not running next to the right ad
+
+		if (!found300x600){
+			while (halfPageRemoveDiv.firstChild) {
+				halfPageRemoveDiv.removeChild(halfPageRemoveDiv.firstChild);
+			}
+			//halfPageRemoveDiv.style.height = '0px';
+			if(halfPageRemoveDiv && halfPageRemoveDiv.parentElement) {
+            	halfPageRemoveDiv.parentElement.removeChild(halfPageRemoveDiv);
+        	}
+
+
+		}
+		if (!found994x250 && !found970x250){
+			while (bannerAdDiv.firstChild) {
+				bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+			}
+			bannerAdDiv.style.height = '0px';
+
+		}
+
 	}
 
-	if (found970x250) {
+	//Run exception on mobile
+	if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
 
-		//remove all of the elements children
-		while (bannerAdDiv.firstChild) {
-			bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+		//If a 320x50 tag has been passed, replace the header ad with a 320x50 div
+		//and then place a second div inside of the first for the ad injecter to
+		// replace
+		if (found320x50) {
+
+			//Remove all of the elements children
+			while (bannerAdDiv.firstChild) {
+				bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+			}
+
+			//Set the banner ads size, margin, and visibility so that it is centered
+			//and placed correctly.
+			bannerAdDiv.style.visibility = 'visible';
+			bannerAdDiv.style.width = '320px';
+			bannerAdDiv.style.height = '50px';
+			bannerAdDiv.style.margin = "0 auto";
+			bannerAdDiv.style.marginBottom = "10px";
+			bannerAdDiv.style.martinTop = "10px"
+
+			//Create the ad filler div which will be replaced by the ad injecter
+			//and add it inside the banner ad div
+			let adFillerDiv =  document.createElement('div');
+			adFillerDiv.style.floodOpacity = "0.9898";
+			adFillerDiv.style.width = '320px';
+			adFillerDiv.style.height = '50px';
+			bannerAdDiv.appendChild(adFillerDiv);
 		}
 
-		//Set the banner ads size, margin, and visibility so that it is centered
-		//and placed correctly.
-		bannerAdDiv.style.visibility = 'visible';
-		bannerAdDiv.style.width = '970px';
-		bannerAdDiv.style.height = '250px';
-		bannerAdDiv.style.margin = "0 auto";
-		bannerAdDiv.style.marginBottom = "10px";
+		//////////////////////////// large mobile Ad Desktop ///////////////////////////////
 
-		//Create the ad filler div which will be replaced by the ad injecter
-		//and add it inside the banner ad div
-		let adFillerDiv =  document.createElement('div');
-		adFillerDiv.style.floodOpacity = "0.9898";
-		adFillerDiv.style.width = '970px';
-		adFillerDiv.style.height = '250px';
-		bannerAdDiv.appendChild(adFillerDiv);
-	}
+		//If there is a side column, a 300x250 tag, BUT NOT a 300x480, 
+		//replace the ad element with a filler
+		if ((largeMobileAd) && (found300x250) && (!found300x480)) {
 
-}
+			console.log("Column and 300x50");
+			//remove all of the elements children
+			while (largeMobileAd.firstChild) {
+				largeMobileAd.removeChild(largeMobileAd.firstChild);
+			}
 
-//Run exception on mobile
-if ((navigator.userAgent.toLowerCase().includes("mobile"))) {
+			//Set the banner ads size, margin, and visibility so that it is centered
+			//and placed correctly.
+			largeMobileAd.style.visibility = 'visible';
+			largeMobileAd.style.width = '300px';
+			largeMobileAd.style.height = '250px';
+			largeMobileAd.style.margin = "0 auto";
+			//largeMobileAd.style.marginLeft = "20px";
+			largeMobileAd.parentElement.style.marginLeft = "20px";
+			//largeMobileAd.style.marginBottom = "10px";
 
-	//If a 320x50 tag has been passed, replace the header ad with a 320x50 div
-	//and then place a second div inside of the first for the ad injecter to
-	// replace
-	if (found320x50) {
-
-		//Remove all of the elements children
-		while (bannerAdDiv.firstChild) {
-			bannerAdDiv.removeChild(bannerAdDiv.firstChild);
+			//Create the ad filler div which will be replaced by the ad injecter
+			//and add it inside the banner ad div
+			let adFillerDiv =  document.createElement('div');
+			adFillerDiv.style.floodOpacity = "0.9898";
+			adFillerDiv.style.width = '300px';
+			adFillerDiv.style.height = '250px';
+			largeMobileAd.appendChild(adFillerDiv);
 		}
 
-		//Set the banner ads size, margin, and visibility so that it is centered
-		//and placed correctly.
-		bannerAdDiv.style.visibility = 'visible';
-		bannerAdDiv.style.width = '320px';
-		bannerAdDiv.style.height = '50px';
-		bannerAdDiv.style.margin = "0 auto";
-		bannerAdDiv.style.marginBottom = "10px";
-		bannerAdDiv.style.martinTop = "10px"
+		//If there is a side column, a 300x480 tag, BUT NOT a 300x250, 
+		//replace the ad element with a filler
+		else if ((largeMobileAd) && (found300x480) && (!found300x250)) {
 
-		//Create the ad filler div which will be replaced by the ad injecter
-		//and add it inside the banner ad div
-		let adFillerDiv =  document.createElement('div');
-		adFillerDiv.style.floodOpacity = "0.9898";
-		adFillerDiv.style.width = '320px';
-		adFillerDiv.style.height = '50px';
-		bannerAdDiv.appendChild(adFillerDiv);
-	}
+			//remove all of the elements children
+			while (largeMobileAd.firstChild) {
+				largeMobileAd.removeChild(largeMobileAd.firstChild);
+			}
 
-	//////////////////////////// large mobile Ad Desktop ///////////////////////////////
+			//Set the banner ads size, margin, and visibility so that it is centered
+			//and placed correctly.
+			largeMobileAd.style.visibility = 'visible';
+			largeMobileAd.style.width = '300px';
+			largeMobileAd.style.height = '480px';
+			largeMobileAd.style.margin = "0 auto";
+			//largeMobileAd.style.marginLeft = "20px";
+			//largeMobileAd.parentElement.style.marginLeft = "20px";
+			//largeMobileAd.style.marginBottom = "10px";
 
-	//If there is a side column, a 300x250 tag, BUT NOT a 300x480, 
-	//replace the ad element with a filler
-	if ((largeMobileAd) && (found300x250) && (!found300x480)) {
-
-		console.log("Column and 300x50");
-		//remove all of the elements children
-		while (largeMobileAd.firstChild) {
-			largeMobileAd.removeChild(largeMobileAd.firstChild);
+			//Create the ad filler div which will be replaced by the ad injecter
+			//and add it inside the banner ad div
+			let adFillerDiv =  document.createElement('div');
+			adFillerDiv.style.floodOpacity = "0.9898";
+			adFillerDiv.style.width = '300px';
+			adFillerDiv.style.height = '480px';
+			largeMobileAd.appendChild(adFillerDiv);
 		}
-
-		//Set the banner ads size, margin, and visibility so that it is centered
-		//and placed correctly.
-		largeMobileAd.style.visibility = 'visible';
-		largeMobileAd.style.width = '300px';
-		largeMobileAd.style.height = '250px';
-		largeMobileAd.style.margin = "0 auto";
-		//largeMobileAd.style.marginLeft = "20px";
-		largeMobileAd.parentElement.style.marginLeft = "20px";
-		//largeMobileAd.style.marginBottom = "10px";
-
-		//Create the ad filler div which will be replaced by the ad injecter
-		//and add it inside the banner ad div
-		let adFillerDiv =  document.createElement('div');
-		adFillerDiv.style.floodOpacity = "0.9898";
-		adFillerDiv.style.width = '300px';
-		adFillerDiv.style.height = '250px';
-		largeMobileAd.appendChild(adFillerDiv);
-	}
-
-	//If there is a side column, a 300x480 tag, BUT NOT a 300x250, 
-	//replace the ad element with a filler
-	else if ((largeMobileAd) && (found300x480) && (!found300x250)) {
-
-		//remove all of the elements children
-		while (largeMobileAd.firstChild) {
-			largeMobileAd.removeChild(largeMobileAd.firstChild);
-		}
-
-		//Set the banner ads size, margin, and visibility so that it is centered
-		//and placed correctly.
-		largeMobileAd.style.visibility = 'visible';
-		largeMobileAd.style.width = '300px';
-		largeMobileAd.style.height = '480px';
-		largeMobileAd.style.margin = "0 auto";
-		//largeMobileAd.style.marginLeft = "20px";
-		//largeMobileAd.parentElement.style.marginLeft = "20px";
-		//largeMobileAd.style.marginBottom = "10px";
-
-		//Create the ad filler div which will be replaced by the ad injecter
-		//and add it inside the banner ad div
-		let adFillerDiv =  document.createElement('div');
-		adFillerDiv.style.floodOpacity = "0.9898";
-		adFillerDiv.style.width = '300px';
-		adFillerDiv.style.height = '480px';
-		largeMobileAd.appendChild(adFillerDiv);
 	}
 }
 
