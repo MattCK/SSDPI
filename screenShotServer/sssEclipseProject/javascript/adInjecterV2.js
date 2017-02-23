@@ -1,10 +1,48 @@
 /**
-*	----------------------------------- AdInjecter ------------------------------------
+* -----------------------------------------------------------------------------------
+* ----------------------------------- AdInjecter ------------------------------------
+* -----------------------------------------------------------------------------------
 *	
-*	This AdInjecter script inserts creative images in the running page while removing
-*	pop-up ads and overlays. 
+* This AdInjecter script inserts creative images in the running page while removing
+* pop-up ads and overlays. 
+* 
+* The script is designed to return a JSON response to PhantomJS.
 *
 */
+
+//---------------------------------------------------------------------------------------
+//------------------------------------ Classes ------------------------------------------
+//---------------------------------------------------------------------------------------
+/**
+* The Creative class stores the basic information for an ad creative image. 
+*
+* It contains the creative unique ID, image URL, width and height in pixels,
+* and display priority.
+*/
+class Creative {
+
+	/**
+	* Initializes the Creative with its ID, image URL, width, height, and priority.
+	*
+	* @param {Number} 	id  		Unique ID for the creative
+	* @param {String} 	imageURL  	URL to the creative image
+	* @param {Number} 	width  		Width of the creative in pixels
+	* @param {Number} 	height  	Height of the creative in pixels
+	* @param {Number} 	priority  	Display priority for the creative (Lower numbers displayed first)
+	*/
+	constructor(id, imageURL, width, height, priority) {
+		this._id = id;
+		this._imageURL = imageURL;
+		this._width = width;
+		this._height = height;
+		this._priority = priority;
+	}
+
+	/**
+	* @return {Number}	Creative ID
+	*/	
+	getID() {return this._id;}
+}
 
 
 /**

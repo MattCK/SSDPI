@@ -50,7 +50,7 @@ public class TagImager implements Runnable {
 			String imageFilename = adShotEntry.getKey() + ".png";
 			try {
 				saveImageAsPNG(adShotEntry.getValue().image(), ASRProperties.pathForTemporaryFiles() + imageFilename);
-				FileStorageClient.saveFile(ASRProperties.containerForTagImages(), 
+				FileStorageClient.saveFile(ASRProperties.containerForCreativeImages(), 
 										   ASRProperties.pathForTemporaryFiles() + imageFilename, imageFilename);
 				
 				//Delete the local file

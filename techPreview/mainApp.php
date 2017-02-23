@@ -28,6 +28,9 @@ $backgroundFilename = $defaultBackground->getFilename();
 $backgroundThumbnailFilename = $defaultBackground->getThumbnailFilename();
 $backgroundURL = "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() . "/thumbnails/" . $backgroundThumbnailFilename;
 
+//If the user has already ran a campaign during this session, show the last campaign domain
+$campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDomain'] : "";
+
 //If the user has a DFP network code, get their orders
 $orders = null;
 if (USERDFPNETWORKCODE) {
@@ -152,7 +155,7 @@ if (USERDFPNETWORKCODE) {
 		<h2 id="campaignPagesHeader">Campaign Pages</h2>
 		<div id="domainInputDiv" class="section">
 			<div class="textFieldName">Publisher Site:</div>
-			<input id="domain" name="domain" type="text">
+			<input id="domain" name="domain" type="text" value="<?PHP echo $campaignDomain ?>">
 			<input class="button-tiny" id="getMenuButton" type="button" value="Go!" onclick="asr.getMenu()">
 			<img helpIcon="" id="domainInputHelpIcon" class="helpIcon" src="images/helpIcon.png" />
 			<div class="problemLinkDiv">
@@ -245,7 +248,7 @@ let contactFormDialog = null;
 $(function() {
 
 	//Setup the paths in the ASR javascript object to the tag and powerpoint background images
-	asr.tagImagesURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForTagImages() ?>/";
+	asr.tagImagesURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForCreativeImages() ?>/";
 	asr.powerPointBackgroundsURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() ?>/";
 
 	//Enable all of the submit buttons in case they were disabled and the user did a refresh

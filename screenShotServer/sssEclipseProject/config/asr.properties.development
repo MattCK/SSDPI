@@ -15,7 +15,7 @@ containerForCampaignJobs = asr-development/campaignjobs
 containerForPowerPoints = asr-development/powerpoints
 containerForPowerPointBackgrounds = asr-development/powerpointbackgrounds
 containerForScreenshots = asr-development/screenshots
-containerForTagImages = asr-development/tagimages
+containerForCreativeImages = asr-development/creativeimages
 containerForTagPages = asr-development/tagpages
 containerForTagTexts = asr-development/tagtexts
 

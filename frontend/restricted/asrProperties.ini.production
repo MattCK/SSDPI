@@ -41,6 +41,6 @@ campaignJobs = asr-production/campaignjobs
 powerPoints = asr-production/powerpoints
 powerPointBackgrounds = asr-production/powerpointbackgrounds
 screenshots = asr-production/screenshots
-tagImages = asr-production/tagimages
+creativeimages = asr-production/creativeimages
 tagPages = asr-production/tagpages
 tagTexts = asr-production/tagtexts

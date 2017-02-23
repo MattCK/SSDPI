@@ -44,7 +44,7 @@ public class ASRProperties {
 	public static String containerForPowerPoints() {return getProperties().getProperty("containerForPowerPoints");}
 	public static String containerForPowerPointBackgrounds() {return getProperties().getProperty("containerForPowerPointBackgrounds");}
 	public static String containerForScreenshots() {return getProperties().getProperty("containerForScreenshots");}
-	public static String containerForTagImages() {return getProperties().getProperty("containerForTagImages");}
+	public static String containerForCreativeImages() {return getProperties().getProperty("containerForCreativeImages");}
 	public static String containerForTagPages() {return getProperties().getProperty("containerForTagPages");}
 	public static String containerForTagTexts() {return getProperties().getProperty("containerForTagTexts");}
 

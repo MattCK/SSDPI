@@ -22,7 +22,7 @@ $fileName = $_POST['imageID'] . ".png";
 imagepng(imagecreatefromstring(file_get_contents($_FILES['image']['tmp_name'])), RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 
 //Store the image
-FileStorageClient::saveFile(ASRProperties::containerForTagImages(), RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
+FileStorageClient::saveFile(ASRProperties::containerForCreativeImages(), RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
 unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 
 echo "{}"; return;

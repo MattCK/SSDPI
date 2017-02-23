@@ -49,7 +49,7 @@ class ASRProperties {
 	public static function containerForPowerPoints() {return (self::getProperties())['storageContainers']['powerPoints'];}
 	public static function containerForPowerPointBackgrounds() {return (self::getProperties())['storageContainers']['powerPointBackgrounds'];}
 	public static function containerForScreenshots() {return (self::getProperties())['storageContainers']['screenshots'];}
-	public static function containerForTagImages() {return (self::getProperties())['storageContainers']['tagImages'];}
+	public static function containerForCreativeImages() {return (self::getProperties())['storageContainers']['creativeimages'];}
 	public static function containerForTagPages() {return (self::getProperties())['storageContainers']['tagPages'];}
 	public static function containerForTagTexts() {return (self::getProperties())['storageContainers']['tagTexts'];}
 

@@ -25,7 +25,12 @@ $domainMenuGrabber = new MenuGrabber();
 $domainMenu = $domainMenuGrabber->getBestDomainMenu($_REQUEST['domain']);
 
 //If a menu was returned, return it
-if (count($domainMenu) > 0) {echo createJSONResponse(true, "Domain found", $domainMenu);}
+//Store the domain in the session variable so it can be shown to the user
+//on the next campaign
+if (count($domainMenu) > 0) {
+	$_SESSION['lastCampaignDomain'] = $_REQUEST['domain'];
+	echo createJSONResponse(true, "Domain found", $domainMenu);
+}
 
 //Otherwise check to see if the domain is bad
 else {

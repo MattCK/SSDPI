@@ -537,7 +537,17 @@ let asr = {
 				//Put the line items in the line items div
 				for (let lineItemName in asr._lineItems) {
 					if (asr._lineItems.hasOwnProperty(lineItemName)) {
-						base.nodeFromID("lineItemsDiv").innerHTML += "<strong>" + lineItemName + " - </strong>" + asr._lineItems[lineItemName] + "<br><br>";
+
+						//If there is already a line item in the div, add breaks
+						if (base.nodeFromID("lineItemsDiv").innerHTML != "") {base.nodeFromID("lineItemsDiv").innerHTML += "<br><br>";}
+
+						//Add the line item name
+						base.nodeFromID("lineItemsDiv").innerHTML += "<strong>" + lineItemName + " </strong>";
+
+						//If a description was included, add it as well
+						if (asr._lineItems[lineItemName]) {
+							base.nodeFromID("lineItemsDiv").innerHTML += " - " + asr._lineItems[lineItemName];
+						}
 					}
 				}
 

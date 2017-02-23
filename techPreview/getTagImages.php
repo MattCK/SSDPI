@@ -42,7 +42,7 @@ foreach ($_POST['tags'] as $currentID => $currentTag) {
 		//Store the image
 		//echo ASRProperties::containerForTagPages() . "\n";
 		//echo "Path: " . RESTRICTEDPATH . 'temporaryFiles/' . $fileName . "\n";
-		FileStorageClient::saveFile(ASRProperties::containerForTagImages(), RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
+		FileStorageClient::saveFile(ASRProperties::containerForCreativeImages(), RESTRICTEDPATH . 'temporaryFiles/' . $fileName, $fileName);
 		unlink(RESTRICTEDPATH . 'temporaryFiles/' . $fileName);
 	}
 
