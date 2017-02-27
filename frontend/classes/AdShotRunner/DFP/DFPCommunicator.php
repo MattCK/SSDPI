@@ -178,7 +178,7 @@ class DFPCommunicator {
 		//----------------------------------------------------------------//
 		$companyService = $dfpServices->get($dfpSession, CompanyService::class);
 		$companyNames = [];
-		if (USERDFPNETWORKCODE != 4408) {
+		if (true) { //(USERDFPNETWORKCODE != 4408) {
 			try { 
 
 				//Build the where clause to get company information for the orders
