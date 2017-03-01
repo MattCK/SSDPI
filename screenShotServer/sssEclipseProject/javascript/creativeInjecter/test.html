@@ -1,0 +1,50 @@
+<html><head>
+	
+	<script type="text/javascript" src="creativeInjecter.js"></script>
+
+</head><body style="margin: 0px">
+<div style="z-index: 20; position: fixed; width: 901px; height: 301px; top: 0; left: 0">Should be fixed hidden</div>
+<div style="z-index: 20; position: fixed; width: 401px; height: 701px; top: 0; left: 0">Should be fixed hidden</div>
+
+<div>
+	<div style="margin: 40px;">
+		<div style="margin: 55px;">
+			<div id="testElement" style="margin: 1px 2px 3px 4px;
+										 z-index: 10;
+										 position: fixed;
+										 flood-opacity: 0.9898;">
+				Look at Me!!!
+			</div>
+			<div style="margin: 100px">
+				<div id="smallContainingDiv" name="smallContainingDiv" style="margin:20px; width: 100px; height: 100px;">
+					<iframe name="testIFrame" id="testIFrame" width="500px" height="300px" style="border: 0px" src="testIframe.html"></iframe>
+				</div>
+			</div>
+			<div style="margin: 100px">
+				<div style="margin:20px">
+					<iframe name="sameSizeIFrame" id="sameSizeIFrame" width="400px" height="200px" style="border: 0px" src="testSameSizeIFrame.html"></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="hideAdTestDiv" style="border: 1px solid blue;">
+		<div style="margin: 20px">
+			Below should be hidden
+				<div style="width: 1000px; height: 300px border: 4px solid purple;">
+					<div style="width: 1000px; height: 300px; border: 4px solid purple">
+						<iframe width="1000px" height="300px" style="border: 4px solid purple" src="testAdHideIFrame.html"></iframe>
+					</div>
+				</div>
+
+		</div>
+
+	</div>
+
+</div>
+
+
+
+
+
+</body></html>
