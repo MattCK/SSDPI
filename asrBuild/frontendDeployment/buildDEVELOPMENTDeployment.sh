@@ -47,13 +47,13 @@ rm ${BUILD_FOLDER}/restricted/${DEVELOPMENT_PROPERTIES_FILE}
 #Place all the files in a zip
 echo Compressing files into zip. Filename: $ZIP_FILENAME
 cd ${BUILD_FOLDER}
-zip -rq ${ZIP_FILENAME} * .*
+zip ${ZIP_FILENAME} -qr .
 mv ${ZIP_FILENAME} ../.
 cd ../
 
 #Remove the temporary folder
 #echo Removing build folder...
-#rm -rf ${BUILD_FOLDER}
+rm -rf ${BUILD_FOLDER}
 
 #State the file
 echo
