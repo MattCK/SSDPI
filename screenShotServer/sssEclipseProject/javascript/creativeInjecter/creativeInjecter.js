@@ -131,7 +131,14 @@ class CreativeGroup {
 	* Initializes the set to store the Creatives
 	*/
 	constructor() {
+
+		//Creat the set to hold all the creatives
 		this._creatives = new Set();
+
+		//Create the map to mark all the creatives that were injected
+		//and the locations they were injected. THe keys should be a 
+		//subset of or equivalent to _creatives
+		this._injectedCreatives = new Map();
 	}
 
 	/**
@@ -166,17 +173,22 @@ class CreativeGroup {
 	}
 
 	/**
-	* Returns true if the instance contains a creative with the passed dimensions
+	* Returns true if the instance contains a Creative with the passed dimensions
 	* and false otherwise
 	*
-	* @param {Integer} 	width	Width of to check creatives against  	
-	* @param {Integer} 	height	Height of to check creatives against  	
+	* @param {Integer} 	width	Width of to check creatives against (must be greater than 0)  	
+	* @param {Integer} 	height	Height of to check creatives against (must be greater than 0)  	
+	* @return {Boolean}			True if a Creative of the dimensions exists, otherwise false
 	*/
 	hasCreativeWithDimensions(width, height) {
 		
+		//If any of the arguments are missing, throw an error
+		if ((width == null) || (height == null)) {
+				throw "CreativeGroup.hasCreativeWithDimensions: missing argument";
+		}
+
 		//Loop through the Creatives and return true if any match the passed width and height
 		for (let currentCreative of this._creatives) {
-
 			if ((currentCreative.width() == width) && (currentCreative.height() == height)) {
 				return true;
 			}
@@ -187,9 +199,84 @@ class CreativeGroup {
 	}
 
 	/**
+	* Returns the Creative of the passed dimensions with the highest priority (lowest number)
+	* that has not been marked as injected. Returns null if none exists.
+	*
+	* @param {Integer} 	width	Width of Creative (must be greater than 0)
+	* @param {Integer} 	height	Height of Creative (must be greater than 0)  	
+	* @return {Creative}		Uninjected Creative with highest priority of passed dimensions if exists or null
+	*/
+	getNextUninjectedCreative(width, height) {
+
+		//If any of the arguments are missing, throw an error
+		if ((width == null) || (height == null)) {
+				throw "CreativeGroup.getNextUninjectedCreative: missing argument";
+		}
+
+		//Loop through the Creatives and store the matching Creative, if it exists
+		let nextUninjectedCreative = null;
+		for (let currentCreative of this._creatives) {
+
+			//If the current creative has the passed width and height and is not injected
+			if ((currentCreative.width() == width) && (currentCreative.height() == height) &&
+				(!this._injectedCreatives.has(currentCreative))) {
+				
+				//If this is the first Creative found, store it
+				if (nextUninjectedCreative == null) {nextUninjectedCreative = currentCreative;}
+
+				//Else if it has a higher priority (lower number), replace the existing Creative
+				else if (currentCreative.priority() < nextUninjectedCreative.priority()) {
+					nextUninjectedCreative = currentCreative;
+				}
+			}
+		}
+
+		//Return the next uninjected Creative of highest priority or null if none found
+		return nextUninjectedCreative;
+	}
+
+
+	/**
+	* Flags the passed Creative as injected and stores its location on the page.
+	*
+	* If the Creative does not exist in the CreativeGroup instance, an error is thrown.
+	*
+	* If the Creative has already been maked as injected, an error is thrown.
+	*
+	* @param {Creative} 	injectedCreative	Creative to flag as injected
+	* @param {Integer} 		xPosition			x position of the injected Creative's location on the page
+	* @param {Integer} 		yPosition			y position of the injected Creative's location on the page
+	*/
+	injected(injectedCreative, xPosition, yPosition) {
+
+		//Verify argument is a Creative
+		if (!(injectedCreative instanceof Creative)) {throw "CreativeGroup.injected: argument must be of type Creative";}
+
+		//Verify the Creative exists in the CreativeGroup
+		if (!this._creatives.has(injectedCreative)) {throw "CreativeGroup.injected: Creative does not exist in CreativeGroup";}
+
+		//Verify it has not already been marked as injected
+		if (this._injectedCreatives.has(injectedCreative)) {throw "CreativeGroup.injected: Creative already marked as injected";}
+
+		//If either of the position arguments are missing, throw an error
+		if ((xPosition == null) || (yPosition == null)) {
+				throw "CreativeGroup.injected: missing position argument";
+		}
+
+		//Creat the Coordinates object and add it all to the injected map
+		let injectionCoordinates = new Coordinates(Math.round(xPosition), Math.round(yPosition));
+		this._injectedCreatives.set(injectedCreative, injectionCoordinates);
+	}
+
+	/**
 	* @return {Set}	Set of Creatives
 	*/	
 	getCreatives() {return this._creatives;}
+
+	/**
+	* @return {Map}	Map of Creatives that have been flagged as injected with their page Coordinates
+	*/	
+	getInjectedCreatives() {return this._injectedCreatives;}
 }
 
 
@@ -244,9 +331,14 @@ class AdSelector {
 	/**
 	* Initializes the AdSelector with its selector.
 	*
-	* @param {String} 	selector	Selector to the ad element
+	* Receives the optional argument 'hideIfNotReplaced' to flag whether or not
+	* the selector element should be hidden if it is not replaced with a Creative.
+	* Default: false
+	*
+	* @param {String} 		selector			Selector to the ad element
+	* @param {Booelan} 		hideIfNotReplaced	Optional: Hide the ad element if not replaced with a Creative. Default: false
 	*/
-	constructor(selector) {
+	constructor(selector, hideIfNotReplaced) {
 
 		//Verify the selector is a non-empty string
 		if ((selector == null) ||(typeof selector !== 'string') || (selector == "")) {
@@ -256,6 +348,9 @@ class AdSelector {
 		//Store the selector and initialize the sizes array
 		this._selector = selector;
 		this._sizes = new Set();
+
+		//Flag whether or not to hide the element if not replaced by a creative
+		this._hideIfNotReplaced = (hideIfNotReplaced) ? true : false;
 	}
 
 	/**
@@ -313,9 +408,15 @@ class AdSelector {
 	selector() {return this._selector;}
 
 	/**
-	* @return {String}	Possible creative sizes associated with the AdSelector. (Array of CreativeSize objects)
+	* @return {Array}	Possible creative sizes associated with the AdSelector. (Array of CreativeSize objects)
 	*/	
 	sizes() {return this._sizes;}
+
+	/**
+	* @return {Boolean}	Whether or not the selector element should be hidden if not replaced by a Creative
+	*/	
+	hideIfNotReplaced() {return this._hideIfNotReplaced;}
+
 }
 
 /**
@@ -593,10 +694,10 @@ class CreativeInjecter {
 		this._creatives = creatives;
 
 		//Store the AdSelectors
-		this._adSelectors = new Set();
+		this._adSelectors = [];
 		if (adSelectors != null) {
 			for (let currentAdSelector of adSelectors) {
-				if (currentAdSelector instanceof AdSelector) {this._adSelectors.add(currentAdSelector);}
+				if (currentAdSelector instanceof AdSelector) {this._adSelectors.push(currentAdSelector);}
 			}
 		}
 
@@ -605,22 +706,133 @@ class CreativeInjecter {
 		this._initializeMemberProperties();
 	}
 
-	injectCreativeIntoPage() {
+	injectCreativesIntoPage() {
 
 		//Begin my removing all large ads and overlays
 		this._hideLargeAdsAndOverlays();
 
+		//--------------------- Ad Selector Elements -------------------------------
+		//Sort the AdSelector elements by there positions
+		this._sortAdSelectorsByPosition(this._adSelectors);
+
+		//Replace each AdSelector element with a matching creative of one of its
+		//possible CreativeSizes, if a match exists
+		for (let currentAdSelector of this._adSelectors) {
+
+			//Keep track if whether or not this AdSelector is replaced with a Creative
+			let adSelectorReplaced = false;
+
+			for (let currentSize of currentAdSelector.sizes()) {
+
+				//If an uninjected Creative of that size exists, replace the element with it
+				let creativeToInject = this._creatives.getNextUninjectedCreative(currentSize.width(), currentSize.height());
+				if (creativeToInject) {
+
+					//If the selector element exists, replace it with the creative
+					let currentElement = document.querySelector(currentAdSelector.selector());
+					if (currentElement) {
+						let elementXPosition = ElementInfo.xPosition(currentElement);
+						let elementYPosition = ElementInfo.yPosition(currentElement);
+						this._replaceElementWithCreative(currentElement, creativeToInject)
+						this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
+						adSelectorReplaced = true;
+					}
+				}
+			}
+
+			//If the element was not replaced, hide it if the AdSelector is flagged to hide if not replaced
+			if (!adSelectorReplaced && currentAdSelector.hideIfNotReplaced()) {
+				let currentElement = document.querySelector(currentAdSelector.selector());
+				if (currentElement) {
+					this._hideElement(currentElement);
+				}
+			}
+		}
+
+		//-------------------- Marked Creatives and IFrames ------------------------
 		//Get the elements from the page that are the size of an instance creative, 
 		//both marked by AdMarker and unmarked
 		let elementsOfCreativeSizes = this._getPageElementsOfCreativeSizes();
 
-		//Sort the set of marked elements and replace them
+		//For forgotten practical purposes from years of testing, we include
+		//unmarked IFrames with the elements marked by the AdMarker
 		let markedAdElements = Array.from(elementsOfCreativeSizes.get("markedAdElements"));
+		let unmarkedIFrames = Array.from(elementsOfCreativeSizes.get("unmarkedIFrames"));
+		markedAdElements = markedAdElements.concat(unmarkedIFrames);
+
+		//Sort the set of marked ad elements by position and replace them
 		this._sortElementsByPosition(markedAdElements);
 		for (let currentElement of markedAdElements) {
 
+			//Get the element size minus border width
+			let elementWidth = ElementInfo.widthWithoutBorder(currentElement);
+			let elementHeight = ElementInfo.heightWithoutBorder(currentElement);
+
+			//If an uninjected Creative of that size exists, replace the element with it
+			let creativeToInject = this._creatives.getNextUninjectedCreative(elementWidth, elementHeight);
+			if (creativeToInject) {
+				let elementXPosition = ElementInfo.xPosition(currentElement);
+				let elementYPosition = ElementInfo.yPosition(currentElement);
+				this._replaceElementWithCreative(currentElement, creativeToInject)
+				this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
+			}
 		}
 
+		//-------------------- Unmarked Creatives ------------------------
+
+		//Finally, if none of the Creatives have been injected using the AdSelectors or 
+		//elements marked by the AdMarker, replace any element on the page of a Creative size
+		if (this._creatives.getInjectedCreatives().size == 0) {
+			let unmarkedElements = Array.from(elementsOfCreativeSizes.get("unmarkedElements"));
+			this._sortElementsByPosition(unmarkedElements);
+			for (let currentElement of unmarkedElements) {
+
+				//Get the element size minus border width
+				let elementWidth = ElementInfo.widthWithoutBorder(currentElement);
+				let elementHeight = ElementInfo.heightWithoutBorder(currentElement);
+
+				//If an uninjected Creative of that size exists, replace the element with it
+				let creativeToInject = this._creatives.getNextUninjectedCreative(elementWidth, elementHeight);
+				if (creativeToInject) {
+					this._replaceElementWithCreative(currentElement, creativeToInject)
+					this._creatives.injected(creativeToInject);
+				}
+			}
+		}//*/
+	}
+
+	_replaceElementWithCreative(elementNode, replacementCreative) {
+
+		//If the element is not an HTMLElement or does not have a parent node, simply exit
+		if ((elementNode == null) || (!ElementInfo.isHTMLElement(elementNode)) ||
+			(!elementNode.parentNode)) {return;}
+
+		//Create the replacement image
+		let creativeImage = document.createElement('img');
+		creativeImage.src = replacementCreative.imageURL();
+		creativeImage.style.width = replacementCreative.width() + 'px';
+		creativeImage.style.height = replacementCreative.height() + 'px';
+		elementNode.parentNode.replaceChild(creativeImage, elementNode);
+
+		//Make sure the parents are displayed and at least as big as the Creative image
+		this._crawlParentHTMLElements(elementNode, function(currentNode) {
+
+			//Get the current node's width and height minus border width
+			let currentNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
+			let currentNodeHeight = ElementInfo.heightWithoutBorder(elementNode);
+
+			//Make sure the current node is displayed
+			currentNode.style.display = "";
+
+			//If the current node is smaller than the Creative image, expand it
+			//This occurs when the element has been hidden by the page.
+			//For example, a containing div set to 0x0
+			if ((currentNodeWidth < replacementCreative.width()) || 
+				(currentNodeHeight < replacementCreative.height())) {
+				currentNode.style.width = replacementCreative.width() + 'px';
+				currentNode.style.height = replacementCreative.height() + 'px';
+			}
+		});
 	}
 
 	/**
@@ -721,7 +933,7 @@ class CreativeInjecter {
 
 				//If the size of the node/smallest parent equals an instance Creative size, store it
 				if (creatives.hasCreativeWithDimensions(viewableWidth, viewableHeight)) {
-					markedAdElements.add(currentNode);
+					markedAdElements.add(smallestParentNode);
 				}
 			}
 
@@ -992,6 +1204,50 @@ class CreativeInjecter {
 		//Sort the elements
 		elements.sort(elementSortFunction);
 	}
+
+
+	_sortAdSelectorsByPosition(adSelectors) {
+
+		//If the argument is not an array, do nothing
+		if (!Array.isArray(adSelectors)) {return;}
+
+		//Function that sorts array of AdSelectors from top-right screen position to bottom-left
+		//If either argument is not an AdSelector, an error is thrown.
+		let adSelectorSortFunction = function(firstAdSelector, secondAdSelector) {
+		    
+		    //If either element is not an HTMLElement, throw an error
+			if ((!(firstAdSelector instanceof AdSelector)) || (!(firstAdSelector instanceof AdSelector))) {
+				throw "CreativeInjecter._sortAdSelectorsByPosition: array element not an AdSelector";
+			}
+
+			//Get the elements
+			let firstElement = document.querySelector(firstAdSelector.selector());
+			let secondElement = document.querySelector(secondAdSelector.selector());
+
+			//If the first element is null but not the second, return a positive 1
+			//to make the second element come first
+			if ((firstElement == null) && (secondElement != null)) {return 1;}
+
+			//If the first element is not null but the second is, return a negative -1
+			//to make the first element come first
+			if ((firstElement != null) && (secondElement == null)) {return -1;}
+
+			//If both elements are null, return a 0 for no order change
+			if ((firstElement == null) && (secondElement == null)) {return 0;}
+
+		    //Calculate each elements position factor by adding its y position
+		    //to its x position. The x position is divided by 1000 in order
+		    //to decrease its importance compared to the y position factor.
+		    let firstPositionFactor = ElementInfo.yPosition(firstElement) + ElementInfo.xPosition(firstElement)/1000;
+		    let secondPositionFactor = ElementInfo.yPosition(secondElement) + ElementInfo.xPosition(secondElement)/1000;
+
+			//Return the difference. If negative, the firstElement comes first, if positive, the second come first.    
+		    return firstPositionFactor - secondPositionFactor;
+		};
+
+		//Sort the elements
+		adSelectors.sort(adSelectorSortFunction);
+	}
 }
 
 
@@ -1089,21 +1345,31 @@ secondSelector.addSizes([[66,66],[77,77]]);
 
 //let adHideElement = document.getElementById("adElementToHide");
 //theCreativeInjecter._hideLargeAdsAndOverlays();
-let creative300x250 = new Creative("300x250", "http://url2", 300, 250, 1);
-let creative728x90 = new Creative("728x90", "http://url2", 728, 90, 1);
-let creative320x50 = new Creative("320x50", "http://url2", 320, 50, 1);
-let creative300x50 = new Creative("300x50", "http://url2", 300, 50, 1);
+let creative300x250 = new Creative("300x250", "https://s3.amazonaws.com/asr-images/fillers/filler-300x250.jpg", 300, 250, 1);
+let creative728x90 = new Creative("728x90", "https://s3.amazonaws.com/asr-images/fillers/filler-728x90.jpg", 728, 90, 1);
+let creative320x50 = new Creative("320x50", "https://s3.amazonaws.com/asr-images/fillers/filler-320x50.jpg", 320, 50, 1);
+let creative300x50 = new Creative("300x50", "https://s3.amazonaws.com/asr-images/fillers/filler-300x50.jpg", 300, 50, 1);
+let creative300x600 = new Creative("300x600", "https://s3.amazonaws.com/asr-images/fillers/filler-300x600.jpg", 300, 600, 1);
 
 let testCreativeGroup = new CreativeGroup();
-testCreativeGroup.addCreative([creative300x250, creative728x90, creative320x50, creative300x50]);
-let adSizes = "";
-for (let currentCreative of testCreativeGroup.getCreatives()) {
-	adSizes += currentCreative.id() + ", ";
-}
-console.log("Ad Sizes: " + adSizes);
+testCreativeGroup.addCreative([creative300x250, creative728x90, creative320x50, creative300x50, creative300x600]);
 
-let theCreativeInjecter = new CreativeInjecter(testCreativeGroup, []);
-let foundElements = theCreativeInjecter._getPageElementsOfCreativeSizes();
+// let adSizes = "";
+// for (let currentCreative of testCreativeGroup.getCreatives()) {
+// 	adSizes += currentCreative.id() + ", ";
+// }
+//console.log("Ad Sizes: " + adSizes);
+
+let adSelectorOne = new AdSelector("#selectorByID");
+adSelectorOne.addSizes([[300,600]]);
+let adSelectorTwo = new AdSelector("div.classOne.classTwo", true);
+adSelectorTwo.addSizes([[728,91]]);
+let adSelectorThree = new AdSelector("#outerDiv div.middleDiv div.innerDiv");
+adSelectorThree.addSizes([[300,250]]);
+
+let theCreativeInjecter = new CreativeInjecter(testCreativeGroup, [adSelectorTwo, adSelectorThree, adSelectorOne]);
+
+/*let foundElements = theCreativeInjecter._getPageElementsOfCreativeSizes();
 for (let [setName, elementSet] of foundElements) {
 	console.log("Current set: " + setName);
 	for (let currentElement of elementSet) {
@@ -1122,6 +1388,12 @@ theCreativeInjecter._sortElementsByPosition(markedElements);
 console.log("Marked element positions after sort: ");
 for (let element of markedElements) {
 	console.log("--- " + element.id + " (" + ElementInfo.xPosition(element) + ", " + ElementInfo.yPosition(element) + ")");
-}
+}//*/
+
+theCreativeInjecter.injectCreativesIntoPage();
+
+//console.log(testCreativeGroup.getInjectedCreatives());
+
+//console.log("Width: " + document.getElementById("marked300x600Div").offsetWidth);
 
 };
