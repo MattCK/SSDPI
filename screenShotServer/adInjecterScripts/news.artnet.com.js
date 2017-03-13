@@ -56,7 +56,7 @@ for (tagIndex in tags) {
 
 let bannerAdDiv = document.getElementById("content").querySelector("li div.artnet-ads-ad.widget-1.widget-odd.widget");
 let largeMobileAd = document.querySelector("div.embedded-ad.visible-sm.visible-xs.ad-loaded");
-let halfPagePutDiv = document.querySelector("div.sidebar").querySelector("li div.artnet-ads-ad.widget-1.widget-odd.widget");
+//let halfPagePutDiv = document.querySelector("div.sidebar").querySelector("li div.artnet-ads-ad.widget-1.widget-odd.widget");
 let halfPageRemoveDiv = document.querySelector("div.sidebar").querySelector("li.artnet-ads-ad.widget-1.widget-odd.widget-container.piklist-universal-widget.sticky-container");
 
 //only run exceptions if any creative is present

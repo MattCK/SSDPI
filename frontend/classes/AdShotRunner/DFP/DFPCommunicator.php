@@ -8,6 +8,8 @@
 
 namespace AdShotRunner\DFP;
 
+use AdShotRunner\Database\ASRDatabase;
+
 use Google\AdsApi\Common\OAuth2TokenBuilder;
 use Google\AdsApi\Dfp\DfpServices;
 use Google\AdsApi\Dfp\DfpSession;
@@ -141,7 +143,6 @@ class DFPCommunicator {
 		$dfpServices = new DfpServices();
 
 		//Get the order service for the network
-		//$orderService = $user->GetService('OrderService', 'v201608');
 		$orderService = $dfpServices->get($dfpSession, OrderService::class);
 
 		//Create the statement to select all orders
@@ -296,7 +297,6 @@ class DFPCommunicator {
 		$creativeIDs = array_unique($creativeIDs);
 
 		//Get the creative service for the network
-		//$creativeService = $user->GetService('CreativeService', 'v201608');
 		$creativeService = $dfpServices->get($dfpSession, CreativeService::class);
 
 		//Build the where clause of creative IDs to find the creatives
@@ -311,7 +311,7 @@ class DFPCommunicator {
 		$statementBuilder->Where("(" . $creativeWhereClause . ")")->OrderBy('id ASC');
 		$creativeResults = $creativeService->getCreativesByStatement($statementBuilder->ToStatement());
 
-		//Output the creative
+		//Format the creatives for image processing
 		if ($creativeResults->getResults()) {
 		    foreach ($creativeResults->getResults() as $creative) {
 
@@ -361,6 +361,303 @@ class DFPCommunicator {
 		}
 	}
 
+	public function searchOrders($searchTerm) {
+
+		//If no search term was passed, return an empty array
+		if ($searchTerm == "") {return [];}
+
+		//Get the IDs of any companies matching the search term
+		$matchingCompanyIDs = $this->getMatchingCompanies($searchTerm);
+
+		//Get the orders matching the search term or company IDs
+		$matchingOrders = $this->getMatchingOrders($searchTerm, $matchingCompanyIDs);
+
+		//If no orders were retrieved, return an empty array
+		if (count($matchingOrders) == 0) {return [];}
+
+		//Get the company names for the advertisers agencies
+		$companyIDs = [];
+		foreach ($matchingOrders as $order) {
+			if ($order["agencyID"]) {$companyIDs[$order["agencyID"]] = $order["agencyID"];}
+			if ($order["advertiserID"]) {$companyIDs[$order["advertiserID"]] = $order["advertiserID"];}
+		}
+		$companyNames = $this->getCompanyNames($companyIDs);
+
+		//Add the names to the matching order information
+		foreach ($matchingOrders as $orderID => $order) {
+			$matchingOrders[$orderID]["advertiserName"] = $order["advertiserID"] ? $companyNames[$order["advertiserID"]] : "";
+			$matchingOrders[$orderID]["agencyName"] = $order["agencyID"] ? $companyNames[$order["agencyID"]] : "";
+		}
+
+		//Return the order information
+		return $matchingOrders;
+
+	}
+
+	public function getLineItemsAndCreative2($orderID, &$lineItems, &$creatives) {
+
+		//If no orderID was passed, simply exit the function
+		if (!$orderID) {return;}
+
+		//Get the line items for the order
+		$lineItems = $this->getLineItemsForOrder($orderID);
+
+		//Get the line item creatives
+		$lineItemCreatives = $this->getLineItemCreatives(array_keys($lineItems));
+
+		//Add the creatives to each line item and compile all the creative IDs
+		$allCreativeIDs = [];
+		foreach($lineItems as $lineItemID => $lineItemInfo) {
+			if ($lineItemCreatives[$lineItemID]) {
+				$lineItems[$lineItemID]["creatives"] = $lineItemCreatives[$lineItemID];
+				$allCreativeIDs = array_merge($allCreativeIDs, $lineItemCreatives[$lineItemID]);
+			}
+		}
+		$allCreativeIDs = array_unique($allCreativeIDs);
+
+		//Get the creatives
+		$creatives = $this->getCreatives($allCreativeIDs);
+	}
+
+	//********************************* Private Methods *************************************
+
+
+	private function getMatchingCompanies($searchTerm) {
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
+
+		//Get the company service for the network
+		$companyService = $dfpServices->get($dfpSession, CompanyService::class);
+
+		//Create the statement to search the orders
+		$statementBuilder = new StatementBuilder();
+		$statementBuilder->Where("name LIKE :searchTerm")
+						 ->OrderBy('id ASC')
+						 ->WithBindVariableValue('searchTerm', "%" . $searchTerm . "%");
+
+		//Get the companies from DFP
+		$companyResults = $companyService->getCompaniesByStatement($statementBuilder->ToStatement());
+
+		//Return the company IDs in an array
+		$companyIDs = [];
+		if ($companyResults->getResults()) {
+		    foreach ($companyResults->getResults() as $company) {
+		    	$companyIDs[] = $company->getId();
+		    }
+		}
+		return $companyIDs;
+	}
+
+	private function getMatchingOrders($searchTerm, $companyIDs) {
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
+
+		//Get the order service for the network
+		$orderService = $dfpServices->get($dfpSession, OrderService::class);
+
+		//Format the company IDs for the orders where clause
+		$companyIDsINClause = "";
+		if (count($companyIDs) > 0) {
+			$companyIDList = implode(",", $companyIDs);
+			$companyIDsINClause = "OR advertiserId IN ($companyIDList) OR agencyId IN ($companyIDList)";
+		}
+
+		//Create the statement to search the orders
+		$statementBuilder = new StatementBuilder();
+		$statementBuilder->Where("id LIKE :possibleid OR name LIKE :searchTerm $companyIDsINClause")
+						 ->OrderBy('name ASC')
+						 ->WithBindVariableValue('possibleid', $searchTerm)
+						 ->WithBindVariableValue('searchTerm', "%" . $searchTerm . "%");
+
+		//Get the orders from DFP
+		$orderResults = $orderService->getOrdersByStatement($statementBuilder->ToStatement());
+
+		//If no orders were retrieved, return an empty array
+		if (!$orderResults->getResults()) {return [];}
+
+		//Return the order information
+		$orderInformation = [];
+	    foreach ($orderResults->getResults() as $order) {
+	    	$orderInformation[$order->getId()] = ["name" => $order->getName(), 
+	    										  "notes" => (($order->getNotes()) ? $order->getNotes() : ""),
+	    										  "advertiserID" => $order->getAdvertiserId(),
+	    										  "agencyID" => $order->getAgencyId()];
+	    }
+		return $orderInformation;
+	}
+
+	private function getCompanyNames($companyIDs) {
+
+		//If no company IDs were passed, return an empty array
+		if ((!$companyIDs) || (count($companyIDs) == 0)) {return [];}
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
+
+		//Get the company service for the network
+		$companyService = $dfpServices->get($dfpSession, CompanyService::class);
+
+		//Format the company IDs for the orders where clause
+		$companyIDsINClause = "";
+		if (count($companyIDs) > 0) {
+			$companyIDList = implode(",", $companyIDs);
+			$companyIDsINClause = "id IN ($companyIDList)";
+		}
+
+		//Create the statement to search the orders
+		$statementBuilder = new StatementBuilder();
+		$statementBuilder->Where($companyIDsINClause);
+
+		//Get the companies from DFP
+		$companyResults = $companyService->getCompaniesByStatement($statementBuilder->ToStatement());
+
+		//Return the company names
+		$companyNames = [];
+		if ($companyResults->getResults()) {
+		    foreach ($companyResults->getResults() as $company) {
+		    	$companyNames[$company->getId()] = $company->getName();
+		    }
+		}
+		return $companyNames;
+	}
+
+
+	private function getLineItemsForOrder($orderID) {
+
+		//If no orderID was passed, return an empty array
+		if (!$orderID) {return [];}
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
+
+		//Get the line item service for the network
+		$lineItemService = $dfpServices->get($dfpSession, LineItemService::class);
+
+		//Create the statement to select all line items for the passed order IDs
+		$statementBuilder = new StatementBuilder();
+		$statementBuilder->Where("orderId = $orderID")->OrderBy('name ASC');
+		$lineItemResults = $lineItemService->getLineItemsByStatement($statementBuilder->ToStatement());
+
+		//Store the line item order IDs, name, and notes
+		$lineItems = [];
+	    foreach ($lineItemResults->getResults() as $lineItem) {
+	    	$lineItems[$lineItem->getId()] = ["name" => $lineItem->getName(), 
+											  "notes" => (($lineItem->getNotes()) ? $lineItem->getNotes() : ""),
+											  "status" => $lineItem->getStatus()];
+		}
+		return $lineItems;
+	}
+
+	private function getLineItemCreatives($lineItemIDs) {
+
+		//If no line item IDs were passed, return an empty array
+		if ((!$lineItemIDs) || (count($lineItemIDs) == 0)) {return [];}
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
+
+		//Get the LICA service for the network
+		$lineItemCreativeAssociationService = $dfpServices->get($dfpSession, LineItemCreativeAssociationService::class);
+
+		//Create the statement to select all licas for the passed line item ids
+		$lineItemIDList = implode(",", $lineItemIDs);
+		$statementBuilder = new StatementBuilder();
+		$statementBuilder->Where("lineItemId IN ($lineItemIDList)");
+		$licaResults = $lineItemCreativeAssociationService
+					   ->getLineItemCreativeAssociationsByStatement($statementBuilder->ToStatement());
+
+		//Return the line items with their creative IDs
+		$lineItemCreatives = [];
+	    foreach ($licaResults->getResults() as $lica) {
+	    	if (!$lineItemCreatives[$lica->getLineItemId()]) {$lineItemCreatives[$lica->getLineItemId()] = [];}
+	    	$lineItemCreatives[$lica->getLineItemId()][] = $lica->getCreativeId();
+	    }
+	    return $lineItemCreatives;
+	}
+
+	private function getCreatives($creativeIDs) {
+
+		//If no creative IDs were passed, return an empty array
+		if ((!$creativeIDs) || (count($creativeIDs) == 0)) {return [];}
+
+		//Get the DfpSession instantiated for this instance and a services object
+		$dfpSession = $this->getDFPSession();
+		$dfpServices = new DfpServices();
+
+		//Get the creative service for the network
+		$creativeService = $dfpServices->get($dfpSession, CreativeService::class);
+
+		//Create the statement to select all creatives for the pass creative ids
+		$creativeIDList = implode(",", $creativeIDs);
+		$statementBuilder = new StatementBuilder();
+		$statementBuilder->Where("id IN ($creativeIDList)");
+		$creativeResults = $creativeService->getCreativesByStatement($statementBuilder->ToStatement());
+
+		//Format the creatives for image processing
+		$creatives = [];
+		if ($creativeResults->getResults()) {
+		    foreach ($creativeResults->getResults() as $creative) {
+
+		    	//Get the creative object's class
+		    	//Get the full class, separate it by \, take the last part and make it uppercase
+		    	//This will remove the full class path and return only the class name in uppercase
+		    	$creativeClass = strtoupper(array_pop(explode("\\", get_class($creative))));
+
+		    	//Based on the creative class type, get the appropriate tag
+		    	$tag = "";
+		    	switch ($creativeClass) {
+		    		case "IMAGECREATIVE":
+		    			$tag = "<img src='" . $creative->getPrimaryImageAsset()->getAssetUrl() . "' />";
+		    			break;
+		    		case "THIRDPARTYCREATIVE":
+		    			$htmlSnippet = $creative->getSnippet();
+		    			$expandedSnippet = $creative->getExpandedSnippet();
+		    			$tag = ($expandedSnippet) ? $expandedSnippet : $htmlSnippet;
+		    			break;
+		    		case "CUSTOMCREATIVE":
+						$tag = $creative->getHtmlSnippet();
+		    			break;
+		    		case "TEMPLATECREATIVE":
+						$templateVariables = $creative->getCreativeTemplateVariableValues();
+						foreach($templateVariables as $currentVariable) {
+							if (method_exists($currentVariable, "getAsset")) {
+								$tag = "<img src='" . $currentVariable->getAsset()->getAssetURL() . "' />";
+							}
+						}
+		    			break;
+		    		case "INTERNALREDIRECTCREATIVE":
+		    			$tag = "<img src='" . $creative->getInternalRedirectUrl() . "' />";
+		    			break;
+		    		case "FLASHCREATIVE":
+			    		if (method_exists($creative->getFallbackImageAsset(), "getAssetUrl")) {
+			    			$tag = "<img src='" . $creative->getFallbackImageAsset()->getAssetUrl() . "' />";
+			    		}
+		    			break;
+		    		case "IMAGEREDIRECTCREATIVE":
+		    			$tag = "<img src='" . $creative->getImageUrl() . "' />";
+		    			break;
+		    	}
+
+
+		    	//If a tag/image was found, include it in the final list.
+		    	//If not, ignore it for now (i.e. the UnsupportedCreative type)
+		        if ($tag) {
+		        	$creatives[$creative->getId()] = ["tag" => $tag,
+		        									  "previewURL" => $creative->getPreviewUrl(),
+		        									  "width" => $creative->getSize()->getWidth(),
+		        									  "height" => $creative->getSize()->getHeight()];
+		        }
+		    }
+		}
+		return $creatives;
+	}
 
 	//---------------------------------------------------------------------------------------
 	//----------------------------------- Accessors -----------------------------------------

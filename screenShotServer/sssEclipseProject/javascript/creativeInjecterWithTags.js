@@ -358,6 +358,7 @@ class AdSelector {
 	*
 	* @param {Integer} 	width  		Width of the creative in pixels (must be greater than 0)
 	* @param {Integer} 	height  	Height of the creative in pixels (must be greater than 0)
+	* @return {AdSelector}			This AdSelector instance
 	*/	
 	addSize(width, height) {
 
@@ -372,6 +373,9 @@ class AdSelector {
 
 		//Add the CreativeSize to the set
 		this._sizes.add(new CreativeSize(width, height));
+
+		//Return this AdSelector instance
+		return this;
 	}
 
 	/**
@@ -386,6 +390,7 @@ class AdSelector {
 	* will be ignored.
 	*
 	* @param {Array} 	sizesArray  Array of [width, height] arrays
+	* @return {AdSelector}			This AdSelector instance
 	*/	
 	addSizes(sizesArray) {
 
@@ -400,6 +405,9 @@ class AdSelector {
 					this._sizes.add(new CreativeSize(currentSize[0], currentSize[1]));
 			}
 		}
+
+		//Return this AdSelector instance
+		return this;
 	}
 
 	/**
@@ -1250,150 +1258,69 @@ class CreativeInjecter {
 	}
 }
 
+//window.onload = function() {
+
+//Remove the scrollbars
+document.documentElement.style.overflow = 'hidden';
+
+let creatives = [];
+
+// creatives = [
+// 	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
+// 	{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/filler-300x250.jpg', priority: 0, width: 300, height: 250},
+// 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
+// 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
+// ];//*/
+creatives = [{id: '72c61ec0-ab6d-413e-8571-24b48708a9ea', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/d2c76c52-6139-4cb9-817a-e5057f6e72f6.png', width: 970, height: 250, priority: 0},];
+
+//Create the CreativesGroup and add each passed Creative to it
+let allCreatives = new CreativeGroup();
+for (let currentCreative of creatives) {
+	allCreatives.addCreative((new Creative(currentCreative.id, 
+										   currentCreative.imageURL,
+										   currentCreative.width,
+										   currentCreative.height,
+										   currentCreative.priority)));
+}
+
+let selectors = [];
+// selectors = [
+// 	{selector: "#selectorByID", sizes: [[300,600]], hideIfNotReplaced: true},
+// 	{selector: "div.classOne.classTwo", sizes: [[728,90]], hideIfNotReplaced: true},
+// 	{selector: "#outerDiv div.middleDiv div.innerDiv", sizes: [[300,250]], hideIfNotReplaced: true}
+// ];
+
+selectors = [
+	{selector: "#content li div.artnet-ads-ad.widget-1.widget-odd.widget div div", sizes: [[994,250],[970,250]], hideIfNotReplaced: true},
+	{selector: "div.embedded-ad.visible-sm.visible-xs.ad-loaded", sizes: [[300,250],[300,480]], hideIfNotReplaced: true}
+];
 
 
+//INSERT ADSELECTORS OBJECT//
 
-
-
-
-
-
-window.onload = function() {
-
-let firstCreative = new Creative("1", "http://myurl.com", 301, 251, 1);
-// console.log("Created first creative");
-// console.log("ID: " + firstCreative.id());
-// console.log("Image URL: " + firstCreative.imageURL());
-// console.log("Width: " + firstCreative.width());
-// console.log("Height: " + firstCreative.height());
-// console.log("Priority: " + firstCreative.priority());
-
-let secondCreative = new Creative("2", "http://url2", 302, 252, 2);
-let thirdCreative = new Creative("3", "http://url3", 303, 253, 3);
-let fourthCreative = new Creative("4", "http://url4", 304, 254, 4);
-
-let firstCreativeGroup = new CreativeGroup();
-
-firstCreativeGroup.addCreative(firstCreative);
-// console.log("Added single creative");
-// for (let currentCreative of firstCreativeGroup.getCreatives()) {console.log(currentCreative.id());}
-
-firstCreativeGroup.addCreative([secondCreative, thirdCreative, fourthCreative]);
-// console.log("Added array of creatives");
-// for (let currentCreative of firstCreativeGroup.getCreatives()) {console.log(currentCreative.id());}
-
-// console.log(firstCreativeGroup.hasCreativeWithDimensions(303, 253));
-// console.log(firstCreativeGroup.hasCreativeWithDimensions(444, 444));
-
-firstCreativeGroup.removeCreative(thirdCreative);
-// console.log("Removed creative");
-// for (let currentCreative of firstCreativeGroup.getCreatives()) {console.log(currentCreative.id());}
-
-
-let firstSelector = new AdSelector("test");
-firstSelector.addSize(3, 3);
-firstSelector.addSizes([[4,4],[5,5]]);
-let secondSelector = new AdSelector("test2");
-secondSelector.addSizes([[66,66],[77,77]]);
-
-//console.log(theCreativeInjecter);
-// console.log("Top-level Div:");
-// let testInfoDiv = document.getElementById("testElement");
-// console.log("Width: " + ElementInfo.width(testInfoDiv));
-// console.log("Height: " + ElementInfo.height(testInfoDiv));
-// console.log("x: " + ElementInfo.xPosition(testInfoDiv));
-// console.log("y: " + ElementInfo.yPosition(testInfoDiv));
-// console.log("flood-opacity: " + ElementInfo.floodOpacity(testInfoDiv));
-// console.log("Margin top: " + ElementInfo.marginTop(testInfoDiv));
-// console.log("Margin right: " + ElementInfo.marginRight(testInfoDiv));
-// console.log("Margin bottom: " + ElementInfo.marginBottom(testInfoDiv));
-// console.log("Margin left: " + ElementInfo.marginLeft(testInfoDiv));
-// console.log("Position Style: " + ElementInfo.positionStyle(testInfoDiv));
-// console.log("z-index: " + ElementInfo.zIndex(testInfoDiv));
-
-// console.log("Iframe div:");
-// let iframeDiv = document.getElementById("testIframe").contentDocument.getElementById("iframeTestElement");
-// let iframeDivInfo = new ElementInfo(iframeDiv);
-// console.log("Width: " + iframeDivInfo.width());
-// console.log("Height: " + iframeDivInfo.height());
-// console.log("x: " + iframeDivInfo.xPosition());
-// console.log("y: " + iframeDivInfo.yPosition());
-// console.log("flood-opacity: " + iframeDivInfo.floodOpacity());
-// console.log("Margin top: " + iframeDivInfo.marginTop());
-// console.log("Margin right: " + iframeDivInfo.marginRight());
-// console.log("Margin bottom: " + iframeDivInfo.marginBottom());
-// console.log("Margin left: " + iframeDivInfo.marginLeft());
-// console.log("Position Style: " + iframeDivInfo.positionStyle());
-// console.log("z-index: " + iframeDivInfo.zIndex());
-// let theCreativeInjecter = new CreativeInjecter(firstCreativeGroup, [firstSelector, secondSelector]);
-// theCreativeInjecter._crawlDocumentHTMLElements(document, function(currentNode) {
-// 	currentNode.style.border = "thick solid #FF0000";
-// });
-
-// let iframeTestDiv = document.getElementById("testIFrame").contentDocument.getElementById("iframeTestElement");
-// let iframeSameSizeDiv = document.getElementById("sameSizeIFrame").contentDocument.getElementById("sameSizeTestDiv");
-
-// console.log(theCreativeInjecter._getHighestSameSizeContainingFrame(iframeTestDiv));
-// console.log(theCreativeInjecter._getHighestSameSizeContainingFrame(iframeSameSizeDiv));
-// theCreativeInjecter._crawlParentHTMLElements(iframeTestDiv, function(currentNode) {
-// 	console.log("Inside function node: " + currentNode.tagName);
-// 	if (currentNode.style) {
-// 		currentNode.style.border = "thick solid #00FF00";
-// 	}
-// });
-// console.log(theCreativeInjecter._getSmallestContainingParent(iframeTestDiv));
-
-//let adHideElement = document.getElementById("adElementToHide");
-//theCreativeInjecter._hideLargeAdsAndOverlays();
-let creative300x250 = new Creative("300x250", "https://s3.amazonaws.com/asr-images/fillers/filler-300x250.jpg", 300, 250, 1);
-let creative728x90 = new Creative("728x90", "https://s3.amazonaws.com/asr-images/fillers/filler-728x90.jpg", 728, 90, 1);
-let creative320x50 = new Creative("320x50", "https://s3.amazonaws.com/asr-images/fillers/filler-320x50.jpg", 320, 50, 1);
-let creative300x50 = new Creative("300x50", "https://s3.amazonaws.com/asr-images/fillers/filler-300x50.jpg", 300, 50, 1);
-let creative300x600 = new Creative("300x600", "https://s3.amazonaws.com/asr-images/fillers/filler-300x600.jpg", 300, 600, 1);
-
-let testCreativeGroup = new CreativeGroup();
-testCreativeGroup.addCreative([creative300x250, creative728x90, creative320x50, creative300x50, creative300x600]);
-
-// let adSizes = "";
-// for (let currentCreative of testCreativeGroup.getCreatives()) {
-// 	adSizes += currentCreative.id() + ", ";
-// }
-//console.log("Ad Sizes: " + adSizes);
-
-let adSelectorOne = new AdSelector("#selectorByID");
-adSelectorOne.addSizes([[300,600]]);
-let adSelectorTwo = new AdSelector("div.classOne.classTwo", true);
-adSelectorTwo.addSizes([[728,91]]);
-let adSelectorThree = new AdSelector("#outerDiv div.middleDiv div.innerDiv");
-adSelectorThree.addSizes([[300,250]]);
-
-let theCreativeInjecter = new CreativeInjecter(testCreativeGroup, [adSelectorTwo, adSelectorThree, adSelectorOne]);
-
-/*let foundElements = theCreativeInjecter._getPageElementsOfCreativeSizes();
-for (let [setName, elementSet] of foundElements) {
-	console.log("Current set: " + setName);
-	for (let currentElement of elementSet) {
-		console.log("--- " + currentElement.id);
+//Verify each selector points to an element then turn it into an AdSelector
+let allSelectors = [];
+for (let currentSelector of selectors) {
+	let selectorElement = document.querySelector(currentSelector.selector);
+	if (selectorElement) {
+		allSelectors.push(
+			(new AdSelector(currentSelector.selector, currentSelector.hideIfNotReplaced)).addSizes(currentSelector.sizes)
+		);
 	}
 }
-console.log("");
 
-let markedElements = Array.from(foundElements.get("markedAdElements")).reverse();
-console.log("Marked element positions before sort: ");
-for (let element of markedElements) {
-	console.log("--- " + element.id + " (" + ElementInfo.xPosition(element) + ", " + ElementInfo.yPosition(element) + ")");
+
+
+//Initialize the CreativeInjecter and inject the creatives
+let injecter = new CreativeInjecter(allCreatives, allSelectors);
+injecter.injectCreativesIntoPage();
+
+//Return the list of injected Creatives and their locations
+let injectedCreatives = allCreatives.getInjectedCreatives();
+let injectedIDsAndLocations = {};
+for (let [injectedCreative, location] of injectedCreatives) {
+	injectedIDsAndLocations[injectedCreative.id()] = {'x': location.x(), 'y': location.y()};
 }
+//console.log(JSON.stringify(injectedIDsAndLocations));
+return JSON.stringify(injectedIDsAndLocations);
 
-theCreativeInjecter._sortElementsByPosition(markedElements);
-console.log("Marked element positions after sort: ");
-for (let element of markedElements) {
-	console.log("--- " + element.id + " (" + ElementInfo.xPosition(element) + ", " + ElementInfo.yPosition(element) + ")");
-}//*/
-
-theCreativeInjecter.injectCreativesIntoPage();
-
-//console.log(testCreativeGroup.getInjectedCreatives());
-
-//console.log("Width: " + document.getElementById("marked300x600Div").offsetWidth);
-
-};

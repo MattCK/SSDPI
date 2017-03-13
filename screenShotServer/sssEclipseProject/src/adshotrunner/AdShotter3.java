@@ -80,7 +80,7 @@ public class AdShotter3 {
 	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
 	final private static int MOBILEPIXELRATIO = 3;			//in pixels
 	final private static int MINIMUMCROPHEIGHT = 1560;		//in pixels
-	final private static int MAXIMUMCROPHEIGHT = 3000; 			//in pixels
+	final private static int MAXIMUMCROPHEIGHT = 3000; 		//in pixels
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
 	final private static int MAXOPENTABS = 1;
@@ -366,50 +366,72 @@ public class AdShotter3 {
 			}
 			
 			//Get the list of tags that were injected and the positions they were injected from the AdInjecter
-			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<ArrayList<Float>>>>(){}.getType();
-			Map<String, ArrayList<ArrayList<Float>>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
+//			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<ArrayList<Float>>>>(){}.getType();
+//			Map<String, ArrayList<ArrayList<Float>>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
+			Type injecterJSONType = new TypeToken<HashMap<String, HashMap<String, Float>>>(){}.getType();
+			Map<String, Map<String, Float>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
 			if (injectedTagInfo != null) {
 				
-				//Mark the tags as injected and determine the lowest bottom position of the first injection of each tag
-				for (Map.Entry<String, ArrayList<ArrayList<Float>>> entry : injectedTagInfo.entrySet()) {
-					
+				//Mark the tags as injected and determine the requested crop height
+				for (Map.Entry<String, Map<String, Float>> entry : injectedTagInfo.entrySet()) {
+
 					//Name the keys for readability and get the TagImage object
-				    String currentTagID = entry.getKey();											//ID of TagImage
+					String currentTagID = entry.getKey();											//ID of TagImage
 				    TagImage currentTagImage = getTagImageByID(currentTagID, adShot.tagImages());	//TagImage from ID
-				    ArrayList<ArrayList<Float>> tagPositions = entry.getValue();	//List of x,y positions of tag injections
+				    Map<String, Float> coordinates = entry.getValue();	//List of x,y positions of tag injection
+				    int currentTagXCoordinate = Math.round(coordinates.get("x")); 
+				    int currentTagYCoordinate = Math.round(coordinates.get("y")); 
+				
+				    //Determine the bottom coordinate of the injected creative
+				    int bottomCoordinate = currentTagYCoordinate + currentTagImage.height();
 				    
-					//In all the places the current tag was injected,
-					//get the bottom y position of the highest injected location.
-					//If you're looking at the page, it's the bottom y coordinate
-					//of the ad highest on the screen.
-					int highestTagBottomYPosition = 0;
-					for (ArrayList<Float> currentPosition : tagPositions) {
-						
-						//If the position is 0,0 ignore it
-						if ((currentPosition.get(0) != 0) || (currentPosition.get(1) != 0)) {
-							
-							//If the bottom of the current tag is higher than the current highest, store it
-							int currentPositionBottom = Math.round(currentPosition.get(1)) + currentTagImage.height();
-							if ((highestTagBottomYPosition == 0) || (currentPositionBottom < highestTagBottomYPosition)) {
-								highestTagBottomYPosition = currentPositionBottom;
-							}
-						}
-					}
-					
-					//Compare the lowest y position of the current tag to the 
-					//lowest y position of all the tags so far.
-					//If it is lower, make it the requested crop height
-					if (requestedCropHeight < highestTagBottomYPosition) {
-						requestedCropHeight = highestTagBottomYPosition;
-					}
-					
-					//If the image is within the maximum crop height, 
-					//mark it as injected (appears in the screenshot)
-					if ((highestTagBottomYPosition > 0) && (highestTagBottomYPosition < MAXIMUMCROPHEIGHT)) {
-						consoleLog("Tag bottom: " + highestTagBottomYPosition);
-						adShot.markTagImageAsInjected(currentTagID);
-					}
+				    //If the bottom coordinate is lower than the requested crop height, use it
+				    if (bottomCoordinate > requestedCropHeight) {requestedCropHeight = bottomCoordinate;}
+				    
+				    //Mark the creative as injected
+				    adShot.markTagImageAsInjected(currentTagID);
 				}
+				
+//				//Mark the tags as injected and determine the lowest bottom position of the first injection of each tag
+//				for (Map.Entry<String, ArrayList<ArrayList<Float>>> entry : injectedTagInfo.entrySet()) {
+//					
+//					//Name the keys for readability and get the TagImage object
+//				    String currentTagID = entry.getKey();											//ID of TagImage
+//				    TagImage currentTagImage = getTagImageByID(currentTagID, adShot.tagImages());	//TagImage from ID
+//				    ArrayList<ArrayList<Float>> tagPositions = entry.getValue();	//List of x,y positions of tag injections
+//				    
+//					//In all the places the current tag was injected,
+//					//get the bottom y position of the highest injected location.
+//					//If you're looking at the page, it's the bottom y coordinate
+//					//of the ad highest on the screen.
+//					int highestTagBottomYPosition = 0;
+//					for (ArrayList<Float> currentPosition : tagPositions) {
+//						
+//						//If the position is 0,0 ignore it
+//						if ((currentPosition.get(0) != 0) || (currentPosition.get(1) != 0)) {
+//							
+//							//If the bottom of the current tag is higher than the current highest, store it
+//							int currentPositionBottom = Math.round(currentPosition.get(1)) + currentTagImage.height();
+//							if ((highestTagBottomYPosition == 0) || (currentPositionBottom < highestTagBottomYPosition)) {
+//								highestTagBottomYPosition = currentPositionBottom;
+//							}
+//						}
+//					}
+//					
+//					//Compare the lowest y position of the current tag to the 
+//					//lowest y position of all the tags so far.
+//					//If it is lower, make it the requested crop height
+//					if (requestedCropHeight < highestTagBottomYPosition) {
+//						requestedCropHeight = highestTagBottomYPosition;
+//					}
+//					
+//					//If the image is within the maximum crop height, 
+//					//mark it as injected (appears in the screenshot)
+//					if ((highestTagBottomYPosition > 0) && (highestTagBottomYPosition < MAXIMUMCROPHEIGHT)) {
+//						consoleLog("Tag bottom: " + highestTagBottomYPosition);
+//						adShot.markTagImageAsInjected(currentTagID);
+//					}
+//				}
 				
 				
 			}
@@ -706,22 +728,44 @@ public class AdShotter3 {
 		//Get the AdInjecter javascript file
 		String adInjecterJS = new String(Files.readAllBytes(Paths.get(ADINJECTERJSPATH)));
 		
-		//Create the tags object by looping through the tags and adding them to the tags string
-		String tagsString = "tags = [";
+		//Create the creatives object by looping through the creatives and adding them to the JSON string
+		String creativesJSON = "creatives = [";
 		for (TagImage tagImage: tagImageSet) {
 			
 			//build the current tag object and add it to overall object
-			tagsString +=  "{id: '" + tagImage.id() + "', " +
-							"tag: '" + tagImage.url() + "', " +
-							"placement: " + tagImage.priority() + ", " +
-							"width: " + tagImage.width() + ", " +
-							"height: " + tagImage.height() + "},";
+			creativesJSON +=  "{id: '" + tagImage.id() + "', " +
+							  "imageURL: '" + tagImage.url() + "', " +
+							  "width: " + tagImage.width() + ", " +
+							  "height: " + tagImage.height() + ", " +
+							  "priority: " + tagImage.priority() + "},";
 		}
-		tagsString += "];";
+		creativesJSON += "];";
 		
-		//Insert the tags into the code by replacing the 'insert tags object' marker with them
-		String finalJS = adInjecterJS.replace("//INSERT TAGS OBJECT//", tagsString);
+		//Insert the creatives into the code by replacing the 'INSERT CREATIVES OBJECT' marker with them
+		String finalJS = adInjecterJS.replace("//INSERT CREATIVES OBJECT//", creativesJSON);
 		
+//		//If an exceptions exists, insert its script into the final string
+//		String exceptionScript = "";
+//		try {exceptionScript = getAdInjecterException(targetURL); } catch (Exception e) {}
+//		if (!exceptionScript.isEmpty()) {
+//			finalJS = finalJS.replace("//INSERT EXCEPTION SCRIPT//", exceptionScript);
+//		}
+//		//Create the tags object by looping through the tags and adding them to the tags string
+//		String tagsString = "tags = [";
+//		for (TagImage tagImage: tagImageSet) {
+//			
+//			//build the current tag object and add it to overall object
+//			tagsString +=  "{id: '" + tagImage.id() + "', " +
+//							"tag: '" + tagImage.url() + "', " +
+//							"placement: " + tagImage.priority() + ", " +
+//							"width: " + tagImage.width() + ", " +
+//							"height: " + tagImage.height() + "},";
+//		}
+//		tagsString += "];";
+//		
+//		//Insert the tags into the code by replacing the 'insert tags object' marker with them
+//		String finalJS = adInjecterJS.replace("//INSERT TAGS OBJECT//", tagsString);
+//		
 		//If an exceptions exists, insert its script into the final string
 		String exceptionScript = "";
 		try {exceptionScript = getAdInjecterException(targetURL); } catch (Exception e) {}
@@ -729,7 +773,7 @@ public class AdShotter3 {
 			finalJS = finalJS.replace("//INSERT EXCEPTION SCRIPT//", exceptionScript);
 		}
 		
-		FileUtils.writeStringToFile(new File("adInjecterWithTags.js"), finalJS);
+		FileUtils.writeStringToFile(new File("creativeInjecterWithTags.js"), finalJS);
 		
 		//Return the modified javascript as a String
 		return finalJS;

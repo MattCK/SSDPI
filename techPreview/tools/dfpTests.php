@@ -14,13 +14,11 @@ use AdShotRunner\DFP\DFPCommunicator;
 
 header("Content-Type: text/plain");
 
-$dfpCommunicator = DFPCommunicator::create("1041453671893-6u2tkvf48t1d761c40niul48e94f27pr.apps.googleusercontent.com", 
-										   "VdC_QJfGyZCt0Q-dUJl47CnQ", 
-										   "1/YI_KIXNvTmidUf756JE_4bu9qXlD_j_1azY_E6iLfb0", 
-										   "324288910", "AdShotRunner");
+$dfpCommunicator = DFPCommunicator::create("87580729053-tm802nbiqhf2o33eic38q8vvi688dsbp.apps.googleusercontent.com", 
+										   "nYe5-OOiDXp4sntqydYyGWPC", 
+										   "1/EmflFSwLOd-g-cQDpQ4ndtKbaeHZErtTmhRSGYVukKI", 
+										   "4408", "AdShotRunner");
+										   // "324288910", "AdShotRunner");
 
-print_r($dfpCommunicator->getOrders());
-
-$dfpCommunicator->getLineItemsAndCreative("778532670", $lineItems, $creatives);
-print_r($lineItems);
-print_r($creatives);
+$dfpOrders = $dfpCommunicator->searchOrders("lein");
+print_r($dfpOrders);
