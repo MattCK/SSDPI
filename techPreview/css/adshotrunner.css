@@ -634,3 +634,72 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 .ui-dialog-title {
     text-align: left;
 }
+
+#lineItemsTableDiv {
+    display: block; 
+    max-height: 300px; 
+    overflow-y: scroll; 
+    border: solid 1px black;
+    margin-bottom: 5px;
+    border: 1px solid #c2c2c2;
+}
+
+#lineItemsTable {
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    border: 0;
+    border-collapse: separate;
+}
+
+#lineItemsTable td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+#lineItemsTable th, td {
+    padding: 2px 0px 5px 0px;
+}
+
+#lineItemsTable td:first-child {
+    text-align: left;
+    padding-left: 8px;
+    padding-bottom: 2px;
+}
+
+#lineItemsTable td:last-child {
+    border-right: none;
+}
+
+#lineItemsTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#lineItemsTable tr:nth-child(odd) {
+    background-color: #fff;
+}
+
+#lineItemsTable tr:nth-child(even) td {
+    background-color: #f2f2f2;
+}
+
+#lineItemsTable tr:nth-child(odd) td {
+    background-color: #fff;
+}
+
+#lineItemsTable tr td:nth-child(2) {
+    text-align: left;
+}
+
+#lineItemsTable tr td:nth-child(4) {
+    min-width: 57px;;
+}
+
+#lineItemsTable input {
+    vertical-align: text-bottom;
+    padding-bottom: 5px;
+}
+
+#lineItemsTable tr:hover, #lineItemsTable tr:hover td {
+    background-color: #8AFF7F;
+ }

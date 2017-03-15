@@ -7,7 +7,7 @@
 /**
 * File to define all the system paths and the tournament data
 */
-require_once('systemSetup.php');
+require_once('../systemSetup.php');
 
 /**
 * Verify the session is valid and set the session constants
@@ -28,6 +28,21 @@ $dfpCommunicator = DFPCommunicator::create(ASRProperties::dfpClientID(),
 										   ASRProperties::dfpApplicationName());
 
 $dfpCommunicator->getLineItemsAndCreative($_REQUEST['orderID'], $lineItems, $creatives);
+
+foreach($lineItems as $lineItemID => $lineItem) {
+	echo "$lineItemID : " . $lineItem["name"] . " - " . count($lineItem["creatives"]) . " creatives - " . $lineItem["status"] . " <br/>";
+	if (count($lineItem["creatives"]) < 1116) {
+		foreach($lineItem["creatives"] as $creativeID) {
+			$currentCreative = $creatives[$creativeID];
+			echo "&nbsp;&nbsp; $creativeID (" . $currentCreative["type"] . ") - " . 
+					$currentCreative["width"] . "x" . $currentCreative["height"] . ": " .
+					"<a href='" . $currentCreative["previewURL"] . "'>Preview URL</a><br>";
+		}
+	}
+	echo "<br/>";
+}
+
+exit;
 
 echo createJSONResponse(true, "Order Found", ["lineItems" => $lineItems, "creatives" => $creatives]);
 

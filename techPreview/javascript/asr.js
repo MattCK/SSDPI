@@ -19,6 +19,7 @@ let asr = {
 	_requestScreenshotsURL: 'requestScreenshots.php',	//URL of request page to send information to in order to create screenshots
 	_uploadBackgroundImageURL: 'uploadBackgroundImage.php',	//URL of request page to upload PowerPoint background image and store it
 	_storeTagTextURL: 'storeTagText.php',				//URL of request page that stores tag text for analysis
+	_searchOrdersURL: 'searchDFPOrders.php',			//URL of request page to get line items and creatives for an order
 	_getOrderDataURL: 'getOrderData.php',				//URL of request page to get line items and creatives for an order
 	_menuItems: [],										//List of menu items returned from the get menu request
 	_menuOptions: "",									//HTML options string of menu labels and their URLs
@@ -27,6 +28,7 @@ let asr = {
 														//(Possibly unnecessary but more robust)
 	_queuedTags: [],									//Array of tags that need to be processed into images
 	_tagsBeingProcessed: 0,								//Number of tags being processed into images
+	_matchingOrders: [],								//Retrieved DFP orders matching the latest search term
 	_lineItems: [],										//Array of line item names and their descriptions
 	_creatives: [],										//Array of creative IDs and their content
 	orders: {},											//Array of order IDs with 'name' and 'notes' properties
@@ -114,7 +116,6 @@ let asr = {
 		}
 		
 		//Make the request
-		//CHECKED WITH FAIL
 		base.asyncRequest(asr._getMenuURL, 'domain=' + base.nodeFromID('domain').value, onSuccessCallback, onFailCallback);
 	},
 
@@ -270,7 +271,6 @@ let asr = {
 		}
 		
 		//Make the request to get images for the tags
-		//CHECKED WITH FAIL
 		base.disable("getTagImagesButton");
 		base.asyncRequest(asr._getTagImagesURL, {'tags': tagsByID}, onSuccessCallback, onFailCallback);
 
@@ -310,7 +310,6 @@ let asr = {
 		}
 		
 		//Create the request object for the raw form data
-		//CHECKED WITH FAIL
 		let formData = new FormData();
 		formData.append('imageID', newUUID);
 		formData.append('image', tagImageData);
@@ -370,7 +369,6 @@ let asr = {
 		
 
 		//Make the request
-		//CHECKED WITH FAIL
 		base.asyncRequest(asr._requestScreenshotsURL, 
 						 'jobID=' + jobID + '&' + tagHeader + '&' + base.serializeForm('pagesForm'), 
 						  onSuccessCallback, onFailCallback);
@@ -410,7 +408,6 @@ let asr = {
 		}
 		
 		//Make the request
-		//CHECKED WITH FAIL
 		base.asyncRequest(asr._storeTagTextURL, {tagText: tagText}, onSuccessCallback, onFailCallback);
 	},
 
@@ -501,7 +498,7 @@ let asr = {
 	displayOrderNotes: function() {
 		let orderID = base.nodeFromID("orderSelect").value;
 		if (orderID) {
-			base.nodeFromID("orderNotesDiv").innerHTML = asr.orders[orderID].notes;
+			base.nodeFromID("orderNotesDiv").innerHTML = asr._matchingOrders[orderID].notes;
 		}
 	},
 
@@ -516,6 +513,9 @@ let asr = {
 		let onSuccessCallback = function(response) {
 
 			base.enable("getOrderDataButton");
+
+			base.disable("lineItemsButton");
+			base.hide("tooManyCreativeDiv");
 			
 			//If successful, show the information
 			if (response.success) {
@@ -524,45 +524,43 @@ let asr = {
 				asr._lineItems = response.data.lineItems;
 				asr._creatives = response.data.creatives;
 
-				//Add the creatives to the queue
-				for (let creativeID in asr._creatives) {
-					if (asr._creatives.hasOwnProperty(creativeID)) {
-						console.log("Tag before: " + asr._creatives[creativeID]);
+				//Create the line items table headers
+				let tableHeaders =  "<thead><tr>";
+				tableHeaders += 	"<th>&nbsp;</th>";
+				tableHeaders += 	"<th>Name</th>";
+				tableHeaders += 	"<th>Status</th>";
+				tableHeaders += 	"<th>Creatives</th>";
+				tableHeaders += 	"</tr></thead>";
 
-						asr.addTagsToQueue(tagParser.getTags(asr._creatives[creativeID]));
-						console.log("tag: " + tagParser.getTags(asr._creatives[creativeID]));
+				//Put the line items in the line items table
+				let lineItemRows = "";
+				let lineItemCount = 0;
+				for (let lineItemID in asr._lineItems) {
+					if (asr._lineItems.hasOwnProperty(lineItemID)) {
+
+						//Get the line item
+						let currentLineItem = asr._lineItems[lineItemID];
+
+						lineItemRows += "<tr><td><input type='checkbox' value='" + lineItemID + "'></td>";
+						lineItemRows += "<td>" + currentLineItem.name + "</td>";
+						lineItemRows += "<td>" + currentLineItem.status + "</td>";
+						lineItemRows += "<td>" + currentLineItem.creatives.length + "</td></tr>";
+
+						++lineItemCount;
 					}
 				}
-
-				//Put the line items in the line items div
-				for (let lineItemName in asr._lineItems) {
-					if (asr._lineItems.hasOwnProperty(lineItemName)) {
-
-						//If there is already a line item in the div, add breaks
-						if (base.nodeFromID("lineItemsDiv").innerHTML != "") {base.nodeFromID("lineItemsDiv").innerHTML += "<br><br>";}
-
-						//Add the line item name
-						base.nodeFromID("lineItemsDiv").innerHTML += "<strong>" + lineItemName + " </strong>";
-
-						//If a description was included, add it as well
-						if (asr._lineItems[lineItemName]) {
-							base.nodeFromID("lineItemsDiv").innerHTML += " - " + asr._lineItems[lineItemName];
-						}
-					}
+				base.nodeFromID("lineItemsTableDiv").innerHTML = '<table id="lineItemsTable" class="tablesorter">' +
+				 												tableHeaders + "<tbody>" + lineItemRows + "</tbody></table>";
+				if (lineItemCount > 0) {
+					$("#lineItemsTable").tablesorter({sortList: [[1,0]]}); 
 				}
+				$("#lineItemsTable input:checkbox").click(asr.onLineItemSelection);
+				lineItemsDialog.open();
 
 				//Place the advertiser name in the customer field
-				if (asr.orders[orderID].advertiserName) {base.nodeFromID("customer").value = asr.orders[orderID].advertiserName;}
-
-				//Hide the orders and show the line items
-				base.hide("dfpOrdersHeader");
-				base.hide("dfpOrdersHelpIcon");
-				base.hide("dfpOrdersDiv");
-				base.show("lineItemsHeader");
-				base.show("lineItemsDiv");
-
-				//Get the creatives
-				asr.getTagImages();
+				if (asr._matchingOrders[orderID].advertiserName) {
+					base.nodeFromID("customer").value = asr._matchingOrders[orderID].advertiserName;
+				}
 			}
 						
 			//If failure, simply output to the console for the time being and enable the submit button
@@ -585,8 +583,176 @@ let asr = {
 		}
 
 		//Make the request
-		//CHECKED WITH FAIL
 		base.asyncRequest(asr._getOrderDataURL, 'orderID=' + orderID, onSuccessCallback, onFailCallback);
+	},
+
+	searchOrders: function() {
+
+		//Check to see if a search term has been entered
+		let searchTerm = base.nodeFromID("orderSearchTerm").value;
+		if (searchTerm.length < 3) {return;}
+
+		//Disable the search button
+		base.disable("orderSearchButton");
+
+		//Create the onSuccessCallback function that will display the information
+		let onSuccessCallback = function(response) {
+
+			base.enable("orderSearchButton");
+			
+			//If successful, show the information
+			if (response.success) {
+
+				//Store the order data
+				asr._matchingOrders = response.data;
+
+				//Create the order options
+				let orderOptions = "";
+				for (let orderID in asr._matchingOrders) {
+					if (asr._matchingOrders.hasOwnProperty(orderID)) {
+
+						//Create the order label
+						let orderName = asr._matchingOrders[orderID].name;
+						if (asr._matchingOrders[orderID].advertiserName) {
+							orderName += " - " + asr._matchingOrders[orderID].advertiserName;
+							if (asr._matchingOrders[orderID].agencyName) {orderName += " (" + asr._matchingOrders[orderID].agencyName + ")";}
+						}
+						orderName += " - " + orderID;
+						orderOptions += "<option value='" + orderID + "'>" + orderName + "</option>";
+					}
+				}
+
+				//Add the order options to the select menu
+				base.nodeFromID("orderSelect").innerHTML = orderOptions;
+				base.nodeFromID("orderNotesDiv").innerHTML = "";
+
+			}
+						
+			//If failure, simply output to the console for the time being and enable the submit button
+			else {
+				console.log('in search order data failure');
+				console.log(response.data);
+				base.enable("orderSearchButton");
+			}
+		}
+		
+		//If there was a problem connecting with the server, notify the user and enable the input field/button
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to search orders.");
+
+			console.log('in search order data failure');
+			console.log(response.data);
+
+			base.enable("orderSearchButton");
+		}
+
+		//Make the request
+		base.asyncRequest(asr._searchOrdersURL, 'searchTerm=' + searchTerm, onSuccessCallback, onFailCallback);
+	},
+
+	useSelectedLineItems: function() {
+
+		//Get the selected line item IDs
+		let lineItemIDs = [];
+		$("#lineItemsTable input:checked").each(function( index ) {
+			lineItemIDs.push($(this).val());
+		});
+
+		//If none were selected, do nothing
+		if (lineItemIDs.length == 0) {return;}
+
+		//Fill out the line items div and put together their creatives
+		let creativeIDList = [];
+		base.nodeFromID("lineItemsDiv").innerHTML = "";
+		for (let index in lineItemIDs) {
+
+			//Get the line item
+			let currentLineItem = asr._lineItems[lineItemIDs[index]];
+
+			//If there is already a line item in the div, add breaks
+			if (base.nodeFromID("lineItemsDiv").innerHTML != "") {base.nodeFromID("lineItemsDiv").innerHTML += "<br><br>";}
+
+			//Add the line item name
+			base.nodeFromID("lineItemsDiv").innerHTML += "<strong>" + currentLineItem.name + " (" + currentLineItem.status + ") </strong>";
+
+			//If a description was included, add it as well
+			if (currentLineItem.notes) {
+				base.nodeFromID("lineItemsDiv").innerHTML += " - " + currentLineItem.notes;
+			}
+
+			//Add the creative IDs to the list
+			for (let index in currentLineItem.creatives) {
+				let currentCreativeID = currentLineItem.creatives[index];
+				if (creativeIDList.indexOf(currentCreativeID) < 0) {creativeIDList.push(currentCreativeID);}
+				else {console.log("Found: " + currentCreativeID);}
+			}
+		}
+
+		//Add the creatives to the queue if 15 or less exist
+		if (creativeIDList.length <= 15) {
+			for (let index in creativeIDList) {
+				let currentCreativeID = creativeIDList[index];
+				asr.addTagsToQueue(tagParser.getTags(asr._creatives[currentCreativeID].tag));
+			}
+			asr.getTagImages();
+		}
+
+		//Hide the orders and show the line items
+		base.hide("dfpOrdersHeader");
+		base.hide("dfpOrdersHelpIcon");
+		base.hide("dfpOrdersDiv");
+		base.show("lineItemsHeader");
+		base.show("lineItemsDiv");
+
+		//Close the dialog
+		lineItemsDialog.close();
+	},
+
+	selectAllLineItems: function() {
+		$('#lineItemsTable input:checkbox').prop('checked', true);
+		asr.onLineItemSelection();
+	},
+
+	unselectAllLineItems: function() {
+		$('#lineItemsTable input:checkbox').prop('checked', false);
+		asr.onLineItemSelection();
+	},
+
+	onLineItemSelection: function() {
+		
+		//Get the selected line item IDs
+		let lineItemIDs = [];
+		$("#lineItemsTable input:checked").each(function( index ) {
+			lineItemIDs.push($(this).val());
+		});
+
+		//If none were selected, disable the button and hide the too many creatives div
+		if (lineItemIDs.length == 0) {
+			base.disable("lineItemsButton");
+			base.hide("tooManyCreativeDiv");
+			return;
+		}
+
+		//Otherwise, enable the line items button
+		base.enable("lineItemsButton");
+
+		//Get the amount of creatives selected
+		let creativeIDList = [];
+		for (let index in lineItemIDs) {
+
+			//Add the creative IDs to the list
+			let currentLineItem = asr._lineItems[lineItemIDs[index]];
+			for (let index in currentLineItem.creatives) {
+				let currentCreativeID = currentLineItem.creatives[index];
+				if (creativeIDList.indexOf(currentCreativeID) < 0) {creativeIDList.push(currentCreativeID);}
+			}
+		}
+
+		//If there are more than 15 creatives selected, show the too many div, otherwise hide it
+		if (creativeIDList.length >= 15) {base.show("tooManyCreativeDiv");}
+		else {base.hide("tooManyCreativeDiv");}
 	},
 
 	/**
@@ -641,7 +807,6 @@ let asr = {
 		}
 
 		//Create the request object for the image raw data
-		//CHECKED WITH FAIL
 		let formData = new FormData();
 		formData.append('backgroundTitle', base.nodeFromID("newBackgroundTitle").value);
 		formData.append('backgroundFontColor', base.nodeFromID("newBackgroundFontColor").value.substring(1));

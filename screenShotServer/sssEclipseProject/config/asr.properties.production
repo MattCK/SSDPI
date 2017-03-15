@@ -22,7 +22,7 @@ containerForTagTexts = asr-production/tagtexts
 notificationGroupForFrontend = arn:aws:sns:us-east-1:469658404108:Frontend
 notificationGroupForSSS = arn:aws:sns:us-east-1:469658404108:ScreenShotServer
 
-pathForAdInjecterJavascript = javascript/adInjecter.js
+pathForAdInjecterJavascript = javascript/creativeInjecter.js
 pathForAdMarkerExtension = chromeExtensions/adMarker.crx
 pathForDefaultBackground = config/DefaultBackground.jpg
 pathForHTMLWithoutAnchorsJavascript = javascript/retrieveHTMLWithoutAnchorsFromURL.js

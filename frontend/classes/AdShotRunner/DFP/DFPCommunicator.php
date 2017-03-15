@@ -246,7 +246,7 @@ class DFPCommunicator {
 	* @param 	string 	&lineItems			By reference variable set to an array of line item names with their notes as values
 	* @param 	string 	&creatives			By reference variable set to an array of creative IDs with their tag scripts as values
 	*/
-	public function getLineItemsAndCreative($orderID, &$lineItems, &$creatives) {
+	public function getLineItemsAndCreative2($orderID, &$lineItems, &$creatives) {
 
 		//Get the DfpSession instantiated for this instance and a services object
 		$dfpSession = $this->getDFPSession();
@@ -394,7 +394,7 @@ class DFPCommunicator {
 
 	}
 
-	public function getLineItemsAndCreative2($orderID, &$lineItems, &$creatives) {
+	public function getLineItemsAndCreative($orderID, &$lineItems, &$creatives) {
 
 		//If no orderID was passed, simply exit the function
 		if (!$orderID) {return;}
@@ -411,6 +411,9 @@ class DFPCommunicator {
 			if ($lineItemCreatives[$lineItemID]) {
 				$lineItems[$lineItemID]["creatives"] = $lineItemCreatives[$lineItemID];
 				$allCreativeIDs = array_merge($allCreativeIDs, $lineItemCreatives[$lineItemID]);
+			}
+			else {
+				$lineItems[$lineItemID]["creatives"] = [];
 			}
 		}
 		$allCreativeIDs = array_unique($allCreativeIDs);
@@ -541,7 +544,7 @@ class DFPCommunicator {
 
 		//Create the statement to select all line items for the passed order IDs
 		$statementBuilder = new StatementBuilder();
-		$statementBuilder->Where("orderId = $orderID")->OrderBy('name ASC');
+		$statementBuilder->Where("orderId = $orderID")->OrderBy('name ASC, status ASC');
 		$lineItemResults = $lineItemService->getLineItemsByStatement($statementBuilder->ToStatement());
 
 		//Store the line item order IDs, name, and notes
@@ -569,7 +572,9 @@ class DFPCommunicator {
 		//Create the statement to select all licas for the passed line item ids
 		$lineItemIDList = implode(",", $lineItemIDs);
 		$statementBuilder = new StatementBuilder();
-		$statementBuilder->Where("lineItemId IN ($lineItemIDList)");
+		//$statementBuilder->Where("lineItemId IN ($lineItemIDList)");
+		$statementBuilder->Where("lineItemId IN ($lineItemIDList) AND status = 'ACTIVE'");
+		//$statementBuilder->Where("lineItemId IN ($lineItemIDList) AND status = 'INACTIVE'");
 		$licaResults = $lineItemCreativeAssociationService
 					   ->getLineItemCreativeAssociationsByStatement($statementBuilder->ToStatement());
 
@@ -652,7 +657,8 @@ class DFPCommunicator {
 		        	$creatives[$creative->getId()] = ["tag" => $tag,
 		        									  "previewURL" => $creative->getPreviewUrl(),
 		        									  "width" => $creative->getSize()->getWidth(),
-		        									  "height" => $creative->getSize()->getHeight()];
+		        									  "height" => $creative->getSize()->getHeight(),
+		        									  "type" => $creativeClass];
 		        }
 		    }
 		}

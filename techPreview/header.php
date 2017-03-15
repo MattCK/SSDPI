@@ -18,10 +18,12 @@
 	<link href="<?PHP echo CSSURL;?>theme.css" rel="stylesheet" type="text/css">
 	<link href="<?PHP echo CSSURL;?>tabs.css" rel="stylesheet" type="text/css">
 	<link href="<?PHP echo CSSURL;?>spectrum.css" rel="stylesheet" type="text/css">
+	<link href="<?PHP echo CSSURL;?>tablesorterTheme/style.css" rel="stylesheet" type="text/css">
 	<link href="<?PHP echo CSSURL;?>adshotrunner.css<?PHP echo "?" . $timestamp?>" rel="stylesheet" type="text/css">
 	<script src="<?PHP echo JAVASCRIPTURL;?>jquery-2.1.4.min.js" language="javascript" type="text/javascript"></script>
 	<script src="<?PHP echo JAVASCRIPTURL;?>jquery-ui-1.11.4.min.js" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>spectrum.js" language="javascript" type="text/javascript"></script>	
+	<script src="<?PHP echo JAVASCRIPTURL;?>jquery.tablesorter.min.js" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>base.js<?PHP echo "?" . $timestamp?>" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>zip.js" language="javascript" type="text/javascript"></script>	
 	<script src="<?PHP echo JAVASCRIPTURL;?>asr.js<?PHP echo "?" . $timestamp?>" language="javascript" type="text/javascript"></script>	

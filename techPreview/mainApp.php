@@ -31,19 +31,6 @@ $backgroundURL = "https://s3.amazonaws.com/" . ASRProperties::containerForPowerP
 //If the user has already ran a campaign during this session, show the last campaign domain
 $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDomain'] : "";
 
-//If the user has a DFP network code, get their orders
-$orders = null;
-if (USERDFPNETWORKCODE) {
-
-	$dfpCommunicator = DFPCommunicator::create(ASRProperties::dfpClientID(), 
-											   ASRProperties::dfpClientSecret(), 
-											   ASRProperties::dfpRefreshToken(), 
-											   USERDFPNETWORKCODE, 
-											   ASRProperties::dfpApplicationName());
-
-	$orders = $dfpCommunicator->getOrders();
-}
-
 ?>
 
 <?PHP include_once(BASEPATH . "header.php");?>
@@ -84,7 +71,12 @@ if (USERDFPNETWORKCODE) {
 			<table>
 				<tr>
 					<td style="width: 100px; font-weight: bold;">Orders:</td>				
-					<td colspan="2"><input id="orderFilter" name="orderFilter" type="text" oninput="asr.filterOrders()" style="width: 588px"></td>
+					<td colspan="2">
+						Enter a <strong>full</strong> order ID or <strong>part</strong> of an order name, advertiser name, or agency name:
+						<input id="orderSearchTerm" name="orderSearchTerm" type="text" style="width: 525px; margin-top: 5px;"
+								onkeyup="if(event.keyCode == 13){asr.searchOrders();}">
+						<input id="orderSearchButton" type="button" class="button-tiny" value="Search" onclick="asr.searchOrders()">
+					</td>
 				</tr>
 				<tr>
 					<td>&nbsp;</td>
@@ -93,7 +85,7 @@ if (USERDFPNETWORKCODE) {
 				</tr>
 				<tr>
 					<td>&nbsp;</td>
-					<td colspan="2"><input id="getOrderDataButton" type="button" value="Get Line Items and Creatives" onclick="asr.requestOrderData()"></td>
+					<td colspan="2"><input id="getOrderDataButton" type="button"  class="button-tiny" value="Get Line Items and Creatives" onclick="asr.requestOrderData()"></td>
 				</tr>
 			</table>
 		</div>
@@ -217,7 +209,21 @@ if (USERDFPNETWORKCODE) {
 
 <!-- ********************************************************************************** -->
 
-
+<div style="display: none;">
+	<div id="lineItemsDialogDiv">
+		<div id="lineItemsTableDiv" style="">
+			<table id="lineItemsTable" class="tablesorter">
+			</table>
+		</div>
+		<input type="button" class="button-tiny" value="Select All" onclick="asr.selectAllLineItems()">
+		<input type="button" class="button-tiny" value="Select None" onclick="asr.unselectAllLineItems()">
+		<input id="lineItemsButton" type="button" class="button-tiny" style="margin-left: 40px;" value="Use Selected Line Items" 
+			   onclick="asr.useSelectedLineItems()" disabled>
+		<div id="tooManyCreativeDiv" style="display: none; padding-top: 15px;">
+			More than 15 creative selected. Creative will not be loaded.
+		</div>
+	</div>
+</div>
 
 
 </body>
@@ -245,6 +251,7 @@ contactForm.reset();
 
 //Make the tag images table sortable, make the contact form a dialog, and, if DFP is enabled, sort and show the orders
 let contactFormDialog = null;
+let lineItemsDialog = null;
 $(function() {
 
 	//Setup the paths in the ASR javascript object to the tag and powerpoint background images
@@ -260,6 +267,9 @@ $(function() {
 	//Make the contact form a "pop-up" dialog
 	contactFormDialog = base.createDialog("contactFormDiv", "Contact Us", true, 650);
 
+	//Make the line items form a "pop-up" dialog
+	lineItemsDialog = base.createDialog("lineItemsDialogDiv", "Line Items", true, 940);
+
 	//Create the color selector for the final PowerPoint
 	$("#newBackgroundFontColor").spectrum({
 		color: "#000000",
@@ -267,16 +277,6 @@ $(function() {
 	    showPaletteOnly: true,
 	    showPalette: true,
    	});
-
-	<?PHP if (USERDFPNETWORKCODE): ?>
-
-	asr.orders = <?PHP echo json_encode($orders) ?>;
-	asr.filterOrders();
-	let orderFilter = base.nodeFromID("orderFilter");
-	orderFilter.addEventListener('onchange', asr.filterOrders);
-
-
-	<?PHP endif; ?>
 
 	<?PHP if ($_GET["domain"]): ?>
 
