@@ -578,7 +578,7 @@ class ElementInfo {
 	}
 
 	/**
-	* Returns the x,y coorindates of the passed node in relation to the screen view.
+	* Returns the x,y coordinates of the passed node in relation to the screen view.
 	*
 	* @param {HTMLElement}	elementNode		Node used to find smallest containing node
 	* @return {Coordinates}  				Coordinates object with x,y set to node's screen position
@@ -719,6 +719,10 @@ class CreativeInjecter {
 		//Begin my removing all large ads and overlays
 		this._hideLargeAdsAndOverlays();
 
+		//If no creatives were passed, simply exit at this point. This prevents non-replaced
+		//ad selector elements from being hidden.
+		if (this._creatives.getCreatives().size == 0) {return;}
+
 		//--------------------- Ad Selector Elements -------------------------------
 		//Sort the AdSelector elements by there positions
 		this._sortAdSelectorsByPosition(this._adSelectors);
@@ -806,7 +810,7 @@ class CreativeInjecter {
 					this._creatives.injected(creativeToInject);
 				}
 			}
-		}//*/
+		}
 	}
 
 	_replaceElementWithCreative(elementNode, replacementCreative) {
