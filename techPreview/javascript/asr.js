@@ -349,8 +349,8 @@ let asr = {
 			
 			//If successful, navigate to the queued job page
 			if (response.success) {
-				window.location.href = '/campaignResults.php?jobID=' + jobID;
-				//window.open('/campaignResults.php?jobID=' + jobID, '_blank');
+				//window.location.href = '/campaignResults.php?jobID=' + jobID;
+				window.open('/campaignResults.php?jobID=' + jobID, '_blank');
 			}
 						
 			//If failure, simply output to the console for the time being
@@ -541,10 +541,13 @@ let asr = {
 						//Get the line item
 						let currentLineItem = asr._lineItems[lineItemID];
 
-						lineItemRows += "<tr><td><input type='checkbox' value='" + lineItemID + "'></td>";
-						lineItemRows += "<td>" + currentLineItem.name + "</td>";
-						lineItemRows += "<td>" + currentLineItem.status + "</td>";
-						lineItemRows += "<td>" + currentLineItem.creatives.length + "</td></tr>";
+						//Create the checkbox ID
+						let checkboxID = "lineItemCheckBox_" + lineItemID;
+
+						lineItemRows += "<tr><td><input type='checkbox' id='" + checkboxID + "' value='" + lineItemID + "'></td>";
+						lineItemRows += "<td><label for='" + checkboxID + "'>" + currentLineItem.name + "</label></td>";
+						lineItemRows += "<td><label for='" + checkboxID + "'>" + currentLineItem.status + "</label></td>";
+						lineItemRows += "<td><label for='" + checkboxID + "'>" + currentLineItem.creatives.length + "</label></td></tr>";
 
 						++lineItemCount;
 					}

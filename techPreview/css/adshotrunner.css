@@ -652,6 +652,10 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     border-collapse: separate;
 }
 
+#lineItemsTable label {
+    display: block;
+}
+
 #lineItemsTable td {
     vertical-align: middle;
     text-align: center;
@@ -662,7 +666,7 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 }
 
 #lineItemsTable td:first-child {
-    text-align: left;
+    text-align: center;
     padding-left: 8px;
     padding-bottom: 2px;
 }

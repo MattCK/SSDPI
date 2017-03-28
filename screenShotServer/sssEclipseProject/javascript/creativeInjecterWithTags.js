@@ -578,7 +578,7 @@ class ElementInfo {
 	}
 
 	/**
-	* Returns the x,y coorindates of the passed node in relation to the screen view.
+	* Returns the x,y coordinates of the passed node in relation to the screen view.
 	*
 	* @param {HTMLElement}	elementNode		Node used to find smallest containing node
 	* @return {Coordinates}  				Coordinates object with x,y set to node's screen position
@@ -640,6 +640,327 @@ class ElementInfo {
 		return true;
 	}
 }
+
+/**
+* The GPTSlots class stores the googletag.Slot objects on the page at the time of instantiation
+* and provides slot size information or AdSelectors for the slots.
+*
+* Since the googletag.Slot objects are obfuscated, the constructor creates dummy slots with
+* a target size to find the size properties in the Slot object. It then uses this information
+* to get each Slot's sizes.
+*
+* If the googletag object does not exist on the page, the functions return empty results.
+*/
+class GPTSlots {
+
+	/**
+	* Initializes the GPTSlots with any Google tag slots currently on the page.
+	*/
+	constructor() {
+
+		//Create the class constants
+		this._TARGETWIDTH = 8888;
+		this._TARGETHEIGHT = 9999;
+
+		//Begin by instantiating the slots and slots sizes members regardless if the googletag object exists
+		this._slots = [];
+		this._slotCreativeSizes = new Map();
+
+		//If the googletag object exists, instantiate the class using its information
+		if (googletag != null) {
+
+			//Store any googletag.Slot objects
+			this._slots = googletag.pubads().getSlots();
+
+			//Get the slot object properties for a slot with sizes passed to the constructor.
+			let dummySlot = this._getDummySlot(this._TARGETWIDTH, this._TARGETHEIGHT);
+			let propertyInfo = this._getSizesProperties(dummySlot, this._TARGETWIDTH, this._TARGETHEIGHT);
+			this._sizesPropertyKey = propertyInfo.containingPropertyKey;
+			this._sizesClass = propertyInfo.sizesClass;
+			this._widthProperty = propertyInfo.widthKey;
+			this._heightProperty = propertyInfo.heightKey;
+
+			//Get the slot sizes property for a slot created with a SizeMapping object
+			let sizeMappingSlot = this._getDummySlotWithMapping(this._TARGETWIDTH, this._TARGETHEIGHT);
+			let mappingPropertyInfo = this._getSizesProperties(sizeMappingSlot, this._TARGETWIDTH, this._TARGETHEIGHT);
+			this._mappingPropertyKey = mappingPropertyInfo.containingPropertyKey;
+
+			//For each slot, get the CreativeSizes
+			for (let currentSlot of this._slots) {
+
+				//Add the current slot and its CreativeSizes to the member Map
+				this._slotCreativeSizes.set(currentSlot, this._getCreativeSizes(currentSlot));
+			}
+		}
+	}
+
+	/**
+	* @return {Array}	Array of Google.Slots on the page when the GPTSlots object was instantiated
+	*/	
+	slots() {return this._slots;}
+
+	/**
+	* @return {Map}	Map of Google.Slots with the values the Set of CreativeSizes for each slot
+	*/	
+	creativeSizes() {return this._slotCreativeSizes;}
+
+	/**
+	* @return {Set}	Set of AdSelectors for all of the Google.Slots. The hide if not replaced flag is set to true.
+	*/	
+	adSelectors() {
+
+		//Loop through the slots and create an accessor for each one
+		let slotAdSelectors = new Set();
+		for (let [currentSlot, currentCreativeSizes] of this._slotCreativeSizes) {
+
+			//Create the selector string. If any forward slashes exist, put backslashes before them
+			// let slotSelector = "#" + currentSlot.getSlotElementId() + " iframe";
+			let slotSelector = "#" + currentSlot.getSlotElementId() + "";
+			slotSelector = slotSelector.replace(/\//g, "\\/");
+			slotSelector = slotSelector.replace(/\./g, "\\.");
+
+			//Create the AdSelector and add each CreativeSize width and height to it
+			let currentAdSelector = new AdSelector(slotSelector, true);
+			for (let slotCreativeSize of currentCreativeSizes) {
+				currentAdSelector.addSize(slotCreativeSize.width(), slotCreativeSize.height());
+			}
+
+			//Add the current selector to the overall set
+			slotAdSelectors.add(currentAdSelector);
+		}
+
+		//Return the set of AdSelectors
+		return slotAdSelectors;
+	}
+
+
+	/**
+	* Returns a Set of CreativeSizes for all the possible sizes of the passed slot
+	*
+	* @param {googletag.Slot}	slot		Slot to get CreativeSizes for
+	* @return {Set} 		 				Set of CreativeSizes for the passed slot
+	*/
+	_getCreativeSizes(slot) {
+
+		//Get any creative sizes in the primary Slot property (created by passing sizes to constructor)
+		let primaryCreativeSizes = this._getCreativeSizesInProperty(slot[this._sizesPropertyKey], 
+																	this._sizesClass, 
+																	this._widthProperty, 
+																	this._heightProperty);
+
+		//Get any creative sizes in the size mapping Slot property (created by passing SizeMapping after constructor)
+		let mappingCreativeSizes = this._getCreativeSizesInProperty(slot[this._mappingPropertyKey], 
+																	this._sizesClass, 
+																	this._widthProperty, 
+																	this._heightProperty);
+
+		//Remove any CreativeSize duplicates
+		//As of writing this, javascript allows overriding all operands except ==, thus requiring a loop
+		let allCreativeSizes = new Set([...primaryCreativeSizes, ...mappingCreativeSizes]);
+		let uniqueCreativeSizes = new Set();
+		for (let currentCreativeSize of allCreativeSizes) {
+
+			//See if a CreativeSize in the Slot creatives set already exists in the unique set
+			let sizeFound = false;
+			for (let uniqueSize of uniqueCreativeSizes) {
+				if ((uniqueSize.width() == currentCreativeSize.width()) &&
+					(uniqueSize.height() == currentCreativeSize.height())) {
+					sizeFound = true;
+				}
+			}
+
+			//If the size does not exist in the unique set, add it
+			if (!sizeFound) {uniqueCreativeSizes.add(currentCreativeSize);}
+		}
+
+		//Return all the unique CreativeSizes for the slot
+		return uniqueCreativeSizes;
+	}
+
+	/**
+	* Returns the property key holding the target size, the sizes class name, as well
+	* as the height and width keys in the sizes class.
+	*
+	* The returned object uses the following structure:
+	*
+	*		{containingPropertyKey: containingPropertyKey, 
+	* 		 sizesClass: sizesClass,
+	*		 widthKey: widthKey, 
+	* 		 heightKey: heightKey}
+	*
+	* @param {googletag.Slot}	slot			Slot to get property information for
+	* @param {googletag.Slot}	targetWidth		Width of the predefined size to look for
+	* @param {googletag.Slot}	targetHeight	Height of the predefined size to look for
+	* @return {Object} 		 					Property and class information for the target size (See description for details)
+	*/
+	_getSizesProperties(slot, targetWidth, targetHeight) {
+
+		//Define the information to retrieve
+		let containingPropertyKey = "";
+		let sizesClass = "";
+		let widthKey = "";
+		let heightKey = "";
+
+		//Recursively traverse the slot until the width and height values are met
+		//Return after the first matching set is found.
+		let cache = [];
+		let findSize = function(currentObject) {
+
+			//If we have already seen this object, ignore it and return to prevent circular reference
+		    if (typeof currentObject === 'object' && currentObject !== null) {
+		        if (cache.indexOf(currentObject) !== -1) {
+		            return;
+		        }
+
+		        //Store this object in the cache to prevent circular references to it
+		        cache.push(currentObject);
+
+		        //Loop through the object's properties, traversing them if necessary, while looking
+		        //for a two-property object with the width and height values as the values
+				for (var key in currentObject) {
+					if (currentObject.hasOwnProperty(key)) {
+						let value = currentObject[key];
+
+			        	//Surround the calls in a try catch to prevent IFrame security issues
+			        	try {
+
+			        		//If the current value is an object, check it for the widthxheight values
+			        		//then recursively traverse it if they are not found
+						    if (typeof value == "object" ) {
+
+						    	//If the object has two properties, see if they are the widthxheight values
+								if (Object.keys(value).length == 2) {
+
+									//Store the keys for reference
+									let firstKey = Object.keys(value)[0];
+									let secondKey = Object.keys(value)[1];
+
+									//Check if the properties equal the passed widthxheight values
+									if (((value[firstKey] == targetWidth) && (value[secondKey] == targetHeight)) ||
+										((value[firstKey] == targetHeight) && (value[secondKey] == targetWidth))) {
+
+											//Store the sizes object class name
+											sizesClass = value.constructor.name;
+
+											//Store which key is for width and which for height
+											if (value[firstKey] == targetWidth) {
+												widthKey = firstKey; heightKey = secondKey;
+											}
+											else {
+												widthKey = secondKey; heightKey = firstKey;
+											}
+
+											//Break out of the function now that the size has been found
+											return true;
+									}
+								}
+
+								//Otherwise, traverse the object. If true is returned, set the containing
+								//key to the current key and return true as well.
+						    	if (findSize(value)) {
+						    		containingPropertyKey = key;
+						    		return true;
+						    	};
+
+						    }
+			        	} catch(e) {}
+			        }
+		        }
+			}
+		}
+
+		//Call the findSize recursive function on the passed slot
+		findSize(slot);
+
+		//Return the found information
+		return {containingPropertyKey: containingPropertyKey, sizesClass: sizesClass,
+				widthKey: widthKey, heightKey: heightKey};
+	}
+
+	/**
+	* Returns a set of CreativeSizes for each possible size in the passed object
+	*
+	* @param {googletag.Slot}	slotObject		Slot property object to find sizes in
+	* @param {googletag.Slot}	sizesClass		Name of the class that holds the creative's possible size
+	* @param {googletag.Slot}	widthKey		Key in sizes class for the width value
+	* @param {googletag.Slot}	heightKey		Key in sizes class for the height value
+	* @return {Set} 		 					Set of CreativeSizes for all the sizes found in the passed object
+	*/
+	_getCreativeSizesInProperty(slotObject, sizesClass, widthKey, heightKey) {
+
+		//Recursively traverse the slot and store any found sizes
+		let cache = [];
+		let sizes = new Set();
+		let findSizes = function(currentObject) {
+
+			//If we have already seen this object, ignore it and return to prevent circular reference
+		    if (typeof currentObject === 'object' && currentObject !== null) {
+		        if (cache.indexOf(currentObject) !== -1) {
+		            return;
+		        }
+
+		        //Store this object in the cache to prevent circular references to it
+		        cache.push(currentObject);
+
+		        //Loop through the object's properties and store any found sizes
+				for (var key in currentObject) {
+					if (currentObject.hasOwnProperty(key)) {
+						let value = currentObject[key];
+
+			        	//Surround the calls in a try catch to prevent IFrame security issues
+			        	try {
+
+			        		//If the current value is an object, store the sizes or traverse it, whichever applicable
+						    if (typeof value == "object" ) {
+
+						    	//If the object is a sizes class, store the size
+								if (value.constructor.name == sizesClass) {
+									let currentCreativeSize = new CreativeSize(value[widthKey], value[heightKey]);
+									sizes.add(currentCreativeSize);
+								}
+
+								//Otherwise, traverse the object. 
+						    	else {findSizes(value);};
+
+						    }
+			        	} catch(e) {}
+			        }
+		        }
+			}
+		}
+		//Call the findSizes recursive function on the passed slot
+		findSizes(slotObject);
+
+		//Return the found sizes
+		return sizes;
+	}
+
+
+	/**
+	* @return {googletag.Slot} 		Newly created slot with the size arguments passed to the Slot constructor
+	*/
+	_getDummySlot(targetWidth, targetHeight) {
+
+		return googletag.defineSlot('/dummyPath' + Date.now(), [[targetWidth, targetHeight]], 'dummmyElementID' + Date.now());
+	}
+
+	/**
+	* @return {googletag.Slot} 		Newly created slot with the size arguments added to the slot through a size mapping
+	*/
+	_getDummySlotWithMapping(targetWidth, targetHeight) {
+
+		//Create a dummy slot with no sizes
+		let dummySlot = googletag.defineSlot('/dummyWithMappingPath' + Date.now(), [], 'dummmyWithMappingElementID' + Date.now());
+
+		//Create and add a size mapping to the slot using the size arguments and return it
+		let mapping = googletag.sizeMapping().
+		    addSize([100, 100], [targetWidth, targetHeight]).build();
+		dummySlot.defineSizeMapping(mapping);
+		return dummySlot;
+	}
+
+}
+
 
 //---------------------------------------------------------------------------------------
 //----------------------------------- CreativeInjecter Class ----------------------------------
@@ -719,43 +1040,64 @@ class CreativeInjecter {
 		//Begin my removing all large ads and overlays
 		this._hideLargeAdsAndOverlays();
 
-		//--------------------- Ad Selector Elements -------------------------------
-		//Sort the AdSelector elements by there positions
-		this._sortAdSelectorsByPosition(this._adSelectors);
+		//If no creatives were passed, simply exit at this point. This prevents non-replaced
+		//ad selector elements from being hidden.
+		if (this._creatives.getCreatives().size == 0) {return;}
 
-		//Replace each AdSelector element with a matching creative of one of its
-		//possible CreativeSizes, if a match exists
-		for (let currentAdSelector of this._adSelectors) {
+		// //--------------------- Ad Selector Elements -------------------------------
+		// //Sort the AdSelector elements by there positions
+		// this._sortAdSelectorsByPosition(this._adSelectors);
 
-			//Keep track if whether or not this AdSelector is replaced with a Creative
-			let adSelectorReplaced = false;
+		// //Replace each AdSelector element with a matching creative of one of its
+		// //possible CreativeSizes, if a match exists
+		// //this._adSelectors = []; //testing
+		// for (let currentAdSelector of this._adSelectors) {
 
-			for (let currentSize of currentAdSelector.sizes()) {
+		// 	//Keep track if whether or not this AdSelector is replaced with a Creative
+		// 	let adSelectorReplaced = false;
 
-				//If an uninjected Creative of that size exists, replace the element with it
-				let creativeToInject = this._creatives.getNextUninjectedCreative(currentSize.width(), currentSize.height());
-				if (creativeToInject) {
+		// 	for (let currentSize of currentAdSelector.sizes()) {
 
-					//If the selector element exists, replace it with the creative
-					let currentElement = document.querySelector(currentAdSelector.selector());
-					if (currentElement) {
-						let elementXPosition = ElementInfo.xPosition(currentElement);
-						let elementYPosition = ElementInfo.yPosition(currentElement);
-						this._replaceElementWithCreative(currentElement, creativeToInject)
-						this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
-						adSelectorReplaced = true;
-					}
-				}
-			}
+		// 		//Only try a replace if nothing has been injected for the current AdSelector
+		// 		if (!adSelectorReplaced) {
 
-			//If the element was not replaced, hide it if the AdSelector is flagged to hide if not replaced
-			if (!adSelectorReplaced && currentAdSelector.hideIfNotReplaced()) {
-				let currentElement = document.querySelector(currentAdSelector.selector());
-				if (currentElement) {
-					this._hideElement(currentElement);
-				}
-			}
-		}
+		// 			//If an uninjected Creative of that size exists, replace the element with it
+		// 			let creativeToInject = this._creatives.getNextUninjectedCreative(currentSize.width(), currentSize.height());
+		// 			if (creativeToInject) {
+
+		// 				//If the selector element exists, replace it with the creative
+		// 				let currentElement = document.querySelector(currentAdSelector.selector());
+		// 				if (currentElement) {
+
+		// 					// let parentElement = currentElement.parentElement;
+		// 					// parentElement.style.width = ElementInfo.width(currentElement) + "px";
+		// 					// parentElement.style.height = ElementInfo.height(currentElement) + "px";
+
+
+		// 					// let grandParentElement = parentElement.parentElement;
+		// 					// grandParentElement.style.width = ElementInfo.width(currentElement) + "px";
+		// 					// grandParentElement.style.height = ElementInfo.height(currentElement) + "px";
+
+		// 					this._replaceElementWithCreative(currentElement, creativeToInject)
+		// 					let elementXPosition = ElementInfo.xPosition(currentElement);
+		// 					let elementYPosition = ElementInfo.yPosition(currentElement);
+		// 					this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
+		// 					adSelectorReplaced = true;
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+
+		// 	//If the element was not replaced, hide it if the AdSelector is flagged to hide if not replaced
+		// 	if (!adSelectorReplaced && currentAdSelector.hideIfNotReplaced()) {
+		// 		let currentElement = document.querySelector(currentAdSelector.selector());
+		// 		if (currentElement) {
+		// 			this._hideElement(currentElement);
+		// 		}
+		// 	}
+		// }
+
+		// return; //testing		
 
 		//-------------------- Marked Creatives and IFrames ------------------------
 		//Get the elements from the page that are the size of an instance creative, 
@@ -806,7 +1148,7 @@ class CreativeInjecter {
 					this._creatives.injected(creativeToInject);
 				}
 			}
-		}//*/
+		}
 	}
 
 	_replaceElementWithCreative(elementNode, replacementCreative) {
@@ -815,15 +1157,78 @@ class CreativeInjecter {
 		if ((elementNode == null) || (!ElementInfo.isHTMLElement(elementNode)) ||
 			(!elementNode.parentNode)) {return;}
 
+		// let creativeImage = document.createElement('img');
+		// creativeImage.src = replacementCreative.imageURL();
+		// creativeImage.style.width = replacementCreative.width() + 'px';
+		// creativeImage.style.height = replacementCreative.height() + 'px';
+		// elementNode.parentNode.replaceChild(creativeImage, elementNode);
+		// return;
+
 		//Create the replacement image
 		let creativeImage = document.createElement('img');
 		creativeImage.src = replacementCreative.imageURL();
+		//creativeImage.style.maxWidth = 'none';
+		// creativeImage.className = elementNode.className;
+		// creativeImage.id = elementNode.id;
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
-		elementNode.parentNode.replaceChild(creativeImage, elementNode);
+
+		while (elementNode.hasChildNodes()) {
+            elementNode.removeChild(elementNode.lastChild);
+        }
+
+		elementNode.appendChild(creativeImage);
+
+
+		//If the element node is an IFrame, replace it with another IFrame
+		//if (elementNode.nodeName == "IFRAME") {
+
+			// //Once the IFrame is loaded, add the image element
+			// elementNode.onload = function()
+			// {
+			// 	//Set the body margin to zero because old HTML rules are dumb and append the image
+			//     let iframeDocument = elementNode.contentDocument;
+			//     iframeDocument.body.style.margin = "0px";
+			//     iframeDocument.body.appendChild(creativeImage);
+			// };
+
+			// //Replace the element node with the new IFrame
+			// elementNode.src = 'about:config';
+
+			//Create the IFrame node
+			// let creativeIFrame = document.createElement('iframe');
+			// creativeIFrame.className = elementNode.className;
+			// //creativeIFrame.id = elementNode.id;
+			// creativeIFrame.style.border = '0px';
+			// //creativeIFrame.style.cssText = document.defaultView.getComputedStyle(elementNode, "").cssText;
+			// creativeIFrame.width = replacementCreative.width() + 'px';
+			// creativeIFrame.height = replacementCreative.height() + 'px';
+			// creativeIFrame.style.width = replacementCreative.width() + 'px';
+			// creativeIFrame.style.height = replacementCreative.height() + 'px';
+   //          creativeIFrame.style.overflow = "hidden";
+   //          creativeIFrame.style.scrolling = "no";
+
+			// //Once the IFrame is loaded, add the image element
+			// creativeIFrame.onload = function()
+			// {
+			// 	//Set the body margin to zero because old HTML rules are dumb and append the image
+			//     let iframeDocument = creativeIFrame.contentDocument;
+			//     iframeDocument.body.style.margin = "0px";
+			//     iframeDocument.body.appendChild(creativeImage);
+			// };
+
+			// //Replace the element node with the new IFrame
+			// while (elementNode.hasChildNodes()) {
+   //              elementNode.removeChild(elementNode.lastChild);
+   //          }
+
+			// elementNode.appendChild(creativeIFrame);
+		//}
+
 
 		//Make sure the parents are displayed and at least as big as the Creative image
-		this._crawlParentHTMLElements(elementNode, function(currentNode) {
+		// this._crawlParentHTMLElements(creativeIFrame, function(currentNode) {
+		this._crawlParentHTMLElements(creativeImage, function(currentNode) {
 
 			//Get the current node's width and height minus border width
 			let currentNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
@@ -835,11 +1240,11 @@ class CreativeInjecter {
 			//If the current node is smaller than the Creative image, expand it
 			//This occurs when the element has been hidden by the page.
 			//For example, a containing div set to 0x0
-			if ((currentNodeWidth < replacementCreative.width()) || 
-				(currentNodeHeight < replacementCreative.height())) {
-				currentNode.style.width = replacementCreative.width() + 'px';
-				currentNode.style.height = replacementCreative.height() + 'px';
-			}
+			// if ((currentNodeWidth < replacementCreative.width()) || 
+			// 	(currentNodeHeight < replacementCreative.height())) {
+			// 	currentNode.style.width = replacementCreative.width() + 'px';
+			// 	currentNode.style.height = replacementCreative.height() + 'px';
+			// }
 		});
 	}
 
@@ -1261,17 +1666,17 @@ class CreativeInjecter {
 //window.onload = function() {
 
 //Remove the scrollbars
-document.documentElement.style.overflow = 'hidden';
+// document.documentElement.style.overflow = 'hidden';
 
 let creatives = [];
 
-// creatives = [
-// 	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
-// 	{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/filler-300x250.jpg', priority: 0, width: 300, height: 250},
-// 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
-// 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
-// ];//*/
-creatives = [{id: '72c61ec0-ab6d-413e-8571-24b48708a9ea', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/d2c76c52-6139-4cb9-817a-e5057f6e72f6.png', width: 970, height: 250, priority: 0},];
+/*creatives = [
+	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
+	{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/filler-300x250.jpg', priority: 0, width: 300, height: 250},
+	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
+	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
+];//*/
+creatives = [{id: '31c16134-b44a-47f9-a40e-09c7c1a14bbe', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/bf896db8-9fa7-40de-966a-4733c54fd83f.png', width: 728, height: 90, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -1290,16 +1695,15 @@ let selectors = [];
 // 	{selector: "#outerDiv div.middleDiv div.innerDiv", sizes: [[300,250]], hideIfNotReplaced: true}
 // ];
 
-selectors = [
-	{selector: "#content li div.artnet-ads-ad.widget-1.widget-odd.widget div div", sizes: [[994,250],[970,250]], hideIfNotReplaced: true},
-	{selector: "div.embedded-ad.visible-sm.visible-xs.ad-loaded", sizes: [[300,250],[300,480]], hideIfNotReplaced: true}
-];
-
+//INSERT EXCEPTION SCRIPT//
 
 //INSERT ADSELECTORS OBJECT//
 
+//Get any GPT AdSelectors
+let gptAdSelectors = (new GPTSlots()).adSelectors();
+let allSelectors = (gptAdSelectors.size > 0) ? Array.from(gptAdSelectors) : [];
+
 //Verify each selector points to an element then turn it into an AdSelector
-let allSelectors = [];
 for (let currentSelector of selectors) {
 	let selectorElement = document.querySelector(currentSelector.selector);
 	if (selectorElement) {
@@ -1308,8 +1712,6 @@ for (let currentSelector of selectors) {
 		);
 	}
 }
-
-
 
 //Initialize the CreativeInjecter and inject the creatives
 let injecter = new CreativeInjecter(allCreatives, allSelectors);
@@ -1321,6 +1723,6 @@ let injectedIDsAndLocations = {};
 for (let [injectedCreative, location] of injectedCreatives) {
 	injectedIDsAndLocations[injectedCreative.id()] = {'x': location.x(), 'y': location.y()};
 }
-//console.log(JSON.stringify(injectedIDsAndLocations));
-return JSON.stringify(injectedIDsAndLocations);
+console.log(JSON.stringify(injectedIDsAndLocations));
+// return JSON.stringify(injectedIDsAndLocations);
 

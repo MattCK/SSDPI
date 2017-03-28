@@ -387,6 +387,9 @@ public class AdShotter3 {
 				    
 				    //If the bottom coordinate is lower than the requested crop height, use it
 				    if (bottomCoordinate > requestedCropHeight) {requestedCropHeight = bottomCoordinate;}
+				    consoleLog("Position: " + currentTagXCoordinate + ", " + currentTagYCoordinate);
+				    consoleLog("Height: " + currentTagImage.height());
+					consoleLog("Current requested Crop Height: " + requestedCropHeight);
 				    
 				    //Mark the creative as injected
 				    adShot.markTagImageAsInjected(currentTagID);
@@ -440,8 +443,8 @@ public class AdShotter3 {
 			}
 			
 			//Add a little margin to the minimum cutoff
-			requestedCropHeight += 10;
-			consoleLog("Bottom position: " + requestedCropHeight);
+			requestedCropHeight += 20;
+			consoleLog("Final requested Crop Height: " + requestedCropHeight);
 //			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
 //			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
 //			if ((injectedTagInfo != null) && (injectedTagInfo.containsKey("injectedTagIDs"))) {
@@ -623,6 +626,7 @@ public class AdShotter3 {
 		setCommandTimeout(activeSeleniumWebDriver, navigationTimeout);
 		((JavascriptExecutor) activeSeleniumWebDriver).executeScript("window.location.href = '" + pageURL + "';");
 		setCommandTimeout(activeSeleniumWebDriver, DEFAULTTIMEOUT);
+		executeSeleniumDriverJavascript(activeSeleniumWebDriver, "window.scrollBy(0,250); window.scrollBy(0,-250);");
 		consoleLog("		Navigation command sent.");
 		//activeSeleniumWebDriver.navigate().to(pageURL);
 	}

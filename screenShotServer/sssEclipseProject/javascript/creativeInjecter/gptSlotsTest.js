@@ -144,6 +144,9 @@ class AdSelector {
 
 }
 
+
+
+
 /**
 * The GPTSlots class stores the googletag.Slot objects on the page at the time of instantiation
 * and provides slot size information or AdSelectors for the slots.
@@ -161,9 +164,11 @@ class GPTSlots {
 	*/
 	constructor() {
 
-		//Create the class constants
-		this._TARGETWIDTH = 8888;
-		this._TARGETHEIGHT = 9999;
+		//Create the class constants used to set slot properties and then be searched for
+		this._TARGETWIDTH = 6420;
+		this._TARGETHEIGHT = 7531;
+		this._TARGETVIEWPORTWIDTH = 8642;
+		this._TARGETVIEWPORTHEIGHT = 9753; 
 
 		//Begin by instantiating the slots and slots sizes members regardless if the googletag object exists
 		this._slots = [];
@@ -180,13 +185,18 @@ class GPTSlots {
 			let propertyInfo = this._getSizesProperties(dummySlot, this._TARGETWIDTH, this._TARGETHEIGHT);
 			this._sizesPropertyKey = propertyInfo.containingPropertyKey;
 			this._sizesClass = propertyInfo.sizesClass;
-			this._widthProperty = propertyInfo.widthKey;
-			this._heightProperty = propertyInfo.heightKey;
+			this._sizesWidthKey = propertyInfo.widthKey;
+			this._sizesHeightKey = propertyInfo.heightKey;
 
-			//Get the slot sizes property for a slot created with a SizeMapping object
-			let sizeMappingSlot = this._getDummySlotWithMapping(this._TARGETWIDTH, this._TARGETHEIGHT);
-			let mappingPropertyInfo = this._getSizesProperties(sizeMappingSlot, this._TARGETWIDTH, this._TARGETHEIGHT);
+			//Get the slot size properties for a slot created with a SizeMapping object
+			let sizeMappingSlot = this._getDummySlotWithMapping(this._TARGETWIDTH, this._TARGETHEIGHT,
+																this._TARGETVIEWPORTWIDTH, this._TARGETVIEWPORTHEIGHT);
+			let mappingPropertyInfo = this._getMappingProperties(sizeMappingSlot, this._TARGETVIEWPORTWIDTH, this._TARGETVIEWPORTHEIGHT);
 			this._mappingPropertyKey = mappingPropertyInfo.containingPropertyKey;
+			this._mappingClass = mappingPropertyInfo.mappingClass;
+			this._viewportClass = mappingPropertyInfo.viewportClass;
+			this._viewportWidthKey = mappingPropertyInfo.viewportWidthKey;
+			this._viewportHeightKey = mappingPropertyInfo.viewportHeightKey;
 
 			//For each slot, get the CreativeSizes
 			for (let currentSlot of this._slots) {
@@ -208,7 +218,7 @@ class GPTSlots {
 	creativeSizes() {return this._slotCreativeSizes;}
 
 	/**
-	* @return {Set}	Set of AdSelectors for all of the Google.Slots
+	* @return {Set}	Set of AdSelectors for all of the Google.Slots. The hide if not replaced flag is set to true.
 	*/	
 	adSelectors() {
 
@@ -217,11 +227,13 @@ class GPTSlots {
 		for (let [currentSlot, currentCreativeSizes] of this._slotCreativeSizes) {
 
 			//Create the selector string. If any forward slashes exist, put backslashes before them
-			let slotSelector = "#" + currentSlot.getSlotElementId();
-			slotSelector = slotSelector.replace("/", "\\/");
+			// let slotSelector = "#" + currentSlot.getSlotElementId() + " iframe";
+			let slotSelector = "#" + currentSlot.getSlotElementId() + "";
+			slotSelector = slotSelector.replace(/\//g, "\\/");
+			slotSelector = slotSelector.replace(/\./g, "\\.");
 
 			//Create the AdSelector and add each CreativeSize width and height to it
-			let currentAdSelector = new AdSelector(slotSelector);
+			let currentAdSelector = new AdSelector(slotSelector, true);
 			for (let slotCreativeSize of currentCreativeSizes) {
 				currentAdSelector.addSize(slotCreativeSize.width(), slotCreativeSize.height());
 			}
@@ -244,20 +256,42 @@ class GPTSlots {
 	_getCreativeSizes(slot) {
 
 		//Get any creative sizes in the primary Slot property (created by passing sizes to constructor)
-		let primaryCreativeSizes = this._getCreativeSizesInProperty(slot[this._sizesPropertyKey], 
-																	this._sizesClass, 
-																	this._widthProperty, 
-																	this._heightProperty);
+		let primaryCreativeSizes = this._getCreativeSizesInProperty(slot[this._sizesPropertyKey]);
 
 		//Get any creative sizes in the size mapping Slot property (created by passing SizeMapping after constructor)
-		let mappingCreativeSizes = this._getCreativeSizesInProperty(slot[this._mappingPropertyKey], 
-																	this._sizesClass, 
-																	this._widthProperty, 
-																	this._heightProperty);
+		let mappedSizes = this._getMappedSizesInProperty(slot[this._mappingPropertyKey]);
+
+		//Get the current browser viewport
+		let browserViewportWidth = document.documentElement.clientWidth;
+		let browserViewportHeight = document.documentElement.clientHeight;
+
+		//If mapped sizes exist, get the ones matching the viewport
+		let noViewportSizes = new Set();
+		let viewportSizes = new Set();
+		let largestViewportWidth = 0;
+		let largestViewportHeight = 0;
+		for (let [currentViewport, currentSizes] of mappedSizes) {
+			let viewportWidth = currentViewport.get("width");
+			let viewportHeight = currentViewport.get("height");
+
+			//If the viewport is 0x0, the sizes apply to all viewports
+			if ((viewportWidth == 0) && (viewportHeight == 0)) {
+				noViewportSizes = currentSizes;
+			}
+
+			//If the viewport is smaller than the browser viewport but
+			//larger than the current largest, use its sizes
+			else if ((viewportWidth <= browserViewportWidth) && (viewportHeight <= browserViewportHeight) &&
+					 (viewportWidth >= largestViewportWidth) && (viewportHeight >= largestViewportHeight)) {
+				viewportSizes = currentSizes;
+				largestViewportWidth = viewportWidth;
+				largestViewportHeight = viewportHeight;
+			}
+		}
 
 		//Remove any CreativeSize duplicates
 		//As of writing this, javascript allows overriding all operands except ==, thus requiring a loop
-		let allCreativeSizes = new Set([...primaryCreativeSizes, ...mappingCreativeSizes]);
+		let allCreativeSizes = new Set([...primaryCreativeSizes, ...viewportSizes, ...noViewportSizes]);
 		let uniqueCreativeSizes = new Set();
 		for (let currentCreativeSize of allCreativeSizes) {
 
@@ -379,15 +413,123 @@ class GPTSlots {
 	}
 
 	/**
+	* Returns the property key holding the size mappings with the mapping class, viewport
+	* class, and viweport keys.
+	*
+	* The returned object uses the following structure:
+	*
+	*		{containingPropertyKey: containingPropertyKey, 
+	* 		 mappingClass: mapping class,
+	* 		 viewportClass: viewport class,
+	*		 viewportWidthKey: viewport width key, 
+	* 		 viewportHeightKey: viewport height key}
+	*
+	* @param {googletag.Slot}	slot					Slot with size mapping to get property information for
+	* @param {googletag.Slot}	targetViewportWidth		Width of the predefined viewport to look for
+	* @param {googletag.Slot}	targetViewportHeight	Height of the predefined viewport to look for
+	* @return {Object} 		 							Property and class information for the target mapping (See description for details)
+	*/
+	_getMappingProperties(slot, targetViewportWidth, targetViewportHeight) {
+
+		//Define the information to retrieve
+		let containingPropertyKey = "";
+		let mappingClass = "";
+		let viewportClass = "";
+		let viewportWidthKey = "";
+		let viewportHeightKey = "";
+
+		//Recursively traverse the slot until the width and height values are met
+		//Return after the first matching set is found.
+		let cache = [];
+		let findViewport = function(currentObject) {
+
+			//If we have already seen this object, ignore it and return to prevent circular reference
+		    if (typeof currentObject === 'object' && currentObject !== null) {
+		        if (cache.indexOf(currentObject) !== -1) {
+		            return;
+		        }
+
+		        //Store this object in the cache to prevent circular references to it
+		        cache.push(currentObject);
+
+		        //Loop through the object's properties, traversing them if necessary, while looking
+		        //for a two-property object with the viewport width and height values as the values
+				for (var key in currentObject) {
+					if (currentObject.hasOwnProperty(key)) {
+						let value = currentObject[key];
+
+			        	//Surround the calls in a try catch to prevent IFrame security issues
+			        	try {
+
+			        		//If the current value is an object, check it for the widthxheight values
+			        		//then recursively traverse it if they are not found
+						    if (typeof value == "object" ) {
+
+						    	//If the object has two properties, see if they are the viewport widthxheight values
+								if (Object.keys(value).length == 2) {
+
+									//Store the keys for reference
+									let firstKey = Object.keys(value)[0];
+									let secondKey = Object.keys(value)[1];
+
+									//Check if the properties equal the passed widthxheight values
+									if (((value[firstKey] == targetViewportWidth) && (value[secondKey] == targetViewportHeight)) ||
+										((value[firstKey] == targetViewportHeight) && (value[secondKey] == targetViewportWidth))) {
+
+											//Store the viewport object class name
+											viewportClass = value.constructor.name;
+
+											//Store which key is for width and which for height
+											if (value[firstKey] == targetViewportWidth) {
+												viewportWidthKey = firstKey; viewportHeightKey = secondKey;
+											}
+											else {
+												viewportWidthKey = secondKey; viewportHeightKey = firstKey;
+											}
+
+											//Store the mapping class name
+											mappingClass = currentObject.constructor.name;
+
+											//Break out of the function now that the size has been found
+											return true;
+									}
+								}
+
+								//Otherwise, traverse the object. If true is returned, set the containing
+								//key to the current key and return true as well.
+						    	if (findViewport(value)) {
+						    		containingPropertyKey = key;
+						    		return true;
+						    	};
+
+						    }
+			        	} catch(e) {}
+			        }
+		        }
+			}
+		}
+
+		//Call the findSize recursive function on the passed slot
+		findViewport(slot);
+
+		//Return the found information
+		return {containingPropertyKey: containingPropertyKey, 
+				mappingClass: mappingClass,
+				viewportClass: viewportClass,
+				viewportWidthKey: viewportWidthKey, 
+				viewportHeightKey: viewportHeightKey};
+	}
+
+	/**
 	* Returns a set of CreativeSizes for each possible size in the passed object
 	*
-	* @param {googletag.Slot}	slotObject		Slot property object to find sizes in
-	* @param {googletag.Slot}	sizesClass		Name of the class that holds the creative's possible size
-	* @param {googletag.Slot}	widthKey		Key in sizes class for the width value
-	* @param {googletag.Slot}	heightKey		Key in sizes class for the height value
+	* @param {googletag.Slot}	slotProperty	Slot object property to find sizes in
 	* @return {Set} 		 					Set of CreativeSizes for all the sizes found in the passed object
 	*/
-	_getCreativeSizesInProperty(slotObject, sizesClass, widthKey, heightKey) {
+	_getCreativeSizesInProperty(slotProperty) {
+
+		//Place this instance into its own variable for use in the recursive loop
+		let thisInstance = this;
 
 		//Recursively traverse the slot and store any found sizes
 		let cache = [];
@@ -415,8 +557,9 @@ class GPTSlots {
 						    if (typeof value == "object" ) {
 
 						    	//If the object is a sizes class, store the size
-								if (value.constructor.name == sizesClass) {
-									let currentCreativeSize = new CreativeSize(value[widthKey], value[heightKey]);
+								if (value.constructor.name == thisInstance._sizesClass) {
+									let currentCreativeSize = new CreativeSize(value[thisInstance._sizesWidthKey], 
+																			   value[thisInstance._sizesHeightKey]);
 									sizes.add(currentCreativeSize);
 								}
 
@@ -430,12 +573,138 @@ class GPTSlots {
 			}
 		}
 		//Call the findSizes recursive function on the passed slot
-		findSizes(slotObject);
+		findSizes(slotProperty);
 
 		//Return the found sizes
 		return sizes;
 	}
 
+
+	/**
+	* Returns a Map with the viewport width and height in the passed Slot property.
+	*
+	* The Map keys are 'width' and 'height' respectively.
+	*
+	* @param {googletag.Slot}	slotProperty			Slot property to find the viewport in
+	* @return {Map} 		 							Map of viewport width and height with 'width' and 'height' keys respectively
+	*/
+	_getViewportInProperty(slotProperty) {
+
+		//Place this instance into its own variable for use in the recursive loop
+		let thisInstance = this;
+
+		//Recursively traverse the slot and store the first found viewport
+		let cache = [];
+		let viewportDimensions = new Map();
+		let findViewport = function(currentObject) {
+
+			//If we have already seen this object, ignore it and return to prevent circular reference
+		    if (typeof currentObject === 'object' && currentObject !== null) {
+		        if (cache.indexOf(currentObject) !== -1) {
+		            return;
+		        }
+
+		        //Store this object in the cache to prevent circular references to it
+		        cache.push(currentObject);
+
+		        //Loop through the object's properties and store any found sizes
+				for (var key in currentObject) {
+					if (currentObject.hasOwnProperty(key)) {
+						let value = currentObject[key];
+
+			        	//Surround the calls in a try catch to prevent IFrame security issues
+			        	try {
+
+			        		//If the current value is an object, store the sizes or traverse it, whichever applicable
+						    if (typeof value == "object" ) {
+
+						    	//If the object is a viewport class, store the dimensions and return
+								if (value.constructor.name == thisInstance._viewportClass) {
+									viewportDimensions.set("width", value[thisInstance._viewportWidthKey]);
+									viewportDimensions.set("height", value[thisInstance._viewportHeightKey]);
+									return true;
+								}
+
+								//Otherwise, traverse the object. 
+						    	else if (findViewport(value)) {return true;}
+
+						    }
+			        	} catch(e) {}
+			        }
+		        }
+			}
+		}
+		//Call the findViewport recursive function on the passed slot
+		findViewport(slotProperty);
+
+		//Return the found viewport
+		return viewportDimensions;
+	}
+
+
+	/**
+	* Returns a Map of viewports to its Set of CreativeSizes.
+	*
+	* Each key is a Map with 'width' and 'height' keys for the viewport. Each value is a Set of CreativeSizes
+	* for the viewport.
+	*
+	* @param {googletag.Slot}	slotProperty	Slot object property to find sizes in
+	* @return {Map} 		 					Map of viewports to their Set of CreativeSizes for all the sizes found in the passed object
+	*/
+	_getMappedSizesInProperty(slotProperty) {
+
+		//Place this instance into its own variable for use in the recursive loop
+		let thisInstance = this;
+
+		//Recursively traverse the slot and store any found sizes
+		let cache = [];
+		let mappedSizes = new Map();
+		let findSizes = function(currentObject) {
+
+			//If we have already seen this object, ignore it and return to prevent circular reference
+		    if (typeof currentObject === 'object' && currentObject !== null) {
+		        if (cache.indexOf(currentObject) !== -1) {
+		            return;
+		        }
+
+		        //Store this object in the cache to prevent circular references to it
+		        cache.push(currentObject);
+
+		        //Loop through the object's properties and store any found sizes
+				for (var key in currentObject) {
+					if (currentObject.hasOwnProperty(key)) {
+						let value = currentObject[key];
+
+			        	//Surround the calls in a try catch to prevent IFrame security issues
+			        	try {
+
+			        		//If the current value is an object, store the sizes or traverse it, whichever applicable
+						    if (typeof value == "object" ) {
+
+						    	//If the object is a size mapping class, store its viewport and sizes
+								if (value.constructor.name == thisInstance._mappingClass) {
+									let currentViewport = thisInstance._getViewportInProperty(value);
+									let viewportSizes = thisInstance._getCreativeSizesInProperty(value);
+									mappedSizes.set(currentViewport, viewportSizes);
+								}
+
+								//Otherwise, traverse the object. 
+						    	else {
+						    		findSizes(value);
+						    	};
+
+						    }
+			        	} catch(e) {}
+			        }
+		        }
+			}
+		}
+		//Call the findSizes recursive function on the passed slot
+		findSizes(slotProperty);
+
+		//Return the found sizes
+		return mappedSizes;
+	}
 
 	/**
 	* @return {googletag.Slot} 		Newly created slot with the size arguments passed to the Slot constructor
@@ -448,19 +717,20 @@ class GPTSlots {
 	/**
 	* @return {googletag.Slot} 		Newly created slot with the size arguments added to the slot through a size mapping
 	*/
-	_getDummySlotWithMapping(targetWidth, targetHeight) {
+	_getDummySlotWithMapping(targetWidth, targetHeight, targetViewPortWidth, targetViewPortHeight) {
 
 		//Create a dummy slot with no sizes
 		let dummySlot = googletag.defineSlot('/dummyWithMappingPath' + Date.now(), [], 'dummmyWithMappingElementID' + Date.now());
 
 		//Create and add a size mapping to the slot using the size arguments and return it
 		let mapping = googletag.sizeMapping().
-		    addSize([100, 100], [targetWidth, targetHeight]).build();
+		    addSize([targetViewPortWidth, targetViewPortHeight], [targetWidth, targetHeight]).build();
 		dummySlot.defineSizeMapping(mapping);
 		return dummySlot;
 	}
 
 }
+
 
 //Get the current slots and their ad selectors
 let someSlots = new GPTSlots();
