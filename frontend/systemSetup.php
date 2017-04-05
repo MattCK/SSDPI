@@ -23,7 +23,7 @@ require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
 /**
 * Add third-party folder to path for Google DFP
 */
-require THIRDPARTYPATH . '/googleAds/vendor/autoload.php';
+require THIRDPARTYPATH . '/GoogleAds/vendor/autoload.php';
 
 
 /**

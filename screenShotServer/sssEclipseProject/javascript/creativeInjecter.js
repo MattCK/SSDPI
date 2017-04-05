@@ -562,6 +562,38 @@ class ElementInfo {
 	}
 	
 	/**
+	* @return {Integer}	Current bottom padding of the element
+	*/	
+	static paddingBottom(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-bottom'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current left padding of the element
+	*/	
+	static paddingLeft(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-left'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current right padding of the element
+	*/	
+	static paddingRight(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-right'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current top padding of the element
+	*/	
+	static paddingTop(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-top'), 10);
+	}
+
+	/**
 	* @return {Integer}	Current "position" style of the element, such as 'fixed'
 	*/	
 	static positionStyle(elementNode) {
@@ -768,14 +800,15 @@ class GPTSlots {
 			let viewportWidth = currentViewport.get("width");
 			let viewportHeight = currentViewport.get("height");
 
-			//If the viewport is 0x0, the sizes apply to all viewports
-			if ((viewportWidth == 0) && (viewportHeight == 0)) {
-				noViewportSizes = currentSizes;
-			}
+			// //If the viewport is 0x0, the sizes apply to all viewports
+			// if ((viewportWidth == 0) && (viewportHeight == 0)) {
+			// 	noViewportSizes = currentSizes;
+			// }
 
 			//If the viewport is smaller than the browser viewport but
 			//larger than the current largest, use its sizes
-			else if ((viewportWidth <= browserViewportWidth) && (viewportHeight <= browserViewportHeight) &&
+			//else if ((viewportWidth <= browserViewportWidth) && (viewportHeight <= browserViewportHeight) &&
+			if ((viewportWidth <= browserViewportWidth) && (viewportHeight <= browserViewportHeight) &&
 					 (viewportWidth >= largestViewportWidth) && (viewportHeight >= largestViewportHeight)) {
 				viewportSizes = currentSizes;
 				largestViewportWidth = viewportWidth;
@@ -1495,11 +1528,15 @@ class CreativeInjecter {
 		this._crawlParentHTMLElements(creativeImage, function(currentNode) {
 
 			//Get the current node's width and height minus border width
-			let currentNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
-			let currentNodeHeight = ElementInfo.heightWithoutBorder(elementNode);
+			let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
+			let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
 
 			//Make sure the current node is displayed
-			currentNode.style.display = "";
+			let displayStatus = document.defaultView.getComputedStyle(currentNode, null).getPropertyValue('display');
+			if (displayStatus == "none") {
+				currentNode.style.display = "block";
+			}
+			currentNode.style.animationPlayState = "running";
 
 			//If the current node is smaller than the Creative image, expand it
 			//This occurs when the element has been hidden by the page.
@@ -1509,6 +1546,16 @@ class CreativeInjecter {
 			// 	currentNode.style.width = replacementCreative.width() + 'px';
 			// 	currentNode.style.height = replacementCreative.height() + 'px';
 			// }
+			if (currentNodeWidth < replacementCreative.width()) {
+				// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
+				// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
+				currentNode.style.width = '100%';
+			}
+			if (currentNodeHeight < replacementCreative.height()) {
+				// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
+				// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
+				currentNode.style.height = '100%';
+			}
 		});
 	}
 
@@ -1918,6 +1965,22 @@ class CreativeInjecter {
 		    let firstPositionFactor = ElementInfo.yPosition(firstElement) + ElementInfo.xPosition(firstElement)/1000;
 		    let secondPositionFactor = ElementInfo.yPosition(secondElement) + ElementInfo.xPosition(secondElement)/1000;
 
+		    //!!!------------------------------------------------------------------------!!!
+		    //On Desktop, some non-loaded fixed element GPT slots were registering a position of 0,0 even
+		    //though they were placed lower on the page. For now, if we are on a Desktop and the selector
+		    //has a position of 0,0 , sort it lower than the rest of the selectors.
+			let browserViewportWidth = document.documentElement.clientWidth;
+			if (browserViewportWidth > 450) {
+
+				//If the first element's position is (0,0) but not the second, return a positive 1
+				//to make the second element come first
+				if ((firstPositionFactor == 0) && (secondPositionFactor != 0)) {return 1;}
+
+				//If the first element's position is not (0,0) but the second is, return a negative -1
+				//to make the first element come first
+				if ((firstPositionFactor != 0) && (secondPositionFactor == 0)) {return -1;}
+			}
+
 			//Return the difference. If negative, the firstElement comes first, if positive, the second come first.    
 		    return firstPositionFactor - secondPositionFactor;
 		};
@@ -1959,7 +2022,6 @@ let selectors = [];
 // 	{selector: "#outerDiv div.middleDiv div.innerDiv", sizes: [[300,250]], hideIfNotReplaced: true}
 // ];
 
-//INSERT EXCEPTION SCRIPT//
 
 //INSERT ADSELECTORS OBJECT//
 
@@ -1976,6 +2038,9 @@ for (let currentSelector of selectors) {
 		);
 	}
 }
+
+//INSERT EXCEPTION SCRIPT//
+
 
 //Initialize the CreativeInjecter and inject the creatives
 let injecter = new CreativeInjecter(allCreatives, allSelectors);

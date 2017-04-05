@@ -31,8 +31,8 @@ use AdShotRunner\System\ASRProperties;
 			<tr>
 				<td>Purpose:</td>
 				<td>
-					<label><input id="contactIdeaRadio" type='radio' name='contactType' value='IDEA' onclick="contactForm.selectIdea()" checked>Idea</label>
-					<label><input id="contactIssueRadio" type='radio' name='contactType' value='ISSUE' onclick="contactForm.selectIssue()">Issue</label>
+					<label><input id="contactIdeaRadio" type='radio' name='contactType' value='IDEA' checked>Idea</label>
+					<label><input id="contactIssueRadio" type='radio' name='contactType' value='ISSUE'>Issue</label>
 				</td>
 			</tr>
 			<tr id="contactProblemRow" style="display:none">
@@ -56,7 +56,7 @@ use AdShotRunner\System\ASRProperties;
 			</tr>
 			<tr>
 				<td>&nbsp;</td>				
-				<td><input type="button" id="contactSendButton" value="Send" onclick="contactForm.submitForm()"></td>
+				<td><input type="button" id="contactSendButton" value="Send"></td>
 			</tr>
 		</table>
 	</form>

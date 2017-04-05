@@ -79,7 +79,7 @@ public class AdShotter3 {
 	final private static int DEFAULTVIEWHEIGHT = 2800;		//in pixels
 	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
 	final private static int MOBILEPIXELRATIO = 3;			//in pixels
-	final private static int MINIMUMCROPHEIGHT = 1560;		//in pixels
+	final private static int MINIMUMCROPHEIGHT = 1630;		//in pixels
 	final private static int MAXIMUMCROPHEIGHT = 3000; 		//in pixels
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
@@ -626,7 +626,7 @@ public class AdShotter3 {
 		setCommandTimeout(activeSeleniumWebDriver, navigationTimeout);
 		((JavascriptExecutor) activeSeleniumWebDriver).executeScript("window.location.href = '" + pageURL + "';");
 		setCommandTimeout(activeSeleniumWebDriver, DEFAULTTIMEOUT);
-		executeSeleniumDriverJavascript(activeSeleniumWebDriver, "window.scrollBy(0,250); window.scrollBy(0,-250);");
+		executeSeleniumDriverJavascript(activeSeleniumWebDriver, "window.scrollBy(0,650); window.scrollBy(0,-650);");
 		consoleLog("		Navigation command sent.");
 		//activeSeleniumWebDriver.navigate().to(pageURL);
 	}

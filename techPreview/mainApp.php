@@ -42,7 +42,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		<h1>AdShotRunner&trade;: Tech Preview</h1> 
 	</div>
 	<div id="logout">
-		<a onclick="contactForm.reset(); contactFormDialog.open()">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
+		<a class="contactIdeaLink">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
 		<a href="logout.php">Logout</a>
 	</div>
 </div>
@@ -64,7 +64,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		<h2 id="lineItemsHeader" style="display: none;">Line Items</h2>
 		<img helpIcon="" id="dfpOrdersHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div class="problemLinkDiv">
-			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+			<a class="contactIssueLink">Problem?</a>
 		</div>
 		
 		<div id="dfpOrdersDiv" class="section"> 
@@ -73,19 +73,20 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 					<td style="width: 100px; font-weight: bold;">Orders:</td>				
 					<td colspan="2">
 						Enter a <strong>full</strong> order ID or <strong>part</strong> of an order name, advertiser name, or agency name:
-						<input id="orderSearchTerm" name="orderSearchTerm" type="text" style="width: 525px; margin-top: 5px;"
-								onkeyup="if(event.keyCode == 13){asr.searchOrders();}">
-						<input id="orderSearchButton" type="button" class="button-tiny" value="Search" onclick="asr.searchOrders()">
+						<input id="orderSearchTerm" name="orderSearchTerm" type="text" style="width: 525px; margin-top: 5px;">
+						<input id="orderSearchButton" type="button" class="button-tiny" value="Search">
 					</td>
 				</tr>
 				<tr>
 					<td>&nbsp;</td>
-					<td><select id="orderSelect" name="orderSelect" size="8" onchange="asr.displayOrderNotes()" style="width: 600px;"></select></td>
+					<td><select id="orderSelect" name="orderSelect" size="8" style="width: 600px;"></select></td>
 					<td style="vertical-align: top"><div id="orderNotesDiv" style="padding: 2px 30px"></div></td>
 				</tr>
 				<tr>
 					<td>&nbsp;</td>
-					<td colspan="2"><input id="getOrderDataButton" type="button"  class="button-tiny" value="Get Line Items and Creatives" onclick="asr.requestOrderData()"></td>
+					<td colspan="2">
+						<input id="getOrderDataButton" type="button"  class="button-tiny" value="Get Line Items and Creatives" >
+					</td>
 				</tr>
 			</table>
 		</div>
@@ -100,13 +101,13 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		<img helpIcon="" id="customerHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div id="customerDiv" class="section">
 			<div class="textFieldName">Name:</div> 
-			<input id="customer" name="customer" type="text" oninput="asr.checkCustomerCompletion()">
+			<input id="customer" name="customer" type="text">
 		</div>
 
 		<h2>PowerPoint Background</h2>
 		<img helpIcon="" id="powerPointBackgroundHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div class="problemLinkDiv">
-			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+			<a class="contactIssueLink">Problem?</a>
 		</div>
 		<div id="powerPointBackgroundDiv" class="section">
 			<input id="backgroundTitle" name="backgroundTitle" type="hidden" value="<?PHP echo $backgroundTitle?>">
@@ -127,7 +128,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 			</div>
 
 			<div id="changeBackgroundButtonDiv">
-				<input class="button-tiny" type="button" value="Change" onclick="base.hide('changeBackgroundButtonDiv'); base.show('uploadBackgroundDiv');">
+				<input  id="changeBackgroundButton" class="button-tiny" type="button" value="Change">
 			</div>
 
 			<div id="uploadBackgroundDiv" style="display: none">
@@ -139,7 +140,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 					<tr><td>Image:</td>
 						<td><input type="file" id="newBackgroundImage" name="newBackgroundImage" accept="image/*"></td></tr>
 					<tr><td>&nbsp;</td>
-						<td><input class="button-tiny" id="uploadBackgroundButton" type="button" value="Save" onclick="asr.uploadPowerPointBackground()"></td></tr>
+						<td><input class="button-tiny" id="uploadBackgroundButton" type="button" value="Save"></td></tr>
 				</table>
 			</div>
 		</div>
@@ -148,20 +149,20 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		<div id="domainInputDiv" class="section">
 			<div class="textFieldName">Publisher Site:</div>
 			<input id="domain" name="domain" type="text" value="<?PHP echo $campaignDomain ?>">
-			<input class="button-tiny" id="getMenuButton" type="button" value="Go!" onclick="asr.getMenu()">
+			<input id="getMenuButton" class="button-tiny" type="button" value="Go!">
 			<img helpIcon="" id="domainInputHelpIcon" class="helpIcon" src="images/helpIcon.png" />
 			<div class="problemLinkDiv">
-				<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+				<a class="contactIssueLink">Problem?</a>
 			</div>
 		</div>
 
 		<div id="pagesTableDiv" class="section" style="display: none">
-			<input class="button-tiny"  id="addSiteSectionButton" type="button" value="Add Site Section" onclick="asr.addMenuSectionRow()">
-			<input class="button-tiny"  type="button" value="Add URL" onclick="asr.addURLRow()">
+			<input id="addSiteSectionButton" class="button-tiny" type="button" value="Add Site Section">
+			<input id="addURLButton" class="button-tiny" type="button" value="Add URL">
 			<span id="noMenuNotification" style="display: none;">Sections not available for this site</span>
 			<img helpIcon="" id="addPagesHelpIcon" class="helpIcon" src="images/helpIcon.png" />
 			<div class="problemLinkDiv">
-				<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+				<a class="contactIssueLink">Problem?</a>
 			</div>
 			<table id="pagesTable"></table>
 		</div>
@@ -171,7 +172,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 	<h2>Creative</h2>
 	<img helpIcon="" id="creativeHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 	<div class="problemLinkDiv">
-		<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+		<a class="contactIssueLink">Problem?</a>
 	</div>
 	<div class="section">
 	   	<div class="copyPasteTextTitle">Copy and Paste Tag Text:</div>
@@ -186,7 +187,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		
 		<div id="queuedTagDiv" class="yellowBackground" align="center">
 			<span id="queuedTagCountSpan">0</span> <span id="tagsQueuedSpan">Tags Queued</span> &nbsp; 
-			<input class="button-tiny" id="getTagImagesButton" type="button" value="Get Tag Images" onclick="asr.getTagImages()" disabled>
+			<input class="button-tiny" id="getTagImagesButton" type="button" value="Get Tag Images" disabled>
 		</div>
 
 		<div class="priorityDescriptionDiv">Drag and drop creative images to change priority. (Nearer to the top has higher priority)</div>
@@ -195,7 +196,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 
 	<div align="center">
 		<div id="getScreenShotsDiv" class="section" align="center">
-			<input class="button-tiny" id="getScreenshotsButton" type="button" value="Get screenshots" onclick="asr.requestScreenshots()" disabled>
+			<input class="button-tiny" id="getScreenshotsButton" type="button" value="Get screenshots")" disabled>
 		</div>
 	</div>
 
@@ -215,10 +216,9 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 			<table id="lineItemsTable" class="tablesorter">
 			</table>
 		</div>
-		<input type="button" class="button-tiny" value="Select All" onclick="asr.selectAllLineItems()">
-		<input type="button" class="button-tiny" value="Select None" onclick="asr.unselectAllLineItems()">
-		<input id="lineItemsButton" type="button" class="button-tiny" style="margin-left: 40px;" value="Use Selected Line Items" 
-			   onclick="asr.useSelectedLineItems()" disabled>
+		<input id="selectAllLineItemsButton" type="button" class="button-tiny" value="Select All">
+		<input id="unselectAllLineItemsButton" type="button" class="button-tiny" value="Select None">
+		<input id="lineItemsButton" type="button" class="button-tiny" style="margin-left: 40px;" value="Use Selected Line Items" disabled>
 		<div id="tooManyCreativeDiv" style="display: none; padding-top: 15px;">
 			More than 15 creative selected. Creative will not be loaded.
 		</div>
@@ -232,19 +232,6 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 
 <script>
 
-//Setup drag and drop tag listeners
-let textFileDropZone = base.nodeFromID('textFileDropZone');
-textFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
-textFileDropZone.addEventListener('drop', tagParser.handleTagTextFileDrop, false);
-textFileDropZone.addEventListener('dragleave', tagParser.handleDragLeave, false);
-
-let zipFileDropZone = base.nodeFromID('zipFileDropZone');
-zipFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
-zipFileDropZone.addEventListener('drop', tagParser.handleTagZipFileDrop, false);
-zipFileDropZone.addEventListener('dragleave', tagParser.handleDragLeave, false);
-
-let tagTextTextboxButton = base.nodeFromID("tagTextTextboxButton");
-tagTextTextboxButton.addEventListener('click', tagParser.handleTagTextboxInput, false);
 
 //Reset the contact form in case the user pressed the refresh button
 contactForm.reset();
@@ -253,6 +240,65 @@ contactForm.reset();
 let contactFormDialog = null;
 let lineItemsDialog = null;
 $(function() {
+
+	//Setup drag and drop tag listeners
+	// let textFileDropZone = base.nodeFromID('textFileDropZone');
+	// textFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
+	// textFileDropZone.addEventListener('drop', tagParser.handleTagTextFileDrop, false);
+	// textFileDropZone.addEventListener('dragleave', tagParser.handleDragLeave, false);
+
+	// let zipFileDropZone = base.nodeFromID('zipFileDropZone');
+	// zipFileDropZone.addEventListener('dragover', tagParser.handleDragOver, false);
+	// zipFileDropZone.addEventListener('drop', tagParser.handleTagZipFileDrop, false);
+	// zipFileDropZone.addEventListener('dragleave', tagParser.handleDragLeave, false);
+
+	// let tagTextTextboxButton = base.nodeFromID("tagTextTextboxButton");
+	// tagTextTextboxButton.addEventListener('click', tagParser.handleTagTextboxInput, false);
+
+	// //Setup the page listeners
+	// let orderSearchButton = base.nodeFromID("orderSearchButton");
+	// orderSearchButton.addEventListener('click', asr.searchOrders, false);
+	// let orderSearchTermInput = base.nodeFromID("orderSearchTerm");
+	// orderSearchTermInput.addEventListener('keyup', function(event) {if(event.keyCode == 13){asr.searchOrders();}}, false);
+
+	// let orderSelect = base.nodeFromID("orderSelect");
+	// orderSelect.addEventListener('change', asr.displayOrderNotes, false);
+
+
+
+	// let selectAllLineItemsButton = base.nodeFromID("selectAllLineItemsButton");
+	// selectAllLineItemsButton.addEventListener('click', asr.selectAllLineItems, false);
+	// let unselectAllLineItemsButton = base.nodeFromID("unselectAllLineItemsButton");
+	// unselectAllLineItemsButton.addEventListener('click', asr.unselectAllLineItems, false);
+	// let lineItemsButton = base.nodeFromID("lineItemsButton");
+	// lineItemsButton.addEventListener('click', asr.useSelectedLineItems, false);
+
+	// let customerInput = base.nodeFromID("customer");
+	// customerInput.addEventListener('input', asr.checkCustomerCompletion, false);
+
+	// let changeBackgroundButton = base.nodeFromID("changeBackgroundButton");
+	// changeBackgroundButton.addEventListener('click', function() {base.hide('changeBackgroundButtonDiv'); base.show('uploadBackgroundDiv');}, false);
+	// let uploadBackgroundButton = base.nodeFromID("uploadBackgroundButton");
+	// uploadBackgroundButton.addEventListener('click', asr.uploadPowerPointBackground, false);
+
+	// let domainInput = base.nodeFromID("domain");
+	// domainInput.addEventListener('keyup', function(event) {if(event.keyCode == 13){asr.getMenu();}}, false);
+	// let getMenuButton = base.nodeFromID("getMenuButton");
+	// getMenuButton.addEventListener('click', asr.getMenu, false);
+
+	// let addSiteSectionButton = base.nodeFromID("addSiteSectionButton");
+	// addSiteSectionButton.addEventListener('click', asr.addMenuSectionRow, false);
+	// let addURLButton = base.nodeFromID("addURLButton");
+	// addURLButton.addEventListener('click', asr.addURLRow, false);
+
+	// let getTagImagesButton = base.nodeFromID("getTagImagesButton");
+	// getTagImagesButton.addEventListener('click', asr.getTagImages, false);
+
+	// let getScreenshotsButton = base.nodeFromID("getScreenshotsButton");
+	// getScreenshotsButton.addEventListener('click', asr.requestScreenshots, false);
+
+	// $(".contactIssueLink").click(function() {contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open();});
+	// $(".contactIdeaLink").click(function() {contactForm.reset(); contactFormDialog.open();});
 
 	//Setup the paths in the ASR javascript object to the tag and powerpoint background images
 	asr.tagImagesURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForCreativeImages() ?>/";

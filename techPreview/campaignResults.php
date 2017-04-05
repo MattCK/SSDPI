@@ -20,7 +20,7 @@ require_once('systemSetup.php');
 		<h1>AdShotRunner&trade;: Tech Preview</h1> 
 	</div>
 	<div id="logout">
-		<a onclick="contactForm.reset(); contactFormDialog.open()">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
+		<a class="contactIdeaLink">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </div>
 
@@ -56,7 +56,7 @@ require_once('systemSetup.php');
 
 		<h2>PowerPoint</h2>
 		<div class="problemLinkDiv">
-			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+			<a class="contactIssueLink">Problem?</a>
 		</div>
 		<div id="powerPointDiv" class="section">
 			<a id="powerPointLink" href="#">Click to Download PowerPoint of Screenshots</a>
@@ -64,7 +64,7 @@ require_once('systemSetup.php');
 
 		<h2>Screenshots</h2>
 		<div class="problemLinkDiv">
-			<a onclick="contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open()">Problem?</a>
+			<a class="contactIssueLink">Problem?</a>
 		</div>
 		<div id="screenshotsDiv" class="section" align="center">
 			<table id="screenshotsTable"></table>

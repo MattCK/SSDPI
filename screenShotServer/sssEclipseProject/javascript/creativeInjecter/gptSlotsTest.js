@@ -274,14 +274,15 @@ class GPTSlots {
 			let viewportWidth = currentViewport.get("width");
 			let viewportHeight = currentViewport.get("height");
 
-			//If the viewport is 0x0, the sizes apply to all viewports
-			if ((viewportWidth == 0) && (viewportHeight == 0)) {
-				noViewportSizes = currentSizes;
-			}
+			// //If the viewport is 0x0, the sizes apply to all viewports
+			// if ((viewportWidth == 0) && (viewportHeight == 0)) {
+			// 	noViewportSizes = currentSizes;
+			// }
 
 			//If the viewport is smaller than the browser viewport but
 			//larger than the current largest, use its sizes
-			else if ((viewportWidth <= browserViewportWidth) && (viewportHeight <= browserViewportHeight) &&
+			//else if ((viewportWidth <= browserViewportWidth) && (viewportHeight <= browserViewportHeight) &&
+			if ((viewportWidth <= browserViewportWidth) && (viewportHeight <= browserViewportHeight) &&
 					 (viewportWidth >= largestViewportWidth) && (viewportHeight >= largestViewportHeight)) {
 				viewportSizes = currentSizes;
 				largestViewportWidth = viewportWidth;
