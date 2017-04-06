@@ -2003,7 +2003,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: 'e470235f-8501-488a-a328-76cf8b820559', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9621b7db-499c-4092-9229-1369ef1d2a8b.png', width: 300, height: 600, priority: 0},{id: 'bb5623ca-dbf5-4348-9402-17bd9f5b6fa5', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/204c65e8-f57a-4e11-8244-d26f535219a6.png', width: 300, height: 250, priority: 0},{id: '481891f9-b10d-4d80-a12f-76bb4f30d8d7', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/45c45e14-544e-41c6-8ba2-1a31c49c56f0.png', width: 728, height: 90, priority: 0},];
+creatives = [{id: '84cfa425-0f10-42c0-a989-f4362e7348f2', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/0650b457-c6cf-4dd9-b079-d99b7bfb7108.png', width: 300, height: 600, priority: 0},{id: 'e1cec41d-3338-4846-a18a-ba5a4c3b3f1f', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/aa09f451-6b6c-4e00-9ebc-c486dc15e4a7.png', width: 728, height: 90, priority: 0},{id: 'e0323ab3-2d48-4d5f-af15-ca51154e9c7d', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/46b38064-4995-4e13-a532-04fc5baf96b9.png', width: 300, height: 250, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();

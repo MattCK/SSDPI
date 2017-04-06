@@ -162,12 +162,18 @@ function sendVerificationEmail($username) {
 	$verificationCode = md5('ver1f1c@t10n' . $curUser->getUsername() . $curUser->getEmail());
 	
 	//Create the email subject
-	$emailSubject = "Welcome to the AdShotRunner Tech Preview!"; 
+	// $emailSubject = "Welcome to the AdShotRunner Tech Preview!"; 
+	$emailSubject = "AdShotRunner: Thank You for Registering!"; 
 
 	//Create the email body
-	$emailBody = "Thank you for registering for the AdShotRunner Tech Preview. In order to verify your account, please click the following link or copy and paste it into your browser:\n\n";
-	$emailBody .= "http://" . ASRProperties::asrDomain() . "/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
-	$emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
+	$emailBody = "Thank you for registering for the AdShotRunner Tech Preview. We will be in contact with you shortly.\n\n";
+	$emailBody .= "AdShotRunner (ASR) is cloud-based software that saves AdOps staff upwards of 90% of the time expended on manually saving screenshots to demonstrate ad campaigns to clients. But ASR does more than automate the tedious, time-consuming task of collecting Desktop Browser and Mobile screenshots. It then compiles those high-quality screenshots into a customized PowerPoint file that is emailed to the user in minutes. \n\n";
+	$emailBody .= "Find more information at: https://www.adshotrunner.com/ \n\n";
+	$emailBody .= "We look forward to having you on board!\n\n";
+	$emailBody .= "If you believe you received this email in error, please ignore it. You will receive no future emails.";
+	// $emailBody = "Thank you for registering for the AdShotRunner Tech Preview. In order to verify your account, please click the following link or copy and paste it into your browser:\n\n";
+	// $emailBody .= "http://" . ASRProperties::asrDomain() . "/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
+	// $emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
 
 	//Set the email addresses
 	$fromEmailAddress = ASRProperties::emailAddressDoNotReply();
@@ -175,7 +181,17 @@ function sendVerificationEmail($username) {
 
 	//Send the email
 	EmailClient::sendEmail($fromEmailAddress, $toEmailAddress, $emailSubject, $emailBody);
-	
+
+	//---------------------------------- Notify Us of Registering
+	$noticeSubject = "ASR: New User Registered (" . $curUser->getFirstName() . " " . $curUser->getLastName() . ")";
+	$noticeBody =  "ID: " . $curUser->getID() . "\n";
+	$noticeBody .= "Name: " . $curUser->getFirstName() . " " . $curUser->getLastName() . "\n";
+	$noticeBody .= "Email: " . $curUser->getUsername() . "\n";
+	$noticeBody .= "Company: " . $curUser->getCompany() . "\n";
+	$noticeBody .= "Verification link: http://" . ASRProperties::asrDomain() . "/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
+	$noticeToAddress = ASRProperties::emailAddressContact();
+	EmailClient::sendEmail($fromEmailAddress, $noticeToAddress, $noticeSubject, $noticeBody);
+
 	//Return successful.
 	return true;
 }

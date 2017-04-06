@@ -620,6 +620,14 @@ class ElementInfo {
 		//Return null if the passed node variable is an HTMLElement
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 
+		//If the element display is none, set it to block for the position then set it back
+		let displayStatus = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('display');
+		let displayOriginallyNone = false;
+		if (displayStatus == "none") {
+			elementNode.style.display = "block";
+			displayOriginallyNone = true;
+		}
+
 		//Grab the initial locations
 		let boundingRectangle = elementNode.getBoundingClientRect();
 		let xPosition = boundingRectangle.left;
@@ -631,6 +639,11 @@ class ElementInfo {
 			boundingRectangle = currentFrameElement.getBoundingClientRect();
 			xPosition += boundingRectangle.left;
 			yPosition += boundingRectangle.top;
+		}
+
+		//If the element's display was 'none', set it back to 'none'
+		if (displayOriginallyNone) {
+			elementNode.style.display = "none";
 		}
 
 		//Return the Coordinates

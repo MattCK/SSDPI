@@ -31,11 +31,14 @@ echo
 echo ASR Properties: \'asrProperties.ini.production\' will 
 echo '                 'be copied to \'asrProperties.ini\'
 echo
+echo Did you change asr.js so campaign results open in the same tab \(NOT a new tab\)\?
+echo 
 
 #Require a prompt to confirm moving forward
 printf "Type 'soundsgood' to continue: "
 read PROMPT_ANSWER
 if [ "${PROMPT_ANSWER}" = soundsgood ]; then
+
 	echo #extra space
 
 	#Make the temporary build folder

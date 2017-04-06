@@ -84,7 +84,7 @@ else if ($_POST['registerSubmit']) {
 			//If the registration was successful, send an email to verify the account
 			sendVerificationEmail($_POST['email']);
 			
-			$registrationError = "<span style='color:blue'>A verification email has been sent to you. Please check your mail and follow the instructions.</span>";
+			$registrationError = "<span style='color:blue'>Thank you for signing up! We will be in contact with you shortly.<br>In the meantime, you can find more information on our website: <a href='https://www.adshotrunner.com/'>www.adshotrunner.com</a>.</span>";
 		
 			//Really dirty but quick was to empty fields
 			$_POST = array();
@@ -155,7 +155,7 @@ $(function() {
 		<div id="tabsDiv" align="center" style="padding-top: 20px">
 			 <ul>
 				<li><a href="#tabs-1">Login</a></li>
-				<li><a href="#tabs-2">Register</a></li>
+				<li><a href="#tabs-2">Sign Up</a></li>
 				<li><a href="#tabs-3">Reset Password</a></li>
 			</ul>
 			<div id="tabs-1" align="center">
@@ -224,7 +224,7 @@ $(function() {
 							</tr>
 							<tr>
 								<td colspan="2" align="center">
-									<input class="button-tiny indexPageButton" type="submit" name="registerSubmit"  value="Register">
+									<input class="button-tiny indexPageButton" type="submit" name="registerSubmit"  value="Sign Up">
 								</td>
 							</tr>
 						</table>

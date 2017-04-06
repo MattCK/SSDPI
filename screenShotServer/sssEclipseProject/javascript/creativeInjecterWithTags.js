@@ -620,6 +620,14 @@ class ElementInfo {
 		//Return null if the passed node variable is an HTMLElement
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 
+		//If the element display is none, set it to block for the position then set it back
+		let displayStatus = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('display');
+		let displayOriginallyNone = false;
+		if (displayStatus == "none") {
+			elementNode.style.display = "block";
+			displayOriginallyNone = true;
+		}
+
 		//Grab the initial locations
 		let boundingRectangle = elementNode.getBoundingClientRect();
 		let xPosition = boundingRectangle.left;
@@ -631,6 +639,11 @@ class ElementInfo {
 			boundingRectangle = currentFrameElement.getBoundingClientRect();
 			xPosition += boundingRectangle.left;
 			yPosition += boundingRectangle.top;
+		}
+
+		//If the element's was 'none', set it back to 'none'
+		if (displayOriginallyNone) {
+			elementNode.style.display = "none";
 		}
 
 		//Return the Coordinates
@@ -1345,6 +1358,15 @@ class CreativeInjecter {
 		//Sort the AdSelector elements by there positions
 		this._sortAdSelectorsByPosition(this._adSelectors);
 
+		console.log("-------------- Initial Selector Locations -----------------");
+		for (let currentAdSelector of this._adSelectors) {
+			let currentElement = document.querySelector(currentAdSelector.selector());
+			let elementXPosition = ElementInfo.xPosition(currentElement);
+			let elementYPosition = ElementInfo.yPosition(currentElement);
+			console.log(currentAdSelector.selector() + ": " + elementXPosition + ", " + elementYPosition);
+		}
+		console.log("-----------------------------------------------------------");
+
 		//Replace each AdSelector element with a matching creative of one of its
 		//possible CreativeSizes, if a match exists
 		//this._adSelectors = []; //testing
@@ -1380,6 +1402,7 @@ class CreativeInjecter {
 							let elementYPosition = ElementInfo.yPosition(currentElement);
 							this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
 							adSelectorReplaced = true;
+							console.log(currentAdSelector.selector() + ": " + elementXPosition + ", " + elementYPosition);
 						}
 					}
 				}
@@ -2003,7 +2026,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: '3df43614-6b5e-43d0-bb9a-d2192488ca81', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9621b7db-499c-4092-9229-1369ef1d2a8b.png', width: 300, height: 600, priority: 0},{id: '63dd243f-5eb3-4efc-8541-b82cd4f904ae', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/45c45e14-544e-41c6-8ba2-1a31c49c56f0.png', width: 728, height: 90, priority: 0},{id: 'cfe5ecaa-c3bb-4986-863a-76bddeea523e', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/204c65e8-f57a-4e11-8244-d26f535219a6.png', width: 300, height: 250, priority: 0},];
+creatives = [{id: 'dbc03fdf-e7be-4b7b-bb38-d6e021b303a1', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/87f4e6d7-a544-44b2-b9f6-3ce762af9215.png', width: 300, height: 600, priority: 0},{id: '49966c43-23ac-45c2-a8cc-4364e4438b64', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/24fdeb32-c427-4009-9ab9-11a02c3694cf.png', width: 728, height: 90, priority: 0},{id: 'c5c94922-7cb8-4567-9391-889344300859', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/3f6a1c99-8033-4ac9-904c-3340f5bf9828.png', width: 300, height: 250, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
