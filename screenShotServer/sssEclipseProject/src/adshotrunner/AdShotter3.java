@@ -70,7 +70,7 @@ public class AdShotter3 {
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
 	final private static int PAGETIMEOUT = 12000;			//in milliseconds
-	final private static int TAGTIMEOUT = 4000;				//in milliseconds
+	final private static int TAGTIMEOUT = 5000;				//in milliseconds
 	final private static int TAGALLOWFINISHTIME = 15000;	//in milliseconds
 	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
@@ -83,7 +83,8 @@ public class AdShotter3 {
 	final private static int MAXIMUMCROPHEIGHT = 3000; 		//in pixels
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
-	final private static int MAXOPENTABS = 1;
+	final private static int DEFAULTOPENTABS = 1;
+	final private static int TAGSOPENTABS = 4;
 
 
 	//---------------------------------------------------------------------------------------
@@ -214,9 +215,15 @@ public class AdShotter3 {
 		
 		//Open each AdShot URL in a new tab up to the max tab amount
 		consoleLog("Beginning to open tabs...");
-		int numberOfRequiredTabs = (adShots.size() < MAXOPENTABS) ? adShots.size() : MAXOPENTABS;
+		int numberOfOpenTabs = (_treatAsTags) ? TAGSOPENTABS : DEFAULTOPENTABS;
+		int numberOfRequiredTabs = (adShots.size() < numberOfOpenTabs) ? adShots.size() : numberOfOpenTabs;
 		ArrayList<String> tabHandles = getTabs(remoteWebDriver, numberOfRequiredTabs);
 		consoleLog("Done opening tabs.");
+
+		//Stores the start time the AdShot page is first loaded.
+		//When working with tags, this makes sure each tag has enough time
+		//for its animation to run.
+		Map<Integer, Long> loadStartTimes = new HashMap<Integer, Long>();
 		
 		//Load the initial pages into the tabs. 
 		consoleLog("Loading initial pages...");
@@ -234,6 +241,12 @@ public class AdShotter3 {
 			//Navigate to the initial page
 			consoleLog("	Navigating to initial page: " + adShots.get(adShotIndex).url());
 			try {
+				
+				//Store the AdShot's starting load time
+				loadStartTimes.put(adShotIndex, System.nanoTime());
+//				consoleLog("Load Start Time (" + adShotIndex + ": " + System.nanoTime() + " (" + (System.nanoTime()/1000000) + ")");
+				
+				//Navigate to the page
 				if (_useMobile) {
 					navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(adShotIndex).url(), INITIALMOBILETIMEOUT);					
 				}
@@ -257,7 +270,7 @@ public class AdShotter3 {
 		for (adShotIndex = 0; adShotIndex < adShots.size(); ++adShotIndex) {
 			consoleLog("------------- New AdShot (" + (adShotIndex + 1) + "/" + adShots.size() +  ") --------------");
 
-			if ((adShots.size() > 1) && (MAXOPENTABS > 1)) {
+			if ((adShots.size() > 1) && (numberOfOpenTabs > 1)) {
 				String nextTabHandler = tabIterator.next();
 				remoteWebDriver.switchTo().window(nextTabHandler);
 				remoteWebDriver.switchTo().defaultContent();
@@ -267,6 +280,20 @@ public class AdShotter3 {
 				if (!tabIterator.hasNext()) {tabIterator = tabHandles.iterator();}
 			}			
 
+			//If we are dealing with tags, confirm it had enough time to run its animation
+			if (_treatAsTags) {
+				
+				long currentRunTimeMS = ((System.nanoTime() - loadStartTimes.get(adShotIndex)))/1000000;
+//				consoleLog("Load Start Time (" + adShotIndex + "): " + loadStartTimes.get(adShotIndex) + " (" + (loadStartTimes.get(adShotIndex)/1000000) + ")");
+//				consoleLog("Load Finish Time (" + adShotIndex + "): " + System.nanoTime() + " (" + (System.nanoTime()/1000000) + ")");
+//				consoleLog("Run Time: " + currentRunTimeMS);
+				if (currentRunTimeMS < TAGALLOWFINISHTIME) {
+					pause((int) (TAGALLOWFINISHTIME - currentRunTimeMS));
+					consoleLog("Pausing: " + (TAGALLOWFINISHTIME - currentRunTimeMS));
+				}
+			}
+			
+			//Take the actual AdShot
 			long currentAdShotStartTime = System.nanoTime();
 			AdShot currentAdShot = adShots.get(adShotIndex);
 			consoleLog("URL: " + currentAdShot.url());
@@ -292,8 +319,12 @@ public class AdShotter3 {
 			
 			//If there is an AdShot that needs to be loaded still,
 			//put it in the current tab and navigate to the next
-			if ((adShotIndex + MAXOPENTABS) < adShots.size()) {
-				try {navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(adShotIndex + MAXOPENTABS).url());} 
+			if ((adShotIndex + numberOfOpenTabs) < adShots.size()) {
+				
+				//Store the AdShot's starting load time
+				loadStartTimes.put(adShotIndex  + numberOfOpenTabs, System.nanoTime());
+				
+				try {navigateSeleniumDriverToURL(remoteWebDriver, adShots.get(adShotIndex + numberOfOpenTabs).url());} 
 				catch (Exception e) {
 					consoleLog("Couldn't navigate to page: " + adShots.get(adShotIndex).url());
 					adShots.get(adShotIndex).setError(new AdShotRunnerException("Could not navigate to URL", e));
@@ -366,8 +397,6 @@ public class AdShotter3 {
 			}
 			
 			//Get the list of tags that were injected and the positions they were injected from the AdInjecter
-//			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<ArrayList<Float>>>>(){}.getType();
-//			Map<String, ArrayList<ArrayList<Float>>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
 			Type injecterJSONType = new TypeToken<HashMap<String, HashMap<String, Float>>>(){}.getType();
 			Map<String, Map<String, Float>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
 			if (injectedTagInfo != null) {
@@ -395,46 +424,6 @@ public class AdShotter3 {
 				    adShot.markTagImageAsInjected(currentTagID);
 				}
 				
-//				//Mark the tags as injected and determine the lowest bottom position of the first injection of each tag
-//				for (Map.Entry<String, ArrayList<ArrayList<Float>>> entry : injectedTagInfo.entrySet()) {
-//					
-//					//Name the keys for readability and get the TagImage object
-//				    String currentTagID = entry.getKey();											//ID of TagImage
-//				    TagImage currentTagImage = getTagImageByID(currentTagID, adShot.tagImages());	//TagImage from ID
-//				    ArrayList<ArrayList<Float>> tagPositions = entry.getValue();	//List of x,y positions of tag injections
-//				    
-//					//In all the places the current tag was injected,
-//					//get the bottom y position of the highest injected location.
-//					//If you're looking at the page, it's the bottom y coordinate
-//					//of the ad highest on the screen.
-//					int highestTagBottomYPosition = 0;
-//					for (ArrayList<Float> currentPosition : tagPositions) {
-//						
-//						//If the position is 0,0 ignore it
-//						if ((currentPosition.get(0) != 0) || (currentPosition.get(1) != 0)) {
-//							
-//							//If the bottom of the current tag is higher than the current highest, store it
-//							int currentPositionBottom = Math.round(currentPosition.get(1)) + currentTagImage.height();
-//							if ((highestTagBottomYPosition == 0) || (currentPositionBottom < highestTagBottomYPosition)) {
-//								highestTagBottomYPosition = currentPositionBottom;
-//							}
-//						}
-//					}
-//					
-//					//Compare the lowest y position of the current tag to the 
-//					//lowest y position of all the tags so far.
-//					//If it is lower, make it the requested crop height
-//					if (requestedCropHeight < highestTagBottomYPosition) {
-//						requestedCropHeight = highestTagBottomYPosition;
-//					}
-//					
-//					//If the image is within the maximum crop height, 
-//					//mark it as injected (appears in the screenshot)
-//					if ((highestTagBottomYPosition > 0) && (highestTagBottomYPosition < MAXIMUMCROPHEIGHT)) {
-//						consoleLog("Tag bottom: " + highestTagBottomYPosition);
-//						adShot.markTagImageAsInjected(currentTagID);
-//					}
-//				}
 				
 				
 			}
@@ -445,23 +434,12 @@ public class AdShotter3 {
 			//Add a little margin to the minimum cutoff
 			requestedCropHeight += 40;
 			consoleLog("Final requested Crop Height: " + requestedCropHeight);
-//			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
-//			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
-//			if ((injectedTagInfo != null) && (injectedTagInfo.containsKey("injectedTagIDs"))) {
-//				adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
-//				minimumTagCutoff = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
-//				consoleLog("	Injected Tags Size: " + adShot.injectedTagImages().size());
-//				consoleLog("	Bottom position: " + minimumTagCutoff);
-//			}
-//			else {
-//				consoleLog("------------------- Javascript returned empty String -------------------------");
-//			}
 			consoleLog("Done injecting JS.");
 		}
 		else {
 			//this is to allow ads to finish their play loops
 			//ensuring the tag images are taken at a time when the ads look good.
-			pause(TAGALLOWFINISHTIME);
+			//pause(TAGALLOWFINISHTIME);
 		}
 		
 		//this can be uncommented to test how the javascript ran
@@ -567,11 +545,13 @@ public class AdShotter3 {
 		}
 		else {consoleLog("WARNING!!! NOT USING A PROXY!");}
 		
-		//Install the AdMarker extension to mark ad elements
-		try {
-			driverOptions.addExtensions(new File(ADMARKERPATH));
-		} catch (Exception e) {
-			consoleLog("	FAILED: Unable to load AdMarker. -" + e.toString() );
+		//Install the AdMarker extension to mark ad elements if not a tag
+		if (!_treatAsTags) {
+			try {
+				driverOptions.addExtensions(new File(ADMARKERPATH));
+			} catch (Exception e) {
+				consoleLog("	FAILED: Unable to load AdMarker. -" + e.toString() );
+			}
 		}
 
 
@@ -626,14 +606,9 @@ public class AdShotter3 {
 		setCommandTimeout(activeSeleniumWebDriver, navigationTimeout);
 		((JavascriptExecutor) activeSeleniumWebDriver).executeScript("window.location.href = '" + pageURL + "';");
 		setCommandTimeout(activeSeleniumWebDriver, DEFAULTTIMEOUT);
-		//executeSeleniumDriverJavascript(activeSeleniumWebDriver, "window.scrollBy(0, 650); window.scrollBy(0, -650);");
 		executeSeleniumDriverJavascript(activeSeleniumWebDriver, 
 				"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
-//		((JavascriptExecutor) activeSeleniumWebDriver).executeScript(
-//				"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
-		consoleLog("		Navigation command sent.");
-		//activeSeleniumWebDriver.navigate().to(pageURL);
-		
+		consoleLog("		Navigation command sent.");		
 	}
 		
 	/**
@@ -753,27 +728,6 @@ public class AdShotter3 {
 		//Insert the creatives into the code by replacing the 'INSERT CREATIVES OBJECT' marker with them
 		String finalJS = adInjecterJS.replace("//INSERT CREATIVES OBJECT//", creativesJSON);
 		
-//		//If an exceptions exists, insert its script into the final string
-//		String exceptionScript = "";
-//		try {exceptionScript = getAdInjecterException(targetURL); } catch (Exception e) {}
-//		if (!exceptionScript.isEmpty()) {
-//			finalJS = finalJS.replace("//INSERT EXCEPTION SCRIPT//", exceptionScript);
-//		}
-//		//Create the tags object by looping through the tags and adding them to the tags string
-//		String tagsString = "tags = [";
-//		for (TagImage tagImage: tagImageSet) {
-//			
-//			//build the current tag object and add it to overall object
-//			tagsString +=  "{id: '" + tagImage.id() + "', " +
-//							"tag: '" + tagImage.url() + "', " +
-//							"placement: " + tagImage.priority() + ", " +
-//							"width: " + tagImage.width() + ", " +
-//							"height: " + tagImage.height() + "},";
-//		}
-//		tagsString += "];";
-//		
-//		//Insert the tags into the code by replacing the 'insert tags object' marker with them
-//		String finalJS = adInjecterJS.replace("//INSERT TAGS OBJECT//", tagsString);
 //		
 		//If an exceptions exists, insert its script into the final string
 		String exceptionScript = "";
@@ -1110,5 +1064,28 @@ try {
 } catch (Exception e) {
 	consoleLog("	FAILED: Unable to load ASRLoadStopper. -" + e.toString() );
 }
+
+//		//If an exceptions exists, insert its script into the final string
+//		String exceptionScript = "";
+//		try {exceptionScript = getAdInjecterException(targetURL); } catch (Exception e) {}
+//		if (!exceptionScript.isEmpty()) {
+//			finalJS = finalJS.replace("//INSERT EXCEPTION SCRIPT//", exceptionScript);
+//		}
+//		//Create the tags object by looping through the tags and adding them to the tags string
+//		String tagsString = "tags = [";
+//		for (TagImage tagImage: tagImageSet) {
+//			
+//			//build the current tag object and add it to overall object
+//			tagsString +=  "{id: '" + tagImage.id() + "', " +
+//							"tag: '" + tagImage.url() + "', " +
+//							"placement: " + tagImage.priority() + ", " +
+//							"width: " + tagImage.width() + ", " +
+//							"height: " + tagImage.height() + "},";
+//		}
+//		tagsString += "];";
+//		
+//		//Insert the tags into the code by replacing the 'insert tags object' marker with them
+//		String finalJS = adInjecterJS.replace("//INSERT TAGS OBJECT//", tagsString);
+
 
 */

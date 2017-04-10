@@ -10,6 +10,7 @@ require_once('../systemSetup.php');
 */
 require_once(RESTRICTEDPATH . 'validateSession.php');
 
+use AdShotRunner\Database\ASRDatabase;
 use AdShotRunner\Menu\MenuGrabber;
 
 if ($_POST['domain']) {
@@ -54,6 +55,36 @@ if ($_POST['domain']) {
 	<strong>Domain: </strong><input type="text" name="domain" style="width:500px"><br><br>
 	<table>
 		<tr><th>Label</th><th>URL</th>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
+		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
 		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
 		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>
 		<tr><td><input type="text" name="label[]"></td><td><input type="text" name="url[]" style="width:700px"></td></tr>

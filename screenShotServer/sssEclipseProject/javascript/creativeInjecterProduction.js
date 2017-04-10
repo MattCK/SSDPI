@@ -620,14 +620,6 @@ class ElementInfo {
 		//Return null if the passed node variable is an HTMLElement
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 
-		//If the element display is none, set it to block for the position then set it back
-		let displayStatus = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('display');
-		let displayOriginallyNone = false;
-		if (displayStatus == "none") {
-			elementNode.style.display = "block";
-			displayOriginallyNone = true;
-		}
-
 		//Grab the initial locations
 		let boundingRectangle = elementNode.getBoundingClientRect();
 		let xPosition = boundingRectangle.left;
@@ -639,11 +631,6 @@ class ElementInfo {
 			boundingRectangle = currentFrameElement.getBoundingClientRect();
 			xPosition += boundingRectangle.left;
 			yPosition += boundingRectangle.top;
-		}
-
-		//If the element's was 'none', set it back to 'none'
-		if (displayOriginallyNone) {
-			elementNode.style.display = "none";
 		}
 
 		//Return the Coordinates
@@ -1358,16 +1345,6 @@ class CreativeInjecter {
 		//Sort the AdSelector elements by there positions
 		this._sortAdSelectorsByPosition(this._adSelectors);
 
-		console.log("-------------- Initial Selector Locations -----------------");
-		for (let currentAdSelector of this._adSelectors) {
-			let currentElement = document.querySelector(currentAdSelector.selector());
-			let elementXPosition = ElementInfo.xPosition(currentElement);
-			let elementYPosition = ElementInfo.yPosition(currentElement);
-			console.log(currentAdSelector.selector() + ": " + elementXPosition + ", " + elementYPosition);
-		}
-		//console.log("-----------------------------------------------------------");
-		console.log("---------------Final Creative Locations--------------------");
-
 		//Replace each AdSelector element with a matching creative of one of its
 		//possible CreativeSizes, if a match exists
 		//this._adSelectors = []; //testing
@@ -1403,7 +1380,6 @@ class CreativeInjecter {
 							let elementYPosition = ElementInfo.yPosition(currentElement);
 							this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
 							adSelectorReplaced = true;
-							console.log(currentAdSelector.selector() + ": " + elementXPosition + ", " + elementYPosition);
 						}
 					}
 				}
@@ -1418,8 +1394,7 @@ class CreativeInjecter {
 			}
 		}
 
-		// return; //testing	
-		console.log("-----------------------------------------------------------");	
+		// return; //testing		
 
 		//-------------------- Marked Creatives and IFrames ------------------------
 		//Get the elements from the page that are the size of an instance creative, 
@@ -2018,7 +1993,7 @@ class CreativeInjecter {
 //window.onload = function() {
 
 //Remove the scrollbars
-// document.documentElement.style.overflow = 'hidden';
+document.documentElement.style.overflow = 'hidden';
 
 let creatives = [];
 
@@ -2028,7 +2003,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: 'dbc03fdf-e7be-4b7b-bb38-d6e021b303a1', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/87f4e6d7-a544-44b2-b9f6-3ce762af9215.png', width: 300, height: 600, priority: 0},{id: '49966c43-23ac-45c2-a8cc-4364e4438b64', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/24fdeb32-c427-4009-9ab9-11a02c3694cf.png', width: 728, height: 90, priority: 0},{id: 'c5c94922-7cb8-4567-9391-889344300859', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/3f6a1c99-8033-4ac9-904c-3340f5bf9828.png', width: 300, height: 250, priority: 0},];
+creatives = [{id: '54c39bfb-4cfa-4400-b9c6-8766eb2bb7d8', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/d59f042d-2aeb-4091-8414-5c3aa685715e.png', width: 300, height: 600, priority: 0},{id: 'ed887721-8c86-482c-9f24-268f697d81cb', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/b5633bf0-8350-47b5-92eb-97b7b813b6f3.png', width: 300, height: 250, priority: 0},{id: '61b9ca17-717a-4fe5-9c52-ade1acb3d13c', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/83b271ab-87b5-49a0-825e-6b475f5f44e8.png', width: 970, height: 250, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2064,13 +2039,7 @@ for (let currentSelector of selectors) {
 	}
 }
 
-for (let selectorIndex = 0; selectorIndex < allSelectors.length; ++selectorIndex) {
-
-	if (allSelectors[selectorIndex].selector().includes("div-gpt-gallery-top")){
-		allSelectors.splice(selectorIndex, 1);
-	}
-
-}
+//INSERT EXCEPTION SCRIPT//
 
 
 //Initialize the CreativeInjecter and inject the creatives
@@ -2083,6 +2052,6 @@ let injectedIDsAndLocations = {};
 for (let [injectedCreative, location] of injectedCreatives) {
 	injectedIDsAndLocations[injectedCreative.id()] = {'x': location.x(), 'y': location.y()};
 }
-console.log(JSON.stringify(injectedIDsAndLocations));
-// return JSON.stringify(injectedIDsAndLocations);
+//console.log(JSON.stringify(injectedIDsAndLocations));
+return JSON.stringify(injectedIDsAndLocations);
 
