@@ -533,6 +533,8 @@ public class AdShotter3 {
 		//driverOptions.addArguments("disable-web-security");
 		//driverOptions.addArguments("user-data-dir=/tmp/chromeprofile");
 		
+		//this option turns off the proxy for connections to aws resources
+		driverOptions.addArguments("proxy-bypass-list='*.amazonaws.com'");
 		//Set the proxy to use. If it is not empty, set the proxy capability3
 		String proxyDetails = getProxyDetails();
 		if (!proxyDetails.isEmpty()) {
