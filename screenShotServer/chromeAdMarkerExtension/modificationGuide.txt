@@ -1,10 +1,30 @@
 display: none -> flood-opacity: 0.9898
 'display', 'none' -> 'flood-opacity', '0.9898'
 display:none -> flood-opacity: 0.9898
-	 -> hidden = false
-content-script ==> comment out 535 - 536
+hidden = true	 -> hidden = false
+
+
+
 visibility:hidden -> visibility: visible
+
 static-net-filtering ==> comment out fromCompiledContent 1974 -> 2010
+(Everything after: this.acceptedCount += 1;)
+
+
+contentScript.js (~257)
+in batchProcess -
+    add flood opacity check with width and height check
+
+            let floodOpacity = document.defaultView.getComputedStyle(node, null).getPropertyValue('flood-opacity');
+            if ( node[uid] !== undefined && node.clientHeight && node.clientWidth && (!floodOpacity)) {
+                vNodes[j++] = node;
+            }
+
+
+(Originally shadow root, seems to be gone
+content-script ==> comment out 535 - 536
+)
+
 
 
 So far, not neccesary: 

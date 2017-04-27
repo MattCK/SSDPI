@@ -262,6 +262,10 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     height: 30px;
 }
 
+#header.loginPage {
+    width: 635px;
+}
+
 #title {
     float: left;
     text-align: left;
@@ -269,8 +273,12 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     color: #055C73;
 }
 
-#title h1{
+#title h1 {
     font-family: 'Pacifico', VAGRundschriftD,'Arial Rounded MT Bold','Arial Rounded MT',Arial,sans-serif;
+}
+
+#headerLogo {
+    margin-top: -10px;
 }
 
 #logout {
@@ -278,6 +286,11 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     float: right;
     text-align: right;
     padding-top: 22px;
+}
+
+#logout.loginPage {
+    width: 100px;
+    margin-right: 10px;
 }
 
 .indexPageTable tr td {
@@ -511,6 +524,11 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     text-align: center;
     line-height: 120px; 
     height: 120px;
+}
+
+.queuedTagDiv img {
+    vertical-align: middle;
+    margin-right: 5px;
 }
 
 .priorityDescriptionDiv {

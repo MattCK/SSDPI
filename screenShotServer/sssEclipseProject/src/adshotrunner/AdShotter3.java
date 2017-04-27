@@ -397,9 +397,18 @@ public class AdShotter3 {
 			}
 			
 			//Get the list of tags that were injected and the positions they were injected from the AdInjecter
-			Type injecterJSONType = new TypeToken<HashMap<String, HashMap<String, Float>>>(){}.getType();
-			Map<String, Map<String, Float>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
-			if (injectedTagInfo != null) {
+			Type injecterJSONType = new TypeToken<HashMap<String, HashMap<String, HashMap<String, Float>>>>(){}.getType();
+			Map<String, Map<String, Map<String, Float>>> injecterResults = new Gson().fromJson(injecterResponse, injecterJSONType);
+			if (injecterResults != null) {
+				
+				//Put the injected Creatives info and output log into separate variables
+				Map<String, Map<String, Float>>injectedTagInfo = injecterResults.get("injectedCreatives");
+				String responseMessages = injecterResults.get("outputLog").keySet().iterator().next();
+				
+				//Output the message log
+				consoleLog("\n---------------Injecter Script Log---------------\n" + 
+							responseMessages +
+							"\n------------------------------------------------");
 				
 				//Mark the tags as injected and determine the requested crop height
 				for (Map.Entry<String, Map<String, Float>> entry : injectedTagInfo.entrySet()) {
@@ -423,10 +432,38 @@ public class AdShotter3 {
 				    //Mark the creative as injected
 				    adShot.markTagImageAsInjected(currentTagID);
 				}
-				
-				
-				
 			}
+//			//Get the list of tags that were injected and the positions they were injected from the AdInjecter
+//			Type injecterJSONType = new TypeToken<HashMap<String, HashMap<String, Float>>>(){}.getType();
+//			Map<String, Map<String, Float>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
+//			if (injectedTagInfo != null) {
+//				
+//				//Mark the tags as injected and determine the requested crop height
+//				for (Map.Entry<String, Map<String, Float>> entry : injectedTagInfo.entrySet()) {
+//
+//					//Name the keys for readability and get the TagImage object
+//					String currentTagID = entry.getKey();											//ID of TagImage
+//				    TagImage currentTagImage = getTagImageByID(currentTagID, adShot.tagImages());	//TagImage from ID
+//				    Map<String, Float> coordinates = entry.getValue();	//List of x,y positions of tag injection
+//				    int currentTagXCoordinate = Math.round(coordinates.get("x")); 
+//				    int currentTagYCoordinate = Math.round(coordinates.get("y")); 
+//				
+//				    //Determine the bottom coordinate of the injected creative
+//				    int bottomCoordinate = currentTagYCoordinate + currentTagImage.height();
+//				    
+//				    //If the bottom coordinate is lower than the requested crop height, use it
+//				    if (bottomCoordinate > requestedCropHeight) {requestedCropHeight = bottomCoordinate;}
+//				    consoleLog("Position: " + currentTagXCoordinate + ", " + currentTagYCoordinate);
+//				    consoleLog("Height: " + currentTagImage.height());
+//					consoleLog("Current requested Crop Height: " + requestedCropHeight);
+//				    
+//				    //Mark the creative as injected
+//				    adShot.markTagImageAsInjected(currentTagID);
+//				}
+//				
+//				
+//				
+//			}
 			else {
 				consoleLog("------------------- Javascript returned empty String -------------------------");
 			}
@@ -527,7 +564,7 @@ public class AdShotter3 {
 		
 		}
 		
-		chromePrefs.put("profile.managed_default_content_settings.cookies", new Integer(2));
+//		chromePrefs.put("profile.managed_default_content_settings.cookies", new Integer(2));
 		driverOptions.setExperimentalOption("prefs", chromePrefs);
 		//the below option freezes chrome when injecting the ad injector
 		//driverOptions.addArguments("disable-web-security");

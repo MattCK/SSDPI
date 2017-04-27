@@ -13,6 +13,33 @@
 //------------------------------------ Classes ------------------------------------------
 //---------------------------------------------------------------------------------------
 /**
+* The Log class both outputs messages to the browser console and stores the messages. The stored log
+* is returned with the injected tags (and their locations) at the end of script execution.
+*/
+class Log {
+
+	/**
+	* Outputs the passed message to the browser console and stores the message
+	*
+	* @param {String} 	message  		Message to output to browser console and store
+	*/	
+	static output(message) {
+		console.log(message);
+		Log.messages += message + "\n";
+	}	
+
+	/**
+	* Returns all the messages stored in the log (separated by newlines)
+	*
+	* @return {String}			All log messages (separated by newlines)
+	*/	
+	static getMessages() {
+		return Log.messages;
+	}	
+}
+Log.messages = "";	//Static variables for the Log class to store all messages
+
+/**
 * The Creative class stores the basic information for an ad creative image. 
 *
 * It contains the creative unique ID, image URL, width and height in pixels,
@@ -1407,7 +1434,7 @@ class CreativeInjecter {
 			}
 		}
 
-		// return; //testing		
+		return; //testing
 
 		//-------------------- Marked Creatives and IFrames ------------------------
 		//Get the elements from the page that are the size of an instance creative, 
@@ -1467,6 +1494,10 @@ class CreativeInjecter {
 		if ((elementNode == null) || (!ElementInfo.isHTMLElement(elementNode)) ||
 			(!elementNode.parentNode)) {return;}
 
+		//Store the original height and width of the node
+		let originalNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
+		let originalNodeHeight = ElementInfo.heightWithoutBorder(elementNode);
+
 		// let creativeImage = document.createElement('img');
 		// creativeImage.src = replacementCreative.imageURL();
 		// creativeImage.style.width = replacementCreative.width() + 'px';
@@ -1482,6 +1513,7 @@ class CreativeInjecter {
 		// creativeImage.id = elementNode.id;
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
+		creativeImage.style.margin = 'auto';
 
 		while (elementNode.hasChildNodes()) {
             elementNode.removeChild(elementNode.lastChild);
@@ -1543,32 +1575,54 @@ class CreativeInjecter {
 			//Get the current node's width and height minus border width
 			let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
 			let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
+			Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
+			
 
 			//Make sure the current node is displayed
 			let displayStatus = document.defaultView.getComputedStyle(currentNode, null).getPropertyValue('display');
 			if (displayStatus == "none") {
 				currentNode.style.display = "block";
 			}
+
+			//Some ads use CSS animations to come in to view once they are loaded such as 'fade in'
+			//Force any animation to run
 			currentNode.style.animationPlayState = "running";
+
+			//If the current node is larger than the creative node height and the size of the original 
+			//non-replaced ad element, set it to the new creative width and height
+			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
+				Log.output("Changing parent width");
+				currentNode.style.width = replacementCreative.width() + 'px';
+				currentNode.style.minWidth = replacementCreative.width() + 'px';
+			}
+			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
+				Log.output("Changing parent height");
+				currentNode.style.height = replacementCreative.height() + 'px';
+				currentNode.style.minHeight = replacementCreative.height() + 'px';
+			}
+
+			//If the current node is larger than the creative node height and the size of the original 
+			//non-replaced ad element, set it to the new creative width and height
+			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
+				currentNode.style.width = replacementCreative.width();
+			}
+			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
+				currentNode.style.height = replacementCreative.height();
+			}
 
 			//If the current node is smaller than the Creative image, expand it
 			//This occurs when the element has been hidden by the page.
 			//For example, a containing div set to 0x0
-			// if ((currentNodeWidth < replacementCreative.width()) || 
-			// 	(currentNodeHeight < replacementCreative.height())) {
-			// 	currentNode.style.width = replacementCreative.width() + 'px';
-			// 	currentNode.style.height = replacementCreative.height() + 'px';
+			// if (currentNodeWidth < replacementCreative.width()) {
+			// 	// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
+			// 	// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
+			// 	currentNode.style.width = '100%';
 			// }
-			if (currentNodeWidth < replacementCreative.width()) {
-				// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
-				// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
-				currentNode.style.width = '100%';
-			}
-			if (currentNodeHeight < replacementCreative.height()) {
-				// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
-				// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
-				currentNode.style.height = '100%';
-			}
+			// if (currentNodeHeight < replacementCreative.height()) {
+			// 	// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
+			// 	// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
+			// 	currentNode.style.height = '100%';
+			// }
 		});
 	}
 
@@ -2059,12 +2113,20 @@ for (let currentSelector of selectors) {
 let injecter = new CreativeInjecter(allCreatives, allSelectors);
 injecter.injectCreativesIntoPage();
 
-//Return the list of injected Creatives and their locations
+//Create the list of injected Creatives and their locations
+//Format: {creativeID: {x: xPosition, y: yPosition}}
+//Example: {"4ce6dca7-1d71-4e5b-9bfb-17a41190151a":{"x":312,"y":106},"1e678430-90b4-4c9f-ad81-739826d05c0e":{"x":942,"y":262}} 
 let injectedCreatives = allCreatives.getInjectedCreatives();
 let injectedIDsAndLocations = {};
 for (let [injectedCreative, location] of injectedCreatives) {
 	injectedIDsAndLocations[injectedCreative.id()] = {'x': location.x(), 'y': location.y()};
 }
-//console.log(JSON.stringify(injectedIDsAndLocations));
-return JSON.stringify(injectedIDsAndLocations);
+
+//Get the message log
+Log.output("End of message log");
+let messageLog = Log.getMessages();
+
+//Return the injected creatives with their locations and any log messages
+//Log.output(JSON.stringify(injectedIDsAndLocations));
+return JSON.stringify({'injectedCreatives': injectedIDsAndLocations, 'outputLog': {[messageLog]: {}}});
 

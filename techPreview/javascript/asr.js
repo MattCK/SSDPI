@@ -244,7 +244,8 @@ let asr = {
 			tagsByID[newUUID] = asr._queuedTags[tagIndex];
 
 			//Add the "queued" row to the tags table
-		    let $li = $("<li class='ui-state-default' id='tagLI" + newUUID + "' />").html('<div class="queuedTagDiv">Queued...</div>');
+		    let $li = $("<li class='ui-state-default' id='tagLI" + newUUID + "' />").html(
+		    	'<div class="queuedTagDiv"><img src="/images/waitingIcon.gif">Processing Image (May take a minute or two)</div>');
 		    $("#sortable").append($li);
 		    $("#sortable").sortable('refresh');
 
@@ -349,8 +350,8 @@ let asr = {
 			
 			//If successful, navigate to the queued job page
 			if (response.success) {
-				window.location.href = '/campaignResults.php?jobID=' + jobID;
-				//window.open('/campaignResults.php?jobID=' + jobID, '_blank');
+				//window.location.href = '/campaignResults.php?jobID=' + jobID;
+				window.open('/campaignResults.php?jobID=' + jobID, '_blank');
 			}
 						
 			//If failure, simply output to the console for the time being

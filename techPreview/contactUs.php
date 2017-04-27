@@ -17,7 +17,7 @@ require_once('systemSetup.php');
 	
 <div id="header">
 	<div id="title">
-		<h1>AdShotRunner&trade;: Tech Preview</h1> 
+		<a href="/"><img id="headerLogo" src="images/headerLogo.png"/></a>
 	</div>
 </div>
 

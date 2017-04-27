@@ -13,6 +13,33 @@
 //------------------------------------ Classes ------------------------------------------
 //---------------------------------------------------------------------------------------
 /**
+* The Log class both outputs messages to the browser console and stores the messages. The stored log
+* is returned with the injected tags (and their locations) at the end of script execution.
+*/
+class Log {
+
+	/**
+	* Outputs the passed message to the browser console and stores the message
+	*
+	* @param {String} 	message  		Message to output to browser console and store
+	*/	
+	static output(message) {
+		console.log(message);
+		Log.messages += message + "\n";
+	}	
+
+	/**
+	* Returns all the messages stored in the log (separated by newlines)
+	*
+	* @return {String}			All log messages (separated by newlines)
+	*/	
+	static getMessages() {
+		return Log.messages;
+	}	
+}
+Log.messages = "";	//Static variables for the Log class to store all messages
+
+/**
 * The Creative class stores the basic information for an ad creative image. 
 *
 * It contains the creative unique ID, image URL, width and height in pixels,
@@ -641,7 +668,7 @@ class ElementInfo {
 			yPosition += boundingRectangle.top;
 		}
 
-		//If the element's was 'none', set it back to 'none'
+		//If the element's display was 'none', set it back to 'none'
 		if (displayOriginallyNone) {
 			elementNode.style.display = "none";
 		}
@@ -1358,16 +1385,6 @@ class CreativeInjecter {
 		//Sort the AdSelector elements by there positions
 		this._sortAdSelectorsByPosition(this._adSelectors);
 
-		console.log("-------------- Initial Selector Locations -----------------");
-		for (let currentAdSelector of this._adSelectors) {
-			let currentElement = document.querySelector(currentAdSelector.selector());
-			let elementXPosition = ElementInfo.xPosition(currentElement);
-			let elementYPosition = ElementInfo.yPosition(currentElement);
-			console.log(currentAdSelector.selector() + ": " + elementXPosition + ", " + elementYPosition);
-		}
-		//console.log("-----------------------------------------------------------");
-		console.log("---------------Final Creative Locations--------------------");
-
 		//Replace each AdSelector element with a matching creative of one of its
 		//possible CreativeSizes, if a match exists
 		//this._adSelectors = []; //testing
@@ -1403,7 +1420,6 @@ class CreativeInjecter {
 							let elementYPosition = ElementInfo.yPosition(currentElement);
 							this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
 							adSelectorReplaced = true;
-							console.log(currentAdSelector.selector() + ": " + elementXPosition + ", " + elementYPosition);
 						}
 					}
 				}
@@ -1418,8 +1434,7 @@ class CreativeInjecter {
 			}
 		}
 
-		// return; //testing	
-		console.log("-----------------------------------------------------------");	
+		return; //testing
 
 		//-------------------- Marked Creatives and IFrames ------------------------
 		//Get the elements from the page that are the size of an instance creative, 
@@ -1479,6 +1494,10 @@ class CreativeInjecter {
 		if ((elementNode == null) || (!ElementInfo.isHTMLElement(elementNode)) ||
 			(!elementNode.parentNode)) {return;}
 
+		//Store the original height and width of the node
+		let originalNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
+		let originalNodeHeight = ElementInfo.heightWithoutBorder(elementNode);
+
 		// let creativeImage = document.createElement('img');
 		// creativeImage.src = replacementCreative.imageURL();
 		// creativeImage.style.width = replacementCreative.width() + 'px';
@@ -1494,6 +1513,7 @@ class CreativeInjecter {
 		// creativeImage.id = elementNode.id;
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
+		creativeImage.style.margin = 'auto';
 
 		while (elementNode.hasChildNodes()) {
             elementNode.removeChild(elementNode.lastChild);
@@ -1555,22 +1575,43 @@ class CreativeInjecter {
 			//Get the current node's width and height minus border width
 			let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
 			let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
+			Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
 
 			//Make sure the current node is displayed
 			let displayStatus = document.defaultView.getComputedStyle(currentNode, null).getPropertyValue('display');
 			if (displayStatus == "none") {
 				currentNode.style.display = "block";
 			}
+
+			//Some ads use CSS animations to come in to view once they are loaded such as 'fade in'
+			//Force any animation to run
 			currentNode.style.animationPlayState = "running";
+
+			//If the current node is larger than the creative node height and the size of the original 
+			//non-replaced ad element, set it to the new creative width and height
+			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
+				Log.output("Changing parent width");
+				currentNode.style.width = replacementCreative.width() + 'px';
+				currentNode.style.minWidth = replacementCreative.width() + 'px';
+			}
+			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
+				Log.output("Changing parent height");
+				currentNode.style.height = replacementCreative.height() + 'px';
+				currentNode.style.minHeight = replacementCreative.height() + 'px';
+			}
+
+			//If the current node is larger than the creative node height and the size of the original 
+			//non-replaced ad element, set it to the new creative width and height
+			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
+				currentNode.style.width = replacementCreative.width();
+			}
+			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
+				currentNode.style.height = replacementCreative.height();
+			}
 
 			//If the current node is smaller than the Creative image, expand it
 			//This occurs when the element has been hidden by the page.
 			//For example, a containing div set to 0x0
-			// if ((currentNodeWidth < replacementCreative.width()) || 
-			// 	(currentNodeHeight < replacementCreative.height())) {
-			// 	currentNode.style.width = replacementCreative.width() + 'px';
-			// 	currentNode.style.height = replacementCreative.height() + 'px';
-			// }
 			if (currentNodeWidth < replacementCreative.width()) {
 				// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
 				// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
@@ -2028,7 +2069,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: 'dbc03fdf-e7be-4b7b-bb38-d6e021b303a1', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/87f4e6d7-a544-44b2-b9f6-3ce762af9215.png', width: 300, height: 600, priority: 0},{id: '49966c43-23ac-45c2-a8cc-4364e4438b64', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/24fdeb32-c427-4009-9ab9-11a02c3694cf.png', width: 728, height: 90, priority: 0},{id: 'c5c94922-7cb8-4567-9391-889344300859', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/3f6a1c99-8033-4ac9-904c-3340f5bf9828.png', width: 300, height: 250, priority: 0},];
+creatives = [{id: 'e6b4a8a6-c55c-4e17-b87b-1d1b4e381caf', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/910a91a3-2973-4607-a0d8-077cadce5a5f.png', width: 728, height: 90, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2064,25 +2105,27 @@ for (let currentSelector of selectors) {
 	}
 }
 
-for (let selectorIndex = 0; selectorIndex < allSelectors.length; ++selectorIndex) {
-
-	if (allSelectors[selectorIndex].selector().includes("div-gpt-gallery-top")){
-		allSelectors.splice(selectorIndex, 1);
-	}
-
-}
+//INSERT EXCEPTION SCRIPT//
 
 
 //Initialize the CreativeInjecter and inject the creatives
 let injecter = new CreativeInjecter(allCreatives, allSelectors);
 injecter.injectCreativesIntoPage();
 
-//Return the list of injected Creatives and their locations
+//Create the list of injected Creatives and their locations
+//Format: {creativeID: {x: xPosition, y: yPosition}}
+//Example: {"4ce6dca7-1d71-4e5b-9bfb-17a41190151a":{"x":312,"y":106},"1e678430-90b4-4c9f-ad81-739826d05c0e":{"x":942,"y":262}} 
 let injectedCreatives = allCreatives.getInjectedCreatives();
 let injectedIDsAndLocations = {};
 for (let [injectedCreative, location] of injectedCreatives) {
 	injectedIDsAndLocations[injectedCreative.id()] = {'x': location.x(), 'y': location.y()};
 }
-console.log(JSON.stringify(injectedIDsAndLocations));
-// return JSON.stringify(injectedIDsAndLocations);
+
+//Get the message log
+Log.output("End of message log");
+let messageLog = Log.getMessages();
+
+//Return the injected creatives with their locations and any log messages
+//Log.output(JSON.stringify(injectedIDsAndLocations));
+// return JSON.stringify({'injectedCreatives': injectedIDsAndLocations, 'outputLog': {[messageLog]: {}}});
 

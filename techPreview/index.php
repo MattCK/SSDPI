@@ -136,12 +136,12 @@ $(function() {
 });
 </script>
 
-<div id="header">
+<div id="header" class="loginPage">
 	<div id="title">
-		<h1>AdShotRunner&trade;: Tech Preview</h1> 
+		<a href="/"><img id="headerLogo" src="images/headerLogo.png"/></a>
 	</div>
-	<div id="logout">
-		<a href="mailto:<?PHP echo ASRProperties::emailAddressContact()?>">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
+	<div id="logout" class="loginPage">
+		<a href="/contactUs.php">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </div>
 

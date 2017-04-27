@@ -48,18 +48,34 @@ public class TagImager implements Runnable {
 //			int height = adShotEntry.getValue().image().getHeight();
 //			BufferedImage croppedAdClip = adShotEntry.getValue().image().getSubimage(425, 75, width - 425, height - 75);
 			String imageFilename = adShotEntry.getKey() + ".png";
-			try {
-				saveImageAsPNG(adShotEntry.getValue().image(), ASRProperties.pathForTemporaryFiles() + imageFilename);
-				FileStorageClient.saveFile(ASRProperties.containerForCreativeImages(), 
-										   ASRProperties.pathForTemporaryFiles() + imageFilename, imageFilename);
-				
-				//Delete the local file
-				File tagImageFile = new File(ASRProperties.pathForTemporaryFiles() + imageFilename);
-				tagImageFile.delete();
-
+			
+			//If the AdShotter returned a null image, upload the error image
+			if (adShotEntry.getValue().image() == null) {
+				try {
+					FileStorageClient.saveFile(ASRProperties.containerForCreativeImages(), 
+											   "images/imageProcessingError.png", imageFilename);
+	
+				}
+				catch (Exception e) {
+					System.out.println("Could not save processing error image");
+				}
 			}
-			catch (Exception e) {
-				System.out.println("Could not save screenshot");
+			
+			//Otherwise, upload the processed image
+			else {
+				try {
+					saveImageAsPNG(adShotEntry.getValue().image(), ASRProperties.pathForTemporaryFiles() + imageFilename);
+					FileStorageClient.saveFile(ASRProperties.containerForCreativeImages(), 
+											   ASRProperties.pathForTemporaryFiles() + imageFilename, imageFilename);
+					
+					//Delete the local file
+					File tagImageFile = new File(ASRProperties.pathForTemporaryFiles() + imageFilename);
+					tagImageFile.delete();
+	
+				}
+				catch (Exception e) {
+					System.out.println("Could not save screenshot");
+				}
 			}
 		}
 	}
