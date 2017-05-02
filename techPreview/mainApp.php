@@ -328,13 +328,36 @@ $(function() {
 
 		base.nodeFromID("domain").value = "<?PHP echo $_GET["domain"] ?>";
 		asr.getMenu();
+		setTimeout(function() { 
+			for (let addIndex = 0; addIndex < 8; ++addIndex) {asr.addMenuSectionRow();}
+			$('input[name="findStory[2]"]').prop('checked', true);
+			$('input[name="findStory[3]"]').prop('checked', true);
+			$('input[name="findStory[6]"]').prop('checked', true);
+			$('input[name="findStory[7]"]').prop('checked', true);
+			$('input[name="screenshotType[4]"]').eq(1).prop('checked', true);
+			$('input[name="screenshotType[5]"]').eq(1).prop('checked', true);
+			$('input[name="screenshotType[6]"]').eq(1).prop('checked', true);
+			$('input[name="screenshotType[7]"]').eq(1).prop('checked', true);
+
+		}, 5000);
 
 	<?PHP endif; ?>
 
 	<?PHP if ($_GET["orderID"]): ?>
 
-		base.nodeFromID("orderSelect").value = "<?PHP echo $_GET["orderID"] ?>";
-		asr.requestOrderData();
+		base.nodeFromID("orderSearchTerm").value = "<?PHP echo $_GET["orderID"] ?>";
+		let lineItemID = "<?PHP echo $_GET["lineItemID"] ?>";
+		asr.searchOrders();
+		setTimeout(function() { 
+			base.nodeFromID('orderSelect').selectedIndex = 0
+			asr.requestOrderData();
+
+			setTimeout(function() { 
+				base.check('lineItemCheckBox_' + lineItemID);
+				asr.useSelectedLineItems();
+			}, 5000);
+
+		}, 5000);
 
 	<?PHP endif; ?>
 });

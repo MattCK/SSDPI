@@ -1374,6 +1374,10 @@ class CreativeInjecter {
 
 	injectCreativesIntoPage() {
 
+		//Sort the AdSelector elements by there positions. (Done here to prevent hiding large ads and overlays
+		//from forcing positions of 0,0)
+		this._sortAdSelectorsByPosition(this._adSelectors);
+
 		//Begin my removing all large ads and overlays
 		this._hideLargeAdsAndOverlays();
 
@@ -1383,7 +1387,7 @@ class CreativeInjecter {
 
 		//--------------------- Ad Selector Elements -------------------------------
 		//Sort the AdSelector elements by there positions
-		this._sortAdSelectorsByPosition(this._adSelectors);
+		//this._sortAdSelectorsByPosition(this._adSelectors);
 
 		//Replace each AdSelector element with a matching creative of one of its
 		//possible CreativeSizes, if a match exists
@@ -1434,7 +1438,7 @@ class CreativeInjecter {
 			}
 		}
 
-		return; //testing
+		// return; //testing
 
 		//-------------------- Marked Creatives and IFrames ------------------------
 		//Get the elements from the page that are the size of an instance creative, 
@@ -1513,6 +1517,8 @@ class CreativeInjecter {
 		// creativeImage.id = elementNode.id;
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
+		creativeImage.style.maxWidth = replacementCreative.width() + 'px';
+		creativeImage.style.maxHeight = replacementCreative.height() + 'px';
 		creativeImage.style.margin = 'auto';
 
 		while (elementNode.hasChildNodes()) {
@@ -1576,37 +1582,30 @@ class CreativeInjecter {
 			let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
 			let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
 			Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
+			
 
 			//Make sure the current node is displayed
 			let displayStatus = document.defaultView.getComputedStyle(currentNode, null).getPropertyValue('display');
 			if (displayStatus == "none") {
 				currentNode.style.display = "block";
 			}
+			currentNode.style.visibility = "visible";
 
 			//Some ads use CSS animations to come in to view once they are loaded such as 'fade in'
 			//Force any animation to run
 			currentNode.style.animationPlayState = "running";
 
-			//If the current node is larger than the creative node height and the size of the original 
-			//non-replaced ad element, set it to the new creative width and height
-			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
-				Log.output("Changing parent width");
-				currentNode.style.width = replacementCreative.width() + 'px';
-				currentNode.style.minWidth = replacementCreative.width() + 'px';
-			}
-			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
-				Log.output("Changing parent height");
-				currentNode.style.height = replacementCreative.height() + 'px';
-				currentNode.style.minHeight = replacementCreative.height() + 'px';
-			}
+			//If the node is the same size as the original ad element AND larger than the injected Creative,
+			//set its width and height to the size of the injected Creative
+			if ((currentNodeWidth == originalNodeWidth) && (currentNodeHeight == originalNodeHeight) &&
+				((currentNodeWidth > replacementCreative.width()) || (currentNodeHeight > replacementCreative.height()))) {
 
-			//If the current node is larger than the creative node height and the size of the original 
-			//non-replaced ad element, set it to the new creative width and height
-			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
-				currentNode.style.width = replacementCreative.width();
-			}
-			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
-				currentNode.style.height = replacementCreative.height();
+				//currentNode.style.minWidth = replacementCreative.width() + 'px';	//Left out until necessary so as not to
+																					//unintentionally cause bugs
+				currentNode.style.minHeight = replacementCreative.height() + 'px';
+				//currentNode.style.width = replacementCreative.width() + 'px';
+				currentNode.style.height = replacementCreative.height() + 'px';
+				Log.output("Shrinking parent");
 			}
 
 			//If the current node is smaller than the Creative image, expand it
@@ -1616,11 +1615,13 @@ class CreativeInjecter {
 				// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
 				// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
 				currentNode.style.width = '100%';
+				Log.output("Expanding parent width");
 			}
 			if (currentNodeHeight < replacementCreative.height()) {
 				// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
 				// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
 				currentNode.style.height = '100%';
+				Log.output("Expanding parent height");
 			}
 		});
 	}
@@ -1662,7 +1663,7 @@ class CreativeInjecter {
 				let viewableWidth = ElementInfo.widthWithoutBorder(smallestParentNode);
 				let viewableHeight = ElementInfo.heightWithoutBorder(smallestParentNode);
 
-				//Remove the had if it is bigger than the allowed 'keep' size
+				//Remove the ad if it is bigger than the allowed 'keep' size
 				if ((viewableWidth >= CreativeInjecter._MAXIMUMADKEEPWIDTH) && 
 					(viewableHeight >= CreativeInjecter._MAXIMUMADKEEPHEIGHT)) {
 					thisCreativeInjecter._hideElement(smallestParentNode);
@@ -1679,7 +1680,7 @@ class CreativeInjecter {
 					(!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 
 				//If the node is fixed anywhere other than the top left corner, hide it
-				if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
+				// if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
 
 				//Otherwise, if it is very large, hide it.
 				//The check on screen width is for mobile sites.
@@ -2069,7 +2070,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: 'e6b4a8a6-c55c-4e17-b87b-1d1b4e381caf', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/910a91a3-2973-4607-a0d8-077cadce5a5f.png', width: 728, height: 90, priority: 0},];
+creatives = [{id: '71fcb6e9-a0fc-4400-b0ed-4bf9c564cdd8', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/660ef208-cfca-44ee-a1f3-507550f64181.png', width: 320, height: 50, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2105,7 +2106,7 @@ for (let currentSelector of selectors) {
 	}
 }
 
-//INSERT EXCEPTION SCRIPT//
+document.querySelectorAll("#mobile-intercept").forEach(function(node) {node.style.display = 'none';});
 
 
 //Initialize the CreativeInjecter and inject the creatives

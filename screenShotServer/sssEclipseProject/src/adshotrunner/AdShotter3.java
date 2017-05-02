@@ -77,11 +77,12 @@ public class AdShotter3 {
 	final private static int SCREENSHOTTIMEOUT = 11000;		//in milliseconds
 	final private static int DEFAULTVIEWWIDTH = 1366;		//in pixels
 	final private static int DEFAULTVIEWHEIGHT = 2800;		//in pixels
-	final private static int MOBILEVIEWWIDTH = 360;			//in pixels
-	final private static int MOBILEPIXELRATIO = 3;			//in pixels
+	final private static int MOBILEVIEWWIDTH = 375;			//in pixels
+	final private static int MOBILEPIXELRATIO = 2;			//in pixels
 	final private static int MINIMUMCROPHEIGHT = 1560;		//in pixels
 	final private static int MAXIMUMCROPHEIGHT = 3000; 		//in pixels
-	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
+	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1";
+//	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 	final private static boolean VERBOSE = true;
 	final private static int DEFAULTOPENTABS = 1;
 	final private static int TAGSOPENTABS = 4;

@@ -1,4 +1,303 @@
 /**
+* The Coordinates class stores x and y coordinates.
+*/
+class Coordinates {
+
+	/**
+	* Initializes the Coordinates with its x and y positions.
+	*
+	* @param {Number} 	xPosition  		x position
+	* @param {Number} 	yPosition  		y position
+	*/
+	constructor(xPosition, yPosition) {
+
+		//If any of the arguments are missing, throw an error
+		if ((xPosition == null) || (yPosition == null)) {
+				throw "Coordinates.constructor: missing argument";
+		}
+
+		//Verify integers were passed and meet the correct criteria
+		if (isNaN(xPosition)) {throw "Coordinates.constructor: xPosition must be a number";}
+		if (isNaN(yPosition)) {throw "Coordinates.constructor: yPosition must be a number";}
+
+		//Store the member properties
+		this._x = xPosition;
+		this._y = yPosition;
+	}
+
+	/**
+	* @return {Number}	x position
+	*/	
+	x() {return this._x;}
+	
+	/**
+	* @return {Number}	y position
+	*/	
+	y() {return this._y;}
+	
+}
+
+
+/**
+* The ElementInfo class contains a series of static function to obtain current
+* information on an HTMLElement node..
+*
+* All information is calculated on the current state of the node.
+*/
+class ElementInfo {
+
+	/**
+	* @return {Number}	Current width of the element
+	*/	
+	static width(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return elementNode.offsetWidth;
+	}
+
+	/**
+	* @return {Number}	Current width of the element not including the border
+	*/	
+	static widthWithoutBorder(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return elementNode.offsetWidth - 
+			   ElementInfo.borderWidthLeft(elementNode) - ElementInfo.borderWidthRight(elementNode);
+	}
+
+	/**
+	* @return {Number}	Current height of the element
+	*/	
+	static height(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return elementNode.offsetHeight;
+	}
+
+	/**
+	* @return {Number}	Current height of the element not including the border
+	*/	
+	static heightWithoutBorder(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return elementNode.offsetHeight - 
+			   ElementInfo.borderWidthTop(elementNode) - ElementInfo.borderWidthBottom(elementNode);
+	}
+
+	/**
+	* @return {Number}	Current x position of the element
+	*/	
+	static xPosition(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return (ElementInfo.getScreenCoordinates(elementNode)).x();
+	}
+
+	/**
+	* @return {Number}	Current y position of the element
+	*/	
+	static yPosition(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return (ElementInfo.getScreenCoordinates(elementNode)).y();
+	}
+
+	/**
+	* @return {Number}	Current bottom border width of the element
+	*/	
+	static borderWidthBottom(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		let widthString = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('border-bottom-width');
+		return Number(widthString.slice(0, -2));
+	}
+	
+	/**
+	* @return {Number}	Current left border width of the element
+	*/	
+	static borderWidthLeft(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		let widthString = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('border-left-width');
+		return Number(widthString.slice(0, -2));
+	}
+	
+	/**
+	* @return {Number}	Current right border width of the element
+	*/	
+	static borderWidthRight(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		let widthString = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('border-right-width');
+		return Number(widthString.slice(0, -2));
+	}
+	
+	/**
+	* @return {Number}	Current top border width of the element
+	*/	
+	static borderWidthTop(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		let widthString = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('border-top-width');
+		return Number(widthString.slice(0, -2));
+	}
+	
+	/**
+	* @return {String}	Current flood-opacity of the element
+	*/	
+	static floodOpacity(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('flood-opacity');
+	}
+	
+	/**
+	* @return {Integer}	Current bottom margin of the element
+	*/	
+	static marginBottom(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('margin-bottom'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current left margin of the element
+	*/	
+	static marginLeft(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('margin-left'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current right margin of the element
+	*/	
+	static marginRight(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('margin-right'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current top margin of the element
+	*/	
+	static marginTop(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('margin-top'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current bottom padding of the element
+	*/	
+	static paddingBottom(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-bottom'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current left padding of the element
+	*/	
+	static paddingLeft(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-left'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current right padding of the element
+	*/	
+	static paddingRight(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-right'), 10);
+	}
+	
+	/**
+	* @return {Integer}	Current top padding of the element
+	*/	
+	static paddingTop(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return parseInt(document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('padding-top'), 10);
+	}
+
+	/**
+	* @return {Integer}	Current "position" style of the element, such as 'fixed'
+	*/	
+	static positionStyle(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('position');
+	}
+	
+	/**
+	* @return {String}	Current z-index of the element
+	*/	
+	static zIndex(elementNode) {
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+		return document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('z-index');
+	}
+
+	/**
+	* Returns the x,y coordinates of the passed node in relation to the screen view.
+	*
+	* @param {HTMLElement}	elementNode		Node used to find smallest containing node
+	* @return {Coordinates}  				Coordinates object with x,y set to node's screen position
+	*/
+	static getScreenCoordinates(elementNode) {
+
+		//Return null if the passed node variable is an HTMLElement
+		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
+
+		//If the element display is none, set it to block for the position then set it back
+		let displayStatus = document.defaultView.getComputedStyle(elementNode, null).getPropertyValue('display');
+		let displayOriginallyNone = false;
+		if (displayStatus == "none") {
+			elementNode.style.display = "block";
+			displayOriginallyNone = true;
+		}
+
+		//Grab the initial locations
+		let boundingRectangle = elementNode.getBoundingClientRect();
+		let xPosition = boundingRectangle.left;
+		let yPosition = boundingRectangle.top;
+
+		//For each frame we are in, add the frame's coordinates to the starting coordinates
+		let currentFrameElement = elementNode;
+		while (currentFrameElement = ElementInfo.getContainingFrame(currentFrameElement)) {
+			boundingRectangle = currentFrameElement.getBoundingClientRect();
+			xPosition += boundingRectangle.left;
+			yPosition += boundingRectangle.top;
+		}
+
+		//If the element's display was 'none', set it back to 'none'
+		if (displayOriginallyNone) {
+			elementNode.style.display = "none";
+		}
+
+		//Return the Coordinates
+		return new Coordinates(Math.round(xPosition), Math.round(yPosition));
+	}
+
+	/**
+	* Returns the node's containing IFrame or null if not inside an IFrame.
+	*
+	* @param {HTMLElement}	containedNode	Node inside possible IFrame
+	* @return {Iframe} 						IFrame containing node or null otherwise
+	*/
+	static getContainingFrame(containedNode) {
+
+		//Return null if the passed node variable is null
+		if (containedNode == null) {
+			return null;
+		}
+
+		//If the current node is not a document node, grab the containing document
+		let frameDocument = (containedNode.ownerDocument) ? containedNode.ownerDocument : containedNode;
+		return frameDocument.defaultView.frameElement;
+	}
+
+	/**
+	* Returns true if passed argument is an HTMLElement and false otherwise
+	*
+	* @param {HTMLElement}	elementNode		Possible HTMLElement
+	* @return {Boolean} 					True if elementNode is an HTMLElement and false otherwise
+	*/
+	static isHTMLElement(elementNode) {
+
+		//If the passed argument does not exist or is an HTMLElement, return false.
+		if ((elementNode == null) || (!elementNode.tagName)) {
+			return false;
+		}
+
+		//Otherwise, return true.
+		return true;
+	}
+}
+
+/**
 * The CreativeSize class stores the width and height of a Creative.
 *
 * Used in the AdSelector class.
@@ -743,5 +1042,9 @@ for (let currentAdSelector of slotAdSelectors) {
 	for (let currentSize of currentAdSelector.sizes()) {
 		console.log("	" + currentSize.width() + "x" + currentSize.height());
 	}
+	console.log("");
+	let slotCoordinates = ElementInfo.getScreenCoordinates(document.querySelector(currentAdSelector.selector()));
+	console.log("Position: " + slotCoordinates.x() + ", " + slotCoordinates.y());
+	console.log("");
 	console.log(document.querySelector(currentAdSelector.selector()));
 }

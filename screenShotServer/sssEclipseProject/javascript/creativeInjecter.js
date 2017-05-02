@@ -1374,6 +1374,10 @@ class CreativeInjecter {
 
 	injectCreativesIntoPage() {
 
+		//Sort the AdSelector elements by there positions. (Done here to prevent hiding large ads and overlays
+		//from forcing positions of 0,0)
+		this._sortAdSelectorsByPosition(this._adSelectors);
+
 		//Begin my removing all large ads and overlays
 		this._hideLargeAdsAndOverlays();
 
@@ -1383,7 +1387,7 @@ class CreativeInjecter {
 
 		//--------------------- Ad Selector Elements -------------------------------
 		//Sort the AdSelector elements by there positions
-		this._sortAdSelectorsByPosition(this._adSelectors);
+		//this._sortAdSelectorsByPosition(this._adSelectors);
 
 		//Replace each AdSelector element with a matching creative of one of its
 		//possible CreativeSizes, if a match exists
@@ -1434,7 +1438,7 @@ class CreativeInjecter {
 			}
 		}
 
-		return; //testing
+		// return; //testing
 
 		//-------------------- Marked Creatives and IFrames ------------------------
 		//Get the elements from the page that are the size of an instance creative, 
@@ -1513,6 +1517,8 @@ class CreativeInjecter {
 		// creativeImage.id = elementNode.id;
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
+		creativeImage.style.maxWidth = replacementCreative.width() + 'px';
+		creativeImage.style.maxHeight = replacementCreative.height() + 'px';
 		creativeImage.style.margin = 'auto';
 
 		while (elementNode.hasChildNodes()) {
@@ -1583,46 +1589,40 @@ class CreativeInjecter {
 			if (displayStatus == "none") {
 				currentNode.style.display = "block";
 			}
+			currentNode.style.visibility = "visible";
 
 			//Some ads use CSS animations to come in to view once they are loaded such as 'fade in'
 			//Force any animation to run
 			currentNode.style.animationPlayState = "running";
 
-			//If the current node is larger than the creative node height and the size of the original 
-			//non-replaced ad element, set it to the new creative width and height
-			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
-				Log.output("Changing parent width");
-				currentNode.style.width = replacementCreative.width() + 'px';
-				currentNode.style.minWidth = replacementCreative.width() + 'px';
-			}
-			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
-				Log.output("Changing parent height");
-				currentNode.style.height = replacementCreative.height() + 'px';
-				currentNode.style.minHeight = replacementCreative.height() + 'px';
-			}
+			//If the node is the same size as the original ad element AND larger than the injected Creative,
+			//set its width and height to the size of the injected Creative
+			if ((currentNodeWidth == originalNodeWidth) && (currentNodeHeight == originalNodeHeight) &&
+				((currentNodeWidth > replacementCreative.width()) || (currentNodeHeight > replacementCreative.height()))) {
 
-			//If the current node is larger than the creative node height and the size of the original 
-			//non-replaced ad element, set it to the new creative width and height
-			if ((currentNodeWidth > replacementCreative.width()) && (currentNodeWidth == originalNodeWidth)) {
-				currentNode.style.width = replacementCreative.width();
-			}
-			if ((currentNodeHeight > replacementCreative.height()) && (currentNodeHeight == originalNodeHeight)) {
-				currentNode.style.height = replacementCreative.height();
+				//currentNode.style.minWidth = replacementCreative.width() + 'px';	//Left out until necessary so as not to
+																					//unintentionally cause bugs
+				currentNode.style.minHeight = replacementCreative.height() + 'px';
+				//currentNode.style.width = replacementCreative.width() + 'px';
+				currentNode.style.height = replacementCreative.height() + 'px';
+				Log.output("Shrinking parent");
 			}
 
 			//If the current node is smaller than the Creative image, expand it
 			//This occurs when the element has been hidden by the page.
 			//For example, a containing div set to 0x0
-			// if (currentNodeWidth < replacementCreative.width()) {
-			// 	// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
-			// 	// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
-			// 	currentNode.style.width = '100%';
-			// }
-			// if (currentNodeHeight < replacementCreative.height()) {
-			// 	// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
-			// 	// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
-			// 	currentNode.style.height = '100%';
-			// }
+			if (currentNodeWidth < replacementCreative.width()) {
+				// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
+				// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
+				currentNode.style.width = '100%';
+				Log.output("Expanding parent width");
+			}
+			if (currentNodeHeight < replacementCreative.height()) {
+				// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
+				// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
+				currentNode.style.height = '100%';
+				Log.output("Expanding parent height");
+			}
 		});
 	}
 
@@ -1663,7 +1663,7 @@ class CreativeInjecter {
 				let viewableWidth = ElementInfo.widthWithoutBorder(smallestParentNode);
 				let viewableHeight = ElementInfo.heightWithoutBorder(smallestParentNode);
 
-				//Remove the had if it is bigger than the allowed 'keep' size
+				//Remove the ad if it is bigger than the allowed 'keep' size
 				if ((viewableWidth >= CreativeInjecter._MAXIMUMADKEEPWIDTH) && 
 					(viewableHeight >= CreativeInjecter._MAXIMUMADKEEPHEIGHT)) {
 					thisCreativeInjecter._hideElement(smallestParentNode);
@@ -1680,7 +1680,7 @@ class CreativeInjecter {
 					(!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 
 				//If the node is fixed anywhere other than the top left corner, hide it
-				if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
+				// if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
 
 				//Otherwise, if it is very large, hide it.
 				//The check on screen width is for mobile sites.
