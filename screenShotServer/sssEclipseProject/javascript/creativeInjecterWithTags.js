@@ -741,7 +741,7 @@ class GPTSlots {
 		this._slotCreativeSizes = new Map();
 
 		//If the googletag object exists, instantiate the class using its information
-		if (googletag != null) {
+		if (typeof googletag !== 'undefined') {
 
 			//Store any googletag.Slot objects
 			this._slots = googletag.pubads().getSlots();
@@ -1581,7 +1581,7 @@ class CreativeInjecter {
 			//Get the current node's width and height minus border width
 			let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
 			let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
-			Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
+			// Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
 			
 
 			//Make sure the current node is displayed
@@ -1605,7 +1605,7 @@ class CreativeInjecter {
 				currentNode.style.minHeight = replacementCreative.height() + 'px';
 				//currentNode.style.width = replacementCreative.width() + 'px';
 				currentNode.style.height = replacementCreative.height() + 'px';
-				Log.output("Shrinking parent");
+				// Log.output("Shrinking parent");
 			}
 
 			//If the current node is smaller than the Creative image, expand it
@@ -1615,13 +1615,13 @@ class CreativeInjecter {
 				// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
 				// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
 				currentNode.style.width = '100%';
-				Log.output("Expanding parent width");
+				// Log.output("Expanding parent width");
 			}
 			if (currentNodeHeight < replacementCreative.height()) {
 				// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
 				// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
 				currentNode.style.height = '100%';
-				Log.output("Expanding parent height");
+				// Log.output("Expanding parent height");
 			}
 		});
 	}
@@ -1676,19 +1676,26 @@ class CreativeInjecter {
 			//	- Is not the size of an instance Creative
 			//	- Is too large or fixed anywhere other than (0,0)
 			//hide it
-			else if ((nodePositionStyle == 'fixed') && (nodeZIndex > 1) && 
-					(!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
+			// else if ((nodePositionStyle == 'fixed') && (nodeZIndex > 1) && 
+			// 		(!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 
-				//If the node is fixed anywhere other than the top left corner, hide it
-				// if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
+			// 	//If the node is fixed anywhere other than the top left corner, hide it
+			// 	// if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
 
-				//Otherwise, if it is very large, hide it.
-				//The check on screen width is for mobile sites.
-				//These checks have been put together over time and should be reviewed.
+			// 	//Otherwise, if it is very large, hide it.
+			// 	//The check on screen width is for mobile sites.
+			// 	//These checks have been put together over time and should be reviewed.
+			// 	let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
+			// 	if (((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH1) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT1)) ||
+			// 		((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH2) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2)) ||
+			// 		(((nodeScreenWidthPercentage) > 0.96) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2))) {
+			// 		thisCreativeInjecter._hideElement(currentNode);
+			// 	}
+			// }
+			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 				let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
-				if (((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH1) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT1)) ||
-					((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH2) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2)) ||
-					(((nodeScreenWidthPercentage) > 0.96) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2))) {
+				let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);
+				if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
 					thisCreativeInjecter._hideElement(currentNode);
 				}
 			}
@@ -1763,6 +1770,10 @@ class CreativeInjecter {
 		//Get the smallest parent node of the element to hide. 
 		//Sometimes an ad element can have larger non-viewable dimensions than its parents
 		let smallestParentNode = this._getSmallestContainingParent(elementNode);
+
+		//Hack for business insider
+		// if ((ElementInfo.widthWithoutBorder(elementNode) > 1000) && 
+		//     (ElementInfo.heightWithoutBorder(elementNode) > 1000)) {smallestParentNode = elementNode;}
 
 		//Hide the final element (original or smallest highest parent)
 		smallestParentNode.style.display = 'none';
@@ -1866,6 +1877,15 @@ class CreativeInjecter {
 		let smallestNodeWidth = startingNodeWidth;
 		let smallestNodeHeight = startingNodeHeight;
 
+		//If the node width is bigger than or equal to the viewport and
+		//the node height is bigger than or equal to the viewport
+		//simply return it as the smallest node without climbing the parents.
+		//This usually refers to ad skins used for the background
+		let viewportWidth = document.documentElement.clientWidth;
+		let viewportHeight = document.documentElement.clientHeight;
+		if ((startingNodeWidth >= viewportWidth) && (startingNodeHeight >= viewportHeight)) {
+			return startingNode;
+		}
 		//Crawl the node's parents and find the smallest one
 		//Ignore anchors, objects, and nodes smaller than defined by
 		//_SMALLNODEMINWIDTH and _SMALLNODEMINHEIGHT
@@ -2070,7 +2090,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: '71fcb6e9-a0fc-4400-b0ed-4bf9c564cdd8', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/660ef208-cfca-44ee-a1f3-507550f64181.png', width: 320, height: 50, priority: 0},];
+creatives = [{id: 'dd311801-a0af-4217-936b-b9d7124ac8be', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/3a82a348-76f6-4d14-ae30-d17ed8949b9d.png', width: 300, height: 250, priority: 0},{id: '9b12e879-c9b4-465c-92f7-30f1916fe990', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/375c6acf-275d-4074-a2bd-f3a638470736.png', width: 728, height: 90, priority: 0},{id: 'fa0e8046-4b6a-4ead-b915-69b4a02cccde', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9a8dbd1a-f3c3-451f-81d4-c66c9f99425c.png', width: 300, height: 600, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2106,7 +2126,21 @@ for (let currentSelector of selectors) {
 	}
 }
 
-document.querySelectorAll("#mobile-intercept").forEach(function(node) {node.style.display = 'none';});
+allSelectors.push(new AdSelector("div.td-header-rec-wrap", true).addSize(728, 90));
+allSelectors.push(new AdSelector("div#bsap_1282", true).addSize(300, 250));
+allSelectors.push(new AdSelector("div#bsap_1280", true).addSize(300, 250));
+if (document.documentElement.clientWidth <= 767) {
+
+	setTimeout(function() { 
+		if (document.querySelector(".td-header-rec-wrap img")) {
+
+			document.querySelector(".td-header-rec-wrap img").style.width = "100%";
+			document.querySelector(".td-header-rec-wrap img").style.height = "100%";
+			document.querySelector(".td-header-rec-wrap img").style.margin = "10px auto";
+		}
+	}, 750);
+
+}
 
 
 //Initialize the CreativeInjecter and inject the creatives

@@ -741,7 +741,7 @@ class GPTSlots {
 		this._slotCreativeSizes = new Map();
 
 		//If the googletag object exists, instantiate the class using its information
-		if (googletag != null) {
+		if (typeof googletag !== 'undefined') {
 
 			//Store any googletag.Slot objects
 			this._slots = googletag.pubads().getSlots();
@@ -1581,7 +1581,7 @@ class CreativeInjecter {
 			//Get the current node's width and height minus border width
 			let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
 			let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
-			Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
+			// Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
 			
 
 			//Make sure the current node is displayed
@@ -1605,7 +1605,7 @@ class CreativeInjecter {
 				currentNode.style.minHeight = replacementCreative.height() + 'px';
 				//currentNode.style.width = replacementCreative.width() + 'px';
 				currentNode.style.height = replacementCreative.height() + 'px';
-				Log.output("Shrinking parent");
+				// Log.output("Shrinking parent");
 			}
 
 			//If the current node is smaller than the Creative image, expand it
@@ -1615,13 +1615,13 @@ class CreativeInjecter {
 				// let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
 				// currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
 				currentNode.style.width = '100%';
-				Log.output("Expanding parent width");
+				// Log.output("Expanding parent width");
 			}
 			if (currentNodeHeight < replacementCreative.height()) {
 				// let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
 				// currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
 				currentNode.style.height = '100%';
-				Log.output("Expanding parent height");
+				// Log.output("Expanding parent height");
 			}
 		});
 	}
@@ -1676,19 +1676,26 @@ class CreativeInjecter {
 			//	- Is not the size of an instance Creative
 			//	- Is too large or fixed anywhere other than (0,0)
 			//hide it
-			else if ((nodePositionStyle == 'fixed') && (nodeZIndex > 1) && 
-					(!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
+			// else if ((nodePositionStyle == 'fixed') && (nodeZIndex > 1) && 
+			// 		(!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 
-				//If the node is fixed anywhere other than the top left corner, hide it
-				// if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
+			// 	//If the node is fixed anywhere other than the top left corner, hide it
+			// 	// if ((nodeXPosition > 0) || (nodeYPosition > 0)) {thisCreativeInjecter._hideElement(currentNode);}
 
-				//Otherwise, if it is very large, hide it.
-				//The check on screen width is for mobile sites.
-				//These checks have been put together over time and should be reviewed.
+			// 	//Otherwise, if it is very large, hide it.
+			// 	//The check on screen width is for mobile sites.
+			// 	//These checks have been put together over time and should be reviewed.
+			// 	let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
+			// 	if (((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH1) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT1)) ||
+			// 		((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH2) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2)) ||
+			// 		(((nodeScreenWidthPercentage) > 0.96) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2))) {
+			// 		thisCreativeInjecter._hideElement(currentNode);
+			// 	}
+			// }
+			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 				let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
-				if (((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH1) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT1)) ||
-					((nodeWidth > CreativeInjecter._MAXIMUMFIXEDKEEPWIDTH2) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2)) ||
-					(((nodeScreenWidthPercentage) > 0.96) && (nodeHeight > CreativeInjecter._MAXIMUMFIXEDKEEPHEIGHT2))) {
+				let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);
+				if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
 					thisCreativeInjecter._hideElement(currentNode);
 				}
 			}
@@ -1763,6 +1770,10 @@ class CreativeInjecter {
 		//Get the smallest parent node of the element to hide. 
 		//Sometimes an ad element can have larger non-viewable dimensions than its parents
 		let smallestParentNode = this._getSmallestContainingParent(elementNode);
+
+		//Hack for business insider
+		// if ((ElementInfo.widthWithoutBorder(elementNode) > 1000) && 
+		//     (ElementInfo.heightWithoutBorder(elementNode) > 1000)) {smallestParentNode = elementNode;}
 
 		//Hide the final element (original or smallest highest parent)
 		smallestParentNode.style.display = 'none';
@@ -1866,6 +1877,15 @@ class CreativeInjecter {
 		let smallestNodeWidth = startingNodeWidth;
 		let smallestNodeHeight = startingNodeHeight;
 
+		//If the node width is bigger than or equal to the viewport and
+		//the node height is bigger than or equal to the viewport
+		//simply return it as the smallest node without climbing the parents.
+		//This usually refers to ad skins used for the background
+		let viewportWidth = document.documentElement.clientWidth;
+		let viewportHeight = document.documentElement.clientHeight;
+		if ((startingNodeWidth >= viewportWidth) && (startingNodeHeight >= viewportHeight)) {
+			return startingNode;
+		}
 		//Crawl the node's parents and find the smallest one
 		//Ignore anchors, objects, and nodes smaller than defined by
 		//_SMALLNODEMINWIDTH and _SMALLNODEMINHEIGHT
