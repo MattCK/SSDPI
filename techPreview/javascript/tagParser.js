@@ -18,6 +18,14 @@ let tagParser = {
 	* @return Array[String]  		Array of parsed tag strings
 	*/
 	getTags: function(adTagText) {
+		//test for scripts pasted in from excel
+		//adjust accordingly
+		if(adTagText.includes("\"<script language=\"\"javascript\"\"")){
+            //this regex is to replace all occurences not just the first
+            adTagText = adTagText.replace(new RegExp('\"<script', 'g'), '<script');
+            adTagText = adTagText.replace(new RegExp('script>\"', 'g'), 'script>');
+            adTagText = adTagText.replace(new RegExp('\"\"', 'g'), '\"');
+		}
 
 		//Loop through the ad tag text and grab the HTML parts along with their type
 		let adTagRegularExpression = /<(\w*)\b[^>]*>[\s\S]*?<\/\1>/gmi;
@@ -91,7 +99,14 @@ let tagParser = {
 					//Otherwise, concatenate it and store it as a tag then clear the current tag string
 					else {
 						currentScriptTag += textHTMLParts[htmlPartIndex].html;
-						adTags.push(currentScriptTag);
+                        //check if this tag is a media math bidding tag
+                        //and if so removes it from the list
+                        if(currentScriptTag.includes("Enter LCI parameters") || currentScriptTag.includes("Do no modify below this line")|| currentScriptTag.includes("lcip = {")){
+                            //just ignore the tag and don't add it to the list
+                        }
+                        else{
+                            adTags.push(currentScriptTag);
+                        }
 						currentScriptTag = "";			
 					}
 				}
@@ -283,7 +298,6 @@ let tagParser = {
 		//Add the found tags to the queue and save the tag text
 		asr.addTagsToQueue(tagParser.getTags(tagText));
 		asr.storeTagText(tagText);
-		tagTextTextbox.value = "";
 	},
 
 	/**
