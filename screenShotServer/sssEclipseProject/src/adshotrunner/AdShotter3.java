@@ -66,6 +66,7 @@ public class AdShotter3 {
 	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL();
 	final private static String ADINJECTERJSPATH = ASRProperties.pathForAdInjecterJavascript();
 	final private static String ADMARKERPATH = ASRProperties.pathForAdMarkerExtension();
+	final private static String CSPDISABLEPATH = "chromeExtensions/chrome-csp-disable-master.crx";
 	final private static String PROXIESJSONPATH = ASRProperties.pathForProxiesJSON();
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
@@ -571,24 +572,29 @@ public class AdShotter3 {
 		//driverOptions.addArguments("disable-web-security");
 		//driverOptions.addArguments("user-data-dir=/tmp/chromeprofile");
 		
-		//this option turns off the proxy for connections to aws resources
-		driverOptions.addArguments("proxy-bypass-list='*.amazonaws.com'");
-		//Set the proxy to use. If it is not empty, set the proxy capability3
-		String proxyDetails = getProxyDetails();
-		if (!proxyDetails.isEmpty()) {
-			consoleLog("Using proxy: " + proxyDetails);
-			Proxy chromeProxy = new Proxy();
-			chromeProxy.setProxyType(ProxyType.MANUAL);
-			chromeProxy.setSslProxy(proxyDetails);
-			chromeProxy.setHttpProxy(proxyDetails);
-			driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+		//if this is a tag set the proxy server
+		//some ad tags won't show up if they come from amazon ip addreses
+		if (_treatAsTags) {
+			//this option turns off the proxy for connections to aws resources
+			driverOptions.addArguments("proxy-bypass-list='*.amazonaws.com'");
+			//Set the proxy to use. If it is not empty, set the proxy capability3
+			String proxyDetails = getProxyDetails();
+			if (!proxyDetails.isEmpty()) {
+				consoleLog("Using proxy: " + proxyDetails);
+				Proxy chromeProxy = new Proxy();
+				chromeProxy.setProxyType(ProxyType.MANUAL);
+				chromeProxy.setSslProxy(proxyDetails);
+				chromeProxy.setHttpProxy(proxyDetails);
+				driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+			}
+			else {consoleLog("WARNING!!! NOT USING A PROXY!");}
 		}
-		else {consoleLog("WARNING!!! NOT USING A PROXY!");}
 		
 		//Install the AdMarker extension to mark ad elements if not a tag
 		if (!_treatAsTags) {
 			try {
 				driverOptions.addExtensions(new File(ADMARKERPATH));
+				driverOptions.addExtensions(new File(CSPDISABLEPATH));
 			} catch (Exception e) {
 				consoleLog("	FAILED: Unable to load AdMarker. -" + e.toString() );
 			}
