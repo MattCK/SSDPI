@@ -18,14 +18,21 @@ let tagParser = {
 	* @return Array[String]  		Array of parsed tag strings
 	*/
 	getTags: function(adTagText) {
+
 		//test for scripts pasted in from excel
 		//adjust accordingly
-		if(adTagText.includes("\"<script language=\"\"javascript\"\"")){
-            //this regex is to replace all occurences not just the first
-            adTagText = adTagText.replace(new RegExp('\"<script', 'g'), '<script');
-            adTagText = adTagText.replace(new RegExp('script>\"', 'g'), 'script>');
-            adTagText = adTagText.replace(new RegExp('\"\"', 'g'), '\"');
-		}
+		// if(adTagText.includes("\"<script language=\"\"javascript\"\"")){
+  //           //this regex is to replace all occurences not just the first
+  //           adTagText = adTagText.replace(new RegExp('\"<script', 'g'), '<script');
+  //           adTagText = adTagText.replace(new RegExp('script>\"', 'g'), 'script>');
+  //           adTagText = adTagText.replace(new RegExp('\"\"', 'g'), '\"');
+		// }
+
+		//Remove double "double quotes"
+		//When pasting a tag from excel, a single "double quote" is inserted as two "double quotes"
+		// adTagText = adTagText.replace(/""/g, '"');
+		//scriptText.match(/([^"]|^)"([^"]|$)/gmi);
+		//replace(/(?!=?""\s+\w)("")/g, '"')
 
 		//Loop through the ad tag text and grab the HTML parts along with their type
 		let adTagRegularExpression = /<(\w*)\b[^>]*>[\s\S]*?<\/\1>/gmi;
@@ -36,6 +43,14 @@ let tagParser = {
 			//Store the parts as named variables for clarity
 			let htmlPart = currentHTMLPart[0];
 			let htmlPartType = currentHTMLPart[1].toLowerCase();
+
+			//If there are no single double-quotes, replace all double quotes
+			//with single quotes. This check is due to Excel. Copying text
+			//from excel automatically turns all single double-quotes into
+			//double double-quotes. i.e. "mytext" => ""mytext""
+			if (htmlPart.match(/([^"]|^)"([^"]|$)/gmi) == null) {
+				htmlPart = htmlPart.replace(/""/g, '"');
+			}
 
 			//If it is an HTML script part, determine if it includes a source
 			let isSourceScript = false;
@@ -90,23 +105,29 @@ let tagParser = {
 			if (hasHTMLScriptTag) {
 				if (textHTMLParts[htmlPartIndex].type == 'script') {
 
+					//If the tag is an LCI marketing tag, simply ignore it
+					if (tagParser.isLCIScriptTag(textHTMLParts[htmlPartIndex].html)) {
+						//Ignore the tag
+					}
+
 					//If it is a script part without a source (generally used to set variables),
 					//simply concatenate it to the existing tag
-					if (!textHTMLParts[htmlPartIndex].isSource) {
+					else if (!textHTMLParts[htmlPartIndex].isSource) {
 						currentScriptTag += textHTMLParts[htmlPartIndex].html;
 					}
 
 					//Otherwise, concatenate it and store it as a tag then clear the current tag string
 					else {
 						currentScriptTag += textHTMLParts[htmlPartIndex].html;
-                        //check if this tag is a media math bidding tag
+						adTags.push(currentScriptTag);
+                      //check if this tag is a media math bidding tag
                         //and if so removes it from the list
-                        if(currentScriptTag.includes("Enter LCI parameters") || currentScriptTag.includes("Do no modify below this line")|| currentScriptTag.includes("lcip = {")){
-                            //just ignore the tag and don't add it to the list
-                        }
-                        else{
-                            adTags.push(currentScriptTag);
-                        }
+                        // if(currentScriptTag.includes("Enter LCI parameters") || currentScriptTag.includes("Do no modify below this line")|| currentScriptTag.includes("lcip = {")){
+                        //     //just ignore the tag and don't add it to the list
+                        // }
+                        // else{
+                        //     adTags.push(currentScriptTag);
+                        // }
 						currentScriptTag = "";			
 					}
 				}
@@ -145,6 +166,11 @@ let tagParser = {
 
 		//Return all found tags
 		return adTags;
+	},
+
+	isLCIScriptTag: function(scriptText) {
+
+		return (scriptText.match(/lci parameter|lcip =|ninthdecimal/ig)) ? true :false;
 	},
 
 	/**
