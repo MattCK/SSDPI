@@ -1044,7 +1044,7 @@ for (let currentAdSelector of slotAdSelectors) {
 	}
 	console.log("");
 	let slotCoordinates = ElementInfo.getScreenCoordinates(document.querySelector(currentAdSelector.selector()));
-	console.log("Position: " + slotCoordinates.x() + ", " + slotCoordinates.y());
+	if (slotCoordinates) {console.log("Position: " + slotCoordinates.x() + ", " + slotCoordinates.y());}
 	console.log("");
 	console.log(document.querySelector(currentAdSelector.selector()));
 }
