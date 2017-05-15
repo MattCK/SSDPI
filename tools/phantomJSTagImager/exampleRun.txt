@@ -1,0 +1,1 @@
+./phantomjs --proxy=zproxy.luminati.io:22225 --proxy-auth=lum-customer-hl_72daefef-zone-luminati01:7f4lme0dhxvn snapAd.js 'http://s3.amazonaws.com/asr-development/tagpages/3-b1c07870-d3bf-47e3-86b3-541f9d7e1bfc.html' this.png 

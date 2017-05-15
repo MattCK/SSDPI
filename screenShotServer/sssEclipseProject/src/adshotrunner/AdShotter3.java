@@ -72,7 +72,7 @@ public class AdShotter3 {
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
 	final private static int PAGETIMEOUT = 12000;			//in milliseconds
 	final private static int TAGTIMEOUT = 5000;				//in milliseconds
-	final private static int TAGALLOWFINISHTIME = 15000;	//in milliseconds
+	final private static int TAGALLOWFINISHTIME = 20000;	//in milliseconds
 	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 11000;		//in milliseconds
