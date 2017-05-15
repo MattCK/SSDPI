@@ -355,9 +355,9 @@ $(function() {
 			setTimeout(function() { 
 				base.check('lineItemCheckBox_' + lineItemID);
 				asr.useSelectedLineItems();
-			}, 5000);
+			}, 2500);
 
-		}, 5000);
+		}, 3000);
 
 	<?PHP endif; ?>
 });

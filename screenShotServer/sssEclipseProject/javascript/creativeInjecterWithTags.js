@@ -2090,7 +2090,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: 'e5968de9-37a9-48fa-8726-a86c12cc2703', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/3db8e6de-b8e4-499a-958b-11dd637d5e7d.png', width: 728, height: 90, priority: 0},{id: 'c92b170f-1489-41e8-aa68-49d2b824ded8', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/4a17c198-4e88-40bc-a6aa-9d53e6ce3ba8.png', width: 300, height: 250, priority: 0},{id: '294ab883-d503-40e1-bd61-caa5be268f5b', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/3b090a05-11e5-4292-9126-e04c0cf2ae07.png', width: 300, height: 600, priority: 0},];
+creatives = [{id: 'be1c2464-c567-47a9-9038-41cac3f70c38', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/e9738e4e-afe0-4c28-aa7a-113fe93c628b.png', width: 728, height: 90, priority: 0},{id: '386ac898-cb68-4bbe-9df3-e3b5d783a733', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/e0a060fd-d5eb-41f2-bd5f-3e9e0350292a.png', width: 300, height: 600, priority: 0},{id: '34fb9a0e-aeaa-4f58-9349-3163b50a0836', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/928e1b13-93af-4bfb-986a-1cbbb035a4f1.png', width: 300, height: 250, priority: 0},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2126,7 +2126,7 @@ for (let currentSelector of selectors) {
 	}
 }
 
-document.querySelectorAll("#mobile-intercept").forEach(function(node) {node.style.display = 'none';});
+//INSERT EXCEPTION SCRIPT//
 
 
 //Initialize the CreativeInjecter and inject the creatives

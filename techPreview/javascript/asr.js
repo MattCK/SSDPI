@@ -350,8 +350,8 @@ let asr = {
 			
 			//If successful, navigate to the queued job page
 			if (response.success) {
-				window.location.href = '/campaignResults.php?jobID=' + jobID;
-				//window.open('/campaignResults.php?jobID=' + jobID, '_blank');
+				//window.location.href = '/campaignResults.php?jobID=' + jobID;
+				window.open('/campaignResults.php?jobID=' + jobID, '_blank');
 			}
 						
 			//If failure, simply output to the console for the time being
