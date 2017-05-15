@@ -1,15 +1,16 @@
 {
-  "name": "DisableAddListener",
-  "description": "Overrides addEventListener to a blank function",
+  "name": "Disable Visibility",
+  "description": "Overrides Visibility API, removes all listeners, and disables Tween (if it exists)",
   "version": "0.1",
   "permissions": [
     "debugger"
   ],
    "content_scripts": [ {
       "all_frames": true,
-      "js": [ "script.js" ],
+      "js": [ "startScript.js" ],
       "matches": [ "http://*/*", "https://*/*" ],
       "run_at": "document_start"
    } ],
+  "web_accessible_resources": ["disableVisibility.js"] ,
   "manifest_version": 2
 }
