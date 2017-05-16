@@ -67,6 +67,7 @@ public class AdShotter3 {
 	final private static String ADINJECTERJSPATH = ASRProperties.pathForAdInjecterJavascript();
 	final private static String ADMARKERPATH = ASRProperties.pathForAdMarkerExtension();
 	final private static String CSPDISABLEPATH = "chromeExtensions/chrome-csp-disable-master.crx";
+	final private static String DISABLEVISABILITYPATH = "chromeExtensions/disableVisibility.crx";
 	final private static String PROXIESJSONPATH = ASRProperties.pathForProxiesJSON();
 	final private static int JAVASCRIPTWAITTIME = 2500;		//in milliseconds
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
@@ -586,6 +587,8 @@ public class AdShotter3 {
 				chromeProxy.setSslProxy(proxyDetails);
 				chromeProxy.setHttpProxy(proxyDetails);
 				driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+
+				driverOptions.addExtensions(new File(DISABLEVISABILITYPATH));
 			}
 			else {consoleLog("WARNING!!! NOT USING A PROXY!");}
 		}
@@ -621,7 +624,7 @@ public class AdShotter3 {
 		//Return the initialized remote chrome web driver
 		consoleLog("Done creating chrome driver.");
 		return chromeDriver;
-	}
+	} 
 	
 
 	

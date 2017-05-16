@@ -11,6 +11,7 @@
 Window.prototype.addEventListener = function(event, handler, useCapture){}; 
 HTMLDocument.prototype.addEventListener = function(event, handler, useCapture){}; 
 Element.prototype.addEventListener = function(event, handler, useCapture){}; 
+EventTarget.prototype.addEventListener = function(event, handler, useCapture){}; 
 
 //Override hidden states so they always return visible
 Document.prototype.__defineGetter__("hidden", function() {return false;}); 
@@ -21,12 +22,12 @@ Document.prototype.__defineGetter__("webkitVisibilityState", function() {return 
 //One the window has been loaded with all javascript run, remove the listeners from each node
 //Also remove Tween if it exists
 window.onload = function() {
-	crawlDocumentHTMLElements(document, removeListeners); 
+	// crawlDocumentHTMLElements(document, removeListeners); 
 }; 
 setTimeout(function() { 
 	if (typeof TweenLite !== 'undefined') {TweenLite.lagSmoothing(0);}
 	if (typeof TweenMax !== 'undefined') {TweenMax.lagSmoothing(0);}
-}, 2000);
+}, 3500);
 
 /**
 * Crawls the DOM document, including any iFrames, and calls the passed function on 
@@ -76,7 +77,9 @@ function crawlDocumentHTMLElements(documentToCrawl, nodeFunction) {
 * @param {HTMLElement}	node 	Node to remove listeners from
 */
 function removeListeners(node) {
-	var originalNode = node;	
-	var clonedNode = originalNode.cloneNode(true);	
-	originalNode.parentNode.replaceChild(clonedNode, originalNode);
+	if ((node.nodeName != "IFRAME")) {
+		var originalNode = node;	
+		var clonedNode = originalNode.cloneNode(true);	
+		originalNode.parentNode.replaceChild(clonedNode, originalNode);
+	}
 }

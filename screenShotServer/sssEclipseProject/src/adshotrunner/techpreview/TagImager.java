@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -17,7 +19,8 @@ import adshotrunner.utilities.FileStorageClient;
 public class TagImager implements Runnable {
 
 	final public static String TAGPAGESPATH = "http://s3.amazonaws.com/" + ASRProperties.containerForTagPages() + "/";
-
+	final public static int TAGRETRYCOUNT = 2;
+	
 	private Map<String, String> urlsWithIDs;
 	private Thread imagerThread;
 	
@@ -40,13 +43,35 @@ public class TagImager implements Runnable {
 			System.out.println("AdShot URL: " + adShotsByIDMap.get(currentURLSet.getKey()).url());
 		}
 		
-		tagShotter.takeAdShots(new ArrayList<AdShot>(adShotsByIDMap.values()));	
+		tagShotter.takeAdShots(new ArrayList<AdShot>(adShotsByIDMap.values()));
+		
+		//Check if any processed images are white
+//		ArrayList<AdShot> whiteAdShots = new ArrayList<AdShot>();
+//		for (AdShot currentAdShot : adShotsByIDMap.values()) {
+//			if ((currentAdShot.image() != null) && 
+//				(numberOfColorsInImage(currentAdShot.image()) == 1)) {
+//				whiteAdShots.add(currentAdShot);
+//			}
+//			
+//		}
+//		if (whiteAdShots.size() > 0) {
+//			tagShotter.takeAdShots(whiteAdShots);
+//		}
+		
+		//Retry any tags that returned a white image
+		int retryAttempts = 0;
+		ArrayList<AdShot> whiteAdShots = getWhiteAdShots(new ArrayList(adShotsByIDMap.values()));
+		while ((whiteAdShots.size() > 0) && (retryAttempts < TAGRETRYCOUNT)) {
+			System.out.println("Retrying white tag images: " + whiteAdShots.size());
+			tagShotter.takeAdShots(whiteAdShots);
+			whiteAdShots = getWhiteAdShots(whiteAdShots);
+			++retryAttempts;
+		}
+		
+		
 		
 		for(Map.Entry<String, AdShot> adShotEntry : adShotsByIDMap.entrySet()) {
 			System.out.println("Saving a screenshot - URL: " + adShotEntry.getValue().url());
-//			int width = adShotEntry.getValue().image().getWidth();
-//			int height = adShotEntry.getValue().image().getHeight();
-//			BufferedImage croppedAdClip = adShotEntry.getValue().image().getSubimage(425, 75, width - 425, height - 75);
 			String imageFilename = adShotEntry.getKey() + ".png";
 			
 			//If the AdShotter returned a null image, upload the error image
@@ -84,5 +109,33 @@ public class TagImager implements Runnable {
 		
 		//Write the image as a PNG
 		ImageIO.write(imageToSave, "png", new File(filepath));         	
+	}
+	
+	private static int numberOfColorsInImage(BufferedImage image) {
+//		byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		Set<Integer> colors = new HashSet<Integer>();
+	    int imageWidth = image.getWidth();
+	    int imageHeight = image.getHeight();
+	    for(int yPosition = 0; yPosition < imageHeight; yPosition++) {
+	        for(int xPosition = 0; xPosition < imageWidth; xPosition++) {
+	            int pixel = image.getRGB(xPosition, yPosition);     
+	            colors.add(pixel);
+	        }
+	    }
+		System.out.println("in get colors");
+		System.out.println("Color amount: " + colors.size());
+		return colors.size();
+	}
+	
+	private static ArrayList getWhiteAdShots(ArrayList<AdShot> adShotsList) {
+		ArrayList<AdShot> whiteAdShots = new ArrayList<AdShot>();
+		for (AdShot currentAdShot : adShotsList) {
+			if ((currentAdShot.image() != null) && 
+				(numberOfColorsInImage(currentAdShot.image()) == 1)) {
+				whiteAdShots.add(currentAdShot);
+			}
+			
+		}
+		return whiteAdShots;
 	}
 }
