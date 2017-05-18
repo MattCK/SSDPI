@@ -63,7 +63,8 @@ public class AdShotter3 {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	//final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
-	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL();
+//	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL(); //http://34.198.249.162:4444/wd/hub
+	final private static String SELENIUMHUBADDRESS = "http://10.1.2.37:4444/wd/hub";
 	final private static String ADINJECTERJSPATH = ASRProperties.pathForAdInjecterJavascript();
 	final private static String ADMARKERPATH = ASRProperties.pathForAdMarkerExtension();
 	final private static String CSPDISABLEPATH = "chromeExtensions/chrome-csp-disable-master.crx";
@@ -73,7 +74,7 @@ public class AdShotter3 {
 	final private static int DEFAULTTIMEOUT = 1000;			//in milliseconds
 	final private static int PAGETIMEOUT = 12000;			//in milliseconds
 	final private static int TAGTIMEOUT = 5000;				//in milliseconds
-	final private static int TAGALLOWFINISHTIME = 20000;	//in milliseconds
+	final private static int TAGALLOWFINISHTIME = 17000;	//in milliseconds
 	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	final private static int SCREENSHOTATTEMPTS = 3;
 	final private static int SCREENSHOTTIMEOUT = 11000;		//in milliseconds
@@ -586,9 +587,9 @@ public class AdShotter3 {
 				chromeProxy.setProxyType(ProxyType.MANUAL);
 				chromeProxy.setSslProxy(proxyDetails);
 				chromeProxy.setHttpProxy(proxyDetails);
-				driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+				//driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
 
-				driverOptions.addExtensions(new File(DISABLEVISABILITYPATH));
+				//driverOptions.addExtensions(new File(DISABLEVISABILITYPATH));
 			}
 			else {consoleLog("WARNING!!! NOT USING A PROXY!");}
 		}

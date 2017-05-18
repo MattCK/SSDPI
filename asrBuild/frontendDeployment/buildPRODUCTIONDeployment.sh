@@ -57,7 +57,7 @@ if [ "${PROMPT_ANSWER}" = soundsgood ]; then
 	rm ${BUILD_FOLDER}/restricted/${DEVELOPMENT_PROPERTIES_FILE}
 
 	#remove the development and testing tools
-	rm -rf ${BUILD_FOLDER}/tools
+	#rm -rf ${BUILD_FOLDER}/tools
 
 	#Place all uncompiled JS libraries in one file, compile it to the build folder, and remove the uncompiled file
 	echo Compiling Javascript...
