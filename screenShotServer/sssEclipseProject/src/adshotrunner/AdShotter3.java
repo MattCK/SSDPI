@@ -30,6 +30,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.Proxy.ProxyType;
@@ -64,7 +65,7 @@ public class AdShotter3 {
 	//---------------------------------------------------------------------------------------	
 	//final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
 //	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL(); //http://34.198.249.162:4444/wd/hub
-	final private static String SELENIUMHUBADDRESS = "http://10.1.2.37:4444/wd/hub";
+	final private static String SELENIUMHUBADDRESS = "http://10.100.100.232:4444/wd/hub";
 	final private static String ADINJECTERJSPATH = ASRProperties.pathForAdInjecterJavascript();
 	final private static String ADMARKERPATH = ASRProperties.pathForAdMarkerExtension();
 	final private static String CSPDISABLEPATH = "chromeExtensions/chrome-csp-disable-master.crx";
@@ -536,11 +537,12 @@ public class AdShotter3 {
 	 */
 	private WebDriver getSeleniumChromeDriver() throws MalformedURLException {
 		
-		//Attempt to create the actual web driver used to connect to selenium
+		//Begin creating the driver for a Chrome window
 		consoleLog("Creating Chrome driver...");
 		DesiredCapabilities driverCapabilities = DesiredCapabilities.chrome();
 		ChromeOptions driverOptions = new ChromeOptions();
-		HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
+		HashMap<String, Object> chromePreferences = new HashMap<String, Object>();
+		
 		
 		//If the browser needs to be in mobile mode, set the driver options for it
 		if (_useMobile) {
@@ -560,47 +562,51 @@ public class AdShotter3 {
 			driverOptions.setExperimentalOption("mobileEmulation", mobileEmulation);
 			
 			//Turn off flash and the pdf viewer
-			chromePrefs.put("plugins.plugins_disabled", new String[] {
+			chromePreferences.put("plugins.plugins_disabled", new String[] {
 				    "Adobe Flash Player",
 				    "Chrome PDF Viewer"
 				});
-			
-		
 		}
 		
-//		chromePrefs.put("profile.managed_default_content_settings.cookies", new Integer(2));
-		driverOptions.setExperimentalOption("prefs", chromePrefs);
-		//the below option freezes chrome when injecting the ad injector
-		//driverOptions.addArguments("disable-web-security");
-		//driverOptions.addArguments("user-data-dir=/tmp/chromeprofile");
+
+		driverOptions.setExperimentalOption("prefs", chromePreferences);
 		
-		//if this is a tag set the proxy server
-		//some ad tags won't show up if they come from amazon ip addreses
+		//If the AdShots are tags, send them through a proxy so the ads are shown,
+		//use the Linux headless nodes, and install the disable visibility plugin
 		if (_treatAsTags) {
+
+			//Tell the Selenium Grid to use a tag Linux node
+//			driverCapabilities.setPlatform(Platform.LINUX);
+
 			//this option turns off the proxy for connections to aws resources
 			driverOptions.addArguments("proxy-bypass-list='*.amazonaws.com'");
-			//Set the proxy to use. If it is not empty, set the proxy capability3
+			
+			//Get the proxy ip address and port
 			String proxyDetails = getProxyDetails();
+			
+			//If a proxy was returned, initialize it in the driver
 			if (!proxyDetails.isEmpty()) {
 				consoleLog("Using proxy: " + proxyDetails);
 				Proxy chromeProxy = new Proxy();
 				chromeProxy.setProxyType(ProxyType.MANUAL);
 				chromeProxy.setSslProxy(proxyDetails);
 				chromeProxy.setHttpProxy(proxyDetails);
-				//driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+				driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
 
-				//driverOptions.addExtensions(new File(DISABLEVISABILITYPATH));
 			}
 			else {consoleLog("WARNING!!! NOT USING A PROXY!");}
+			
+			//Install extension to disable visibility so animations run when tab is hidden
+			driverOptions.addExtensions(new File(DISABLEVISABILITYPATH));
 		}
 		
-		//Install the AdMarker extension to mark ad elements if not a tag
-		if (!_treatAsTags) {
+		//If the AdShots are not tags, install the AdMarkers the disable the content-security-policy
+		else {
 			try {
 				driverOptions.addExtensions(new File(ADMARKERPATH));
 				driverOptions.addExtensions(new File(CSPDISABLEPATH));
 			} catch (Exception e) {
-				consoleLog("	FAILED: Unable to load AdMarker. -" + e.toString() );
+				consoleLog("	FAILED: Unable to load AdMarker and Disabled CSP Extensions: " + e.toString() );
 			}
 		}
 
@@ -620,7 +626,9 @@ public class AdShotter3 {
 		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
 		
 		//If not using mobile, set the viewport size
-		if (!_useMobile) {chromeDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));}		
+		if ((!_useMobile) && (!_treatAsTags)) {
+			chromeDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));
+		}		
 		
 		//Return the initialized remote chrome web driver
 		consoleLog("Done creating chrome driver.");
@@ -1136,6 +1144,11 @@ try {
 //		
 //		//Insert the tags into the code by replacing the 'insert tags object' marker with them
 //		String finalJS = adInjecterJS.replace("//INSERT TAGS OBJECT//", tagsString);
+
+//chromePreferences.put("profile.managed_default_content_settings.cookies", new Integer(2));
+//the below option freezes chrome when injecting the ad injector
+//driverOptions.addArguments("disable-web-security");
+//driverOptions.addArguments("user-data-dir=/tmp/chromeprofile");
 
 
 */
