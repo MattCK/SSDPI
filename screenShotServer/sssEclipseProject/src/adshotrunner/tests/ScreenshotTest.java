@@ -14,7 +14,7 @@ public class ScreenshotTest {
 	public static void main(String[] args) throws InterruptedException {
 		//System.setProperty("webdriver.chrome.driver", "/home/matt/Work/DangerousPenguins/localTesting/chromedriver");
 //		System.setProperty("webdriver.chrome.driver", "/home/juicio/Desktop/selenium/chromedriver");
-		System.setProperty("webdriver.chrome.driver", "/var/www/html/selenium/chromedriver");
+		System.setProperty("webdriver.chrome.driver", "chromedriver");
 		
 		DesiredCapabilities driverCapabilities = DesiredCapabilities.chrome();
 		ChromeOptions driverOptions = new ChromeOptions();
@@ -32,7 +32,8 @@ public class ScreenshotTest {
 		  //driver.manage().timeouts().pageLoadTimeout(4000, TimeUnit.MILLISECONDS);
 		  System.out.println("about to get website");
 		  try{
-			  driver.get("https://development.adshotrunner.com/tagPageTest.html");
+//			  driver.get("https://development.adshotrunner.com/tagPageTest.html");
+			  driver.get("https://news.ycombinator.com");
 		  }
 		  catch (Exception e){
 			  System.out.println("caught get site exception : " + e);

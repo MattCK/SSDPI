@@ -536,6 +536,8 @@ public class AdShotter3 {
 	 * @return			Initialized selenium webdriver
 	 */
 	private WebDriver getSeleniumChromeDriver() throws MalformedURLException {
+
+		System.setProperty("webdriver.chrome.driver", "chromedriver");
 		
 		//Begin creating the driver for a Chrome window
 		consoleLog("Creating Chrome driver...");
@@ -574,12 +576,16 @@ public class AdShotter3 {
 		//If the AdShots are tags, send them through a proxy so the ads are shown,
 		//use the Linux headless nodes, and install the disable visibility plugin
 		if (_treatAsTags) {
+			
 
 			//Tell the Selenium Grid to use a tag Linux node
 //			driverCapabilities.setPlatform(Platform.LINUX);
 
 			//this option turns off the proxy for connections to aws resources
-			driverOptions.addArguments("proxy-bypass-list='*.amazonaws.com'");
+			driverOptions.setBinary("/usr/bin/google-chrome-beta");
+//			driverOptions.addArguments("proxy-bypass-list='*.amazonaws.com'");
+			driverOptions.addArguments("headless");
+			driverOptions.addArguments("disable-gpu");
 			
 			//Get the proxy ip address and port
 			String proxyDetails = getProxyDetails();
@@ -591,8 +597,8 @@ public class AdShotter3 {
 				chromeProxy.setProxyType(ProxyType.MANUAL);
 				chromeProxy.setSslProxy(proxyDetails);
 				chromeProxy.setHttpProxy(proxyDetails);
-				driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
-
+				//driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+				driverOptions.addArguments("proxy-server=" + "10.100.100.52:24000");
 			}
 			else {consoleLog("WARNING!!! NOT USING A PROXY!");}
 			
@@ -620,13 +626,13 @@ public class AdShotter3 {
 		
 
 		//Set the viewport position
-		chromeDriver.manage().window().setPosition(new Point(0,20));
 		
 		//Set the page timeout
 		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
 		
 		//If not using mobile, set the viewport size
 		if ((!_useMobile) && (!_treatAsTags)) {
+			chromeDriver.manage().window().setPosition(new Point(0,20));
 			chromeDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));
 		}		
 		
