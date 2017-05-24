@@ -58,16 +58,15 @@ public class TagImager implements Runnable {
 //			tagShotter.takeAdShots(whiteAdShots);
 //		}
 		
-		//Retry any tags that returned a white image
+		//Retry any tags that returned a white image or no image
 		int retryAttempts = 0;
-		ArrayList<AdShot> whiteAdShots = getWhiteAdShots(new ArrayList(adShotsByIDMap.values()));
-		while ((whiteAdShots.size() > 0) && (retryAttempts < TAGRETRYCOUNT)) {
-			System.out.println("Retrying white tag images: " + whiteAdShots.size());
-			tagShotter.takeAdShots(whiteAdShots);
-			whiteAdShots = getWhiteAdShots(whiteAdShots);
+		ArrayList<AdShot> adShotsWithoutImages = getAdShotsWithoutImages(new ArrayList<AdShot>(adShotsByIDMap.values()));
+		while ((adShotsWithoutImages.size() > 0) && (retryAttempts < TAGRETRYCOUNT)) {
+			System.out.println("Retrying tags without images: " + adShotsWithoutImages.size());
+			tagShotter.takeAdShots(adShotsWithoutImages);
+			adShotsWithoutImages = getAdShotsWithoutImages(adShotsWithoutImages);
 			++retryAttempts;
 		}
-		
 		
 		
 		for(Map.Entry<String, AdShot> adShotEntry : adShotsByIDMap.entrySet()) {
@@ -127,15 +126,16 @@ public class TagImager implements Runnable {
 		return colors.size();
 	}
 	
-	private static ArrayList getWhiteAdShots(ArrayList<AdShot> adShotsList) {
-		ArrayList<AdShot> whiteAdShots = new ArrayList<AdShot>();
+	private static ArrayList<AdShot> getAdShotsWithoutImages(ArrayList<AdShot> adShotsList) {
+		ArrayList<AdShot> adShotsWithoutImages = new ArrayList<AdShot>();
 		for (AdShot currentAdShot : adShotsList) {
-			if ((currentAdShot.image() != null) && 
-				(numberOfColorsInImage(currentAdShot.image()) == 1)) {
-				whiteAdShots.add(currentAdShot);
+			if (currentAdShot.image() == null) {
+				adShotsWithoutImages.add(currentAdShot);
 			}
-			
+			else if (numberOfColorsInImage(currentAdShot.image()) == 1) {
+				adShotsWithoutImages.add(currentAdShot);
+			}
 		}
-		return whiteAdShots;
+		return adShotsWithoutImages;
 	}
 }

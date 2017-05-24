@@ -42,6 +42,8 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import com.gargoylesoftware.htmlunit.ProxyConfig;
+import com.gargoylesoftware.htmlunit.WebClient;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 import com.google.gson.Gson;
@@ -212,13 +214,15 @@ public class AdShotter3 {
 				
 		//Try to create a web driver to connect with
 		WebDriver remoteWebDriver = null;
-		try {remoteWebDriver = getSeleniumChromeDriver();}
+		try {
+			remoteWebDriver = (_treatAsTags) ? getTagImagerDriver() : getScreenshotDriver();
+		}
 		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
 		
 		//Store the time after a driver has been made available to the thread
 		long adShotsStartTime = System.nanoTime();
 		
-		//Open each AdShot URL in a new tab up to the max tab amount
+		//Open tabs up to the max tab amount
 		consoleLog("Beginning to open tabs...");
 		int numberOfOpenTabs = (_treatAsTags) ? TAGSOPENTABS : DEFAULTOPENTABS;
 		int numberOfRequiredTabs = (adShots.size() < numberOfOpenTabs) ? adShots.size() : numberOfOpenTabs;
@@ -535,7 +539,7 @@ public class AdShotter3 {
 	 * 
 	 * @return			Initialized selenium webdriver
 	 */
-	private WebDriver getSeleniumChromeDriver() throws MalformedURLException {
+	private WebDriver getScreenshotDriver() throws MalformedURLException {
 
 		System.setProperty("webdriver.chrome.driver", "chromedriver");
 		
@@ -569,51 +573,13 @@ public class AdShotter3 {
 				    "Chrome PDF Viewer"
 				});
 		}
-		
-
 		driverOptions.setExperimentalOption("prefs", chromePreferences);
 		
-		//If the AdShots are tags, send them through a proxy so the ads are shown,
-		//use the Linux headless nodes, and install the disable visibility plugin
-		if (_treatAsTags) {
-			
-
-			//Tell the Selenium Grid to use a tag Linux node
-//			driverCapabilities.setPlatform(Platform.LINUX);
-
-			//this option turns off the proxy for connections to aws resources
-			driverOptions.setBinary("/usr/bin/google-chrome-beta");
-//			driverOptions.addArguments("proxy-bypass-list='*.amazonaws.com'");
-			driverOptions.addArguments("headless");
-			driverOptions.addArguments("disable-gpu");
-			
-			//Get the proxy ip address and port
-			String proxyDetails = getProxyDetails();
-			
-			//If a proxy was returned, initialize it in the driver
-			if (!proxyDetails.isEmpty()) {
-				consoleLog("Using proxy: " + proxyDetails);
-				Proxy chromeProxy = new Proxy();
-				chromeProxy.setProxyType(ProxyType.MANUAL);
-				chromeProxy.setSslProxy(proxyDetails);
-				chromeProxy.setHttpProxy(proxyDetails);
-				//driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
-				driverOptions.addArguments("proxy-server=" + "10.100.100.52:24000");
-			}
-			else {consoleLog("WARNING!!! NOT USING A PROXY!");}
-			
-			//Install extension to disable visibility so animations run when tab is hidden
-			driverOptions.addExtensions(new File(DISABLEVISABILITYPATH));
-		}
-		
-		//If the AdShots are not tags, install the AdMarkers the disable the content-security-policy
-		else {
-			try {
-				driverOptions.addExtensions(new File(ADMARKERPATH));
-				driverOptions.addExtensions(new File(CSPDISABLEPATH));
-			} catch (Exception e) {
-				consoleLog("	FAILED: Unable to load AdMarker and Disabled CSP Extensions: " + e.toString() );
-			}
+		try {
+			driverOptions.addExtensions(new File(ADMARKERPATH));
+			driverOptions.addExtensions(new File(CSPDISABLEPATH));
+		} catch (Exception e) {
+			consoleLog("	FAILED: Unable to load AdMarker and Disabled CSP Extensions: " + e.toString() );
 		}
 
 
@@ -626,18 +592,84 @@ public class AdShotter3 {
 		
 
 		//Set the viewport position
+		chromeDriver.manage().window().setPosition(new Point(0,20));
 		
 		//Set the page timeout
 		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
 		
 		//If not using mobile, set the viewport size
-		if ((!_useMobile) && (!_treatAsTags)) {
-			chromeDriver.manage().window().setPosition(new Point(0,20));
+		if (!_useMobile) {
 			chromeDriver.manage().window().setSize(new Dimension(_browserViewWidth, _browserViewHeight));
 		}		
 		
 		//Return the initialized remote chrome web driver
-		consoleLog("Done creating chrome driver.");
+		consoleLog("Done creating screenshot driver.");
+		return chromeDriver;
+	} 
+	
+	/**
+	 * Returns an initialized Selenium Webdriver for headless Chrome on a
+	 * tag imaging linux node. 
+	 *
+	 * The Selenium address used is set to the class constant SELENIUMHUBADDRESS.
+	 * 
+	 * @return			Initialized selenium webdriver
+	 */
+	private WebDriver getTagImagerDriver() throws MalformedURLException {
+
+		//Define the path to the ChromeDriver. 
+		//The Tag Imager uses the stock ChromeDriver and not our modified one
+		System.setProperty("webdriver.chrome.driver", "chromedriver");
+		
+		//Create the capability, option, and preference objects for the driver
+		consoleLog("Creating Chrome driver...");
+		DesiredCapabilities driverCapabilities = DesiredCapabilities.chrome();
+		ChromeOptions driverOptions = new ChromeOptions();	
+
+		//Define the options to run the latest Chrome headless
+		driverOptions.setBinary("/usr/bin/google-chrome-beta");
+		driverOptions.addArguments("headless");
+		driverOptions.addArguments("disable-gpu");
+		
+		//Use the AWS tag imagers for now
+		driverCapabilities.setCapability("applicationName", "awsTagImager");
+
+		//Setup the proxy capability
+		String proxyDetails = getProxyDetails();
+		boolean proxyIsFunctional = proxyIsFunctional(proxyDetails);
+		consoleLog("Proxy is functional: " + proxyIsFunctional);
+		if (proxyIsFunctional) {
+			consoleLog("Using proxy: " + proxyDetails);
+			Proxy chromeProxy = new Proxy();
+			chromeProxy.setProxyType(ProxyType.MANUAL);
+			chromeProxy.setSslProxy(proxyDetails);
+			chromeProxy.setHttpProxy(proxyDetails);
+			driverOptions.addArguments("proxy-server=" + proxyDetails);
+			driverCapabilities.setCapability("applicationName", "awsTagImager");
+			//driverCapabilities.setCapability(CapabilityType.PROXY, chromeProxy);
+		}
+		
+		//If the proxy is not working, use the external nodes
+		else {
+			consoleLog("WARNING!!! PROXY DOWN! USING EXTERNAL NODES!");
+			driverCapabilities.setCapability("applicationName", "externalTagImager");
+		}
+		
+		//Install extension to disable visibility so animations run when tab is hidden
+		driverOptions.addExtensions(new File(DISABLEVISABILITYPATH));
+		
+		//Initialize the actual driver
+		WebDriver chromeDriver = null;
+		driverCapabilities.setCapability(ChromeOptions.CAPABILITY, driverOptions);
+		chromeDriver = new RemoteWebDriver(
+							new URL(SELENIUMHUBADDRESS), 
+							driverCapabilities);
+		
+		//Set the page timeout
+		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
+				
+		//Return the initialized remote chrome web driver
+		consoleLog("Done creating Tag Imager driver.");
 		return chromeDriver;
 	} 
 	
@@ -996,6 +1028,29 @@ public class AdShotter3 {
 		activeSeleniumWebDriver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.MILLISECONDS);
 	}
 
+	private boolean proxyIsFunctional(String proxyIPWithPort) {
+		
+		//Separate the proxy into IP and port
+		String[] proxyParts = proxyIPWithPort.split(":");
+		String proxyIP = proxyParts[0];
+		String proxyPort = proxyParts[1];
+		
+		//Try to get the code
+		int responseCode = 0;
+		try {
+			WebClient webClient = new WebClient();
+			ProxyConfig proxyConfig = new ProxyConfig(proxyIP, Integer.parseInt(proxyPort));
+			webClient.getOptions().setProxyConfig(proxyConfig);			
+			webClient.getOptions().setTimeout(2000);			
+			responseCode = webClient.getPage(
+		            "https://s3.amazonaws.com/asr-images/fillers/nsfiller-1x1.jpg"
+		    ).getWebResponse().getStatusCode();
+		    webClient.closeAllWindows();
+		} catch(Exception e) {}
+		
+		return (responseCode == 200);
+	}
+	
 	/**
 	 * Alias for Thread.sleep(...) with InterruptedException ignored
 	 * 

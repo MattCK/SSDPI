@@ -59,8 +59,13 @@ foreach ($_POST['tags'] as $currentID => $currentTag) {
 
 //Create the queue request and add it
 if (count($filePages) > 0) {
-	$requestObject = $filePages;
-	MessageQueueClient::sendMessage(ASRProperties::queueForTagImageRequests(), json_encode($requestObject));
+	// $requestObject = $filePages;
+	// MessageQueueClient::sendMessage(ASRProperties::queueForTagImageRequests(), json_encode($requestObject));
+	foreach ($filePages as $currentID => $currentPage) {
+		$requestObject = [];
+		$requestObject[$currentID] = $currentPage;
+		MessageQueueClient::sendMessage(ASRProperties::queueForTagImageRequests(), json_encode($requestObject));
+	}
 }
 
 echo "{}"; return;
