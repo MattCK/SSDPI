@@ -66,8 +66,8 @@ public class AdShotter3 {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	//final private static String SELENIUMHUBADDRESS = "http://localhost:4444/wd/hub";
-//	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL(); //http://34.198.249.162:4444/wd/hub
-	final private static String SELENIUMHUBADDRESS = "http://10.100.100.232:4444/wd/hub";
+	final private static String SELENIUMHUBADDRESS = ASRProperties.seleniumHubURL(); 
+//	final private static String SELENIUMHUBADDRESS = "http://10.100.100.232:4444/wd/hub";
 	final private static String ADINJECTERJSPATH = ASRProperties.pathForAdInjecterJavascript();
 	final private static String ADMARKERPATH = ASRProperties.pathForAdMarkerExtension();
 	final private static String CSPDISABLEPATH = "chromeExtensions/chrome-csp-disable-master.crx";
@@ -541,7 +541,7 @@ public class AdShotter3 {
 	 */
 	private WebDriver getScreenshotDriver() throws MalformedURLException {
 
-		System.setProperty("webdriver.chrome.driver", "chromedriver");
+		//System.setProperty("webdriver.chrome.driver", "chromedriver");
 		
 		//Begin creating the driver for a Chrome window
 		consoleLog("Creating Chrome driver...");
@@ -549,6 +549,8 @@ public class AdShotter3 {
 		ChromeOptions driverOptions = new ChromeOptions();
 		HashMap<String, Object> chromePreferences = new HashMap<String, Object>();
 		
+		//Set the driver to use a Windows node
+		driverCapabilities.setPlatform(Platform.WINDOWS);
 		
 		//If the browser needs to be in mobile mode, set the driver options for it
 		if (_useMobile) {
