@@ -313,9 +313,9 @@ public class AdShotter3 {
 			takeAdShot(remoteWebDriver, currentAdShot);
 			
 			//If no tag images were injected into the page AND alternate URLs exist, try those
-			if ((currentAdShot.injectedTagImages().size() == 0) && (currentAdShot.alternateURLs().size() > 0)) {
+			if ((currentAdShot.injectedCreatives().size() == 0) && (currentAdShot.alternateURLs().size() > 0)) {
 				Iterator<String> urlIterator = currentAdShot.alternateURLs().iterator();
-				while ((currentAdShot.injectedTagImages().size() == 0) && 
+				while ((currentAdShot.injectedCreatives().size() == 0) && 
 					   (urlIterator.hasNext())) {
 					
 					String alternateURL = urlIterator.next();
@@ -426,24 +426,24 @@ public class AdShotter3 {
 				//Mark the tags as injected and determine the requested crop height
 				for (Map.Entry<String, Map<String, Float>> entry : injectedTagInfo.entrySet()) {
 
-					//Name the keys for readability and get the TagImage object
-					String currentTagID = entry.getKey();											//ID of TagImage
-				    TagImage currentTagImage = getTagImageByID(currentTagID, adShot.tagImages());	//TagImage from ID
+					//Name the keys for readability and get the Creative object
+					String currentTagID = entry.getKey();											//ID of Creative
+				    Creative currentCreative = getCreativeByID(currentTagID, adShot.tagImages());	//Creative from ID
 				    Map<String, Float> coordinates = entry.getValue();	//List of x,y positions of tag injection
 				    int currentTagXCoordinate = Math.round(coordinates.get("x")); 
 				    int currentTagYCoordinate = Math.round(coordinates.get("y")); 
 				
 				    //Determine the bottom coordinate of the injected creative
-				    int bottomCoordinate = currentTagYCoordinate + currentTagImage.height();
+				    int bottomCoordinate = currentTagYCoordinate + currentCreative.height();
 				    
 				    //If the bottom coordinate is lower than the requested crop height, use it
 				    if (bottomCoordinate > requestedCropHeight) {requestedCropHeight = bottomCoordinate;}
 				    consoleLog("Position: " + currentTagXCoordinate + ", " + currentTagYCoordinate);
-				    consoleLog("Height: " + currentTagImage.height());
+				    consoleLog("Height: " + currentCreative.height());
 					consoleLog("Current requested Crop Height: " + requestedCropHeight);
 				    
 				    //Mark the creative as injected
-				    adShot.markTagImageAsInjected(currentTagID);
+				    adShot.markCreativeAsInjected(currentTagID);
 				}
 			}
 //			//Get the list of tags that were injected and the positions they were injected from the AdInjecter
@@ -454,24 +454,24 @@ public class AdShotter3 {
 //				//Mark the tags as injected and determine the requested crop height
 //				for (Map.Entry<String, Map<String, Float>> entry : injectedTagInfo.entrySet()) {
 //
-//					//Name the keys for readability and get the TagImage object
-//					String currentTagID = entry.getKey();											//ID of TagImage
-//				    TagImage currentTagImage = getTagImageByID(currentTagID, adShot.tagImages());	//TagImage from ID
+//					//Name the keys for readability and get the Creative object
+//					String currentTagID = entry.getKey();											//ID of Creative
+//				    Creative currentCreative = getCreativeByID(currentTagID, adShot.tagImages());	//Creative from ID
 //				    Map<String, Float> coordinates = entry.getValue();	//List of x,y positions of tag injection
 //				    int currentTagXCoordinate = Math.round(coordinates.get("x")); 
 //				    int currentTagYCoordinate = Math.round(coordinates.get("y")); 
 //				
 //				    //Determine the bottom coordinate of the injected creative
-//				    int bottomCoordinate = currentTagYCoordinate + currentTagImage.height();
+//				    int bottomCoordinate = currentTagYCoordinate + currentCreative.height();
 //				    
 //				    //If the bottom coordinate is lower than the requested crop height, use it
 //				    if (bottomCoordinate > requestedCropHeight) {requestedCropHeight = bottomCoordinate;}
 //				    consoleLog("Position: " + currentTagXCoordinate + ", " + currentTagYCoordinate);
-//				    consoleLog("Height: " + currentTagImage.height());
+//				    consoleLog("Height: " + currentCreative.height());
 //					consoleLog("Current requested Crop Height: " + requestedCropHeight);
 //				    
 //				    //Mark the creative as injected
-//				    adShot.markTagImageAsInjected(currentTagID);
+//				    adShot.markCreativeAsInjected(currentTagID);
 //				}
 //				
 //				
@@ -809,17 +809,17 @@ public class AdShotter3 {
 	 * @param targetURL		URL the tags will be injected into, used for exceptions
 	 * @return				AdInjecter javascript with passed tags inserted into it
 	 */
-	private String getInjecterJS(Set<TagImage> tagImageSet, String targetURL) throws IOException {
+	private String getInjecterJS(Set<Creative> tagImageSet, String targetURL) throws IOException {
 		
 		//Get the AdInjecter javascript file
 		String adInjecterJS = new String(Files.readAllBytes(Paths.get(ADINJECTERJSPATH)));
 		
 		//Create the creatives object by looping through the creatives and adding them to the JSON string
 		String creativesJSON = "creatives = [";
-		for (TagImage tagImage: tagImageSet) {
+		for (Creative tagImage: tagImageSet) {
 			
 			//build the current tag object and add it to overall object
-			creativesJSON +=  "{id: '" + tagImage.id() + "', " +
+			creativesJSON +=  "{id: '" + tagImage.uuid() + "', " +
 							  "imageURL: '" + tagImage.url() + "', " +
 							  "width: " + tagImage.width() + ", " +
 							  "height: " + tagImage.height() + ", " +
@@ -1042,10 +1042,10 @@ public class AdShotter3 {
 		} catch (Exception e){return;} 
 	} 
 	
-	private TagImage getTagImageByID(String tagID, Set<TagImage> tagImageList) {
+	private Creative getCreativeByID(String tagID, Set<Creative> tagImageList) {
 		
-		for (TagImage currentTagImage : tagImageList) {
-			if (currentTagImage.id().equals(tagID)) {return currentTagImage;}
+		for (Creative currentCreative : tagImageList) {
+			if (currentCreative.uuid().equals(tagID)) {return currentCreative;}
 		}
 		
 		//If the tag wasn't found, return null
@@ -1233,7 +1233,7 @@ try {
 //		}
 //		//Create the tags object by looping through the tags and adding them to the tags string
 //		String tagsString = "tags = [";
-//		for (TagImage tagImage: tagImageSet) {
+//		for (Creative tagImage: tagImageSet) {
 //			
 //			//build the current tag object and add it to overall object
 //			tagsString +=  "{id: '" + tagImage.id() + "', " +

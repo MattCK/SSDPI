@@ -30,12 +30,12 @@ public class AdShot {
 	 * If the URL is null or empty, an AdShotRunnerException is thrown.
 	 * 
 	 * @param pageURL			URL where the screenshot should be taken
-	 * @param singleTagImage	Single tag image to include in the screenshot
+	 * @param singleCreative	Single tag image to include in the screenshot
 	 * @return
 	 */
-	public static AdShot create(String pageURL, TagImage singleTagImage) {
-		HashSet<TagImage> tagImageSet = new HashSet<TagImage>();
-		tagImageSet.add(singleTagImage);
+	public static AdShot create(String pageURL, Creative singleCreative) {
+		HashSet<Creative> tagImageSet = new HashSet<Creative>();
+		tagImageSet.add(singleCreative);
 		return AdShot.create(pageURL, tagImageSet);
 	}
 	
@@ -50,7 +50,7 @@ public class AdShot {
 	 * @return
 	 */
 	public static AdShot create(String pageURL) {
-		return AdShot.create(pageURL, new HashSet<TagImage>());
+		return AdShot.create(pageURL, new HashSet<Creative>());
 	}
 	
 	/**
@@ -61,10 +61,10 @@ public class AdShot {
 	 * If the URL is null or empty, an AdShotRunnerException is thrown.
 	 * 
 	 * @param pageURL			URL where the screenshot should be taken
-	 * @param pageTagImages		Set of tag images to be inserted into the page
+	 * @param pageCreatives		Set of tag images to be inserted into the page
 	 * @return
 	 */
-	public static AdShot create(String pageURL, Set<TagImage> pageTagImages) {
+	public static AdShot create(String pageURL, Set<Creative> pageCreatives) {
 		
 		//Verify the URL is not null and not an empty string
 		if (pageURL == null || pageURL.isEmpty()) {throw new AdShotRunnerException("URL empty or null");}
@@ -74,11 +74,11 @@ public class AdShot {
 			pageURL = URLTool.setProtocol("http", pageURL);
 		}
 		
-		//If a null TagImage list was passed, instantiate one
-		if (pageTagImages == null) {pageTagImages = new HashSet<TagImage>();}
+		//If a null Creative list was passed, instantiate one
+		if (pageCreatives == null) {pageCreatives = new HashSet<Creative>();}
 		
 		//Create and return the AdShot
-		return new AdShot(pageURL, pageTagImages);
+		return new AdShot(pageURL, pageCreatives);
 	}
 	
 	/**
@@ -92,9 +92,9 @@ public class AdShot {
 	private final Set<String> _alternateURLs;
 	
 	/**
-	 * Set of TagImages to be inserted into the page
+	 * Set of Creatives to be inserted into the page
 	 */
-	private final Set<TagImage> _tagImages;
+	private final Set<Creative> _tagImages;
 	
 	/**
 	 * Flags whether or not the AdShot should be taken in a mobile browser
@@ -102,9 +102,9 @@ public class AdShot {
 	private Boolean _mobile;
 	
 	/**
-	 * Set of TagImages that were injected into the page
+	 * Set of Creatives that were injected into the page
 	 */
-	private final Set<TagImage> _injectedTagImages;
+	private final Set<Creative> _injectedCreatives;
 	
 	/**
 	 * Image of the final screenshot.
@@ -130,22 +130,22 @@ public class AdShot {
 	 * Sets private variables of instance. Parameter verification should be done in static factory.
 	 * 
 	 * @param pageURL			URL for the screenshot
-	 * @param pageTagImages		Set of TagImages to be inserted into the page
+	 * @param pageCreatives		Set of Creatives to be inserted into the page
 	 */
-	private AdShot(String pageURL, Set<TagImage> pageTagImages) {
+	private AdShot(String pageURL, Set<Creative> pageCreatives) {
 		_url = pageURL;
-		_tagImages = pageTagImages;
+		_tagImages = pageCreatives;
 		_alternateURLs = new HashSet<String>();
-		_injectedTagImages = new HashSet<TagImage>();
+		_injectedCreatives = new HashSet<Creative>();
 	}
 	
 	/**
 	 * Adds a new tag image to be inserted into the page.
 	 * 
-	 * @param newTagImage	New tag image to be inserted into the page
+	 * @param newCreative	New tag image to be inserted into the page
 	 */
-	public void addTagImage(TagImage newTagImage) {
-		_tagImages.add(newTagImage);
+	public void addCreative(Creative newCreative) {
+		_tagImages.add(newCreative);
 	}
 	
 	/**
@@ -153,11 +153,11 @@ public class AdShot {
 	 * 
 	 * @param tagImageID	ID of tag image that was injected into the page
 	 */
-	public void markTagImageAsInjected(String tagImageID) {
+	public void markCreativeAsInjected(String tagImageID) {
 		
 		ArrayList<String> idList = new ArrayList<String>();
 		idList.add(tagImageID);
-		markTagImageAsInjected(idList);
+		markCreativeAsInjected(idList);
 	}
 	
 	/**
@@ -165,14 +165,14 @@ public class AdShot {
 	 * 
 	 * @param tagImageIDs	IDs of tag images that were injected into the page
 	 */
-	public void markTagImageAsInjected(Collection<String> tagImageIDs) {	
+	public void markCreativeAsInjected(Collection<String> tagImageIDs) {	
 		
         Iterator<String> tagImageIterator = tagImageIDs.iterator();
 
 		while (tagImageIterator.hasNext()) {
 			String tagImageID = tagImageIterator.next();
-			_tagImages.forEach(tagImage -> {if (tagImage.id().equals(tagImageID)) {
-												_injectedTagImages.add(tagImage);}});
+			_tagImages.forEach(tagImage -> {if (tagImage.uuid().equals(tagImageID)) {
+												_injectedCreatives.add(tagImage);}});
 		}	
 		
 	}
@@ -210,7 +210,7 @@ public class AdShot {
 	/**
 	 * @return	Set of tag images to insert into the page (unmodifiable)
 	 */
-	public Set<TagImage> tagImages() {return Collections.unmodifiableSet(_tagImages);}
+	public Set<Creative> tagImages() {return Collections.unmodifiableSet(_tagImages);}
 	
 	/**
 	 * @return	TRUE if the AdShot should use a mobile browser and FALSE otherwise
@@ -220,7 +220,7 @@ public class AdShot {
 	/**
 	 * @return	Set of tag images that were injected into the page (unmodifiable)
 	 */
-	public Set<TagImage> injectedTagImages() {return Collections.unmodifiableSet(_injectedTagImages);}
+	public Set<Creative> injectedCreatives() {return Collections.unmodifiableSet(_injectedCreatives);}
 	
 	/**
 	 * @return	Image of the final screenshot. Default: null

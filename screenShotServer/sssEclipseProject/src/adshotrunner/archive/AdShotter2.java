@@ -52,7 +52,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import adshotrunner.AdShot;
-import adshotrunner.TagImage;
+import adshotrunner.Creative;
 import adshotrunner.errors.AdShotRunnerException;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
@@ -260,9 +260,9 @@ public class AdShotter2 {
 			takeAdShot(remoteWebDriver, currentAdShot, treatAsTags);
 			
 			//If no tag images were injected into the page AND alternate URLs exist, try those
-			if ((currentAdShot.injectedTagImages().size() == 0) && (currentAdShot.alternateURLs().size() > 0)) {
+			if ((currentAdShot.injectedCreatives().size() == 0) && (currentAdShot.alternateURLs().size() > 0)) {
 				Iterator<String> urlIterator = currentAdShot.alternateURLs().iterator();
-				while ((currentAdShot.injectedTagImages().size() == 0) && 
+				while ((currentAdShot.injectedCreatives().size() == 0) && 
 					   (urlIterator.hasNext())) {
 					
 					String alternateURL = urlIterator.next();
@@ -361,9 +361,9 @@ public class AdShotter2 {
 			Type injecterJSONType = new TypeToken<HashMap<String, ArrayList<String>>>(){}.getType();
 			Map<String, List<String>> injectedTagInfo = new Gson().fromJson(injecterResponse, injecterJSONType);
 			if ((injectedTagInfo != null) && (injectedTagInfo.containsKey("injectedTagIDs"))) {
-				adShot.markTagImageAsInjected(injectedTagInfo.get("injectedTagIDs"));
+				adShot.markCreativeAsInjected(injectedTagInfo.get("injectedTagIDs"));
 				lowestTagBottom = Integer.parseInt(injectedTagInfo.get("lowestTagPosition").get(0));
-				consoleLog("    Injected Tags Size: " + adShot.injectedTagImages().size());
+				consoleLog("    Injected Tags Size: " + adShot.injectedCreatives().size());
 				consoleLog("    Bottom position: " + lowestTagBottom);
 			}
 			else {
@@ -846,14 +846,14 @@ public class AdShotter2 {
 	 * @param tags			Tags and their placement rankings
 	 * @return				AdInjecter javascript with passed tags inserted into it
 	 */
-	private String getInjecterJS(Set<TagImage> tagImageSet) throws IOException {
+	private String getInjecterJS(Set<Creative> tagImageSet) throws IOException {
 		
 		//Get the AdInjecter javascript file
 		String adInjecterJS = new String(Files.readAllBytes(Paths.get(ADINJECTERJSPATH)));
 		
 		//Create the tags object by looping through the tags and adding them to the tags string
 		String tagsString = "tags = [";
-		for (TagImage tagImage: tagImageSet) {
+		for (Creative tagImage: tagImageSet) {
         	
         	//build the current tag object and add it to overall object
         	tagsString +=  "{id: '" + tagImage.id() + "', " +

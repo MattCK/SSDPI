@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import adshotrunner.AdShot;
 import adshotrunner.AdShotter3;
 import adshotrunner.StoryFinder;
-import adshotrunner.TagImage;
+import adshotrunner.Creative;
 import adshotrunner.powerpoint.CampaignPowerPoint;
 import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.FileStorageClient;
@@ -44,8 +44,10 @@ public class CampaignRunner implements Runnable {
 		//Store the current time to show total runtime at end
 		long campaignStartTime = System.nanoTime();
 		
+		System.out.println("\n\n\nImages: " + requestInfo.tagImages + "\n\n\n");
+		
 		//Put the tag images into a list
-		HashSet<TagImage> tagImages = new HashSet<TagImage>();
+		HashSet<Creative> tagImages = new HashSet<Creative>();
 		for (String tagURL: requestInfo.tagImages) {
 			
 			//////////////////////////////////////////////////////////////
@@ -57,24 +59,24 @@ public class CampaignRunner implements Runnable {
 			//////////////////////////////////////////////////////////////
 			boolean tagRetrieved = false;
 			int tagRetrievalAttempts = 0;
-			TagImage currentTagImage = null;
+			Creative currentCreative = null;
 			while ((!tagRetrieved) && (tagRetrievalAttempts < 3)) {
 				try {
-					currentTagImage = TagImage.create(tagURL); 
+					currentCreative = Creative.create(tagURL); 
 					tagRetrieved = true;
 				}
 				catch (Exception e) {
 					++tagRetrievalAttempts;
+					System.out.println("Creative create error: " + e);	
+					e.printStackTrace();
 				}
 			}
 			
-			if (currentTagImage != null) {
-				tagImages.add(currentTagImage);
+			if (currentCreative != null) {
+				tagImages.add(currentCreative);
 			}
 		}
-		
-		System.out.println(requestInfo);
-		
+				
 		//Loop through each page, preparing the adshots and finding stories as necessary
 		ArrayList<AdShot> adShotList = new ArrayList<AdShot>();
 		for (Map<String, String> currentPage : requestInfo.pages) {
@@ -116,7 +118,7 @@ public class CampaignRunner implements Runnable {
 			}
 			
 			else if (individualTagScreenshots) {
-				for (TagImage singleTag: tagImages) {
+				for (Creative singleTag: tagImages) {
 					AdShot newAdShot = AdShot.create(pageURL, singleTag);
 					if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
 					newAdShot.useMobile(currentPage.get("useMobile").equals("1"));

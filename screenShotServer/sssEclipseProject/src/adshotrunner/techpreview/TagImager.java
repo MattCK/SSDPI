@@ -32,7 +32,7 @@ public class TagImager implements Runnable {
 	
 	@Override
 	public void run() {
-		System.out.println("\nIn TagImager - " + urlsWithIDs);
+		System.out.println("\nIn Creativer - " + urlsWithIDs);
 		System.out.println();
 		
 		AdShotter3 tagShotter = AdShotter3.createForTags();

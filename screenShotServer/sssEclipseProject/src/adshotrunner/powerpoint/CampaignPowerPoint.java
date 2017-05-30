@@ -12,7 +12,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 
 import adshotrunner.AdShot;
-import adshotrunner.TagImage;
+import adshotrunner.Creative;
 
 public class CampaignPowerPoint {
 
@@ -190,7 +190,7 @@ public class CampaignPowerPoint {
 		
 		//Put all the AdShot tag dimensions in a set to preserve uniqueness
 		Set<String> tagDimensions = new HashSet<String>(); 
-		for (TagImage currentTag : targetAdShot.injectedTagImages()) {
+		for (Creative currentTag : targetAdShot.injectedCreatives()) {
 			tagDimensions.add(currentTag.width() + "x" + currentTag.height());
 		}
 		

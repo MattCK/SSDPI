@@ -24,7 +24,7 @@ define('USERID', $_SESSION['userID']);
 define('USERNAME', $_SESSION['username']);
 define('USERFIRSTNAME', $_SESSION['userFirstName']);
 define('USERLASTNAME', $_SESSION['userLastName']);
-define('USEREMAIL', $_SESSION['userEmail']);
+define('USEREMAIL', $_SESSION['userEmailAddress']);
 define('USERDFPNETWORKCODE', $_SESSION['userDFPNetworkCode']);
 
 
