@@ -18,6 +18,10 @@ $(function() {
 				return "<img src='" + element.attr( "src" ) + "'/>";
 			}
 
+			else if (elementID == "accountNumberHelpIcon") {
+				return "The <strong>account number</strong> associated with your company<br><br> \
+						The administrator in charge of your company's AdShotRunner account can provided it to you.";
+			}
 			else if (elementID == "dfpOrdersHelpIcon") {
 				return "These are your active DFP orders.<br><br> \
 						Use the filter bar above the orders to narrow your results.";

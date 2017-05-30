@@ -231,7 +231,7 @@ public class StoryFinder {
 	public static Map<String, String> getException(String targetURL) throws SQLException {
 		
 		//Get the domain with subdomain of the url. The protocol type is not important. It is necessary for getDomain.
-		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
+		String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
 		
 		//Check the database to see if any entries matching the domain exist
 		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
@@ -298,7 +298,7 @@ public class StoryFinder {
 			
 		}
 		//Get the primary domain of the StoryFinder URL
-		String primaryDomain = getURIDomain(_targetURL);
+		String primaryDomain = URLTool.getDomain(_targetURL);
 		
 		//Loop through the list removing null and empty href elements and setting null class to empty string
 		
@@ -316,7 +316,7 @@ public class StoryFinder {
 					currentLink.text = currentLink.title;
 				}
 				
-				String currentDomain = (currentLink.href != null) ? getURIDomain(currentLink.href) : null;
+				String currentDomain = (currentLink.href != null) ? URLTool.getDomain(currentLink.href) : null;
 				
 				if (currentLink.href == null || currentLink.href.isEmpty()) {
 					linksIterator.remove();
@@ -348,37 +348,7 @@ public class StoryFinder {
 		return storyLinkList;
 		
 	}
-	
-	/**
-	 * Returns the domain of the URI string. The domain does not include any subdomain or any protocol (i.e. http://)
-	 * 
-	 * @param URIString		URI to retrieve domain from
-	 * @return				Domain of URI
-	 * @throws URISyntaxException
-	 * @throws UnsupportedEncodingException 
-	 * @throws MalformedURLException 
-	 */
-	private String getURIDomain(String URIString) throws URISyntaxException, UnsupportedEncodingException, MalformedURLException {
-		URIString = URIString.replace("\"", "");
-		if(URIString.contains("://") && ((URIString.contains("http") || URIString.contains("spdy"))) && (!URIString.startsWith("javascript"))){
-
-			URL urlObject = new URL(URIString);
-			String nullFragment = null;
-			try{
-			URI uriObject = new URI(urlObject.getProtocol(), urlObject.getHost(), urlObject.getPath(), urlObject.getQuery(), nullFragment);
-			if (uriObject.getHost() == null) {return "";}
-				return InternetDomainName.from(uriObject.getHost()).topPrivateDomain().toString();
-			}
-			catch(Exception e){
-				return "";
-				//private suffix will cause an exception but can be ignored
-			}
-		}
-		else{	
-			return "";
-		}
-	}
-	
+		
 	/**
 	 * Simply returns a new Scorer attached to this StoryFinder instance.
 	 * 
@@ -941,7 +911,7 @@ public class StoryFinder {
 					}
 					
 					//Add the domain and set protocol to http
-					String targetDomain = URLTool.getDomain(_targetURL);
+					String targetDomain = URLTool.getSubdomain(_targetURL);
 					storyURL = URLTool.setProtocol("http", targetDomain + storyURL);
 				}
 

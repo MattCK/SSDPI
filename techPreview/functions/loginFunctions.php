@@ -1,65 +1,63 @@
 <?PHP
 /**
-* Contains the functions for logging a user into the system and setting up a session.
+* Contains the functions for logging a user into the system, verifying a user, and resetting passwords.
 *
-* @package bracket
+* @package Adshotrunner
 * @subpackage Functions
 */
-/**
-* 
-*/
+
 use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Utilities\EmailClient;
 use AdShotRunner\PowerPoint\PowerPointBackground;
+use AdShotRunner\Clients\Client;
 use AdShotRunner\Users\User;
 
 /**
-* Attempts to log a user into the bracket system with the passed username and password.
+* Attempts to log a user into the system with the passed email address and plaintext password.
 *
-* Attempts to log the user with the passed username and password. On success, true is returned. On failure, NULL is returned. If successful,
-* the session cookies for the user are set.
+* On success, true is returned. On failure, NULL is returned. 
+* If successful, the session cookies for the user are set.
 *
-* @param string $username  	The username of the user to login.
-* @param string $password  	The password of the user to login.
-* @return boolean  		 	True on success and NULL on failure
+* @param string $emailAddress  			The email address of the user to login.
+* @param string $plaintextPassword  	The plaintext password of the user to login.
+* @return boolean  		 				True on success and NULL on failure
 */
-function loginUser($username, $password) {
+function loginUser($emailAddress, $plaintextPassword) {
 
-	//Verify a username and password were passed. If not, return NULL.
-	if ((!$username) || (!$password)) {return NULL;}
+	//Verify an email address and password were passed. If not, return NULL.
+	if ((!$emailAddress) || (!$plaintextPassword)) {return NULL;}
+		
+	//Look for the user in the database. If not found, not verified, or archived, return NULL.
+	$foundUser = User::findUser($emailAddress, $plaintextPassword);
+	if ((!$foundUser) || (!$foundUser->isVerified()) || ($foundUser->isArchived())) {return NULL;}
 	
-	//Encode the password using sha1 hashing and salt.
-	$hashedPassword = sha1("hyph3n@t1on" . $password);
-	
-	//Look for the user and password in the database. If not found, not verified, or archived, return NULL.
-	$curUser = User::findUser($username, $hashedPassword);
-	if ((!$curUser) || (!$curUser->isVerified()) || ($curUser->isArchived())) {return NULL;}
-	
-	//Setup the user's cookies.
+	//Get the user's company information
+	$userClient = Client::getClient($foundUser->getClientID());
+
+	//Setup the user's session variables.
 	session_start();
 	header("Cache-control: private"); 
-	$_SESSION['userID'] = $curUser->getID();
-	$_SESSION['username'] = $curUser->getUsername();
-	$_SESSION['userFirstName'] = $curUser->getFirstName();
-	$_SESSION['userLastName'] = $curUser->getLastName();
-	$_SESSION['userEmail'] = $curUser->getEmail();
-	$_SESSION['userDFPNetworkCode'] = $curUser->getDFPNetworkCode();
+	$_SESSION['userID'] = $foundUser->getID();
+	$_SESSION['userEmailAddress'] = $foundUser->getEmailAddress();
+	$_SESSION['userFirstName'] = $foundUser->getFirstName();
+	$_SESSION['userLastName'] = $foundUser->getLastName();
+	$_SESSION['userDFPNetworkCode'] = $userClient->getDFPNetworkCode();
 	
 	//Record the login time
-	User::loginTimestamp($curUser->getID());
+	User::setLoginTimestamp($foundUser->getID());
 	
 	//Return successful
 	return TRUE;
 }
 
 /**
-* Returns TRUE if the username is already taken by another user and FALSE if the username is available.
+* Returns TRUE if the email address is already in use by another user and FALSE if not in use.
 *
-* @param string $username  The username to check.
-* @return boolean  		   TRUE if the username is already taken and FALSE if it is available
+* @param string $emailAddress  	The email address to check.
+* @return boolean  		   		TRUE if the email address is already in use and FALSE if it is not in use
 */
-function usernameAlreadyTaken($username) {
-	return (boolean) User::getUserByUsername($username);
+function emailAddressAlreadyInUse($emailAddress) {
+	return (boolean) User::getUserByEmailAddress($emailAddress);
 }
 
 /**
@@ -67,62 +65,65 @@ function usernameAlreadyTaken($username) {
 *
 * Registers the new user into the system on success and returns the instance of the User. Returns NULL on failure.
 *
-* @param string $username  	The username of the user to create.
-* @param string $password  	The plaint text password of the user to create. This will be hashed before database insertion.
-* @param string $firstName  The first name of the user to create.
-* @param string $lastName  	The last name of the user to create.
-* @param string $company  	The company of the user to create.
-* @param string $email  	The email of the user to create.
-* @return User  		 	Instance of new User on success and NULL on failure.
+* @param string $accountNumber 			The client account number for the user.
+* @param string $emailAddress  			The email address of the user to create.
+* @param string $plaintextPassword  	The plaintext password of the user to create. This will be hashed before database insertion.
+* @param string $firstName  			The first name of the user to create.
+* @param string $lastName  				The last name of the user to create.
+* @return User  		 				Instance of new User on success and NULL on failure.
 */
-function registerUser($username, $password, $firstName, $lastName, $company, $email) {
+function registerUser($accountNumber, $emailAddress, $plaintextPassword, $firstName, $lastName) {
 
 	//Verify all the info was passed. If not, return NULL.
-	if ((!$username) || (!$password) || (!$firstName) || (!$lastName) || (!$email)) {return NULL;}
+	if ((!$emailAddress) || (!$plaintextPassword) || (!$firstName) || (!$lastName)) {return NULL;}
 	
-	//Re-verify the username is available.
-	if (usernameAlreadyTaken($username)) {return NULL;}
-	
+	//Get the client information. If none exist, return NULL
+	$newUserClient = Client::getClientByAccountNumber($accountNumber);
+	if (!$newUserClient) {return NULL;}
 
-	//Encode the password using sha1 hashing and salt.
-	$hashedPassword = sha1("hyph3n@t1on" . $password);
+	//Re-verify the email address is available.
+	if (emailAddressAlreadyInUse($emailAddress)) {return NULL;}
 	
 	//Create the new user and add the data
 	$newUser = new User();
-	$newUser->setUsername($_POST['email']);
-	$newUser->setPassword($hashedPassword);
-	$newUser->setFirstName($_POST['firstName']);
-	$newUser->setLastName($_POST['lastName']);
-	$newUser->setCompany($_POST['company']);
-	$newUser->setEmail($_POST['email']);
+	$newUser->setClientID($newUserClient->getID());
+	$newUser->setEmailAddress($emailAddress);
+	$newUser->setPassword($plaintextPassword);
+	$newUser->setFirstName($firstName);
+	$newUser->setLastName($lastName);
 
 	//Insert the user into the database
 	$newUser = User::insert($newUser);
 
+	//Get the default background for the client
+	$backgroundURL = "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() . 
+					 "/clientDefaults/" . $newUserClient->getPowerPointBackground();
+	$temporaryFile = RESTRICTEDPATH . 'temporaryFiles/' . time() . "-" . $newUserClient->getPowerPointBackground();;
+	file_put_contents($temporaryFile, fopen($backgroundURL, 'r'));
+
 	//Create the PowerPoint background for the user
-	$newBackground = PowerPointBackground::create(	ASRProperties::powerPointDefaultTitle(), 
-													ASRProperties::powerPointDefaultFont(), 
-													ASRProperties::powerPointDefaultBackgroundImage(), 
-													RESTRICTEDPATH . ASRProperties::powerPointDefaultBackgroundImage(), 
-													$newUser->getID());
+	$newBackground = PowerPointBackground::create("Default", 
+												  $newUserClient->getPowerPointFontColor(), 
+												  $newUserClient->getPowerPointBackground(), 
+												  $temporaryFile, 
+												  $newUser->getID());
 	$newUser->setPowerPointBackgroundID($newBackground->getID());
 	$newUser = User::update($newUser);
 
-	//Does this do anything? Is it for versioning in the history table?a
-	//$curUser = User::getUser($newUser->getID());
-	//$curUser = User::update($curUser);
+	//Delete the background temporary file
+	unlink($temporaryFile);
 	
 	//Return the new user
 	return $newUser;
 }
 
 /**
-* Changes a user password to the new passed in password.
+* Changes a user password to the new passed password.
 *
-* Sets the user's password to the new password on success and returns TRUE. Returns NULL on failure.
+* On success and returns TRUE. Returns NULL on failure.
 *
 * @param string $userID  		The ID of the user to modify.
-* @param string $newPassword  	The plaint text password of the user to create. This will be hashed before database insertion.
+* @param string $newPassword  	The plaintext password for the user. This will be hashed before database insertion.
 * @return boolean  		 		TRUE on success and NULL on failure.
 */
 function changeUserPassword($userID, $newPassword) {
@@ -130,67 +131,71 @@ function changeUserPassword($userID, $newPassword) {
 	//Verify all the info was passed. If not, return NULL.
 	if ((!$userID) || (!$newPassword)) {return NULL;}
 	
-	//Encode the password using sha1 hashing and salt.
-	$hashedPassword = sha1("hyph3n@t1on" . $newPassword);
-	
-	//Get the User, change its password, and update the record in the database.
-	$curUser = User::getUser($userID);
-	$curUser->setPassword($hashedPassword);
-	$curUser = User::update($curUser);
+	//Get the User. On failure, return NULL.
+	$userToModify = User::getUser($userID);
+	if (!$userToModify) {return NULL;}
+
+	//Change the user's password and update the record in the database.
+	$userToModify->setPassword($newPassword);
+	$userToModify = User::update($userToModify);
 	
 	//Return success
 	return TRUE;
 }
 
 /**
-* Sends a user an email to verify their account/email address.
+* Sends a new user a welcome email and send the client's administrator an email to verify the new user's account.
 *
 * Returns TRUE on success and NULL on failure.
 *
-* @param string $username  	The username of the user to send the validation email.
-* @return Boolean  		 	TRUE on success and NULL on failure.
+* @param string 	$userEmailAddress  	The email address of the new user
+* @return Boolean  		 				TRUE on success and NULL on failure.
 */
-function sendVerificationEmail($username) {
+function sendWelcomeAndVerificationEmails($userEmailAddress) {
 
-	//Verify a username was passed. If not, return NULL.
-	if (!$username) {return NULL;}
+	//Verify a user email address was passed. If not, return NULL.
+	if (!$userEmailAddress) {return NULL;}
 	
 	//Get the user. If not found, return NULL.
-	if (!($curUser = User::getUserByUsername($username))) {return NULL;}
-	
-	//Create the verification code specific for this user.
-	$verificationCode = md5('ver1f1c@t10n' . $curUser->getUsername() . $curUser->getEmail());
-	
-	//Create the email subject
-	// $emailSubject = "Welcome to the AdShotRunner Tech Preview!"; 
-	$emailSubject = "AdShotRunner: Thank You for Registering!"; 
+	if (!($newUser = User::getUserByEmailAddress($userEmailAddress))) {return NULL;}
 
-	//Create the email body
-	$emailBody = "Thank you for registering for the AdShotRunner Tech Preview. We will be in contact with you shortly.\n\n";
-	$emailBody .= "AdShotRunner (ASR) is cloud-based software that saves AdOps staff upwards of 90% of the time expended on manually saving screenshots to demonstrate ad campaigns to clients. But ASR does more than automate the tedious, time-consuming task of collecting Desktop Browser and Mobile screenshots. It then compiles those high-quality screenshots into a customized PowerPoint file that is emailed to the user in minutes. \n\n";
-	$emailBody .= "Find more information at: https://www.adshotrunner.com/ \n\n";
-	$emailBody .= "We look forward to having you on board!\n\n";
-	$emailBody .= "If you believe you received this email in error, please ignore it. You will receive no future emails.";
-	// $emailBody = "Thank you for registering for the AdShotRunner Tech Preview. In order to verify your account, please click the following link or copy and paste it into your browser:\n\n";
-	// $emailBody .= "http://" . ASRProperties::asrDomain() . "/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
-	// $emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
+	//Get the user's client
+	$newUserClient = Client::getClient($newUser->getClientID());
+
+	//---------------------------------- Welcome Email ----------------------------------
+
+	//Create the welcome email subject
+	$welcomeEmailSubject = "AdShotRunner: Thank You for Registering!"; 
+
+	//Create the welcome email body
+	$welcomeEmailBody = $newUser->getFirstName() . " " . $newUser->getLastName() . ",\n\n";
+	$welcomeEmailBody .= "Thank you for registering with AdShotRunner. An email has been sent to your Company Administrator to request access. In the meantime, find more information at: https://www.adshotrunner.com/ \n\n";
+	$welcomeEmailBody .= "We look forward to having you on board!\n\n";
+	$welcomeEmailBody .= "If you believe you received this email in error, you may ignore it. You will receive no future emails.";
 
 	//Set the email addresses
 	$fromEmailAddress = ASRProperties::emailAddressDoNotReply();
-	$toEmailAddress = $curUser->getEmail();
+	$toEmailAddress = $newUser->getEmailAddress();
 
-	//Send the email
-	EmailClient::sendEmail($fromEmailAddress, $toEmailAddress, $emailSubject, $emailBody);
+	//Send the welcome email
+	EmailClient::sendEmail($fromEmailAddress, $toEmailAddress, $welcomeEmailSubject, $welcomeEmailBody);
 
-	//---------------------------------- Notify Us of Registering
-	$noticeSubject = "ASR: New User Registered (" . $curUser->getFirstName() . " " . $curUser->getLastName() . ")";
-	$noticeBody =  "ID: " . $curUser->getID() . "\n";
-	$noticeBody .= "Name: " . $curUser->getFirstName() . " " . $curUser->getLastName() . "\n";
-	$noticeBody .= "Email: " . $curUser->getUsername() . "\n";
-	$noticeBody .= "Company: " . $curUser->getCompany() . "\n";
-	$noticeBody .= "Verification link: http://" . ASRProperties::asrDomain() . "/verifyAccount.php?id=" . $curUser->getID() . "&v=" . $verificationCode;
-	$noticeToAddress = ASRProperties::emailAddressContact();
-	EmailClient::sendEmail($fromEmailAddress, $noticeToAddress, $noticeSubject, $noticeBody);
+	//---------------------------------- Verification Email ----------------------------------
+
+	//Create the verification code specific for this user.
+	$verificationCode = md5($newUser->getID() . $newUser->getClientID() . $newUser->getEmailAddress());
+
+	//Create the subject line for the verification email
+	$verificationSubject = "AdShotRunner: New User Request (" . $newUser->getFirstName() . " " . $newUser->getLastName() . ")";
+	
+	//Create the verification email body
+	$verificationBody = "The following new user has requested access to your AdShotRunner account: \n\n";
+	$verificationBody .= "Name: " . $newUser->getFirstName() . " " . $newUser->getLastName() . "\n";
+	$verificationBody .= "Email Address: " . $newUser->getEmailAddress() . "\n\n";
+	$verificationBody .= "If you would like to give this user access to your account, please click the link below or paste it into your browser: \n\n";
+	$verificationBody .= "http://" . ASRProperties::asrDomain() . "/verifyAccount.php?id=" . $newUser->getID() . "&v=" . $verificationCode;
+	$clientVerifyAddress = $newUserClient->getVerifyUserEmailAddress();
+	EmailClient::sendEmail($fromEmailAddress, $clientVerifyAddress, $verificationSubject, $verificationBody);
 
 	//Return successful.
 	return true;
@@ -201,37 +206,73 @@ function sendVerificationEmail($username) {
 *
 * Returns TRUE on success and NULL on failure.
 *
-* @param string $username  	The username of the user to send the password reset email.
-* @return Boolean  		 	TRUE on success and NULL on failure.
+* @param string $emailAddress  	The email address of the user to send the password reset email.
+* @return Boolean  		 		TRUE on success and NULL on failure.
 */
-function sendPasswordResetEmail($username) {
+function sendPasswordResetEmail($emailAddress) {
 
-	//Verify a username was passed. If not, return NULL.
-	if (!$username) {return NULL;}
+	//Verify an email address was passed. If not, return NULL.
+	if (!$emailAddress) {return NULL;}
 	
 	//Get the user. If not found, return NULL.
-	if (!($curUser = User::getUserByUsername($username))) {return NULL;}
+	if (!($currentUser = User::getUserByEmailAddress($emailAddress))) {return NULL;}
 	
 	//Create the reset verification code specific for this user.
-	$resetVerificationCode = md5('r3s3TP@55' . $curUser->getUsername() . $curUser->getPassword());
+	$resetVerificationCode = md5($currentUser->getID() . $currentUser->getEmailAddress() . $currentUser->getHashedPassword());
 	
 	//Create the email subject
-	$emailSubject = "AdShotRunner Tech Preview: Password Reset"; 
+	$emailSubject = "AdShotRunner: Password Reset"; 
 
 	//Create the email body
 	$emailBody = "You have requested to reset your password. In order to proceed, please click the following link or copy and paste it into your browser:\n\n";
-	$emailBody .= "http://" + ASRProperties::asrDomain() + "/resetPassword.php?id=" . $curUser->getID() . "&v=" . $resetVerificationCode;
-	$emailBody .= "\n\nIf you believe you received this email in error, please ignore it. You will receive no future emails.";
+	$emailBody .= "http://" . ASRProperties::asrDomain() . "/resetPassword.php?id=" . $currentUser->getID() . "&v=" . $resetVerificationCode;
+	$emailBody .= "\n\nIf you believe you received this email in error, you may ignore it. You will receive no future emails.";
 
 	//Set the email addresses
 	$fromEmailAddress = ASRProperties::emailAddressDoNotReply();
-	$toEmailAddress = $curUser->getEmail();
+	$toEmailAddress = $currentUser->getEmailAddress();
 
 	//Send the email
 	EmailClient::sendEmail($fromEmailAddress, $toEmailAddress, $emailSubject, $emailBody);
 
 	//Return successful.
 	return true;
+}
+
+/**
+* Sends a user an email notifying them their account has been activated by their company administrator.
+*
+* Returns TRUE on success and NULL on failure.
+*
+* @param string $emailAddress  	The email address of the user to send the activation email
+* @return Boolean  		 		TRUE on success and NULL on failure.
+*/
+function sendActivationEmail($emailAddress) {
+
+	//Verify an email address was passed. If not, return NULL.
+	if (!$emailAddress) {return NULL;}
+	
+	//Get the user. If not found, return NULL.
+	if (!($currentUser = User::getUserByEmailAddress($emailAddress))) {return NULL;}
+		
+	//Create the email subject
+	$emailSubject = "AdShotRunner: Access Granted!"; 
+
+	//Create the email body
+	$emailBody = "Your company administrator has granted you access to AdShotRunner! Go here to login: ";
+	$emailBody .= "http://" . ASRProperties::asrDomain();
+	$emailBody .= "\n\nWelcome aboard!";
+
+	//Set the email addresses
+	$fromEmailAddress = ASRProperties::emailAddressDoNotReply();
+	$toEmailAddress = $currentUser->getEmailAddress();
+
+	//Send the email
+	EmailClient::sendEmail($fromEmailAddress, $toEmailAddress, $emailSubject, $emailBody);
+
+	//Return successful.
+	return true;
+
 }
 
 /**

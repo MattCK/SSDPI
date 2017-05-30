@@ -17,7 +17,7 @@ require_once(RESTRICTEDPATH . 'validateSession.php');
 use AdShotRunner\System\ASRProperties;
 use AdShotRunner\Utilities\FileStorageClient;
 use AdShotRunner\Utilities\MessageQueueClient;
-use AdShotRunner\Users\User;
+use AdShotRunner\Database\ASRDatabase;
 
 if (!$_POST['jobID']) {
 	echo createJSONResponse(false, "No Job ID passed."); return;
@@ -62,7 +62,18 @@ $jobStatus = ['jobID' => $_POST['jobID'],
 file_put_contents(RESTRICTEDPATH . 'temporaryFiles/' . $_POST['jobID'], json_encode($jobStatus));
 FileStorageClient::saveFile(ASRProperties::containerForCampaignJobs(), RESTRICTEDPATH . 'temporaryFiles/' . $_POST['jobID'], $_POST['jobID']);
 
+//Store the job in the database log
+$logJobQuery = "INSERT INTO campaignJobs (CPJ_jobID,
+										  CPJ_USR_id)
+				 VALUES ('" . $_POST['jobID'] . "',
+						'" .  USERID . "')";
+ASRDatabase::executeQuery($logJobQuery);
+
+
+//Return the job info to the server
 echo createJSONResponse(true, "", json_encode($screenshotRequestObject)); return;
+
+
 /**
 * Creates a standard JSON response object to return to the client.
 *

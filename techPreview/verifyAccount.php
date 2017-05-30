@@ -6,24 +6,9 @@
 * @subpackage Pages
 */
 /**
-* Define paths to use throughout the system
+* File to define paths, setup dependencies, and connect to database
 */
-require_once('pathDefinitions.php');
-
-/**
-* Load AWS classes
-*/
-require_once(THIRDPARTYPATH . 'aws/aws-autoloader.php');
-
-/**
-* Load AdShotRunner classes
-*/
-require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
-
-/**
-* Connect to the database
-*/
-require_once(RESTRICTEDPATH . 'databaseSetup.php');
+require_once('systemSetup.php');
 
 /**
 * Function library used to login a user
@@ -34,22 +19,23 @@ use AdShotRunner\Users\User;
 
 //Verify the information passed.
 $finalMessage = "";
-$curUser = NULL;
-if ((!$_GET['id']) || (!($curUser = User::getUser($_GET['id'])))) {
+$currentUser = NULL;
+if ((!$_GET['id']) || (!($currentUser = User::getUser($_GET['id'])))) {
 	$finalMessage = "Unable to retrieve user.";
 }
 else if (!$_GET['v']) {
 	$finalMessage = "Unable to verify user due to missing verification code.";
 }
-else if ($_GET['v'] != md5('ver1f1c@t10n' . $curUser->getUsername() . $curUser->getEmail())) {
+else if ($_GET['v'] != md5($currentUser->getID() . $currentUser->getClientID() . $currentUser->getEmailAddress())) {
 	$finalMessage = "Verification code is incorrect. Unable to verify the user.";
 }
 
 //If all the information was valid, go ahead and verify the user.
 else {
-	$curUser->setVerifiedStatus(true);
-	$curUser = User::update($curUser);
-	$finalMessage = "Thank you for verifying your account! You can now log into the AdShotRunner Tech Preview!";
+	$currentUser->setVerifiedStatus(true);
+	$currentUser = User::update($currentUser);
+	sendActivationEmail($currentUser->getEmailAddress());
+	$finalMessage = $currentUser->getFirstName() . " " . $currentUser->getLastName() . " (" . $currentUser->getEmailAddress() . ") has been activated as a user on your account and will receive a notification email shortly.";
 }
 
 ?>
@@ -58,9 +44,12 @@ else {
 
 <body>
 	
-<div id="header">
+<div id="header" class="loginPage">
 	<div id="title">
-		<h1>AdShotRunner&trade;: Tech Preview</h1> 
+		<a href="/"><img id="headerLogo" src="images/headerLogo.png"/></a>
+	</div>
+	<div id="logout" class="loginPage">
+		<a href="/contactUs.php">Contact Us</a>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </div>
 

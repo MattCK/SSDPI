@@ -1,6 +1,7 @@
 <?php
 
 $mapping = array(
+    'AdShotRunner\Clients\Client' => __DIR__ . '/AdShotRunner/Clients/Client.php',
     'AdShotRunner\Database\ASRDatabase' => __DIR__ . '/AdShotRunner/Database/ASRDatabase.php',
     'AdShotRunner\DFP\DFPCommunicator' => __DIR__ . '/AdShotRunner/DFP/DFPCommunicator.php',
     'AdShotRunner\Menu\MenuGrabber' => __DIR__ . '/AdShotRunner/Menu/MenuGrabber.php',

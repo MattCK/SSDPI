@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -229,6 +230,9 @@ public class AdShotter3 {
 		ArrayList<String> tabHandles = getTabs(remoteWebDriver, numberOfRequiredTabs);
 		consoleLog("Done opening tabs.");
 
+		//Login to any sites that require it
+		loginToSites(remoteWebDriver, adShots);
+		
 		//Stores the start time the AdShot page is first loaded.
 		//When working with tags, this makes sure each tag has enough time
 		//for its animation to run.
@@ -986,12 +990,12 @@ public class AdShotter3 {
 
 	private String getAdInjecterException(String targetURL) throws SQLException {
 		
-		//Get the domain including subdomain of the url. A protocol type is necessary for getDomain.
-		String urlDomain = URLTool.getDomain(URLTool.setProtocol("http", targetURL));
+		//Get subdomain of the url. A protocol type is necessary for getSubomain.
+		String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
 		
 		//Check the database to see if any entries matching the domain exist
 		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
-															 "FROM exceptionsAdInjecter " +
+															 "FROM exceptionsCreativeInjecter " +
 															 "WHERE EAI_url LIKE '" + urlDomain + "%'");
 				
 		//If a match was found, return the script 
@@ -1001,6 +1005,41 @@ public class AdShotter3 {
 		
 		//Otherwise, return an empty string
 		return "";
+	} 
+	
+	private void loginToSites(final WebDriver activeSeleniumWebDriver, List<AdShot> adShots) {
+		
+		//If no AdShots were passed, do nothing and return
+		if ((adShots == null) || (adShots.size() == 0)) {return;}
+		
+		//Get a set of all the AdShots' domains
+		Set<String> domainSet = new HashSet<String>();
+		for (AdShot currentAdShot: adShots) {
+			domainSet.add(URLTool.getDomain(currentAdShot.url()));
+		}
+		
+		//Check the database to see if any entries matching the domain exist
+		try {
+			String domainsInClause = "";
+			for (String domain : domainSet) {
+				if (domainsInClause != "") {domainsInClause += ", ";}
+				domainsInClause += "'" + domain + "'";
+			}
+			ResultSet loginScriptSet = ASRDatabase.executeQuery("SELECT * " + 
+																"FROM siteLoginScripts " +
+																"WHERE SLS_site IN (" + domainsInClause + ")");
+					
+			//If any matches were found, navigate to the login page and run the login script 
+			if (loginScriptSet.next()) {
+				consoleLog("Logging into site: " + loginScriptSet.getString("SLS_site"));
+				navigateSeleniumDriverToURL(activeSeleniumWebDriver, loginScriptSet.getString("SLS_loginPage"));
+				executeSeleniumDriverJavascript(activeSeleniumWebDriver, loginScriptSet.getString("SLS_script"));
+				pause(5000);
+				consoleLog("Done logging into site");
+			}
+			
+		//If the database was unaccessible, do nothing for the time being
+		} catch (Exception e){return;} 
 	} 
 	
 	private TagImage getTagImageByID(String tagID, Set<TagImage> tagImageList) {

@@ -860,7 +860,7 @@ let asr = {
 		//Build the error message and show it
 		let errorHTML = "There was difficulty communicating with the server" + whileText + ".<br/><br/>";
 		errorHTML += "Check your internet connection and try refreshing your browser.<br/><br/>";
-		errorHTML += "If the problem persists, please <a onclick='contactForm.reset(); contactFormDialog.open()'>Contact Us</a> us.";
+		errorHTML += "If the problem persists, please <a onclick='contactForm.reset(); contactFormDialog.open()'>Contact Us</a>.";
 		base.showMessage(errorHTML, "A Problem has Occurred");
 	},
 
