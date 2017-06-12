@@ -28,6 +28,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -230,7 +231,9 @@ public class AdShotter3 {
 		consoleLog("Done opening tabs.");
 
 		//Login to any sites that require it
-		loginToSites(remoteWebDriver, adShots);
+		//loginToSites(remoteWebDriver, adShots);
+		//set cookies for any sites that require it
+		setCookiesforSites(remoteWebDriver, adShots);
 		
 		//Stores the start time the AdShot page is first loaded.
 		//When working with tags, this makes sure each tag has enough time
@@ -678,7 +681,27 @@ public class AdShotter3 {
 		return chromeDriver;
 	} 
 	
+	/**
+	 * Navigates the passed selenium driver to the passed URL.
+     * then adds the cookies for that site
+	 * 
+	 * @param activeSeleniumWebDriver	Selenium web driver to navigate
+	 * @param cookiesToAdd              List of cookies to add to selenium
+     * @param cookieURL                 Site to visit to enable selenium to add cookies(selenium must be on the page it is adding cookies for)
+	 */
+	private void addCookiesToSeleniumDriver(WebDriver activeSeleniumWebDriver, List<Cookie> cookiesToAdd, String cookieURL) {
+		
+		consoleLog("navigating to: " + cookieURL);
+		navigateSeleniumDriverToURL(activeSeleniumWebDriver, cookieURL);
+		
+		if ((cookiesToAdd == null) || (cookiesToAdd.size() == 0)) {return;}
+		for(Cookie currentCookie : cookiesToAdd){
 
+			activeSeleniumWebDriver.manage().addCookie(currentCookie);
+
+		}
+		
+	}
 	
 	/**
 	 * Navigates the passed selenium driver to the passed URL.
@@ -1006,6 +1029,17 @@ public class AdShotter3 {
 		return "";
 	} 
 	
+	private List<Cookie> cookiesFromJSON(String cookieJSON){
+		
+        //this sets up the json to java object conversion
+		Type listType = new TypeToken<ArrayList<Cookie>>(){}.getType();
+        //this reads the json string into the list of cookies
+		List<Cookie> returnCookies = new Gson().fromJson(cookieJSON, listType);
+
+		return returnCookies;
+		
+	}
+	
 	private void loginToSites(final WebDriver activeSeleniumWebDriver, List<AdShot> adShots) {
 		
 		//If no AdShots were passed, do nothing and return
@@ -1035,6 +1069,39 @@ public class AdShotter3 {
 				executeSeleniumDriverJavascript(activeSeleniumWebDriver, loginScriptSet.getString("SLS_script"));
 				pause(5000);
 				consoleLog("Done logging into site");
+			}
+			
+		//If the database was unaccessible, do nothing for the time being
+		} catch (Exception e){return;} 
+	}
+	
+	private void setCookiesforSites(final WebDriver activeSeleniumWebDriver, List<AdShot> adShots) {
+		
+		//If no AdShots were passed, do nothing and return
+		if ((adShots == null) || (adShots.size() == 0)) {return;}
+		
+		//Get a set of all the AdShots' domains
+		Set<String> domainSet = new HashSet<String>();
+		for (AdShot currentAdShot: adShots) {
+			domainSet.add(URLTool.getDomain(currentAdShot.url()));
+		}
+		
+		//Check the database to see if any entries matching the domain exist
+		try {
+			String domainsInClause = "";
+			for (String domain : domainSet) {
+				if (domainsInClause != "") {domainsInClause += ", ";}
+				domainsInClause += "'" + domain + "'";
+			}
+			ResultSet loginCookie = ASRDatabase.executeQuery("SELECT * " + 
+																"FROM siteLoginScripts " +
+																"WHERE SLS_site IN (" + domainsInClause + ")");
+					
+			//If any matches were found, navigate to the login page and run the login script 
+			if (loginCookie.next()) {
+				consoleLog("setting cookies for site: " + loginCookie.getString("SLS_site"));
+				List<Cookie> loginCookies = cookiesFromJSON(loginCookie.getString("SLS_script"));
+				addCookiesToSeleniumDriver(activeSeleniumWebDriver, loginCookies, loginCookie.getString("SLS_loginPage"));
 			}
 			
 		//If the database was unaccessible, do nothing for the time being
