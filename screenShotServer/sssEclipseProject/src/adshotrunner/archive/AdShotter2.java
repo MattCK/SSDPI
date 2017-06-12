@@ -52,7 +52,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import adshotrunner.AdShot;
-import adshotrunner.Creative;
+import adshotrunner.TagImage;
 import adshotrunner.errors.AdShotRunnerException;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
@@ -846,14 +846,14 @@ public class AdShotter2 {
 	 * @param tags			Tags and their placement rankings
 	 * @return				AdInjecter javascript with passed tags inserted into it
 	 */
-	private String getInjecterJS(Set<Creative> tagImageSet) throws IOException {
+	private String getInjecterJS(Set<TagImage> tagImageSet) throws IOException {
 		
 		//Get the AdInjecter javascript file
 		String adInjecterJS = new String(Files.readAllBytes(Paths.get(ADINJECTERJSPATH)));
 		
 		//Create the tags object by looping through the tags and adding them to the tags string
 		String tagsString = "tags = [";
-		for (Creative tagImage: tagImageSet) {
+		for (TagImage tagImage: tagImageSet) {
         	
         	//build the current tag object and add it to overall object
         	tagsString +=  "{id: '" + tagImage.id() + "', " +

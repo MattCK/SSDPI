@@ -36,6 +36,10 @@ public class ASRDatabase {
 		return getConnection().createStatement().executeQuery(query);
 	}
 
+	public static int executeUpdate(String query) throws SQLException {
+		return getConnection().createStatement().executeUpdate(query);
+	}
+
 	//**************************** Private Static Methods **********************************
 	private static Connection getConnection() throws SQLException {
 		

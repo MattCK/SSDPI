@@ -33,8 +33,8 @@ public class AdShot {
 	 * @param singleCreative	Single tag image to include in the screenshot
 	 * @return
 	 */
-	public static AdShot create(String pageURL, Creative singleCreative) {
-		HashSet<Creative> tagImageSet = new HashSet<Creative>();
+	public static AdShot create(String pageURL, TagImage singleCreative) {
+		HashSet<TagImage> tagImageSet = new HashSet<TagImage>();
 		tagImageSet.add(singleCreative);
 		return AdShot.create(pageURL, tagImageSet);
 	}
@@ -50,7 +50,7 @@ public class AdShot {
 	 * @return
 	 */
 	public static AdShot create(String pageURL) {
-		return AdShot.create(pageURL, new HashSet<Creative>());
+		return AdShot.create(pageURL, new HashSet<TagImage>());
 	}
 	
 	/**
@@ -64,7 +64,7 @@ public class AdShot {
 	 * @param pageCreatives		Set of tag images to be inserted into the page
 	 * @return
 	 */
-	public static AdShot create(String pageURL, Set<Creative> pageCreatives) {
+	public static AdShot create(String pageURL, Set<TagImage> pageCreatives) {
 		
 		//Verify the URL is not null and not an empty string
 		if (pageURL == null || pageURL.isEmpty()) {throw new AdShotRunnerException("URL empty or null");}
@@ -75,7 +75,7 @@ public class AdShot {
 		}
 		
 		//If a null Creative list was passed, instantiate one
-		if (pageCreatives == null) {pageCreatives = new HashSet<Creative>();}
+		if (pageCreatives == null) {pageCreatives = new HashSet<TagImage>();}
 		
 		//Create and return the AdShot
 		return new AdShot(pageURL, pageCreatives);
@@ -94,7 +94,7 @@ public class AdShot {
 	/**
 	 * Set of Creatives to be inserted into the page
 	 */
-	private final Set<Creative> _tagImages;
+	private final Set<TagImage> _tagImages;
 	
 	/**
 	 * Flags whether or not the AdShot should be taken in a mobile browser
@@ -104,7 +104,7 @@ public class AdShot {
 	/**
 	 * Set of Creatives that were injected into the page
 	 */
-	private final Set<Creative> _injectedCreatives;
+	private final Set<TagImage> _injectedCreatives;
 	
 	/**
 	 * Image of the final screenshot.
@@ -132,11 +132,11 @@ public class AdShot {
 	 * @param pageURL			URL for the screenshot
 	 * @param pageCreatives		Set of Creatives to be inserted into the page
 	 */
-	private AdShot(String pageURL, Set<Creative> pageCreatives) {
+	private AdShot(String pageURL, Set<TagImage> pageCreatives) {
 		_url = pageURL;
 		_tagImages = pageCreatives;
 		_alternateURLs = new HashSet<String>();
-		_injectedCreatives = new HashSet<Creative>();
+		_injectedCreatives = new HashSet<TagImage>();
 	}
 	
 	/**
@@ -144,7 +144,7 @@ public class AdShot {
 	 * 
 	 * @param newCreative	New tag image to be inserted into the page
 	 */
-	public void addCreative(Creative newCreative) {
+	public void addCreative(TagImage newCreative) {
 		_tagImages.add(newCreative);
 	}
 	
@@ -210,7 +210,7 @@ public class AdShot {
 	/**
 	 * @return	Set of tag images to insert into the page (unmodifiable)
 	 */
-	public Set<Creative> tagImages() {return Collections.unmodifiableSet(_tagImages);}
+	public Set<TagImage> tagImages() {return Collections.unmodifiableSet(_tagImages);}
 	
 	/**
 	 * @return	TRUE if the AdShot should use a mobile browser and FALSE otherwise
@@ -220,7 +220,7 @@ public class AdShot {
 	/**
 	 * @return	Set of tag images that were injected into the page (unmodifiable)
 	 */
-	public Set<Creative> injectedCreatives() {return Collections.unmodifiableSet(_injectedCreatives);}
+	public Set<TagImage> injectedCreatives() {return Collections.unmodifiableSet(_injectedCreatives);}
 	
 	/**
 	 * @return	Image of the final screenshot. Default: null

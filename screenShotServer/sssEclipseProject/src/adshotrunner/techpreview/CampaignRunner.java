@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import adshotrunner.AdShot;
 import adshotrunner.AdShotter3;
 import adshotrunner.StoryFinder;
-import adshotrunner.Creative;
+import adshotrunner.TagImage;
 import adshotrunner.powerpoint.CampaignPowerPoint;
 import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.FileStorageClient;
@@ -47,7 +47,7 @@ public class CampaignRunner implements Runnable {
 		System.out.println("\n\n\nImages: " + requestInfo.tagImages + "\n\n\n");
 		
 		//Put the tag images into a list
-		HashSet<Creative> tagImages = new HashSet<Creative>();
+		HashSet<TagImage> tagImages = new HashSet<TagImage>();
 		for (String tagURL: requestInfo.tagImages) {
 			
 			//////////////////////////////////////////////////////////////
@@ -59,10 +59,10 @@ public class CampaignRunner implements Runnable {
 			//////////////////////////////////////////////////////////////
 			boolean tagRetrieved = false;
 			int tagRetrievalAttempts = 0;
-			Creative currentCreative = null;
+			TagImage currentCreative = null;
 			while ((!tagRetrieved) && (tagRetrievalAttempts < 3)) {
 				try {
-					currentCreative = Creative.create(tagURL); 
+					currentCreative = TagImage.create(tagURL); 
 					tagRetrieved = true;
 				}
 				catch (Exception e) {
@@ -118,7 +118,7 @@ public class CampaignRunner implements Runnable {
 			}
 			
 			else if (individualTagScreenshots) {
-				for (Creative singleTag: tagImages) {
+				for (TagImage singleTag: tagImages) {
 					AdShot newAdShot = AdShot.create(pageURL, singleTag);
 					if (!alternateURLs.isEmpty()) {newAdShot.addAlternatePageURL(alternateURLs);}
 					newAdShot.useMobile(currentPage.get("useMobile").equals("1"));

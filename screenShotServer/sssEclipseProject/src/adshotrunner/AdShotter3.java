@@ -39,7 +39,6 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -428,7 +427,7 @@ public class AdShotter3 {
 
 					//Name the keys for readability and get the Creative object
 					String currentTagID = entry.getKey();											//ID of Creative
-				    Creative currentCreative = getCreativeByID(currentTagID, adShot.tagImages());	//Creative from ID
+				    TagImage currentCreative = getCreativeByID(currentTagID, adShot.tagImages());	//Creative from ID
 				    Map<String, Float> coordinates = entry.getValue();	//List of x,y positions of tag injection
 				    int currentTagXCoordinate = Math.round(coordinates.get("x")); 
 				    int currentTagYCoordinate = Math.round(coordinates.get("y")); 
@@ -809,14 +808,14 @@ public class AdShotter3 {
 	 * @param targetURL		URL the tags will be injected into, used for exceptions
 	 * @return				AdInjecter javascript with passed tags inserted into it
 	 */
-	private String getInjecterJS(Set<Creative> tagImageSet, String targetURL) throws IOException {
+	private String getInjecterJS(Set<TagImage> tagImageSet, String targetURL) throws IOException {
 		
 		//Get the AdInjecter javascript file
 		String adInjecterJS = new String(Files.readAllBytes(Paths.get(ADINJECTERJSPATH)));
 		
 		//Create the creatives object by looping through the creatives and adding them to the JSON string
 		String creativesJSON = "creatives = [";
-		for (Creative tagImage: tagImageSet) {
+		for (TagImage tagImage: tagImageSet) {
 			
 			//build the current tag object and add it to overall object
 			creativesJSON +=  "{id: '" + tagImage.uuid() + "', " +
@@ -1042,9 +1041,9 @@ public class AdShotter3 {
 		} catch (Exception e){return;} 
 	} 
 	
-	private Creative getCreativeByID(String tagID, Set<Creative> tagImageList) {
+	private TagImage getCreativeByID(String tagID, Set<TagImage> tagImageList) {
 		
-		for (Creative currentCreative : tagImageList) {
+		for (TagImage currentCreative : tagImageList) {
 			if (currentCreative.uuid().equals(tagID)) {return currentCreative;}
 		}
 		

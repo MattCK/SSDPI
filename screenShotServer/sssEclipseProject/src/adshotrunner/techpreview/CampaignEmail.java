@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import adshotrunner.AdShot;
-import adshotrunner.Creative;
+import adshotrunner.TagImage;
 import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.EmailClient;
 
@@ -106,25 +106,25 @@ public class CampaignEmail {
 	 * 
 	 * @return	Map of injected Creatives with their unique individual names.
 	 */
-	private Map<Creative, String> getInjectedCreativeNames() {
+	private Map<TagImage, String> getInjectedCreativeNames() {
 		
 		//Group all of the injected Creatives into sets of the same dimensions.
 		//The sets are keyed to their dimensions string (WIDTHxHEIGHT)
 		//Loop through each of the AdShots and add their injected Creatives into their proper set
-		Map<String, Set<Creative>> tagImageSetsByDimension = new TreeMap<String, Set<Creative>>();
+		Map<String, Set<TagImage>> tagImageSetsByDimension = new TreeMap<String, Set<TagImage>>();
 		for (AdShot currentAdShot : _adShots) {
 			
 			//Loop through the injected Creatives of the current AdShot and add them to
 			//the proper set. If the Creative already exists there, nothing occurs.
-			Set<Creative> injectedCreatives = currentAdShot.injectedCreatives();
-			for (Creative currentCreative : injectedCreatives) {
+			Set<TagImage> injectedCreatives = currentAdShot.injectedCreatives();
+			for (TagImage currentCreative : injectedCreatives) {
 				
 				//Define the dimensions key for the Creative
 				String tagDimensionKey = currentCreative.width() + "x" + currentCreative.height();
 				
 				//If the set for the current dimensions key does not exist, create it
 				if (!tagImageSetsByDimension.containsKey(tagDimensionKey)) {
-					tagImageSetsByDimension.put(tagDimensionKey, new TreeSet<Creative>());
+					tagImageSetsByDimension.put(tagDimensionKey, new TreeSet<TagImage>());
 				}
 				
 				//Add the Creative into the set of its dimensions key.
@@ -138,17 +138,17 @@ public class CampaignEmail {
 		//If more than one injected Creative of the same dimension exist, they are named the
 		//dimension with a letter suffix (-A, -B, -C, etc.) The order begins with the injected
 		//Creative with the highest priority.		
-		Map<Creative, String> tagImageNames = new LinkedHashMap<Creative, String>();
-		for (Map.Entry<String, Set<Creative>> tagGroup : tagImageSetsByDimension.entrySet()) {
+		Map<TagImage, String> tagImageNames = new LinkedHashMap<TagImage, String>();
+		for (Map.Entry<String, Set<TagImage>> tagGroup : tagImageSetsByDimension.entrySet()) {
 			
 			//Put the group info into unique variables for clarity
 			String tagDimensions = tagGroup.getKey();
-			Set<Creative> tagImageSet = tagGroup.getValue();
+			Set<TagImage> tagImageSet = tagGroup.getValue();
 			
 			//Add the name for each Creative.
 			//If more than one Creative exist in a set, append "A", "B", etc. to each in the order they appear
 			int letterIterator = 1;
-			for (Creative currentCreative : tagImageSet) {
+			for (TagImage currentCreative : tagImageSet) {
 				
 				//If there is only one Creative in the set, use the dimensions as its name
 				if (tagImageSet.size() <= 1) {tagImageNames.put(currentCreative, tagDimensions);}
@@ -170,7 +170,7 @@ public class CampaignEmail {
 	private String getAdShotInjectedCreativesTable() {
 		
 		//Get the tag image names
-		Map<Creative, String> tagImageNames = getInjectedCreativeNames();
+		Map<TagImage, String> tagImageNames = getInjectedCreativeNames();
 		
 		//Create the table that will show each AdShot page and the names of the injected Creatives
 		String adShotsTable = "<table border='1' style='border-collapse: collapse;'>";
@@ -181,7 +181,7 @@ public class CampaignEmail {
 			
 			//Create the string of injected tag image names to be placed in the cell
 			String injectedTagNames = "";
-			for (Creative currentCreative : currentAdShot.injectedCreatives()) {
+			for (TagImage currentCreative : currentAdShot.injectedCreatives()) {
 				if (!injectedTagNames.isEmpty()) {injectedTagNames += ", ";}
 				injectedTagNames += tagImageNames.get(currentCreative);
 			}
@@ -197,14 +197,14 @@ public class CampaignEmail {
 	private String getCreativeNamesTable() {
 		
 		//Get the tag image names
-		Map<Creative, String> tagImageNames = getInjectedCreativeNames();
+		Map<TagImage, String> tagImageNames = getInjectedCreativeNames();
 		
 		//Create the table that will show each AdShot page and the names of the injected Creatives
 		String tagImagesTable = "<table border='1' style='border-collapse: collapse;'>";
 		tagImagesTable += 	    "<tr style='font-weight: bold'><th>Name</th><th>Image</th></tr>";		
 
 		//Add each injected tag to the table
-		for (Map.Entry<Creative, String> tagImageName : tagImageNames.entrySet()) {
+		for (Map.Entry<TagImage, String> tagImageName : tagImageNames.entrySet()) {
 			tagImagesTable += "<tr><td>" + tagImageName.getValue() + "</td>" + 
 								  "<td><img src='" + tagImageName.getKey().url() + "'></td></tr>";
 		}
