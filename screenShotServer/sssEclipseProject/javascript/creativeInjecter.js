@@ -2114,7 +2114,12 @@ let selectors = [];
 
 //Get any GPT AdSelectors
 let gptAdSelectors = (new GPTSlots()).adSelectors();
-let allSelectors = (gptAdSelectors.size > 0) ? Array.from(gptAdSelectors) : [];
+let allSelectors = [];
+if ((gptAdSelectors != null) && (gptAdSelectors.size > 0)){
+	for (let currentGPTSelector of gptAdSelectors){
+		allSelectors.push(currentGPTSelector);
+	}
+}
 
 //Verify each selector points to an element then turn it into an AdSelector
 for (let currentSelector of selectors) {
