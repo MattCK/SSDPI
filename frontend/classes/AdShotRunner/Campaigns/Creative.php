@@ -35,7 +35,7 @@ class Creative {
 	const ERROR = "ERROR"; 
 
 	//URL path for creative images
-	const CREATIVEURLPATH = "http://s3.amazonaws.com/";
+	const CREATIVEURLPATH = "https://s3.amazonaws.com/";
 
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods -------------------------------------
@@ -47,7 +47,7 @@ class Creative {
 	 * @param 	int 		creativeID	ID of the Creative
 	 * @return 	Creative				Creative on success and NULL on failure
 	*/
-	static public function get($creativeID) {
+	static public function getCreative($creativeID) {
 
 		//Verify the ID and that it's not less than 1. If not, return NULL.
 		if ((!$creativeID) || (!is_numeric($creativeID)) || ($creativeID < 1)) {return NULL;}
@@ -103,7 +103,7 @@ class Creative {
 		if ((!$imageFile) || ($imageFile == "")) {return NULL;}
 
 		//Create a unique UUID for the Creative and its files
-		$creativeUUID = Creative::getUUID();
+		$creativeUUID = self::getUUID();
 
 		//Convert the file to an image resource
 		$imageFilename = $creativeUUID . ".png";
@@ -140,8 +140,8 @@ class Creative {
 
 		//Get the newly created Creative with all of its defaults such as CREATED timestamp set
 		//Set its status to finished and return it.
-		$newCreative = Creative::get($creativeID);
-		$newCreative->setStatus(Creative::FINISHED);
+		$newCreative = self::getCreative($creativeID);
+		$newCreative->setStatus(self::FINISHED);
 		return $newCreative;
 	}
 
@@ -174,11 +174,11 @@ class Creative {
 		if (!$creativeImage) {return NULL;}
 
 		//Save the image to a temporary file
-		$temporaryFile = RESTRICTEDPATH . 'temporaryFiles/' . Creative::getUUID() . ".tmp";
+		$temporaryFile = RESTRICTEDPATH . 'temporaryFiles/' . self::getUUID() . ".tmp";
 		file_put_contents($temporaryFile, $creativeImage);
 
 		//Create the Creative from the file, delete the file, and return the new Creative
-		$newCreative = Creative::createFromImageFile($temporaryFile);
+		$newCreative = self::createFromImageFile($temporaryFile);
 		unlink($temporaryFile);
 		return $newCreative;
 	}
@@ -209,12 +209,12 @@ class Creative {
 		if ((!$tagScript) || ($tagScript == "")) {return NULL;}
 
 		//Create a unique UUID for the Creative and its files
-		$creativeUUID = Creative::getUUID();
+		$creativeUUID = self::getUUID();
 
 		//Get the tag page HTML and put it into a temporary file
 		$tagPageFilename = $creativeUUID . ".html";
 		$temporaryFile = RESTRICTEDPATH . 'temporaryFiles/' . $tagPageFilename;
-		$tagPageHTML = Creative::getTagPageHTML($tagScript);
+		$tagPageHTML = self::getTagPageHTML($tagScript);
 		file_put_contents($temporaryFile, $tagPageHTML);
 
 		//Upload the tag page to storage then delete it
@@ -237,8 +237,8 @@ class Creative {
 
 		//Get the newly created Creative with all of its defaults such as CREATED timestamp set
 		//Set its status to queued and return it.
-		$newCreative = Creative::get($creativeID);
-		$newCreative->setStatus(Creative::QUEUED);
+		$newCreative = self::getCreative($creativeID);
+		$newCreative->setStatus(self::QUEUED);
 		return $newCreative;
 	}
 
@@ -293,7 +293,7 @@ class Creative {
 	private $_uuid;
 
 	/**
-	* @var string  Filename of the creative imag
+	* @var string  Filename of the creative image
 	*/
 	private $_imageFilename;
 
@@ -362,11 +362,9 @@ class Creative {
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
 	/**
-	* Creates a new Creative instance with a newly generated UUID
+	* Private constructor for static factories
 	*/
-	private function __construct() {
-				
-	}
+	private function __construct() {}
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
@@ -415,7 +413,7 @@ class Creative {
 	public function setPriority($priorityLevel) {
 
 		//Verify the priority exists and is numeric. If not, return NULL.
-		if ((!$priorityLevel) || (!is_numeric($priorityLevel)) || (!is_int($priorityLevel))) {return NULL;}
+		if (($priorityLevel === NULL) || (!is_numeric($priorityLevel)) || (!is_int($priorityLevel))) {return NULL;}
 
 		//Update the priority in the database
 		$setStatusQuery = "UPDATE creatives 
@@ -429,6 +427,39 @@ class Creative {
 		//Return success
 		return TRUE;
 	}
+
+	/**
+	 * Returns a JSON object representing all of the member values of the Creative instance.
+	 *
+	 * The final object also includes full URLs for the image and tag page files.
+	 * 
+	 * @return 	String		JSON object representing the member values of the instance
+	*/
+	public function toJSON() {
+
+		//Create the associative array with all the key value pairs
+		$jsonObject = [];
+		$jsonObject["id"] = (int) $this->_id;
+		$jsonObject["uuid"] = $this->_uuid;
+		$jsonObject["imageFilename"] = $this->_imageFilename;
+		$jsonObject["imageURL"] = $this->imageURL();
+		$jsonObject["width"] = $this->_width;
+		$jsonObject["height"] = $this->_height;
+		$jsonObject["priority"] = $this->_priority;
+		$jsonObject["tagScript"] = $this->_tagScript;
+		$jsonObject["tagPageFilename"] = $this->_tagPageFilename;
+		$jsonObject["tagPageURL"] = $this->tagPageURL();
+		$jsonObject["status"] = $this->_status;
+		$jsonObject["errorMessage"] = $this->_errorMessage;
+		$jsonObject["createdTimestamp"] = $this->_createdTimestamp;
+		$jsonObject["queuedTimestamp"] = $this->_queuedTimestamp;
+		$jsonObject["processingTimestamp"] = $this->_processingTimestamp;
+		$jsonObject["finishedTimestamp"] = $this->_finishedTimestamp;
+		$jsonObject["errorTimestamp"] = $this->_errorTimestamp;
+
+		//Convert the array to a JSON string and return it
+		return json_encode($jsonObject);
+	}	
 
 	//********************************* Private Methods *************************************
 	/**
@@ -486,13 +517,12 @@ class Creative {
 		return TRUE;
 	}
 
+
 	//---------------------------------------------------------------------------------------
 	//----------------------------------- Accessors -----------------------------------------
 	//---------------------------------------------------------------------------------------
 	//********************************* Public Accessors ************************************
 	/**
-	* Returns the ID of the Creative
-	*
 	* @return int	ID of the Creative
 	*/
 	public function id() {
@@ -500,8 +530,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the UUID of the Creative
-	*
 	* @return string	UUID of the Creative
 	*/
 	public function uuid() {
@@ -509,8 +537,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the image filename of the Creative
-	*
 	* @return string	Image filename of the Creative
 	*/
 	public function imageFilename() {
@@ -518,8 +544,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the full URL including protocol to the Creative image
-	*
 	* @return string	Full URL including protocol to the Creative image
 	*/
 	public function imageURL() {
@@ -528,8 +552,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the width of the creative image in pixels
-	*
 	* @return int	Width of the creative image in pixels
 	*/
 	public function width() {
@@ -537,8 +559,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the height of the creative image in pixels
-	*
 	* @return int	Height of the creative image in pixels
 	*/
 	public function height() {
@@ -546,8 +566,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the priority of creative image in relation to creatives of same dimensions
-	*
 	* @return int	Priority of creative image in relation to creatives of same dimensions
 	*/
 	public function priority() {
@@ -555,8 +573,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the tag script used to generate the Creative image. (Can be empty string)
-	*
 	* @return string	The tag script used to generate the Creative image. (Can be empty string)
 	*/
 	public function tagScript() {
@@ -564,8 +580,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the filename of the tag page used to generate the Creative image. (Can be empty string)
-	*
 	* @return string	Filename of tag page used to generate the Creative image. (Can be empty string)
 	*/
 	public function tagPageFilename() {
@@ -573,8 +587,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the full URL including protocol to the Creative tag page
-	*
 	* @return string	Full URL including protocol to the Creative tag page
 	*/
 	public function tagPageURL() {
@@ -583,8 +595,6 @@ class Creative {
 	}
 
 	/**
-	* Returns current processing status of the Creative. (Options const members: CREATED, QUEUED, PROCESSING, FINISHED, ERROR)
-	*
 	* @return string	Current processing status of the Creative. (Options const members: CREATED, QUEUED, PROCESSING, FINISHED, ERROR)
 	*/
 	public function status() {
@@ -592,8 +602,6 @@ class Creative {
 	}
 
 	/**
-	* Returns error message if an error occurred while processing the Creative
-	*
 	* @return string	Error message if an error occurred while processing the Creative
 	*/
 	public function errorMessage() {
@@ -601,8 +609,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the UNIX timestamp the Creative was inserted into the database
-	*
 	* @return int	UNIX Timestamp the Creative was inserted into the database
 	*/
 	public function createdTimestamp() {
@@ -610,8 +616,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the UNIX timestamp the Creative status was set to QUEUED
-	*
 	* @return int	UNIX Timestamp the Creative status was set to QUEUED
 	*/
 	public function queuedTimestamp() {
@@ -619,8 +623,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the UNIX timestamp the Creative status was set to PROCESSING
-	*
 	* @return int	UNIX Timestamp the Creative status was set to PROCESSING
 	*/
 	public function processingTimestamp() {
@@ -628,8 +630,6 @@ class Creative {
 	}
 
 	/**
-	* Returns the UNIX timestamp the Creative status was set to FINISHED
-	*
 	* @return int	UNIX Timestamp the Creative status was set to FINISHED
 	*/
 	public function finishedTimestamp() {
@@ -637,46 +637,12 @@ class Creative {
 	}
 
 	/**
-	* Returns the UNIX timestamp the Creative status was set to ERROR when an error occurred
-	*
 	* @return int	UNIX timestamp the Creative status was set to ERROR when an error occurred
 	*/
 	public function errorTimestamp() {
 		return $this->_errorTimestamp;
 	}
 
-	/**
-	 * Returns a JSON object representing all of the member values of the instance.
-	 *
-	 * The final object also includes full URLs for the image and tag page files.
-	 * 
-	 * @return 	String		JSON object representing the member values of the instance
-	*/
-	public function toJSON() {
-
-		//Create the associative array with all the key value pairs
-		$jsonObject = [];
-		$jsonObject["id"] = $this->_id;
-		$jsonObject["uuid"] = $this->_uuid;
-		$jsonObject["imageFilename"] = $this->_imageFilename;
-		$jsonObject["imageURL"] = $this->imageURL();
-		$jsonObject["width"] = $this->_width;
-		$jsonObject["height"] = $this->_height;
-		$jsonObject["priority"] = $this->_priority;
-		$jsonObject["tagScript"] = $this->_tagScript;
-		$jsonObject["tagPageFilename"] = $this->_tagPageFilename;
-		$jsonObject["tagPageURL"] = $this->tagPageURL();
-		$jsonObject["status"] = $this->_status;
-		$jsonObject["errorMessage"] = $this->_errorMessage;
-		$jsonObject["createdTimestamp"] = $this->_createdTimestamp;
-		$jsonObject["queuedTimestamp"] = $this->_queuedTimestamp;
-		$jsonObject["processingTimestamp"] = $this->_processingTimestamp;
-		$jsonObject["finishedTimestamp"] = $this->_finishedTimestamp;
-		$jsonObject["errorTimestamp"] = $this->_errorTimestamp;
-
-		//Convert the array to a JSON string and return it
-		return json_encode($jsonObject);
-	}	
 }
 
 

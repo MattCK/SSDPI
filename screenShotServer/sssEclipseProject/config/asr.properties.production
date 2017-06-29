@@ -3,7 +3,7 @@ asrDatabaseUsername = asrproduction
 asrDatabasePassword = VMeIAJCmR94efc6o
 asrDatabase = asrproduction
 
-asrDomain = techpreview.adshotrunner.com
+asrDomain = app.adshotrunner.com
 
 awsAccessKey = AKIAJPNEN7DC3T7LDEWQ
 awsSecretKey = 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

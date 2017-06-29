@@ -21,7 +21,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 
-import adshotrunner.StoryFinder;
+import adshotrunner.storyfinder.StoryFinder;
 import adshotrunner.utilities.FileStorageClient;
 import adshotrunner.utilities.URLTool;
 

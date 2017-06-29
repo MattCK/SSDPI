@@ -25,7 +25,7 @@ import org.pptx4j.pml.CTBackground;
 import org.pptx4j.pml.Pic;
 import org.pptx4j.pml.Shape;
 
-class PowerPoint {
+public class PowerPoint {
 
 	
 	//---------------------------------------------------------------------------------------

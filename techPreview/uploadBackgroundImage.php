@@ -20,7 +20,7 @@ use AdShotRunner\PowerPoint\PowerPointBackground;
 use AdShotRunner\Users\User;
 
 //Verify the information was passed
-if (!$_POST['backgroundTitle']) {
+if (!$_POST['backgroundName']) {
 	echo createJSONResponse(false, "Enter a name for the background image"); return;
 }
 
@@ -33,7 +33,7 @@ if (!$_FILES['backgroundImage']) {
 }
 
 //Store and save the image and its information
-$newBackground = PowerPointBackground::create(	$_POST['backgroundTitle'], 
+$newBackground = PowerPointBackground::create(	$_POST['backgroundName'], 
 												$_POST['backgroundFontColor'], 
 												$_FILES['backgroundImage']['name'], 
 												$_FILES['backgroundImage']['tmp_name'], 
@@ -42,16 +42,17 @@ $newBackground = PowerPointBackground::create(	$_POST['backgroundTitle'],
 
 //Set the new background as the current user's default
 $currentUser = User::getUser(USERID);
-$currentUser->setPowerPointBackgroundID($newBackground->getID());
+$currentUser->setPowerPointBackgroundID($newBackground->id());
 User::update($currentUser);
 
 //Put the new background info into an array to return
 $newBackgroundInfo = 	[
-							"id" => $newBackground->getID(),
-							"title" => $newBackground->getTitle(),
-							"fontColor" => $newBackground->getFontColor(),
-							"filename" => $newBackground->getFilename(),
-							"thumbnailFilename" => $newBackground->getThumbnailFilename()
+							"id" => $newBackground->id(),
+							"name" => $newBackground->name(),
+							"fontColor" => $newBackground->fontColor(),
+							"filename" => $newBackground->filename(),
+							"thumbnailFilename" => $newBackground->thumbnailFilename(),
+							"thumbnailURL" => $newBackground->thumbnailURL()
 						];
 
 

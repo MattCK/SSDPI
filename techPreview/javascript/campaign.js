@@ -10,8 +10,8 @@
 */
 let campaign = {
 
-	jobID: '',											//Stores the job ID for the campaign
-	_campaignJobURL: 'getCampaignJob.php',				//URL of request page used to retrieve results of campaign
+	uuid: '',											//Stores the UUID for the campaign
+	_getCampaignURL: 'getCampaign.php',					//URL of request page used to retrieve results of campaign
 	_QUEUETIMEOUT: 5000,								//Timeout between requests to see if job is no longer queued (ms)
 
 
@@ -23,58 +23,67 @@ let campaign = {
 	getResults: function() {
 
 		//Create the callback function that will show the table
-		let onSuccessCallback = function(jobData) {
+		let onSuccessCallback = function(serverResponse) {
 
-			//If the job is queued, run it again in the predefined timeout
-			if (jobData.queued) {
-				setTimeout(campaign.getResults, campaign._QUEUETIMEOUT);
-			}
-
-			//If the campaign results were successfully returned, display them
-			else if (jobData.success) {
+			//If the campaign was successfully retrieved, display it or wait for it to finish
+			if (serverResponse.success) {
 				
-				//Set the campaign details
-				base.nodeFromID("customerSpan").innerHTML = jobData.customer;
-				base.nodeFromID("domainSpan").innerHTML = jobData.domain;
-				base.nodeFromID("dateSpan").innerHTML = jobData.date;
-				base.nodeFromID("runtimeSpan").innerHTML = jobData.runtime;
+				//Get the Campaign
+				let currentCampaign = new Campaign(serverResponse.data.campaignJSON);
 
-				//Set the powerpoint link
-				base.nodeFromID("powerPointLink").href = jobData.powerPointURL;
-
-				//Build the screenshot table rows and insert them into the page
-				let imageTableRows = "";
-				let screenshotCount = 0;
-				for (var screenshotURL in jobData.screenshots) {
-					if (jobData.screenshots.hasOwnProperty(screenshotURL)) {
-						imageTableRows += "<tr><td><a href='" + jobData.screenshots[screenshotURL] + "' target='_blank'>" + jobData.screenshots[screenshotURL] + "</a><br><br>";
-						imageTableRows += '<img style="max-width: 600px;" src="' + screenshotURL + '" /></td></tr>';
-						++screenshotCount;
-					}
+				//If it is not finished, check again after the timeout
+				if (currentCampaign.status() != Campaign.FINISHED) {
+					setTimeout(campaign.getResults, campaign._QUEUETIMEOUT);
 				}
-				base.nodeFromID("screenshotsTable").innerHTML = imageTableRows;
-				base.nodeFromID("screenshotCountSpan").innerHTML = screenshotCount;
 
-				//Hide the campaign submitted div and show the results div
-				base.hide("campaignSubmittedDiv");
-				base.show("campaignResultsDiv");
+				//Otherwise, show the results
+				else {
+
+					//Get the finish date
+					let finishedDate = new Date(currentCampaign.finishedTimestamp() * 1000);
+					let finishedDateString = (finishedDate.getMonth() + 1) + "/" +
+											  finishedDate.getDate() + "/" +
+											  finishedDate.getFullYear();
+
+					//Set the campaign details
+					base.nodeFromID("customerSpan").innerHTML = currentCampaign.customerName();
+					// base.nodeFromID("domainSpan").innerHTML = jobData.domain;
+					base.nodeFromID("dateSpan").innerHTML = finishedDateString;
+					// base.nodeFromID("runtimeSpan").innerHTML = jobData.runtime;
+
+					//Set the powerpoint link
+					base.nodeFromID("powerPointLink").href = currentCampaign.powerPointURL();
+
+					//Build the screenshot table rows and insert them into the page
+					let imageTableRows = "";
+					for (var currentAdShot of currentCampaign.adShots()) {
+						imageTableRows += "<tr><td><a href='" + currentAdShot.finalURL() + "' target='_blank'>" + currentAdShot.finalURL() + "</a><br><br>";
+						imageTableRows += '<img style="max-width: 600px;" src="' + currentAdShot.imageURL() + '" /></td></tr>';
+					}
+					base.nodeFromID("screenshotsTable").innerHTML = imageTableRows;
+					base.nodeFromID("screenshotCountSpan").innerHTML = currentCampaign.adShots().size;
+
+					//Hide the campaign submitted div and show the results div
+					base.hide("campaignSubmittedDiv");
+					base.show("campaignResultsDiv");
+				}
 			}
 						
 			//If failure, show us the message returned from the server and focus on the selected element if returned. Also, re-enable the submit button.
 			else {
-				alert("Could not retrieve job data");
-				console.log("error: " + jobData);
+				alert("Could not retrieve campaign data");
+				console.log("error: " + serverResponse);
 			}
 		}
 
 		//If there was a problem contacting the server or getting malformed response, simply re-request the results
 		let onFailureCallback = function() {
+			console.log("Error getting campaign data");
 			setTimeout(campaign.getResults, campaign._QUEUETIMEOUT);
 		}
 		
 		//Make the request
-		//CHECKED WITH FAIL
-		base.asyncRequest(campaign._campaignJobURL, 'jobID=' + campaign.jobID, onSuccessCallback, onFailureCallback);
+		base.asyncRequest(campaign._getCampaignURL, 'uuid=' + campaign.uuid, onSuccessCallback, onFailureCallback);
 	},
 
 }

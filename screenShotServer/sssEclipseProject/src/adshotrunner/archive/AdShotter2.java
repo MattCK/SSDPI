@@ -51,8 +51,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import adshotrunner.AdShot;
-import adshotrunner.TagImage;
 import adshotrunner.errors.AdShotRunnerException;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
@@ -199,11 +197,11 @@ public class AdShotter2 {
 	//------------------------------- Modification Methods ----------------------------------
 	//---------------------------------------------------------------------------------------
 	//********************************* Public Methods **************************************	
-	public void takeAdShots(List<AdShot> adShots) {
+	public void takeAdShots(List<AdShotOriginal> adShots) {
 		takeAdShots(adShots, false);
 	}
 	
-	public void takeAdShots(List<AdShot> adShots, boolean treatAsTags) {
+	public void takeAdShots(List<AdShotOriginal> adShots, boolean treatAsTags) {
 		        
 		//Try to create a web driver to connect with
 		WebDriver remoteWebDriver = null;
@@ -256,7 +254,7 @@ public class AdShotter2 {
 		for (int adShotIndex = 0; adShotIndex < adShots.size(); ++ adShotIndex) {
 			consoleLog("------------- New AdShot --------------");
 			long startTime = System.nanoTime();
-			AdShot currentAdShot = adShots.get(adShotIndex);
+			AdShotOriginal currentAdShot = adShots.get(adShotIndex);
 			takeAdShot(remoteWebDriver, currentAdShot, treatAsTags);
 			
 			//If no tag images were injected into the page AND alternate URLs exist, try those
@@ -316,7 +314,7 @@ public class AdShotter2 {
 	 * @param treatAsTag				If true, no javascript is injected into the page
 	 * @throws AdShotRunnerException 	Error and description if taking the ad screenshot failed
 	 */
-	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShot adShot, boolean treatAsTag) throws AdShotRunnerException {
+	private void takeAdShot(WebDriver activeSeleniumWebDriver, AdShotOriginal adShot, boolean treatAsTag) throws AdShotRunnerException {
 		
 		//If the AdShot is not to be treated like a tag, create and inject javascript
 		int lowestTagBottom = 0;

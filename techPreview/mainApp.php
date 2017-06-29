@@ -22,11 +22,11 @@ use AdShotRunner\DFP\DFPCommunicator;
 //Get the powerpoint background and font info for the user
 $currentUser = User::getUser(USERID);
 $defaultBackground = PowerPointBackground::getPowerPointBackground($currentUser->getPowerPointBackgroundID());
-$backgroundTitle = $defaultBackground->getTitle();
-$powerPointFontColor = $defaultBackground->getFontColor();
-$backgroundFilename = $defaultBackground->getFilename();
-$backgroundThumbnailFilename = $defaultBackground->getThumbnailFilename();
-$backgroundURL = "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() . "/thumbnails/" . $backgroundThumbnailFilename;
+$backgroundID = $defaultBackground->id();
+$backgroundName = $defaultBackground->name();
+$powerPointFontColor = $defaultBackground->fontColor();
+$backgroundFilename = $defaultBackground->filename();
+$backgroundURL = $defaultBackground->thumbnailURL();
 
 //If the user has already ran a campaign during this session, show the last campaign domain
 $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDomain'] : "";
@@ -101,7 +101,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		<img helpIcon="" id="customerHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div id="customerDiv" class="section">
 			<div class="textFieldName">Name:</div> 
-			<input id="customer" name="customer" type="text">
+			<input id="customerName" name="customerName" type="text">
 		</div>
 
 		<h2>PowerPoint Background</h2>
@@ -110,7 +110,8 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 			<a class="contactIssueLink">Problem?</a>
 		</div>
 		<div id="powerPointBackgroundDiv" class="section">
-			<input id="backgroundTitle" name="backgroundTitle" type="hidden" value="<?PHP echo $backgroundTitle?>">
+			<input id="backgroundID" name="backgroundID" type="hidden" value="<?PHP echo $backgroundID?>">
+			<input id="backgroundName" name="backgroundName" type="hidden" value="<?PHP echo $backgroundName?>">
 			<input id="backgroundFontColor" name="backgroundFontColor" type="hidden" value="<?PHP echo $powerPointFontColor?>">
 			<input id="backgroundFilename" name="backgroundFilename" type="hidden" value="<?PHP echo $backgroundFilename?>">
 
@@ -119,7 +120,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 					<img id="backgroundThumbnailImage" rowTag="" style="max-height: 80px;" src="<?PHP echo $backgroundURL?>" /><br/>
 				</div>
 				<div id="backgroundInfoDiv">
-					<div id="backgroundTitleDiv" class="backgroundTitle"><?PHP echo $backgroundTitle?></div>
+					<div id="backgroundNameDiv" class="backgroundTitle"><?PHP echo $backgroundName?></div>
 					<div class="backgroundFontColor">
 						<div class="fontColorText">Font Color: </div>
 						<div id="fontColorDiv" class="fontColorDiv" style="background-color: #<?PHP echo $powerPointFontColor?>"></div>
@@ -134,7 +135,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 			<div id="uploadBackgroundDiv" style="display: none">
 				<table>
 					<tr><td>Name:</td>
-						<td><input id="newBackgroundTitle" name="newBackgroundTitle" type="text" maxlength="64"></td></tr>
+						<td><input id="newBackgroundName" name="newBackgroundName" type="text" maxlength="64"></td></tr>
 					<tr><td>Font Color:</td>
 						<td><input id="newBackgroundFontColor" name="newBackgroundFontColor" type="text" value="#000000"></td></tr>
 					<tr><td>Image:</td>

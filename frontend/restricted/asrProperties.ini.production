@@ -16,7 +16,7 @@ refreshToken = 1/EmflFSwLOd-g-cQDpQ4ndtKbaeHZErtTmhRSGYVukKI
 applicationName = AdShotRunner
 
 [domains]
-asrDomain = techpreview.adshotrunner.com
+asrDomain = app.adshotrunner.com
 
 [emailAddresses]
 contact = contact@adshotrunner.com

@@ -92,6 +92,9 @@ class ASRDatabase {
 			if (self::$_databaseConnection->connect_error) {
 				die('Connect Error (' . self::$_databaseConnection->connect_errno . ') ' . self::$_databaseConnection->connect_error);
 			}
+
+			//Set the character set to UTF8
+			self::$_databaseConnection->set_charset("utf8");
 		}
 
 		return self::$_databaseConnection;

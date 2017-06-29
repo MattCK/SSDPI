@@ -14,13 +14,14 @@ let asr = {
 	powerPointBackgroundsURL: '',						//URL to where PowerPoint background images are stored
 	_domain: '',										//Stores the domain to get screenshots for
 	_getMenuURL: 'getMenu.php',							//URL of request page used to retrieve the menu for the domain
-	_getTagImagesURL: 'getTagImages.php',				//URL of request page to turn tags into images
-	_uploadTagImageURL: 'uploadTagImage.php',			//URL of request page to upload tag image and store it
-	_requestScreenshotsURL: 'requestScreenshots.php',	//URL of request page to send information to in order to create screenshots
+	_getTagImagesURL: 'getTagImage2.php',				//URL of request page to turn tags into images
+	_uploadTagImageURL: 'uploadTagImage2.php',			//URL of request page to upload tag image and store it
+	_requestScreenshotsURL: 'requestScreenshots2.php',	//URL of request page to send information to in order to create screenshots
 	_uploadBackgroundImageURL: 'uploadBackgroundImage.php',	//URL of request page to upload PowerPoint background image and store it
 	_storeTagTextURL: 'storeTagText.php',				//URL of request page that stores tag text for analysis
 	_searchOrdersURL: 'searchDFPOrders.php',			//URL of request page to get line items and creatives for an order
 	_getOrderDataURL: 'getOrderData.php',				//URL of request page to get line items and creatives for an order
+	_getCreativeURL: 'getCreative.php',					//URL of request page to get Creatives
 	_menuItems: [],										//List of menu items returned from the get menu request
 	_menuOptions: "",									//HTML options string of menu labels and their URLs
 	_imageLoadTimeout: 3000,							//Interval the client should check to see if a tag image is ready
@@ -30,16 +31,17 @@ let asr = {
 	_tagsBeingProcessed: 0,								//Number of tags being processed into images
 	_matchingOrders: [],								//Retrieved DFP orders matching the latest search term
 	_lineItems: [],										//Array of line item names and their descriptions
-	_creatives: [],										//Array of creative IDs and their content
+	_dfpCreatives: [],									//Array of creative IDs and their content
 	orders: {},											//Array of order IDs with 'name' and 'notes' properties
+	_creatives: new Map(),								//Mao of Creative IDs and their Creatives available to inject into pages
 
 	checkCustomerCompletion: function() {
 
-		/*if (base.nodeFromID("customer").value == "") {
-			base.nodeFromID("customer").classList.add("customerFieldEmpty");
+		/*if (base.nodeFromID("customerName").value == "") {
+			base.nodeFromID("customerName").classList.add("customerFieldEmpty");
 		}
 		else {
-			base.nodeFromID("customer").classList.remove("customerFieldEmpty");
+			base.nodeFromID("customerName").classList.remove("customerFieldEmpty");
 		}*/
 		asr.setGetScreenshotsButtonStatus();
 
@@ -230,7 +232,7 @@ let asr = {
 	/**
 	* Sends the queued tags to the server for imaging
 	*/
-	getTagImages: function() {
+	getTagImagesOld: function() {
 
 		//If no tags were queued, do nothing
 		if (!asr._queuedTags.length) {return;}
@@ -271,9 +273,41 @@ let asr = {
 			asr.showErrorMessage("trying to get tag images.");
 		}
 		
-		//Make the request to get images for the tags
+		//Make a request for each tag
 		base.disable("getTagImagesButton");
 		base.asyncRequest(asr._getTagImagesURL, {'tags': tagsByID}, onSuccessCallback, onFailCallback);
+
+		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+		asr.setGetScreenshotsButtonStatus();
+	},
+
+	/**
+	* Sends the queued tags to the server for imaging
+	*/
+	getTagImages: function() {
+
+		//If no tags were queued, do nothing
+		if (!asr._queuedTags.length) {return;}
+
+		
+		//If there was a problem connecting with the server, notify the user
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to get tag images.");
+		}
+		
+		//Make a request for each tag
+		base.disable("getTagImagesButton");
+		for (let tagIndex = 0; tagIndex < asr._queuedTags.length; ++tagIndex) {
+		    ++asr._tagsBeingProcessed;
+			base.asyncRequest(asr._getTagImagesURL, {'tag': asr._queuedTags[tagIndex]}, asr.getCreative, onFailCallback);
+		}
+
+		//Reset the queued tag variable and interface
+		asr._queuedTags = [];
+		base.nodeFromID("queuedTagCountSpan").innerHTML = 0;
+		base.nodeFromID("queuedTagDiv").className = "yellowBackground";
 
 		//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
 		asr.setGetScreenshotsButtonStatus();
@@ -286,22 +320,6 @@ let asr = {
 
 		//If no tag image was passed, do nothing
 		if (!tagImageData) {return;}
-
-		//Create the tag UUID
-		let newUUID = asr.getUUID();
-
-		//Add the "queued" row to the tags table
-	    let $li = $("<li class='ui-state-default' id='tagLI" + newUUID + "' />").html('<div class="queuedTagDiv">Queued...</div>');
-	    $("#sortable").append($li);
-	    $("#sortable").sortable('refresh');
-
-	    //Start checking for the image to be done.
-		asr.loadTagImage(asr.tagImagesURL + newUUID + ".png", "tagLI" + newUUID);
-
-		//Do nothing for now
-		let onSuccessCallback = function(response) {
-			console.log("Image uploaded");
-		}
 		
 		//If there was a problem connecting with the server, notify the user and enable the input field/button
 		let onFailCallback = function(textStatus, errorThrown) {
@@ -312,9 +330,8 @@ let asr = {
 		
 		//Create the request object for the raw form data
 		let formData = new FormData();
-		formData.append('imageID', newUUID);
 		formData.append('image', tagImageData);
-		base.asyncRequest(asr._uploadTagImageURL, formData, onSuccessCallback, onFailCallback, true);
+		base.asyncRequest(asr._uploadTagImageURL, formData, asr.getCreative, onFailCallback, true);
 
 		//Note we are processing a new tag
         ++asr._tagsBeingProcessed;
@@ -323,12 +340,189 @@ let asr = {
 		asr.setGetScreenshotsButtonStatus();
 	},
 
+	getCreative: function(serverResponse) {
+
+		//If successful, create or update the Creative in the Creatives sortable list. Query again if the Creative is not finished
+		if (serverResponse.success) {
+			
+			//Convert the JSON to a Creative object and store it
+			let currentCreative = new Creative(serverResponse.data.creativeJSON);
+
+			//If this is a new Creative, create the table row
+			if (!asr._creatives.has(currentCreative.id())) {
+
+				let $li = $("<li class='ui-state-default' id='tagLI" + currentCreative.id() + "' />").html('');
+			    $("#sortable").append($li);
+			    $("#sortable").sortable('refresh');	
+			}
+
+			//Store the new or updated Creative
+		    asr._creatives.set(currentCreative.id(), currentCreative);			
+
+			//Determine the table row contents based on the Creative status
+			if (currentCreative.status() == Creative.QUEUED) {
+				base.nodeFromID("tagLI" + currentCreative.id()).innerHTML = '<div class="queuedTagDiv">Creative Status: Queued</div>';
+			}
+
+			else if (currentCreative.status() == Creative.PROCESSING) {
+				base.nodeFromID("tagLI" + currentCreative.id()).innerHTML = 
+											'<div class="queuedTagDiv">Creative Status: Processing (Waiting for Animations to Finish)</div>';
+			}
+
+			else if (currentCreative.status() == Creative.ERROR) {
+				base.nodeFromID("tagLI" + currentCreative.id()).innerHTML = 
+											'<div class="queuedTagDiv">Creative Status: Error - Unable to Process Tag Image</div>';
+			}
+
+			else if (currentCreative.status() == Creative.FINISHED) {
+				let imageLIHTML = "";
+				imageLIHTML += 	'<div class="tagImageRowDiv">';
+				imageLIHTML += 		'<div class="tagImageInfoDiv">';
+				imageLIHTML += 			'<div class="tagDimensionsDiv">' + currentCreative.width() + 'x' + currentCreative.height() + '</div>';
+				imageLIHTML += 			'<div class="tagImageDiv"><img rowTag="" style="max-height: 120px;" src="' + currentCreative.imageURL() + '" /></div>';
+				imageLIHTML += 		'</div>';
+				imageLIHTML += 		'<div class="deleteButtonDiv">';
+				imageLIHTML +=  		"<input type='button' class='button-tiny' value='Remove' onClick='asr.deleteTagImageListItem(" + currentCreative.id() + ")'>";
+				imageLIHTML += 		'</div>';
+				imageLIHTML += 	'</div>';
+		        base.nodeFromID("tagLI" + currentCreative.id()).innerHTML = imageLIHTML;
+		        --asr._tagsBeingProcessed;
+
+				//Enable the make screenshots button or disable it depending on pages added, tags queued, and tags being processed
+				asr.setGetScreenshotsButtonStatus();
+			}
+
+			//If the Creative is QUEUED or PROCESSING, get the Creative again in a few seconds
+			if ((currentCreative.status() == Creative.QUEUED) || (currentCreative.status() == Creative.PROCESSING)) {
+
+				//If there was a failure getting the response, do nothing in case of user internet outage and try getting Creative again
+				let onFailCallback = function(textStatus, errorThrown) {
+
+					//Show the error message
+					asr.showErrorMessage("trying to get Creative image.");
+				}
+
+				//Get the Creative again in a few seconds
+				setTimeout(function() {
+					base.asyncRequest(asr._getCreativeURL, 'id=' + currentCreative.id(), asr.getCreative, onFailCallback);
+				}, asr._imageLoadTimeout);
+
+			}
+		}
+					
+		//If failure, show error
+		else {
+			asr.showErrorMessage("trying to get Creative image.");
+		}
+	},
+
 	/**
 	* Sends a screenshot job request to the server with the job ID, campaign, and tag information.
 	*
 	* On success, the user is sent to the job queued page
 	*/
 	requestScreenshots: function() {
+
+		//Loop through the pages and build the AdShots
+		let adShots = [];
+		let pages = document.querySelectorAll("#pagesTable tr");
+		for (let currentPage of pages) {
+
+			//Get the page ID number
+			let id = currentPage.id.substring(7);
+
+			//Get the basic adshot info
+			let requestedURL = document.getElementsByName("pages[" + id + "]")[0].value;
+			let useMobile = document.getElementsByName("useMobile[" + id + "]")[0].checked;
+			let screenshotType =  document.querySelector('input[name=screenshotType\\[' + id + '\\]]:checked').value;
+
+			//Get the StoryFinder status if the box exists
+			let storyFinderCheckbox = document.getElementsByName("findStory[" + id + "]");
+			let useStoryFinder = (storyFinderCheckbox[0]) ? storyFinderCheckbox[0].checked : false;
+
+			//Create the AdShots based on whether all/individual/no Creatives were selected
+			//If all was selected, create a single AdShot for the page with all Creative associated
+			if (screenshotType == "all") {
+
+				//Create the AdShotBuilder and add all the Creative to it
+				let newAdShotBuilder = new AdShotBuilder(requestedURL, useStoryFinder, useMobile, false);
+				for (let currentCreative of asr._creatives.values()) {
+					newAdShotBuilder.addCreative(currentCreative);
+				}
+
+				//Add the JSON string to the final array
+				adShots.push(newAdShotBuilder.toJSON());
+			}
+
+			//If none was selected, do an AdShot without any Creative
+			else if (screenshotType == "none") {
+
+				//Create the AdShotBuilder and add its JSON to the final array
+				let newAdShotBuilder = new AdShotBuilder(requestedURL, useStoryFinder, useMobile, false);
+				adShots.push(newAdShotBuilder.toJSON());
+			}
+
+			//If individual was chosen, create AdShots for each Creative
+			else if (screenshotType == "individual") {
+
+				//Loop through each Creative
+				for (let currentCreative of asr._creatives.values()) {
+
+					//Create the AdShotBuilder with the single Creative and add its JSON to the final array
+					let newAdShotBuilder = new AdShotBuilder(requestedURL, useStoryFinder, useMobile, false);
+					newAdShotBuilder.addCreative(currentCreative);
+					adShots.push(newAdShotBuilder.toJSON());
+				}
+			}
+		}
+
+		//Get the creative priorities
+		let creativePriorities = {};
+		let sortedIDList = $("#sortable").sortable('toArray');
+		for (let sortedIndex = 0; sortedIndex < sortedIDList.length; ++sortedIndex) {
+
+			let creativeID = sortedIDList[sortedIndex].substring(5);
+			creativePriorities[creativeID] = sortedIndex;
+		}
+
+		//Create the onSuccessCallback function that will navigate to the job queued page
+		let onSuccessCallback = function(response) {
+			
+			//If successful, navigate to the queued job page
+			if (response.success) {
+				window.open('/campaignResults.php?uuid=' + response.data.uuid, '_blank');
+			}
+						
+			//If failure, simply output to the console for the time being
+			else {
+				console.log('in failure');
+				console.log(response.data);
+			}
+		}
+
+		//If there was a problem connecting with the server, notify the user and enable the input field/button
+		let onFailCallback = function(textStatus, errorThrown) {
+
+			//Show the error message
+			asr.showErrorMessage("trying to request screenshots.");
+		}
+		
+
+		//Make the request
+		base.asyncRequest(asr._requestScreenshotsURL, 
+						 {adShots: adShots, 
+						  creativePriorities: creativePriorities,
+						  customerName: base.nodeFromID("customerName").value, 
+						  backgroundID: base.nodeFromID("backgroundID").value}, 
+						  onSuccessCallback, onFailCallback);
+	},
+
+	/**
+	* Sends a screenshot job request to the server with the job ID, campaign, and tag information.
+	*
+	* On success, the user is sent to the job queued page
+	*/
+	requestScreenshotsOld: function() {
 
 		//Generate a unique ID for the screenshots
 		let jobID = asr.getUUID();
@@ -459,13 +653,14 @@ let asr = {
 	/**
 	* Deletes the list item in the tag images list with the passed ID
 	*
-	* @param {Integer} tagLIID  	ID of the list item in the tag images list to delete
+	* @param {Integer} creativeID  	ID of the list item in the tag images list to delete
 	*/
-	deleteTagImageListItem: function(tagLIID) {
+	deleteTagImageListItem: function(creativeID) {
 
 		//Remove the row
-		let liToDelete = base.nodeFromID(tagLIID);
+		let liToDelete = base.nodeFromID("tagLI" + creativeID);
 		liToDelete.parentNode.removeChild(liToDelete);
+		let result = asr._creatives.delete(creativeID);
 	},
 
 	filterOrders: function() {
@@ -523,7 +718,7 @@ let asr = {
 
 				//Store the order data
 				asr._lineItems = response.data.lineItems;
-				asr._creatives = response.data.creatives;
+				asr._dfpCreatives = response.data.creatives;
 
 				//Create the line items table headers
 				let tableHeaders =  "<thead><tr>";
@@ -563,7 +758,7 @@ let asr = {
 
 				//Place the advertiser name in the customer field
 				if (asr._matchingOrders[orderID].advertiserName) {
-					base.nodeFromID("customer").value = asr._matchingOrders[orderID].advertiserName;
+					base.nodeFromID("customerName").value = asr._matchingOrders[orderID].advertiserName;
 				}
 			}
 						
@@ -698,7 +893,7 @@ let asr = {
 		if (creativeIDList.length <= 15) {
 			for (let index in creativeIDList) {
 				let currentCreativeID = creativeIDList[index];
-				asr.addTagsToQueue(tagParser.getTags(asr._creatives[currentCreativeID].tag));
+				asr.addTagsToQueue(tagParser.getTags(asr._dfpCreatives[currentCreativeID].tag));
 			}
 			asr.getTagImages();
 		}
@@ -765,7 +960,7 @@ let asr = {
 	uploadPowerPointBackground: function() {
 
 		//Verify the fields were filled in
-		if (base.nodeFromID("newBackgroundTitle").value.length == 0) {alert("Enter a name for the PowerPoint"); return;}
+		if (base.nodeFromID("newBackgroundName").value.length == 0) {alert("Enter a name for the PowerPoint"); return;}
 		if (base.nodeFromID("newBackgroundImage").value.length == 0) {alert("Choose an image for the background"); return;}
 
 		//Disable the save button
@@ -779,12 +974,13 @@ let asr = {
 				
 				//Set the background info to the newly uploaded one
 				let newBackgroundInfo = response.data;
-				base.nodeFromID("backgroundTitleDiv").innerHTML = newBackgroundInfo.title;
+				base.nodeFromID("backgroundNameDiv").innerHTML = newBackgroundInfo.name;
 				base.nodeFromID("fontColorDiv").style.backgroundColor = "#" + newBackgroundInfo.fontColor;
-				base.nodeFromID("backgroundThumbnailImage").src = asr.powerPointBackgroundsURL + "thumbnails/" + newBackgroundInfo.thumbnailFilename;
+				base.nodeFromID("backgroundThumbnailImage").src = newBackgroundInfo.thumbnailURL;
 	
 				//Set the hidden input fields
-				base.nodeFromID("backgroundTitle").value = newBackgroundInfo.title;
+				base.nodeFromID("backgroundID").value = newBackgroundInfo.id;
+				base.nodeFromID("backgroundName").value = newBackgroundInfo.name;
 				base.nodeFromID("backgroundFontColor").value = newBackgroundInfo.fontColor;
 				base.nodeFromID("backgroundFilename").value = newBackgroundInfo.filename;
 			}
@@ -812,7 +1008,7 @@ let asr = {
 
 		//Create the request object for the image raw data
 		let formData = new FormData();
-		formData.append('backgroundTitle', base.nodeFromID("newBackgroundTitle").value);
+		formData.append('backgroundName', base.nodeFromID("newBackgroundName").value);
 		formData.append('backgroundFontColor', base.nodeFromID("newBackgroundFontColor").value.substring(1));
 		formData.append('backgroundImage', base.nodeFromID("newBackgroundImage").files[0]);
 		base.asyncRequest(asr._uploadBackgroundImageURL, formData, onSuccessCallback, onFailCallback, true);
@@ -825,7 +1021,7 @@ let asr = {
 		//		- At least one page has been added
 		//		- There are no tags being processed
 		//		- There are no tags in the queue
-		if ((base.nodeFromID("customer").value != "") && 
+		if ((base.nodeFromID("customerName").value != "") && 
 			(base.nodeFromID("pagesTable").rows.length > 0) && 
 			(asr._tagsBeingProcessed == 0) && 
 			(asr._queuedTags.length == 0)) {

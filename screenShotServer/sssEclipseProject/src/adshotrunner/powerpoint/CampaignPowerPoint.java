@@ -1,6 +1,5 @@
 package adshotrunner.powerpoint;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,10 +8,11 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 
-import adshotrunner.AdShot;
-import adshotrunner.TagImage;
+import adshotrunner.campaigns.AdShot;
+import adshotrunner.campaigns.Creative;
 
 public class CampaignPowerPoint {
 
@@ -23,7 +23,6 @@ public class CampaignPowerPoint {
 	final private static int SLIDEHEIGHT = 540;					//PowerPoint screen height. Magic number, not sure from where
 
 	final private static String DEFAULTFONTTYPE = "Arial";		//Default font type
-	final private static String DEFAULTFONTCOLOR = "000000";	//Default font color
 
 	final private static String TITLEFONTTYPE = "Arial";		//Font type for first slide campaign title
 	final private static int TITLEFONTSIZE = 18;				//Font size for first slide campaign title
@@ -120,10 +119,9 @@ public class CampaignPowerPoint {
 		//Create the new slide
 		SlidePart newSlide = _powerPoint.addNewSlide();
 		
-		//Add the text
+		//Add the final page title and injected creative dimensions text
 		_powerPoint.addTextToSlide(newSlide, getSlideDescription(slideAdShot), 30, 1, 800, DEFAULTFONTTYPE, 15, _fontColor);
 		_powerPoint.addTextToSlide(newSlide, StringEscapeUtils.escapeXml(slideAdShot.pageTitle()), 30, 25, 800, DEFAULTFONTTYPE, 10, _fontColor);
-		//_powerPoint.addTextToSlide(newSlide, slideAdShot.finalURL(), 1, 1, 800, DEFAULTFONTTYPE, 10, _fontColor);
 		
 		//Get the new dimensions of the screenshot
 		int targetWidth = SLIDEWIDTH - (SCREENSHOTSIDEMARGIN * 2);
@@ -133,13 +131,10 @@ public class CampaignPowerPoint {
 																		  targetWidth, targetHeight);
 		int finalWidth = screenshotDimensions.get("width");
 		int finalHeight = screenshotDimensions.get("height");
-		System.out.println("Width: " + slideAdShot.image().getWidth() + " - " + targetWidth + " to " + finalWidth);
-		System.out.println("Height: " + slideAdShot.image().getHeight() + " - " + targetHeight + " to " + finalHeight);
 		
 		//Determine the x,y position of the screenshot
 		int xPosition = (SLIDEWIDTH - finalWidth)/2;
 		int yPosition = SCREENSHOTTOPMARGIN;
-		//int yPosition = ((SLIDEHEIGHT - finalHeight)/2) + SCREENSHOTTOPMARGIN - SCREENSHOTBOTTOMMARGIN;
 		
 		//Insert the screenshot
 		_powerPoint.addImageToSlide(newSlide, slideAdShot.image(), xPosition, yPosition, finalWidth, finalHeight);
@@ -188,21 +183,21 @@ public class CampaignPowerPoint {
 		//Begin by determining if the AdShot was for desktop or mobile
 		String adShotDescription = (targetAdShot.mobile()) ? "Mobile" : "Desktop";
 		
-		//Put all the AdShot tag dimensions in a set to preserve uniqueness
-		Set<String> tagDimensions = new HashSet<String>(); 
-		for (TagImage currentTag : targetAdShot.injectedCreatives()) {
-			tagDimensions.add(currentTag.width() + "x" + currentTag.height());
+		//Put all the AdShot creative dimensions in a set to preserve uniqueness
+		Set<String> creativeDimensions = new HashSet<String>(); 
+		for (Creative currentCreative : targetAdShot.injectedCreatives()) {
+			creativeDimensions.add(currentCreative.width() + "x" + currentCreative.height());
 		}
 		
-		//Put all the tag dimensions in a string separated by commas
-		String tagDimensionsText = "";
-		for (String currentDimension : tagDimensions) {
-			if (!tagDimensionsText.isEmpty()) {tagDimensionsText += ",";}
-			tagDimensionsText += currentDimension;
+		//Put all the creative dimensions in a string separated by commas
+		String creativeDimensionsText = "";
+		for (String currentDimension : creativeDimensions) {
+			if (!creativeDimensionsText.isEmpty()) {creativeDimensionsText += ",";}
+			creativeDimensionsText += currentDimension;
 		}
 		
-		//If tags were found, add them to the description
-		if (!tagDimensionsText.isEmpty()) {adShotDescription += ": " + tagDimensionsText;}
+		//If creative dimensions were found, add them to the description
+		if (!creativeDimensionsText.isEmpty()) {adShotDescription += ": " + creativeDimensionsText;}
 		
 		return adShotDescription;
 	}

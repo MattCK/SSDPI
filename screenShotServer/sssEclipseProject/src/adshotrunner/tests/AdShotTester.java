@@ -9,7 +9,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import adshotrunner.archive.AdShotter;
+import adshotrunner.archive.AdShotterOriginal;
 
 /**
  * Used to unit test AdShotRunner
@@ -46,7 +46,7 @@ public class AdShotTester {
 		
 		ArrayList<String> fillerTags = getFillerTags();
 		
-		AdShotter testRunner = new AdShotter();
+		AdShotterOriginal testRunner = new AdShotterOriginal();
 		
 		for(String currentURL : tagURLs) {
 			for(String currentTag: fillerTags) {

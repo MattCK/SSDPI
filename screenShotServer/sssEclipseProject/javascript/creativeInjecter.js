@@ -1406,24 +1406,20 @@ class CreativeInjecter {
 					let creativeToInject = this._creatives.getNextUninjectedCreative(currentSize.width(), currentSize.height());
 					if (creativeToInject) {
 
-						//If the selector element exists, replace it with the creative
+						//If the selector element exists and it does not have a negative y-coordinate, replace it with the creative
 						let currentElement = document.querySelector(currentAdSelector.selector());
 						if (currentElement) {
 
-							// let parentElement = currentElement.parentElement;
-							// parentElement.style.width = ElementInfo.width(currentElement) + "px";
-							// parentElement.style.height = ElementInfo.height(currentElement) + "px";
+							//If the y-position is positive (negative occurs when scrolled for below-the-fold)
+							if (ElementInfo.yPosition(currentElement) >= 0) {
 
-
-							// let grandParentElement = parentElement.parentElement;
-							// grandParentElement.style.width = ElementInfo.width(currentElement) + "px";
-							// grandParentElement.style.height = ElementInfo.height(currentElement) + "px";
-
-							this._replaceElementWithCreative(currentElement, creativeToInject)
-							let elementXPosition = ElementInfo.xPosition(currentElement);
-							let elementYPosition = ElementInfo.yPosition(currentElement);
-							this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
-							adSelectorReplaced = true;
+								//Replace the element
+								this._replaceElementWithCreative(currentElement, creativeToInject)
+								let elementXPosition = ElementInfo.xPosition(currentElement);
+								let elementYPosition = ElementInfo.yPosition(currentElement);
+								this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
+								adSelectorReplaced = true;
+							}
 						}
 					}
 				}
@@ -1462,10 +1458,16 @@ class CreativeInjecter {
 			//If an uninjected Creative of that size exists, replace the element with it
 			let creativeToInject = this._creatives.getNextUninjectedCreative(elementWidth, elementHeight);
 			if (creativeToInject) {
-				let elementXPosition = ElementInfo.xPosition(currentElement);
-				let elementYPosition = ElementInfo.yPosition(currentElement);
-				this._replaceElementWithCreative(currentElement, creativeToInject)
-				this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
+
+				//If the y-position is positive (negative occurs when scrolled for below-the-fold)
+				if (ElementInfo.yPosition(currentElement) >= 0) {
+
+					//Replace the element
+					this._replaceElementWithCreative(currentElement, creativeToInject)
+					let elementXPosition = ElementInfo.xPosition(currentElement);
+					let elementYPosition = ElementInfo.yPosition(currentElement);
+					this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
+				}
 			}
 		}
 
@@ -1485,8 +1487,16 @@ class CreativeInjecter {
 				//If an uninjected Creative of that size exists, replace the element with it
 				let creativeToInject = this._creatives.getNextUninjectedCreative(elementWidth, elementHeight);
 				if (creativeToInject) {
-					this._replaceElementWithCreative(currentElement, creativeToInject)
-					this._creatives.injected(creativeToInject);
+
+					//If the y-position is positive (negative occurs when scrolled for below-the-fold)
+					if (ElementInfo.yPosition(currentElement) >= 0) {
+
+						//Replace the element
+						this._replaceElementWithCreative(currentElement, creativeToInject)
+						let elementXPosition = ElementInfo.xPosition(currentElement);
+						let elementYPosition = ElementInfo.yPosition(currentElement);
+						this._creatives.injected(creativeToInject, elementXPosition, elementYPosition);
+					}
 				}
 			}
 		}
@@ -2153,5 +2163,5 @@ let messageLog = Log.getMessages();
 
 //Return the injected creatives with their locations and any log messages
 //Log.output(JSON.stringify(injectedIDsAndLocations));
-return JSON.stringify({'injectedCreatives': injectedIDsAndLocations, 'outputLog': {[messageLog]: {}}});
+return JSON.stringify({'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog});
 

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.io.IOUtils;
 
-import adshotrunner.StoryFinder;
+import adshotrunner.storyfinder.StoryFinder;
 
 public class ComponentTester {
 
@@ -31,7 +31,7 @@ public class ComponentTester {
 		System.out.println("Story: " + storyURL);
 		System.out.println("Injecting Ads and taking screenshot...");
 		
-		AdShotter testRunner = new AdShotter();
+		AdShotterOriginal testRunner = new AdShotterOriginal();
 		
 		ArrayList<String> fillerTags = getFillerTags();
 		for(String currentTag: fillerTags) {

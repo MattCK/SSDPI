@@ -25,12 +25,6 @@ require_once(CLASSPATH . 'adShotRunnerAutoloader.php');
 */
 require THIRDPARTYPATH . '/GoogleAds/vendor/autoload.php';
 
-
-/**
-* Connect to the database
-*/
-//require_once(RESTRICTEDPATH . 'databaseSetup.php');
-
 use Aws\Common\Aws;
 
 function getAWSFactory() {
