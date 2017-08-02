@@ -30,6 +30,7 @@ class Campaign {
 	//---------------------------------------------------------------------------------------
 	//Status constants for Campaign processing
 	const CREATED = "CREATED"; 
+	const READY = "READY"; 
 	const QUEUED = "QUEUED"; 
 	const PROCESSING = "PROCESSING"; 
 	const FINISHED = "FINISHED"; 
@@ -70,6 +71,7 @@ class Campaign {
 		$retrievedCampaign->_status = $campaignDetails['CMP_status'];
 		$retrievedCampaign->_errorMessage = $campaignDetails['CMP_errorMessage'];
 		$retrievedCampaign->_createdTimestamp = strtotime($campaignDetails['CMP_createdTimestamp']);
+		$retrievedCampaign->_readyTimestamp = strtotime($campaignDetails['CMP_readyTimestamp']);
 		$retrievedCampaign->_queuedTimestamp = strtotime($campaignDetails['CMP_queuedTimestamp']);
 		$retrievedCampaign->_processingTimestamp = strtotime($campaignDetails['CMP_processingTimestamp']);
 		$retrievedCampaign->_finishedTimestamp = strtotime($campaignDetails['CMP_finishedTimestamp']);
@@ -220,6 +222,11 @@ class Campaign {
 	private $_createdTimestamp;
 
 	/**
+	* @var int  The UNIX timestamp the Campaign status was set to READY
+	*/
+	private $_readyTimestamp;
+
+	/**
 	* @var int  The UNIX timestamp the Campaign status was set to QUEUED
 	*/
 	private $_queuedTimestamp;
@@ -307,19 +314,19 @@ class Campaign {
 	}
 
 	/**
-	 * Queues the Campaign for processing.
+	 * Marks the Campaign ready for processing.
 	 *
 	 * This notifies the processing server the Campaign is fully built and is ready for its
 	 * AdShots to be imaged and the resulting PowerPoint to be made.
 	 * 
 	 * @return 	boolean		True on success and NULL on failure
 	 */
-	public function queueForProcessing() {
+	public function readyForProcessing() {
 
 		//Update the status in the database
 		$setStatusQuery = "UPDATE campaigns 
-						   SET CMP_status = '" . $this::QUEUED . "', 
-						   	   CMP_queuedTimestamp = CURRENT_TIMESTAMP 
+						   SET CMP_status = '" . $this::READY . "', 
+						   	   CMP_readyTimestamp = CURRENT_TIMESTAMP 
 						   WHERE CMP_id = " . $this->_id;
 		ASRDatabase::executeQuery($setStatusQuery);
 
@@ -330,7 +337,7 @@ class Campaign {
 		$getCampaignQuery = "SELECT * FROM campaigns WHERE CMP_id = " . $this->_id;
 		$campaignResult = ASRDatabase::executeQuery($getCampaignQuery);
 		$campaignEntry = $campaignResult->fetch_assoc();
-		$this->_queuedTimestamp = strtotime($campaignEntry["CMP_queuedTimestamp"]);
+		$this->_readyTimestamp = strtotime($campaignEntry["CMP_readyTimestamp"]);
 
 		//Return success
 		return TRUE;
@@ -355,6 +362,7 @@ class Campaign {
 		$jsonObject["status"] = $this->_status;
 		$jsonObject["errorMessage"] = $this->_errorMessage;
 		$jsonObject["createdTimestamp"] = $this->_createdTimestamp;
+		$jsonObject["readyTimestamp"] = $this->_readyTimestamp;
 		$jsonObject["queuedTimestamp"] = $this->_queuedTimestamp;
 		$jsonObject["processingTimestamp"] = $this->_processingTimestamp;
 		$jsonObject["finishedTimestamp"] = $this->_finishedTimestamp;
@@ -443,6 +451,13 @@ class Campaign {
 	*/
 	public function createdTimestamp() {
 		return $this->_createdTimestamp;
+	}
+
+	/**
+	* @return int	UNIX Timestamp the Campaign status was set to READY
+	*/
+	public function readyTimestamp() {
+		return $this->_readyTimestamp;
 	}
 
 	/**

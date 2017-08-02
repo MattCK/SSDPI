@@ -32,6 +32,7 @@ public class Campaign {
 	//---------------------------------------------------------------------------------------	
 	//Status constants for Campaign processing
 	final public static String CREATED = "CREATED"; 
+	final public static String READY = "READY"; 
 	final public static String QUEUED = "QUEUED"; 
 	final public static String PROCESSING = "PROCESSING"; 
 	final public static String FINISHED = "FINISHED"; 
@@ -54,8 +55,8 @@ public class Campaign {
 		
 		//Check to see if a Campaign with that ID exists in the database
 		//Redundant check along with constructor
-		try {
-			ResultSet campaignResults = ASRDatabase.executeQuery("SELECT * FROM campaigns WHERE CMP_id = " + campaignID);
+		String getCampaignQuery = "SELECT * FROM campaigns WHERE CMP_id = " + campaignID;
+		try (ResultSet campaignResults = ASRDatabase.executeQuery(getCampaignQuery)) {
 	
 			//If a match was found, return the Campaign 
 			if (campaignResults.next()) {
@@ -127,6 +128,11 @@ public class Campaign {
 	private Timestamp _createdTimestamp;
 	
 	/**
+	 * The timestamp the Campaign status was set to READY
+	 */
+	private Timestamp _readyTimestamp;
+	
+	/**
 	 * The timestamp the Campaign status was set to QUEUED
 	 */
 	private Timestamp _queuedTimestamp;
@@ -149,41 +155,52 @@ public class Campaign {
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
-	private Campaign(int campaignID) throws SQLException {
+	private Campaign(int campaignID) {
 		
 		//Get the Campaign information from the database
-		ResultSet campaignResult = ASRDatabase.executeQuery("SELECT * FROM campaigns WHERE CMP_id = " + campaignID);		
+		String getCampaignQuery = "SELECT * FROM campaigns WHERE CMP_id = " + campaignID;
+		try (ResultSet campaignResult = ASRDatabase.executeQuery(getCampaignQuery)) {		
 		
-		//If a Creative was found with the passed ID, set the instance's members to its details
-		if (campaignResult.next()) {
+			//If a Creative was found with the passed ID, set the instance's members to its details
+			if (campaignResult.next()) {
+				
+				_id = campaignResult.getInt("CMP_id");
+				_uuid = campaignResult.getString("CMP_uuid");
+				_customerName = campaignResult.getString("CMP_customerName");
+				_powerPointFilename = campaignResult.getString("CMP_powerPointFilename");
+				_status = campaignResult.getString("CMP_status");
+				_errorMessage = campaignResult.getString("CMP_errorMessage");
+				_createdTimestamp = campaignResult.getTimestamp("CMP_createdTimestamp");
+				_readyTimestamp = campaignResult.getTimestamp("CMP_readyTimestamp");
+				_queuedTimestamp = campaignResult.getTimestamp("CMP_queuedTimestamp");
+				_processingTimestamp = campaignResult.getTimestamp("CMP_processingTimestamp");
+				_finishedTimestamp = campaignResult.getTimestamp("CMP_finishedTimestamp");
+				_errorTimestamp = campaignResult.getTimestamp("CMP_errorTimestamp");
+			}	
 			
-			_id = campaignResult.getInt("CMP_id");
-			_uuid = campaignResult.getString("CMP_uuid");
-			_customerName = campaignResult.getString("CMP_customerName");
-			_powerPointFilename = campaignResult.getString("CMP_powerPointFilename");
-			_status = campaignResult.getString("CMP_status");
-			_errorMessage = campaignResult.getString("CMP_errorMessage");
-			_createdTimestamp = campaignResult.getTimestamp("CMP_createdTimestamp");
-			_queuedTimestamp = campaignResult.getTimestamp("CMP_queuedTimestamp");
-			_processingTimestamp = campaignResult.getTimestamp("CMP_processingTimestamp");
-			_finishedTimestamp = campaignResult.getTimestamp("CMP_finishedTimestamp");
-			_errorTimestamp = campaignResult.getTimestamp("CMP_errorTimestamp");
-		}	
+			//Otherwise throw an error
+			else {
+				throw new AdShotRunnerException("Could not find Campaign with ID: " + campaignID);
+			}
+			
+			//Get the PowerPointBackground for the Campaign
+			_powerPointBackground = PowerPointBackground.getPowerPointBackground(campaignResult.getInt("CMP_PPB_id"));
+			
+		} catch (Exception e) {
+			throw new AdShotRunnerException("Could not query database for Campaign with ID: " + campaignID, e);
+		}				
 		
-		//Otherwise throw an error
-		else {
-			throw new AdShotRunnerException("Could not find Campaign with ID: " + campaignID);
-		}
-		
-		//Get the PowerPointBackground for the Campaign
-		_powerPointBackground = PowerPointBackground.getPowerPointBackground(campaignResult.getInt("CMP_PPB_id"));
 		
 		//Get the AdShots associated with the Campaign
 		_adShots = new LinkedHashSet<AdShot>();
-		ResultSet adshotsResult = ASRDatabase.executeQuery("SELECT * FROM adshots WHERE ADS_CMP_id = " + campaignID);
-		while (adshotsResult.next()) {
-			_adShots.add(AdShot.getAdShot(adshotsResult.getInt("ADS_id")));
-		}
+		String getAdShotsQuery = "SELECT * FROM adshots WHERE ADS_CMP_id = " + campaignID;
+		try (ResultSet adshotsResult = ASRDatabase.executeQuery(getAdShotsQuery)) {
+			while (adshotsResult.next()) {
+				_adShots.add(AdShot.getAdShot(adshotsResult.getInt("ADS_id")));
+			}
+		} catch (Exception e) {
+			throw new AdShotRunnerException("Could not query database for campaign AdShots: " + campaignID, e);
+		}				
 	}
 	
 	//---------------------------------------------------------------------------------------
@@ -241,7 +258,10 @@ public class Campaign {
 		String powerPointFilename = pptxCustomerName + "-" + pptxDate + "-" + pptxTimestamp + ".pptx";
 		
 		//Save the PowerPoint to a file and upload it
-		powerPoint.save(ASRProperties.pathForTemporaryFiles() + powerPointFilename);
+		powerPoint.save(ASRProperties.pathForTemporaryFiles() + powerPointFilename); 
+		
+    	try {Thread.sleep(250);} catch (InterruptedException e) {} //Make sure the file has time to save
+
 		FileStorageClient.saveFile(ASRProperties.containerForPowerPoints(), 
 				   				   ASRProperties.pathForTemporaryFiles() + powerPointFilename, powerPointFilename);
 		
@@ -252,6 +272,7 @@ public class Campaign {
 		
 		//Store the filename in the instance
 		_powerPointFilename = powerPointFilename;
+		
 		//Delete the files
 		backgroundImageFile.delete();
 		new File(ASRProperties.pathForTemporaryFiles() + powerPointFilename).delete();
@@ -267,12 +288,11 @@ public class Campaign {
 	 */
 	public String userEmailAddress() {
 		
-		try {
-			//Query the database for the user
-			ResultSet userResult = ASRDatabase.executeQuery("SELECT * " + 
+		//Query the database for the user
+		try (ResultSet userResult = ASRDatabase.executeQuery("SELECT * " + 
 															"FROM campaigns " + 
 															"LEFT JOIN users ON CMP_USR_id = USR_id " +
-															"WHERE CMP_id = " + _id);
+															"WHERE CMP_id = " + _id)) {
 			
 			//Return the email address
 			userResult.next();
@@ -309,6 +329,7 @@ public class Campaign {
 		String timestampField = "";
 		switch (campaignStatus) {
 		
+			case READY: timestampField = "CMP_readyTimestamp"; break;
 			case QUEUED: timestampField = "CMP_queuedTimestamp"; break;
 			case PROCESSING: timestampField = "CMP_processingTimestamp"; break;
 			case FINISHED: timestampField = "CMP_finishedTimestamp"; break;
@@ -326,21 +347,26 @@ public class Campaign {
 									  "WHERE CMP_id = " + _id);
 			
 			//Set the new status in the instance
-			_status = campaignStatus;
-			
-			//Query the database for the new timestamp. This is to prevent localization errors.
-			//Load all three timestamps to simplify code
-			ResultSet campaignResult = ASRDatabase.executeQuery("SELECT * FROM campaigns WHERE CMP_id = " + _id);		
-			if (campaignResult.next()) {
-				_queuedTimestamp = campaignResult.getTimestamp("CMP_queuedTimestamp");
-				_processingTimestamp = campaignResult.getTimestamp("CMP_processingTimestamp");
-				_finishedTimestamp = campaignResult.getTimestamp("CMP_finishedTimestamp");
-			}	
-			
+			_status = campaignStatus;			
 		} catch (Exception e) {
 			e.printStackTrace();
         	throw new AdShotRunnerException("Could not update Campaign status in the database: " + campaignStatus, e);
 		}
+		
+		//Query the database for the new timestamp. This is to prevent localization errors.
+		//Load all three timestamps to simplify code
+		String getCampaignQuery = "SELECT * FROM campaigns WHERE CMP_id = " + _id;
+		try (ResultSet campaignResult = ASRDatabase.executeQuery(getCampaignQuery)) {		
+			if (campaignResult.next()) {
+				_readyTimestamp = campaignResult.getTimestamp("CMP_readyTimestamp");
+				_queuedTimestamp = campaignResult.getTimestamp("CMP_queuedTimestamp");
+				_processingTimestamp = campaignResult.getTimestamp("CMP_processingTimestamp");
+				_finishedTimestamp = campaignResult.getTimestamp("CMP_finishedTimestamp");
+			}	
+		} catch (Exception e) {
+        	throw new AdShotRunnerException("Could not retrieve updated Campaign statuses ", e);
+		}		
+
 	}
 
 	/**
@@ -366,15 +392,20 @@ public class Campaign {
 			_errorMessage = errorMessage;
 			_status = ERROR;
 			
-			//Query the database for the new timestamp. This is to prevent localization errors.
-			ResultSet campaignResult = ASRDatabase.executeQuery("SELECT * FROM campaigns WHERE CMP_id = " + _id);		
-			if (campaignResult.next()) {
-				_errorTimestamp = campaignResult.getTimestamp("CMP_errorTimestamp");
-			}	
-			
 		} catch (Exception e) {
         	throw new AdShotRunnerException("Could not store Campaign error in the database: " + errorMessage, e);
 		}
+		
+		//Query the database for the new timestamp. This is to prevent localization errors.
+		String getCampaignQuery = "SELECT * FROM campaigns WHERE CMP_id = " + _id;
+		try (ResultSet campaignResult = ASRDatabase.executeQuery(getCampaignQuery)) {		
+			if (campaignResult.next()) {
+				_errorTimestamp = campaignResult.getTimestamp("CMP_errorTimestamp");
+			}	
+		} catch (Exception e) {
+        	throw new AdShotRunnerException("Could not retrieve updated Campaign error status ", e);
+		}		
+
 	}
 	
 	//---------------------------------------------------------------------------------------
@@ -435,6 +466,11 @@ public class Campaign {
 	public Timestamp createdTimestamp() {return _createdTimestamp;}
 
 	/**
+	 * @return	The timestamp the Campaign status was set to READY
+	 */
+	public Timestamp readyTimestamp() {return _readyTimestamp;}
+
+	/**
 	 * @return	The timestamp the Campaign status was set to QUEUED
 	 */
 	public Timestamp queuedTimestamp() {return _queuedTimestamp;}
@@ -454,8 +490,4 @@ public class Campaign {
 	 */
 	public Timestamp errorTimestamp() {return _errorTimestamp;}
 
-	
-	
-	
-	
 }

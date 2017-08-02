@@ -29,6 +29,7 @@ class Creative {
 	//---------------------------------------------------------------------------------------
 	//Status constants for Creative processing
 	const CREATED = "CREATED"; 
+	const READY = "READY"; 
 	const QUEUED = "QUEUED"; 
 	const PROCESSING = "PROCESSING"; 
 	const FINISHED = "FINISHED"; 
@@ -72,7 +73,9 @@ class Creative {
 		$retrievedCreative->_tagPageFilename = $creativeDetails['CRV_tagPageFilename'];
 		$retrievedCreative->_status = $creativeDetails['CRV_status'];
 		$retrievedCreative->_errorMessage = $creativeDetails['CRV_errorMessage'];
+		$retrievedCreative->_finalError = $creativeDetails['CRV_finalError'];
 		$retrievedCreative->_createdTimestamp = strtotime($creativeDetails['CRV_createdTimestamp']);
+		$retrievedCreative->_readyTimestamp = strtotime($creativeDetails['CRV_readyTimestamp']);
 		$retrievedCreative->_queuedTimestamp = strtotime($creativeDetails['CRV_queuedTimestamp']);
 		$retrievedCreative->_processingTimestamp = strtotime($creativeDetails['CRV_processingTimestamp']);
 		$retrievedCreative->_finishedTimestamp = strtotime($creativeDetails['CRV_finishedTimestamp']);
@@ -238,7 +241,7 @@ class Creative {
 		//Get the newly created Creative with all of its defaults such as CREATED timestamp set
 		//Set its status to queued and return it.
 		$newCreative = self::getCreative($creativeID);
-		$newCreative->setStatus(self::QUEUED);
+		$newCreative->setStatus(self::READY);
 		return $newCreative;
 	}
 
@@ -333,9 +336,19 @@ class Creative {
 	private $_errorMessage;
 
 	/**
+	* @var boolean  TRUE if an error occurred during processing and no more attempts will be made, FALSE otherwise
+	*/
+	private $_finalError;
+
+	/**
 	* @var int  The UNIX timestamp the Creative was inserted into the database
 	*/
 	private $_createdTimestamp;
+
+	/**
+	* @var int  The UNIX timestamp the Creative status was set to READY
+	*/
+	private $_readyTimestamp;
 
 	/**
 	* @var int  The UNIX timestamp the Creative status was set to QUEUED
@@ -451,7 +464,9 @@ class Creative {
 		$jsonObject["tagPageURL"] = $this->tagPageURL();
 		$jsonObject["status"] = $this->_status;
 		$jsonObject["errorMessage"] = $this->_errorMessage;
+		$jsonObject["finalError"] = $this->_finalError;
 		$jsonObject["createdTimestamp"] = $this->_createdTimestamp;
+		$jsonObject["readyTimestamp"] = $this->_readyTimestamp;
 		$jsonObject["queuedTimestamp"] = $this->_queuedTimestamp;
 		$jsonObject["processingTimestamp"] = $this->_processingTimestamp;
 		$jsonObject["finishedTimestamp"] = $this->_finishedTimestamp;
@@ -486,6 +501,7 @@ class Creative {
 		$timestampField = "";
 		switch ($creativeStatus) {
 		
+			case $this::READY: $timestampField = "CRV_readyTimestamp"; break;
 			case $this::QUEUED: $timestampField = "CRV_queuedTimestamp"; break;
 			case $this::PROCESSING: $timestampField = "CRV_processingTimestamp"; break;
 			case $this::FINISHED: $timestampField = "CRV_finishedTimestamp"; break;
@@ -509,6 +525,7 @@ class Creative {
 		$getCreativeQuery = "SELECT * FROM creatives WHERE CRV_id = " . $this->_id;
 		$creativeResult = ASRDatabase::executeQuery($getCreativeQuery);
 		$creativeDetails = $creativeResult->fetch_assoc();
+		$this->_readyTimestamp = strtotime($creativeDetails["CRV_readyTimestamp"]);
 		$this->_queuedTimestamp = strtotime($creativeDetails["CRV_queuedTimestamp"]);
 		$this->_processingTimestamp = strtotime($creativeDetails["CRV_processingTimestamp"]);
 		$this->_finishedTimestamp = strtotime($creativeDetails["CRV_finishedTimestamp"]);
@@ -609,10 +626,24 @@ class Creative {
 	}
 
 	/**
+	* @return boolean	TRUE if an error occurred during processing and no more attempts will be made, FALSE otherwise
+	*/
+	public function finalError() {
+		return $this->_finalError;
+	}
+
+	/**
 	* @return int	UNIX Timestamp the Creative was inserted into the database
 	*/
 	public function createdTimestamp() {
 		return $this->_createdTimestamp;
+	}
+
+	/**
+	* @return int	UNIX Timestamp the Creative status was set to READY
+	*/
+	public function readyTimestamp() {
+		return $this->_readyTimestamp;
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import adshotrunner.system.ASRProperties;
 
@@ -37,7 +38,14 @@ public class ASRDatabase {
 	}
 
 	public static int executeUpdate(String query) throws SQLException {
-		return getConnection().createStatement().executeUpdate(query);
+		Statement newStatement = getConnection().createStatement();
+		int queryResult = newStatement.executeUpdate(query);
+		newStatement.close();
+		return queryResult;
+	}
+	
+	public static void refreshConnection() {
+		databaseConnection = null;
 	}
 
 	//**************************** Private Static Methods **********************************

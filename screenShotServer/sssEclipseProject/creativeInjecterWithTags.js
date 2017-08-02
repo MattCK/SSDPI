@@ -741,7 +741,7 @@ class GPTSlots {
 		this._slotCreativeSizes = new Map();
 
 		//If the googletag object exists, instantiate the class using its information
-		if (typeof googletag !== 'undefined') {
+		if ((typeof googletag !== 'undefined') && (typeof googletag.pubads !== 'undefined')) {
 
 			//Store any googletag.Slot objects
 			this._slots = googletag.pubads().getSlots();
@@ -2100,7 +2100,7 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: '144', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/95529589-fbfc-417f-b87f-0e0d173a54e7.png', width: 300, height: 250, priority: 0},{id: '145', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/4c763e7d-daba-4291-9526-d88137acf825.png', width: 728, height: 90, priority: 0},{id: '146', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/7de95b04-4684-4f07-a3ca-61094c460a17.png', width: 300, height: 250, priority: 0},{id: '143', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/f02ab1c7-cdc5-423a-98f8-4230af03b4ef.png', width: 300, height: 600, priority: 0},{id: '147', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/e7aa8d7e-894d-45df-9cec-cba44808d417.png', width: 160, height: 600, priority: 0},];
+creatives = [{id: '528', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/127c3d9f-50a5-4857-ae3f-ebabf580949d.png', width: 728, height: 90, priority: 2},{id: '526', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/d6c96b6f-8e8d-464a-a7e4-0b4f69a9e2df.png', width: 300, height: 250, priority: 0},{id: '527', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9af9c6ea-9023-405d-8585-2cb5a56154d8.png', width: 300, height: 600, priority: 1},];
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();

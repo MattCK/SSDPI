@@ -31,6 +31,7 @@ pathForPossibleStoriesJavascript = javascript/retrievePossibleStoriesFromURL.js
 pathForProxiesJSON = proxies/production.proxies.json
 pathForTemporaryFiles = temporaryFiles/
 
+queueForDispatcherCommands = https://sqs.us-east-1.amazonaws.com/469658404108/production-DispatcherCommands
 queueForScreenshotRequests = https://sqs.us-east-1.amazonaws.com/469658404108/production-ScreenShotRequests
 queueForTagImageRequests = https://sqs.us-east-1.amazonaws.com/469658404108/production-TagImageRequests
 

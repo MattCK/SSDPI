@@ -202,6 +202,8 @@ public class AdShotter extends BasicShotter {
 		String injecterResponseJSON = "";
 		try {injecterResponseJSON = executeSeleniumDriverJavascript(activeWebDriver, creativeInjecterJS);}
 		catch (Exception e) {
+			consoleLog("ERROR: Could not execute CreativeInjecter");
+			e.printStackTrace();
 			activeAdShot.setError("COULD NOT EXECUTE CREATIVEINJECTER"); return;
 		}
 		
@@ -363,15 +365,20 @@ public class AdShotter extends BasicShotter {
 				if (domainsInClause != "") {domainsInClause += ", ";}
 				domainsInClause += "'" + domain + "'";
 			}
-			ResultSet loginCookie = ASRDatabase.executeQuery("SELECT * " + 
+			
+			//Get any cookies for the domain
+			try (ResultSet loginCookie = ASRDatabase.executeQuery("SELECT * " + 
 																"FROM siteLoginCookies " +
-																"WHERE SLC_site IN (" + domainsInClause + ")");
+																"WHERE SLC_site IN (" + domainsInClause + ")")) {
 					
-			//If any matches were found, navigate to the login page and run the login script 
-			if (loginCookie.next()) {
-				List<Cookie> loginCookies = cookiesFromJSON(loginCookie.getString("SLC_cookiesJSON"));
-				addCookiesToSeleniumDriver(activeWebDriver, loginCookie.getString("SLC_loginPage"), loginCookies);
-			}
+				//If any matches were found, navigate to the login page and run the login script 
+				if (loginCookie.next()) {
+					List<Cookie> loginCookies = cookiesFromJSON(loginCookie.getString("SLC_cookiesJSON"));
+					addCookiesToSeleniumDriver(activeWebDriver, loginCookie.getString("SLC_loginPage"), loginCookies);
+				}
+			} catch (Exception e) {
+				throw new AdShotRunnerException("Could not query database for cookies: " + domainsInClause, e);
+			}				
 			
 		//If the database was unaccessible, do nothing for the time being
 		} catch (Exception e){return;} 
@@ -437,7 +444,6 @@ public class AdShotter extends BasicShotter {
 			executeSeleniumDriverJavascript(activeWebDriver, 
 					"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
 		}
-
 	}
 
 	/**
@@ -495,14 +501,17 @@ public class AdShotter extends BasicShotter {
 		String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
 		
 		//Check the database to see if any entries matching the domain exist
-		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
+		try (ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
 															 "FROM exceptionsCreativeInjecter " +
-															 "WHERE EAI_url LIKE '" + urlDomain + "%'");
+															 "WHERE EAI_url LIKE '" + urlDomain + "%'")) {
 				
-		//If a match was found, return the script 
-		if (exceptionsSet.next()) {
-			return exceptionsSet.getString("EAI_script");
-		}
+			//If a match was found, return the script 
+			if (exceptionsSet.next()) {
+				return exceptionsSet.getString("EAI_script");
+			}
+			
+		//If the database was unaccessible, do nothing for the time being
+		} catch (Exception e){return "";} 
 		
 		//Otherwise, return an empty string
 		return "";

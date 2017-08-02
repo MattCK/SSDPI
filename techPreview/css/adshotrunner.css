@@ -325,6 +325,13 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     padding-top: 6px;
 }
 
+.errorMessageSpan {
+    color: red;
+    font-weight: bold;
+    padding-left: 10px;
+    display: none;
+}
+
 .customerFieldEmpty {
     background-color: #ffd8d8;
 }
@@ -405,46 +412,88 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     font-weight: bold;
 }
 
-#pagesTable {
-    margin-top: 7px;
+.siteDiv {
+    background-color: #eeeeee;
+    margin: 7px;
+    padding: 7px;
+    border: #999999 solid 1px;
+    margin-bottom: 10px;
+}
+
+.siteHeaderDiv {
+    width: 100%;
+    display: inline-block;
+}
+
+.siteTitleDiv {
+    font-size: 16px;
+    font-weight: bold;
+    float: left;
+    line-height: 26px;
+}
+
+.siteTitleDiv a {
+    vertical-align: middle;
+}
+
+.siteButtonsDiv {
+    float: right;
+}
+
+.sectionsNotAvailableSpan {
+    padding-right: 5px;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+.pagesTable {
+    margin-top: 5px;
     padding: 5px;
     width: 100%;
 }
 
-#pagesTable td {
+.pagesTable td {
     vertical-align: middle;
     text-align: center;
     border-right: 1px solid #c2c2c2;
 }
 
-#pagesTable th, td {
-    padding: 2px 0px 5px 0px;
+.pagesTable th, td {
+    padding: 2px 2px 5px 0px;
 }
 
-#pagesTable td:first-child {
+.pagesTable td:first-child {
     text-align: left;
     padding-left: 8px;
     padding-bottom: 2px;
 }
 
-#pagesTable td:last-child {
+.pagesTable td:first-child select {
+    width: 165px;
+}
+
+.pagesTable td:first-child input[type=text] {
+    width: 150px;
+}
+
+.pagesTable td:last-child {
     border-right: none;
 }
 
-#pagesTable tr:nth-child(even) {
+.pagesTable tr:nth-child(even) {
 	background-color: #f2f2f2;
 }
 
-#pagesTable tr:nth-child(odd) {
+.pagesTable tr:nth-child(odd) {
 	background-color: #fff;
 }
 
-#pagesTable input {
+.pagesTable input {
     vertical-align: text-bottom;
     margin-bottom: 0px;
 }
 
- #pagesTable tr:hover {
+ .pagesTable tr:hover {
  	background-color: #8AFF7F;
  }
 
@@ -489,18 +538,13 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     float: right;
 }
 
-#queuedTagDiv {
+#tagCountMessageDiv {
+    font-size: 16px;
+    font-weight: bold;
+    display: inline-block;
+    width: 916px;
     padding: 10px;
-    clear: both;
-    margin: 80px 0 15px 0;
     border: 1px solid #AAAAAA;
-}
-
-#queuedTagDiv.yellowBackground {
-    background-color: #FFFD91;
-}
-
-#queuedTagDiv.greenBackground {
     background-color: #B5FFB2;
 }
 
@@ -533,7 +577,10 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 
 .priorityDescriptionDiv {
 	text-align: center;
-	padding-bottom: 7px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    display: inline-block;
+    width: 100%;
 }
 
 .tagImageRowDiv {
@@ -679,7 +726,7 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     text-align: center;
 }
 
-#lineItemsTable th, td {
+#lineItemsTable th, #lineItemsTable td {
     padding: 2px 0px 5px 0px;
 }
 

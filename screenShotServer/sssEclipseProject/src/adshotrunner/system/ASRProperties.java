@@ -66,6 +66,7 @@ public class ASRProperties {
 	public static String pathForTemporaryFiles() {return getProperties().getProperty("pathForTemporaryFiles");}
 	
 	//Message queues
+	public static String queueForDispatcherCommands() {return getProperties().getProperty("queueForDispatcherCommands");}
 	public static String queueForScreenshotRequests() {return getProperties().getProperty("queueForScreenshotRequests");}
 	public static String queueForTagImageRequests() {return getProperties().getProperty("queueForTagImageRequests");}
 	

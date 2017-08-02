@@ -31,8 +31,6 @@ echo
 echo ASR Properties: \'asrProperties.ini.production\' will 
 echo '                 'be copied to \'asrProperties.ini\'
 echo
-echo Did you change asr.js so campaign results open in the same tab \(NOT a new tab\)\?
-echo 
 
 #Require a prompt to confirm moving forward
 printf "Type 'soundsgood' to continue: "
@@ -57,12 +55,14 @@ if [ "${PROMPT_ANSWER}" = soundsgood ]; then
 	rm ${BUILD_FOLDER}/restricted/${DEVELOPMENT_PROPERTIES_FILE}
 
 	#remove the development and testing tools
-	#rm -rf ${BUILD_FOLDER}/tools
+	rm -rf ${BUILD_FOLDER}/tools
+	mkdir ${BUILD_FOLDER}/tools
+	cp ${TECHPREVIEW_FOLDER}/tools/openCampaigns.php ${BUILD_FOLDER}/tools
 
 	#Place all uncompiled JS libraries in one file, compile it to the build folder, and remove the uncompiled file
 	echo Compiling Javascript...
 	php ${BUILD_FOLDER}/javascript/asrJavascript.php > ${JS_FILENAME}
-	java -jar closure-compiler.jar -W QUIET --js ${JS_FILENAME} --js_output_file ${BUILD_FOLDER}/javascript/asrJavascript.php
+	java -jar closure-compiler.jar --language_out=ES5 -W QUIET --js ${JS_FILENAME} --js_output_file ${BUILD_FOLDER}/javascript/asrJavascript.php
 	rm ${JS_FILENAME}
 
 	#Place all the files in a zip

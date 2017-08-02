@@ -37,10 +37,8 @@ public class PowerPointBackground {
 		
 		//Check to see if a PowerPointBackground with that ID exists in the database
 		//Redundant check along with constructor
-		try {
-			ResultSet backgroundResults = ASRDatabase.executeQuery("SELECT * " + 
-																   "FROM powerPointBackgrounds " + 
-																   "WHERE PPB_id = " + backgroundID);
+		String getBackgroundQuery = "SELECT * FROM powerPointBackgrounds WHERE PPB_id = " + backgroundID;
+		try (ResultSet backgroundResults = ASRDatabase.executeQuery(getBackgroundQuery)) {
 	
 			//If a match was found, return the background 
 			if (backgroundResults.next()) {
@@ -108,30 +106,32 @@ public class PowerPointBackground {
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
-	private PowerPointBackground(int backgroundID) throws SQLException {
+	private PowerPointBackground(int backgroundID) {
 		
 		//Get the PowerPointBackground information from the database
-		ResultSet backgroundResult = ASRDatabase.executeQuery("SELECT * " +
-															  "FROM powerPointBackgrounds " + 
-															  "WHERE PPB_id = " + backgroundID);		
+		String getBackgroundQuery = "SELECT * FROM powerPointBackgrounds WHERE PPB_id = " + backgroundID;
+		try (ResultSet backgroundResult = ASRDatabase.executeQuery(getBackgroundQuery)) {
 		
-		//If a PowerPointBackground was found with the passed ID, set the instance's members to its details
-		if (backgroundResult.next()) {
+			//If a PowerPointBackground was found with the passed ID, set the instance's members to its details
+			if (backgroundResult.next()) {
+				
+				_id = backgroundResult.getInt("PPB_id");
+				_name = backgroundResult.getString("PPB_name");
+				_fontColor = backgroundResult.getString("PPB_fontColor");
+				_originalFilename = backgroundResult.getString("PPB_originalFilename");
+				_filename = backgroundResult.getString("PPB_filename");
+				_thumbnailFilename = backgroundResult.getString("PPB_thumbnailFilename");
+				_timestamp = backgroundResult.getTimestamp("PPB_timestamp");
+				_archived = backgroundResult.getBoolean("PPB_archived");
+			}	
 			
-			_id = backgroundResult.getInt("PPB_id");
-			_name = backgroundResult.getString("PPB_name");
-			_fontColor = backgroundResult.getString("PPB_fontColor");
-			_originalFilename = backgroundResult.getString("PPB_originalFilename");
-			_filename = backgroundResult.getString("PPB_filename");
-			_thumbnailFilename = backgroundResult.getString("PPB_thumbnailFilename");
-			_timestamp = backgroundResult.getTimestamp("PPB_timestamp");
-			_archived = backgroundResult.getBoolean("PPB_archived");
-		}	
-		
-		//Otherwise throw an error
-		else {
-			throw new AdShotRunnerException("Could not find PowerPointBackground with ID: " + backgroundID);
-		}
+			//Otherwise throw an error
+			else {
+				throw new AdShotRunnerException("Could not find PowerPointBackground with ID: " + backgroundID);
+			}
+		} catch (Exception e) {
+			throw new AdShotRunnerException("Could not query database for PowerPointBackground with ID: " + backgroundID, e);
+		}				
 	}
 	
 	//---------------------------------------------------------------------------------------

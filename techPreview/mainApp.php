@@ -97,11 +97,12 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 
 		<?PHP endif; ?>
 
-		<h2>Customer</h2>
+		<h2 id="customerHeader">Customer</h2>
 		<img helpIcon="" id="customerHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div id="customerDiv" class="section">
 			<div class="textFieldName">Name:</div> 
 			<input id="customerName" name="customerName" type="text">
+			<span id="emptyCustomerFieldMessage" class="errorMessageSpan">Please enter the customer name</span>
 		</div>
 
 		<h2>PowerPoint Background</h2>
@@ -147,6 +148,8 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		</div>
 
 		<h2 id="campaignPagesHeader">Campaign Pages</h2>
+		<span id="noPagesAddedMessage" class="errorMessageSpan">Please add pages to your Campaign</span>
+		<span id="emptyURLFieldsMessage" class="errorMessageSpan">Please enter or paste URLs into the empty fields</span>
 		<div id="domainInputDiv" class="section">
 			<div class="textFieldName">Publisher Site:</div>
 			<input id="domain" name="domain" type="text" value="<?PHP echo $campaignDomain ?>">
@@ -155,6 +158,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 			<div class="problemLinkDiv">
 				<a class="contactIssueLink">Problem?</a>
 			</div>
+			<div id="publisherSitesDiv"></div>
 		</div>
 
 		<div id="pagesTableDiv" class="section" style="display: none">
@@ -165,12 +169,13 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 			<div class="problemLinkDiv">
 				<a class="contactIssueLink">Problem?</a>
 			</div>
-			<table id="pagesTable"></table>
+			<table id="pagesTable" class="pagesTable"></table>
 		</div>
+
 	</form>
 
 
-	<h2>Creative</h2>
+	<h2 id="creativeHeader">Creative</h2>
 	<img helpIcon="" id="creativeHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 	<div class="problemLinkDiv">
 		<a class="contactIssueLink">Problem?</a>
@@ -186,10 +191,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 			<div id="zipFileDropZone" class="dropBox">Drop a Zip File</div>
 		</div>
 		
-		<div id="queuedTagDiv" class="yellowBackground" align="center">
-			<span id="queuedTagCountSpan">0</span> <span id="tagsQueuedSpan">Tags Queued</span> &nbsp; 
-			<input class="button-tiny" id="getTagImagesButton" type="button" value="Get Tag Images" disabled>
-		</div>
+		<div id="tagCountMessageDiv" align="center" style="display: none;"></div>
 
 		<div class="priorityDescriptionDiv">Drag and drop creative images to change priority. (Nearer to the top has higher priority)</div>
 		<ul id="sortable"></ul>
@@ -239,7 +241,7 @@ contactForm.reset();
 
 //Make the tag images table sortable, make the contact form a dialog, and, if DFP is enabled, sort and show the orders
 let contactFormDialog = null;
-let lineItemsDialog = null;
+// let lineItemsDialog = null;
 $(function() {
 
 	//Setup drag and drop tag listeners
@@ -301,29 +303,25 @@ $(function() {
 	// $(".contactIssueLink").click(function() {contactForm.reset(); contactForm.selectIssue(); contactFormDialog.open();});
 	// $(".contactIdeaLink").click(function() {contactForm.reset(); contactFormDialog.open();});
 
-	//Setup the paths in the ASR javascript object to the tag and powerpoint background images
-	asr.tagImagesURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForCreativeImages() ?>/";
-	asr.powerPointBackgroundsURL = "<?PHP echo "https://s3.amazonaws.com/" . ASRProperties::containerForPowerPointBackgrounds() ?>/";
+	// //Enable all of the submit buttons in case they were disabled and the user did a refresh
+	// asr.enableSubmitButtons();
 
-	//Enable all of the submit buttons in case they were disabled and the user did a refresh
-	asr.enableSubmitButtons();
-
-	//Make the tag image list sortable
-	$( "#sortable" ).sortable();
+	// //Make the tag image list sortable
+	// $( "#sortable" ).sortable();
 
 	//Make the contact form a "pop-up" dialog
 	contactFormDialog = base.createDialog("contactFormDiv", "Contact Us", true, 650);
 
-	//Make the line items form a "pop-up" dialog
-	lineItemsDialog = base.createDialog("lineItemsDialogDiv", "Line Items", true, 940);
+	// //Make the line items form a "pop-up" dialog
+	// lineItemsDialog = base.createDialog("lineItemsDialogDiv", "Line Items", true, 940);
 
-	//Create the color selector for the final PowerPoint
-	$("#newBackgroundFontColor").spectrum({
-		color: "#000000",
-		preferredFormat: "hex",
-	    showPaletteOnly: true,
-	    showPalette: true,
-   	});
+	// //Create the color selector for the final PowerPoint
+	// $("#newBackgroundFontColor").spectrum({
+	// 	color: "#000000",
+	// 	preferredFormat: "hex",
+	//     showPaletteOnly: true,
+	//     showPalette: true,
+ //   	});
 
 	<?PHP if ($_GET["domain"]): ?>
 
@@ -348,14 +346,14 @@ $(function() {
 
 		base.nodeFromID("orderSearchTerm").value = "<?PHP echo $_GET["orderID"] ?>";
 		let lineItemID = "<?PHP echo $_GET["lineItemID"] ?>";
-		asr.searchOrders();
+		asr.dfp.searchOrders();
 		setTimeout(function() { 
 			base.nodeFromID('orderSelect').selectedIndex = 0
-			asr.requestOrderData();
+			asr.dfp.requestOrderData();
 
 			setTimeout(function() { 
 				base.check('lineItemCheckBox_' + lineItemID);
-				asr.useSelectedLineItems();
+				asr.dfp.useSelectedLineItems();
 			}, 2500);
 
 		}, 3000);

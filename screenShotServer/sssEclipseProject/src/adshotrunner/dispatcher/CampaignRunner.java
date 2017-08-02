@@ -40,7 +40,6 @@ public class CampaignRunner implements Runnable {
 		//Start the thread to run the campaign
 		_campaignThread = new Thread(this);
 		_campaignThread.start();
-
 	}
 	
 	//---------------------------------------------------------------------------------------
@@ -53,10 +52,8 @@ public class CampaignRunner implements Runnable {
 	@Override
 	public void run() {
 		
-		//Mark the Campaign's status to PROCESSING if not already set
-		if (!_runningCampaign.status().equals(Campaign.PROCESSING)) {
-			_runningCampaign.setStatus(Campaign.PROCESSING);
-		}
+		//Mark the Campaign's status to PROCESSING
+		_runningCampaign.setStatus(Campaign.PROCESSING);
 		
 		//Capture the AdShot images
 		try {AdShotter.captureAdShotImages(_runningCampaign.adShots());}
@@ -67,7 +64,7 @@ public class CampaignRunner implements Runnable {
 		//Generate the PowerPoint
 		try {_runningCampaign.generatePowerPoint();}
 		catch (Exception e) {
-			_runningCampaign.setError("UNABLE TO GENERATE POWERPOINT"); return;
+			_runningCampaign.setError("UNABLE TO GENERATE POWERPOINT"); e.printStackTrace(); return;
 		}
 		
 		//Mark the Campaign's status to FINSIHED
@@ -84,4 +81,15 @@ public class CampaignRunner implements Runnable {
 		}
 		
 	}
+	
+	//---------------------------------------------------------------------------------------
+	//----------------------------------- Accessors -----------------------------------------
+	//---------------------------------------------------------------------------------------
+	//********************************* Public Accessors ************************************
+	/**
+	 * @return	Thread of the CampaignRunner
+	 */
+	public Thread thread() {return _campaignThread;}
+	
+
 }

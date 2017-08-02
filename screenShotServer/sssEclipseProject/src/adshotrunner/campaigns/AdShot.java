@@ -60,8 +60,8 @@ public class AdShot {
 		
 		//Check to see if an AdShot with that ID exists in the database
 		//Redundant check along with constructor
-		try {
-			ResultSet adshotResult = ASRDatabase.executeQuery("SELECT * FROM adshots WHERE ADS_id = " + adShotID);
+		String getAdShotQuery = "SELECT * FROM adshots WHERE ADS_id = " + adShotID;
+		try (ResultSet adshotResult = ASRDatabase.executeQuery(getAdShotQuery)) {
 	
 			//If a match was found, return the Creative 
 			if (adshotResult.next()) {
@@ -205,63 +205,78 @@ public class AdShot {
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
-	private AdShot(int adShotID) throws SQLException {
+	private AdShot(int adShotID) {
 		
 		//Get the AdShot information from the database
-		ResultSet adshotResult = ASRDatabase.executeQuery("SELECT * FROM adshots WHERE ADS_id = " + adShotID);		
+		String getAdShotQuery = "SELECT * FROM adshots WHERE ADS_id = " + adShotID;
+		try (ResultSet adshotResult = ASRDatabase.executeQuery(getAdShotQuery)) {
 		
-		//If a Creative was found with the passed ID, set the instance's members to its details
-		if (adshotResult.next()) {
+			//If a Creative was found with the passed ID, set the instance's members to its details
+			if (adshotResult.next()) {
+				
+				_id = adshotResult.getInt("ADS_id");
+				_uuid = adshotResult.getString("ADS_uuid");
+				_campaignID = adshotResult.getInt("ADS_CMP_id");
+				_requestedURL = adshotResult.getString("ADS_requestedURL");
+				_storyFinder = adshotResult.getBoolean("ADS_storyFinder");
+				_mobile = adshotResult.getBoolean("ADS_mobile");
+				_belowTheFold = adshotResult.getBoolean("ADS_belowTheFold");
+				_finalURL = adshotResult.getString("ADS_finalURL");
+				_pageTitle = adshotResult.getString("ADS_pageTitle");
+				_imageFilename = adshotResult.getString("ADS_imageFilename");
+				_width = adshotResult.getInt("ADS_width");
+				_height = adshotResult.getInt("ADS_height");
+				_status = adshotResult.getString("ADS_status");
+				_errorMessage = adshotResult.getString("ADS_errorMessage");
+				_createdTimestamp = adshotResult.getTimestamp("ADS_createdTimestamp");
+				_processingTimestamp = adshotResult.getTimestamp("ADS_processingTimestamp");
+				_finishedTimestamp = adshotResult.getTimestamp("ADS_finishedTimestamp");
+				_errorTimestamp = adshotResult.getTimestamp("ADS_errorTimestamp");
+			}	
 			
-			_id = adshotResult.getInt("ADS_id");
-			_uuid = adshotResult.getString("ADS_uuid");
-			_campaignID = adshotResult.getInt("ADS_CMP_id");
-			_requestedURL = adshotResult.getString("ADS_requestedURL");
-			_storyFinder = adshotResult.getBoolean("ADS_storyFinder");
-			_mobile = adshotResult.getBoolean("ADS_mobile");
-			_belowTheFold = adshotResult.getBoolean("ADS_belowTheFold");
-			_finalURL = adshotResult.getString("ADS_finalURL");
-			_pageTitle = adshotResult.getString("ADS_pageTitle");
-			_imageFilename = adshotResult.getString("ADS_imageFilename");
-			_width = adshotResult.getInt("ADS_width");
-			_height = adshotResult.getInt("ADS_height");
-			_status = adshotResult.getString("ADS_status");
-			_errorMessage = adshotResult.getString("ADS_errorMessage");
-			_createdTimestamp = adshotResult.getTimestamp("ADS_createdTimestamp");
-			_processingTimestamp = adshotResult.getTimestamp("ADS_processingTimestamp");
-			_finishedTimestamp = adshotResult.getTimestamp("ADS_finishedTimestamp");
-			_errorTimestamp = adshotResult.getTimestamp("ADS_errorTimestamp");
-		}	
+			//Otherwise throw an error
+			else {
+				throw new AdShotRunnerException("Could not find AdShot with ID: " + adShotID);
+			}	
+		}
 		
-		//Otherwise throw an error
-		else {
-			throw new AdShotRunnerException("Could not find AdShot with ID: " + adShotID);
-		}	
+		//If we couldn't query the database correctly or another error occurred, throw an error
+		catch (Exception e) {
+			throw new AdShotRunnerException("Could not query database for AdShot with ID: " + adShotID, e);
+		}				
 
 		//Get the AdShot Creatives from the database
-		ResultSet creativesResult = ASRDatabase.executeQuery("SELECT * FROM adshotCreatives WHERE ASC_ADS_id = " + adShotID);		
-		
-		//For each Creative ID found, add the Creative to the instance
-		_creatives = new HashSet<Creative>();
 		Map<Integer, Creative> creativesByID = new HashMap<Integer, Creative>();
-		while (creativesResult.next()) {
-			Creative adShotCreative = Creative.getCreative(creativesResult.getInt("ASC_CRV_id"));
-			if (adShotCreative != null) {
-				_creatives.add(adShotCreative);
-				creativesByID.put(creativesResult.getInt("ASC_CRV_id"), adShotCreative);
-			}
-		}	
+		String getAdShotCreativesQuery = "SELECT * FROM adshotCreatives WHERE ASC_ADS_id = " + adShotID;
+		try (ResultSet creativesResult = ASRDatabase.executeQuery(getAdShotCreativesQuery)) {	
+		
+			//For each Creative ID found, add the Creative to the instance
+			_creatives = new HashSet<Creative>();
+			while (creativesResult.next()) {
+				Creative adShotCreative = Creative.getCreative(creativesResult.getInt("ASC_CRV_id"));
+				if (adShotCreative != null) {
+					_creatives.add(adShotCreative);
+					creativesByID.put(creativesResult.getInt("ASC_CRV_id"), adShotCreative);
+				}
+			}	
+		} catch (Exception e) {
+			throw new AdShotRunnerException("Could not query database for AdShot creatives: " + adShotID, e);
+		}				
 		
 		//Get the injected Creatives from the database
-		ResultSet injectedResult = ASRDatabase.executeQuery("SELECT * FROM injectedCreatives WHERE IJC_ADS_id = " + adShotID);		
+		String getInjectedCreativesQuery = "SELECT * FROM injectedCreatives WHERE IJC_ADS_id = " + adShotID;
+		try (ResultSet injectedResult = ASRDatabase.executeQuery(getInjectedCreativesQuery)) {		
 		
-		//For each injected Creative ID found, add the injected Creative to the instance
-		_injectedCreatives = new HashSet<Creative>();
-		while (injectedResult.next()) {
-			if (creativesByID.containsKey(injectedResult.getInt("IJC_CRV_id"))) {
-				_injectedCreatives.add(creativesByID.get(injectedResult.getInt("IJC_CRV_id")));
-			}
-		}	
+			//For each injected Creative ID found, add the injected Creative to the instance
+			_injectedCreatives = new HashSet<Creative>();
+			while (injectedResult.next()) {
+				if (creativesByID.containsKey(injectedResult.getInt("IJC_CRV_id"))) {
+					_injectedCreatives.add(creativesByID.get(injectedResult.getInt("IJC_CRV_id")));
+				}
+			}	
+		} catch (Exception e) {
+			throw new AdShotRunnerException("Could not query database for AdShot injected creatives: " + adShotID, e);
+		}				
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -512,20 +527,23 @@ public class AdShot {
 									  "WHERE ADS_id = " + _id);
 			
 			//Set the new status in the instance
-			_status = adShotStatus;
-			
-			//Query the database for the new timestamp. This is to prevent localization errors.
-			//Load all three timestamps to simplify code
-			ResultSet adShotResult = ASRDatabase.executeQuery("SELECT * FROM adshots WHERE ADS_id = " + _id);		
-			if (adShotResult.next()) {
-				_processingTimestamp = adShotResult.getTimestamp("ADS_processingTimestamp");
-				_finishedTimestamp = adShotResult.getTimestamp("ADS_finishedTimestamp");
-			}	
-			
+			_status = adShotStatus;			
 		} catch (Exception e) {
 			e.printStackTrace();
         	throw new AdShotRunnerException("Could not update AdShot status in the database: " + adShotStatus, e);
 		}
+		
+		//Query the database for the new timestamp. This is to prevent localization errors.
+		//Load all three timestamps to simplify code
+		String getAdShotQuery = "SELECT * FROM adshots WHERE ADS_id = " + _id;
+		try (ResultSet adShotResult = ASRDatabase.executeQuery(getAdShotQuery)) {	
+			if (adShotResult.next()) {
+				_processingTimestamp = adShotResult.getTimestamp("ADS_processingTimestamp");
+				_finishedTimestamp = adShotResult.getTimestamp("ADS_finishedTimestamp");
+			}	
+		} catch (Exception e) {
+        	throw new AdShotRunnerException("Could not retrieve updated AdShot statuses ", e);
+		}		
 	}
 
 	/**
@@ -549,17 +567,21 @@ public class AdShot {
 			
 			//Set the instance's error message and status
 			_errorMessage = errorMessage;
-			_status = ERROR;
-			
-			//Query the database for the new timestamp. This is to prevent localization errors.
-			ResultSet adShotResult = ASRDatabase.executeQuery("SELECT * FROM adshots WHERE ADS_id = " + _id);		
-			if (adShotResult.next()) {
-				_errorTimestamp = adShotResult.getTimestamp("ADS_errorTimestamp");
-			}	
-			
+			_status = ERROR;			
 		} catch (Exception e) {
         	throw new AdShotRunnerException("Could not store AdShot error in the database: " + errorMessage, e);
 		}
+		
+		//Query the database for the new timestamp. This is to prevent localization errors.
+		String getAdShotQuery = "SELECT * FROM adshots WHERE ADS_id = " + _id;
+		try (ResultSet adShotResult = ASRDatabase.executeQuery(getAdShotQuery)) {
+			if (adShotResult.next()) {
+				_errorTimestamp = adShotResult.getTimestamp("ADS_errorTimestamp");
+			}	
+		} catch (Exception e) {
+        	throw new AdShotRunnerException("Could not retrieve updated AdShot error status ", e);
+		}		
+
 	}
 
 	//---------------------------------------------------------------------------------------

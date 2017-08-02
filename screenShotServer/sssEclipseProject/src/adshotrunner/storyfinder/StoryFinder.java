@@ -216,12 +216,15 @@ public class StoryFinder {
 			retrievedLinks = getStoryLinksFromJSON(linkJSON);
 			
 			userAgentIncrementor++;
+			
 			//if this is an exception and we've gotten all the way through all the user agents
 			//without enough results loop through again without the exception
-			if((userAgentIncrementor >= userAgents.length) && (_dbExceptionID != "" && _dbExceptionClassName != "")){
-				StoryFinder.consoleLog("Unable to process exception: restarting without");
+			if((userAgentIncrementor >= userAgents.length) && 
+			   ((_dbExceptionID != "") || (_dbExceptionClassName != ""))){
+				StoryFinder.consoleLog("Unable to get links with StoryFinder Exception. Retrying without it.");
 				_dbExceptionID = "";
 				_dbExceptionClassName = "";
+				userAgentIncrementor = 0;
 			}
 		}
 		
@@ -234,30 +237,32 @@ public class StoryFinder {
 		String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
 		
 		//Check the database to see if any entries matching the domain exist
-		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
-															 "FROM exceptionsStoryFinder " +
-															 "WHERE ESF_url LIKE '" + urlDomain + "%'");
-				
-		//If a match was found, use the container ID and class of the longest matching url part
 		String urlPart = "", containerID = "", className = "";
-		while (exceptionsSet.next()) {
-						
-			//Get the current URL part
-			String currentURLPart = exceptionsSet.getString("ESF_url");
-			
-			//If the url part is a substring of the target URL, store its info if it is the longest
-			if (targetURL.toLowerCase().contains(currentURLPart.toLowerCase())) {
+		try (ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
+															 	"FROM exceptionsStoryFinder " +
+															 	"WHERE ESF_url LIKE '" + urlDomain + "%'")) {
 				
-				//See if the new part is longer than the current
-				if (currentURLPart.length() > urlPart.length()) {
+			//If a match was found, use the container ID and class of the longest matching url part
+			while (exceptionsSet.next()) {
+							
+				//Get the current URL part
+				String currentURLPart = exceptionsSet.getString("ESF_url");
+				
+				//If the url part is a substring of the target URL, store its info if it is the longest
+				if (targetURL.toLowerCase().contains(currentURLPart.toLowerCase())) {
 					
-					//Store the new exception
-					urlPart = currentURLPart;
-					containerID = exceptionsSet.getString("ESF_containerID");
-					className = exceptionsSet.getString("ESF_className");
-				}
-			}			
-		}
+					//See if the new part is longer than the current
+					if (currentURLPart.length() > urlPart.length()) {
+						
+						//Store the new exception
+						urlPart = currentURLPart;
+						containerID = exceptionsSet.getString("ESF_containerID");
+						className = exceptionsSet.getString("ESF_className");
+					}
+				}			
+			}
+		//If the database was unaccessible, do nothing for the time being
+		} catch (Exception e){return null;} 
 		
 		//If no matches in the database were found, return null
 		if (urlPart.isEmpty()) {return null;}

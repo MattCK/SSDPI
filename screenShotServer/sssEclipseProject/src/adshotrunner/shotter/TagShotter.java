@@ -104,8 +104,13 @@ public class TagShotter extends BasicShotter {
 			}
 			
 			//If there was no error, mark the Creative as finished
-			if (!currentCreative.status().equals(AdShot.ERROR)) {
-				currentCreative.setStatus(AdShot.FINISHED);
+			if (!currentCreative.status().equals(Creative.ERROR)) {
+				currentCreative.setStatus(Creative.FINISHED);
+			}
+			
+			//Otherwise, flag that no more attempts will be made
+			else {
+				currentCreative.setFinalError(true);
 			}
 		}
 
@@ -177,10 +182,9 @@ public class TagShotter extends BasicShotter {
 
 		//Setup the proxy capability
 		String proxyDetails = getProxyServer();
-//		boolean proxyIsFunctional = proxyIsFunctional(proxyDetails);
-//		consoleLog("Proxy is functional: " + proxyIsFunctional);
-//		if (proxyIsFunctional) {
-		if (true) {
+		boolean proxyIsFunctional = proxyIsFunctional(proxyDetails);
+		consoleLog("Proxy is functional: " + proxyIsFunctional);
+		if (proxyIsFunctional) {
 			consoleLog("Using proxy: " + proxyDetails);
 			Proxy chromeProxy = new Proxy();
 			chromeProxy.setProxyType(ProxyType.MANUAL);

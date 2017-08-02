@@ -25,7 +25,7 @@ public class CampaignEmail {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------	
 	//URL to final results page. The query portion takes the Campaign UUID.
-	final public static String RESULTSPAGEURL = "https://" + ASRProperties.asrDomain() + "/campaignResults.php?id="; 
+	final public static String RESULTSPAGEURL = "https://" + ASRProperties.asrDomain() + "/campaignResults.php?uuid="; 
 
 	
 	//---------------------------------------------------------------------------------------

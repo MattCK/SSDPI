@@ -741,7 +741,7 @@ class GPTSlots {
 		this._slotCreativeSizes = new Map();
 
 		//If the googletag object exists, instantiate the class using its information
-		if (typeof googletag !== 'undefined') {
+		if ((typeof googletag !== 'undefined') && (typeof googletag.pubads !== 'undefined')) {
 
 			//Store any googletag.Slot objects
 			this._slots = googletag.pubads().getSlots();

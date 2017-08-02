@@ -28,6 +28,7 @@ public class Creative implements Comparable<Creative> {
 	//---------------------------------------------------------------------------------------	
 	//Status constants for Creative processing
 	final public static String CREATED = "CREATED"; 
+	final public static String READY = "READY"; 
 	final public static String QUEUED = "QUEUED"; 
 	final public static String PROCESSING = "PROCESSING"; 
 	final public static String FINISHED = "FINISHED"; 
@@ -51,8 +52,8 @@ public class Creative implements Comparable<Creative> {
 		
 		//Check to see if a Creative with that ID exists in the database
 		//Redundant check along with constructor
-		try {
-			ResultSet creativeResults = ASRDatabase.executeQuery("SELECT * FROM creatives WHERE CRV_id = " + creativeID);
+		String getCreativeQuery = "SELECT * FROM creatives WHERE CRV_id = " + creativeID;
+		try (ResultSet creativeResults = ASRDatabase.executeQuery(getCreativeQuery)) {
 	
 			//If a match was found, return the Creative 
 			if (creativeResults.next()) {
@@ -68,7 +69,8 @@ public class Creative implements Comparable<Creative> {
 		
 		//If we couldn't query the database correctly or another error occurred, print it out and return null
 		catch (Exception e) {
-			e.printStackTrace();;
+			System.out.println("Unable to query database for Creative with ID: " + creativeID);
+			e.printStackTrace();
 			return null;
 		}		
 	}
@@ -135,9 +137,19 @@ public class Creative implements Comparable<Creative> {
 	private String _errorMessage;
 	
 	/**
+	 * TRUE if an error occurred during processing and no more attempts will be made, FALSE otherwise
+	 */
+	private boolean _finalError;
+	
+	/**
 	 * The timestamp the Creative was inserted into the database
 	 */
 	private Timestamp _createdTimestamp;
+	
+	/**
+	 * The timestamp the Creative status was set to READY
+	 */
+	private Timestamp _readyTimestamp;
 	
 	/**
 	 * The timestamp the Creative status was set to QUEUED
@@ -163,35 +175,41 @@ public class Creative implements Comparable<Creative> {
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
-	private Creative(int creativeID) throws SQLException {
+	private Creative(int creativeID) {
 		
-		//Get the Creative information from the database
-		ResultSet creativeResult = ASRDatabase.executeQuery("SELECT * FROM creatives WHERE CRV_id = " + creativeID);		
-		
-		//If a Creative was found with the passed ID, set the instance's members to its details
-		if (creativeResult.next()) {
+		//Try getting the creative from the database
+		String getCreativeQuery = "SELECT * FROM creatives WHERE CRV_id = " + creativeID;
+		try (ResultSet creativeResult = ASRDatabase.executeQuery(getCreativeQuery)) {
+					
+			//If a Creative was found with the passed ID, set the instance's members to its details
+			if (creativeResult.next()) {
+				
+				_id = creativeResult.getInt("CRV_id");
+				_uuid = creativeResult.getString("CRV_uuid");
+				_imageFilename = creativeResult.getString("CRV_imageFilename");
+				_width = creativeResult.getInt("CRV_width");
+				_height = creativeResult.getInt("CRV_height");
+				_priority = creativeResult.getInt("CRV_priority");
+				_tagScript = creativeResult.getString("CRV_tagScript");
+				_tagPageFilename = creativeResult.getString("CRV_tagPageFilename");
+				_status = creativeResult.getString("CRV_status");
+				_errorMessage = creativeResult.getString("CRV_errorMessage");
+				_finalError = creativeResult.getBoolean("CRV_finalError");
+				_createdTimestamp = creativeResult.getTimestamp("CRV_createdTimestamp");
+				_readyTimestamp = creativeResult.getTimestamp("CRV_readyTimestamp");
+				_queuedTimestamp = creativeResult.getTimestamp("CRV_queuedTimestamp");
+				_processingTimestamp = creativeResult.getTimestamp("CRV_processingTimestamp");
+				_finishedTimestamp = creativeResult.getTimestamp("CRV_finishedTimestamp");
+				_errorTimestamp = creativeResult.getTimestamp("CRV_errorTimestamp");
+			}	
 			
-			_id = creativeResult.getInt("CRV_id");
-			_uuid = creativeResult.getString("CRV_uuid");
-			_imageFilename = creativeResult.getString("CRV_imageFilename");
-			_width = creativeResult.getInt("CRV_width");
-			_height = creativeResult.getInt("CRV_height");
-			_priority = creativeResult.getInt("CRV_priority");
-			_tagScript = creativeResult.getString("CRV_tagScript");
-			_tagPageFilename = creativeResult.getString("CRV_tagPageFilename");
-			_status = creativeResult.getString("CRV_status");
-			_errorMessage = creativeResult.getString("CRV_errorMessage");
-			_createdTimestamp = creativeResult.getTimestamp("CRV_createdTimestamp");
-			_queuedTimestamp = creativeResult.getTimestamp("CRV_queuedTimestamp");
-			_processingTimestamp = creativeResult.getTimestamp("CRV_processingTimestamp");
-			_finishedTimestamp = creativeResult.getTimestamp("CRV_finishedTimestamp");
-			_errorTimestamp = creativeResult.getTimestamp("CRV_errorTimestamp");
-		}	
-		
-		//Otherwise throw an error
-		else {
-			throw new AdShotRunnerException("Could not find Creative with ID: " + creativeID);
-		}
+			//Otherwise throw an error
+			else {
+				throw new AdShotRunnerException("Could not find Creative with ID: " + creativeID);
+			}
+		} catch (Exception e) {
+			throw new AdShotRunnerException("Could not query database for Creative with ID: " + creativeID, e);
+		}				
 		
 	}
 	
@@ -285,6 +303,7 @@ public class Creative implements Comparable<Creative> {
 		String timestampField = "";
 		switch (creativeStatus) {
 		
+			case READY: timestampField = "CRV_readyTimestamp"; break;
 			case QUEUED: timestampField = "CRV_queuedTimestamp"; break;
 			case PROCESSING: timestampField = "CRV_processingTimestamp"; break;
 			case FINISHED: timestampField = "CRV_finishedTimestamp"; break;
@@ -303,20 +322,24 @@ public class Creative implements Comparable<Creative> {
 			
 			//Set the new status in the instance
 			_status = creativeStatus;
-			
-			//Query the database for the new timestamp. This is to prevent localization errors.
-			//Load all three timestamps to simplify code
-			ResultSet creativeResult = ASRDatabase.executeQuery("SELECT * FROM creatives WHERE CRV_id = " + _id);		
+						
+		} catch (Exception e) {
+        	throw new AdShotRunnerException("Could not update Creative status in the database: " + creativeStatus, e);
+		}		
+		
+		//Query the database for the new timestamp. This is to prevent localization errors.
+		//Load all three timestamps to simplify code
+		String getCreativeQuery = "SELECT * FROM creatives WHERE CRV_id = " + _id;
+		try (ResultSet creativeResult = ASRDatabase.executeQuery(getCreativeQuery)) {		
 			if (creativeResult.next()) {
+				_readyTimestamp = creativeResult.getTimestamp("CRV_readyTimestamp");
 				_queuedTimestamp = creativeResult.getTimestamp("CRV_queuedTimestamp");
 				_processingTimestamp = creativeResult.getTimestamp("CRV_processingTimestamp");
 				_finishedTimestamp = creativeResult.getTimestamp("CRV_finishedTimestamp");
 			}	
-			
 		} catch (Exception e) {
-			e.printStackTrace();
-        	throw new AdShotRunnerException("Could not update Creative status in the database: " + creativeStatus, e);
-		}
+        	throw new AdShotRunnerException("Could not retrieve updated Creative statuses ", e);
+		}		
 	}
 
 	/**
@@ -341,19 +364,47 @@ public class Creative implements Comparable<Creative> {
 			//Set the instance's error message and status
 			_errorMessage = errorMessage;
 			_status = ERROR;
-			
-			//Query the database for the new timestamp. This is to prevent localization errors.
-			ResultSet creativeResult = ASRDatabase.executeQuery("SELECT * FROM creatives WHERE CRV_id = " + _id);		
-			if (creativeResult.next()) {
-				_errorTimestamp = creativeResult.getTimestamp("CRV_errorTimestamp");
-			}	
-			
+						
 		} catch (Exception e) {
         	throw new AdShotRunnerException("Could not store Creative error in the database: " + errorMessage, e);
 		}
+		
+		//Query the database for the new timestamp. This is to prevent localization errors.
+		String getCreativeQuery = "SELECT * FROM creatives WHERE CRV_id = " + _id;
+		try (ResultSet creativeResult = ASRDatabase.executeQuery(getCreativeQuery)) {		
+			if (creativeResult.next()) {
+				_errorTimestamp = creativeResult.getTimestamp("CRV_errorTimestamp");
+			}	
+		} catch (Exception e) {
+        	throw new AdShotRunnerException("Could not retrieve updated Creative error status ", e);
+		}		
 	}
-
 	
+	/**
+	 * Sets the final error status in the database for the Creative.
+	 * 
+	 * If set to TRUE, this signifies an error occurred during imaging the Creative tag
+	 * but no more attempts will be made.
+	 * 
+	 * @param status	TRUE if an error exists and no more attempts will be made
+	 */
+	public void setFinalError(boolean status) {
+		
+		//Update the status in the database
+		try {
+			int statusFlag = (status) ? 1 : 0;
+			ASRDatabase.executeUpdate("UPDATE creatives " +
+									 " SET CRV_finalError = " + statusFlag +
+									 " WHERE CRV_id = " + _id);
+			
+			//Set the instance's error message and status
+			_finalError = status;
+						
+		} catch (Exception e) {
+        	throw new AdShotRunnerException("Could not set final error status in Creative: " + _id, e);
+		}
+		
+	}
 	//---------------------------------------------------------------------------------------
 	//----------------------------------- Accessors -----------------------------------------
 	//---------------------------------------------------------------------------------------
@@ -444,9 +495,19 @@ public class Creative implements Comparable<Creative> {
 	public String errorMessage() {return _errorMessage;}
 
 	/**
+	 * @return	TRUE if an error occurred during processing and no more attempts will be made, FALSE otherwise
+	 */
+	public boolean finalError() {return _finalError;}
+
+	/**
 	 * @return	The timestamp the Creative was inserted into the database
 	 */
 	public Timestamp createdTimestamp() {return _createdTimestamp;}
+
+	/**
+	 * @return	The timestamp the Creative status was set to READY
+	 */
+	public Timestamp readyTimestamp() {return _readyTimestamp;}
 
 	/**
 	 * @return	The timestamp the Creative status was set to QUEUED

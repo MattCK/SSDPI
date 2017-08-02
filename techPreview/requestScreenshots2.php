@@ -45,8 +45,8 @@ foreach ($_POST['adShots'] as $currentAdShotJSON) {
 	if ($newAdShot == NULL) {echo createJSONResponse(false, "Could not create AdShot."); return;}
 }
 
-//Queue the Campaign for processing
-$newCampaign->queueForProcessing();
+//Mark the Campaign ready for processing
+$newCampaign->readyForProcessing();
 
 //Return the UUID to the server
 echo createJSONResponse(true, "", ["uuid" => $newCampaign->uuid()]); return;
