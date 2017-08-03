@@ -146,7 +146,7 @@ class SitePage {
         }
         //Add the mobile and below-the-fold checkboxes
         pageRowHTML += "<td><label><input type='checkbox' id='" + this.mobileCheckboxID() + "' value='1'>Mobile</label></td>";
-        pageRowHTML += "<td style='display:none;'><label><input type='checkbox' id='" + this.belowTheFoldCheckboxID() + "' value='1'>Below Fold</label></td>";
+        pageRowHTML += "<td><label><input type='checkbox' id='" + this.belowTheFoldCheckboxID() + "' value='1'>Below Fold</label></td>";
         //Add the radio buttons for choosing all/inidiviual/no creative
         pageRowHTML += "<td><label><input type='radio' id='" + this.allCreativeRadioID() + "'  name='" + this.creativeRadioTagName() + "' value='all' checked>All Creative</label>";
         pageRowHTML += "    <label><input type='radio' id='" + this.individualCreativeRadioID() + "'  name='" + this.creativeRadioTagName() + "' value='individual'>Individual Creative Screenshots</label>";

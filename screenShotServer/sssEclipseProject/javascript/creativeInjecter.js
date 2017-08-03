@@ -1343,10 +1343,11 @@ class CreativeInjecter {
 	/**
 	* Initializes the CreativeInjecter with its creative and optional selectors.
 	*
-	* @param {CreativeGroup} 	creatives		Creatives to inject into the running page
-	* @param {Array} 			adSelectors		Array of AdSelectors
+	* @param {CreativeGroup} 	creatives				Creatives to inject into the running page
+	* @param {Array} 			adSelectors				Array of AdSelectors
+	* @param {number} 			injectionStartHeight	Height at which creatives should be injected (this height and below)
 	*/
-	constructor(creatives, adSelectors) {
+	constructor(creatives, adSelectors, injectionStartHeight) {
 
 		//Verify creatives is a CreativeGroup
 		if (!(creatives instanceof CreativeGroup)) {throw "CreativeInjecter.constructor: creatives must be of type CreativeGroup";}
@@ -1356,8 +1357,14 @@ class CreativeInjecter {
 			throw "CreativeInjecter.constructor: adSelectors must be an array of AdSelector objects or null";
 		}
 
-		//Store the creatives
+		//If the start height is null or not a number, set it to 0
+		if ((injectionStartHeight == null) || (isNaN(injectionStartHeight))) {
+			injectionStartHeight = 0;
+		}
+
+		//Store the creatives and start height
 		this._creatives = creatives;
+		this._injectionStartHeight = injectionStartHeight;
 
 		//Store the AdSelectors
 		this._adSelectors = [];
@@ -1411,7 +1418,7 @@ class CreativeInjecter {
 						if (currentElement) {
 
 							//If the y-position is positive (negative occurs when scrolled for below-the-fold)
-							if (ElementInfo.yPosition(currentElement) >= 0) {
+							if (ElementInfo.yPosition(currentElement) >= this._injectionStartHeight) {
 
 								//Replace the element
 								this._replaceElementWithCreative(currentElement, creativeToInject)
@@ -1460,7 +1467,7 @@ class CreativeInjecter {
 			if (creativeToInject) {
 
 				//If the y-position is positive (negative occurs when scrolled for below-the-fold)
-				if (ElementInfo.yPosition(currentElement) >= 0) {
+				if (ElementInfo.yPosition(currentElement) >= this._injectionStartHeight) {
 
 					//Replace the element
 					this._replaceElementWithCreative(currentElement, creativeToInject)
@@ -1489,7 +1496,7 @@ class CreativeInjecter {
 				if (creativeToInject) {
 
 					//If the y-position is positive (negative occurs when scrolled for below-the-fold)
-					if (ElementInfo.yPosition(currentElement) >= 0) {
+					if (ElementInfo.yPosition(currentElement) >= this._injectionStartHeight) {
 
 						//Replace the element
 						this._replaceElementWithCreative(currentElement, creativeToInject)
@@ -1512,19 +1519,9 @@ class CreativeInjecter {
 		let originalNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
 		let originalNodeHeight = ElementInfo.heightWithoutBorder(elementNode);
 
-		// let creativeImage = document.createElement('img');
-		// creativeImage.src = replacementCreative.imageURL();
-		// creativeImage.style.width = replacementCreative.width() + 'px';
-		// creativeImage.style.height = replacementCreative.height() + 'px';
-		// elementNode.parentNode.replaceChild(creativeImage, elementNode);
-		// return;
-
 		//Create the replacement image
 		let creativeImage = document.createElement('img');
 		creativeImage.src = replacementCreative.imageURL();
-		//creativeImage.style.maxWidth = 'none';
-		// creativeImage.className = elementNode.className;
-		// creativeImage.id = elementNode.id;
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
 		creativeImage.style.maxWidth = replacementCreative.width() + 'px';
@@ -1536,53 +1533,6 @@ class CreativeInjecter {
         }
 
 		elementNode.appendChild(creativeImage);
-
-
-		//If the element node is an IFrame, replace it with another IFrame
-		//if (elementNode.nodeName == "IFRAME") {
-
-			// //Once the IFrame is loaded, add the image element
-			// elementNode.onload = function()
-			// {
-			// 	//Set the body margin to zero because old HTML rules are dumb and append the image
-			//     let iframeDocument = elementNode.contentDocument;
-			//     iframeDocument.body.style.margin = "0px";
-			//     iframeDocument.body.appendChild(creativeImage);
-			// };
-
-			// //Replace the element node with the new IFrame
-			// elementNode.src = 'about:config';
-
-			//Create the IFrame node
-			// let creativeIFrame = document.createElement('iframe');
-			// creativeIFrame.className = elementNode.className;
-			// //creativeIFrame.id = elementNode.id;
-			// creativeIFrame.style.border = '0px';
-			// //creativeIFrame.style.cssText = document.defaultView.getComputedStyle(elementNode, "").cssText;
-			// creativeIFrame.width = replacementCreative.width() + 'px';
-			// creativeIFrame.height = replacementCreative.height() + 'px';
-			// creativeIFrame.style.width = replacementCreative.width() + 'px';
-			// creativeIFrame.style.height = replacementCreative.height() + 'px';
-   //          creativeIFrame.style.overflow = "hidden";
-   //          creativeIFrame.style.scrolling = "no";
-
-			// //Once the IFrame is loaded, add the image element
-			// creativeIFrame.onload = function()
-			// {
-			// 	//Set the body margin to zero because old HTML rules are dumb and append the image
-			//     let iframeDocument = creativeIFrame.contentDocument;
-			//     iframeDocument.body.style.margin = "0px";
-			//     iframeDocument.body.appendChild(creativeImage);
-			// };
-
-			// //Replace the element node with the new IFrame
-			// while (elementNode.hasChildNodes()) {
-   //              elementNode.removeChild(elementNode.lastChild);
-   //          }
-
-			// elementNode.appendChild(creativeIFrame);
-		//}
-
 
 		//Make sure the parents are displayed and at least as big as the Creative image
 		// this._crawlParentHTMLElements(creativeIFrame, function(currentNode) {
@@ -2093,6 +2043,7 @@ class CreativeInjecter {
 document.documentElement.style.overflow = 'hidden';
 
 let creatives = [];
+let injectionStartHeight = 0;
 
 /*creatives = [
 	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
@@ -2145,7 +2096,7 @@ for (let currentSelector of selectors) {
 
 
 //Initialize the CreativeInjecter and inject the creatives
-let injecter = new CreativeInjecter(allCreatives, allSelectors);
+let injecter = new CreativeInjecter(allCreatives, allSelectors, injectionStartHeight);
 injecter.injectCreativesIntoPage();
 
 //Create the list of injected Creatives and their locations

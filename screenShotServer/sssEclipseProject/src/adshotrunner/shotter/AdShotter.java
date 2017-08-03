@@ -76,9 +76,10 @@ public class AdShotter extends BasicShotter {
 	//Timeouts for page loads and javascript execution
 	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	
-	//Below the fold start heights
+	//Below the fold start heights and top padding
 	final private static int BTFDESKTOPSTARTHEIGHT = 700;	//in pixels
 	final private static int BTFMOBILESTARTHEIGHT = 500;	//in pixels
+	final private static int BTFCROPPADDING = 150;			//in pixels
 	
 	//Crop lengths and bottom margin
 	final private static int MINIMUMCROPLENGTH = 1560;		//in pixels
@@ -128,8 +129,6 @@ public class AdShotter extends BasicShotter {
 		try {activeWebDriver = getAdShotDriver(mobileDriver);}
 		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
 						
-		
-		
 		//Login to any sites that require it
 		setCookiesforSites(activeWebDriver, adShots);
 		
@@ -187,9 +186,8 @@ public class AdShotter extends BasicShotter {
 	 */
 	static private void createAdShotImage(WebDriver activeWebDriver, AdShot activeAdShot) {
 		
-		//Scroll to the start height. If below-the-fold, scroll to either the desktop or mobile start height.
-		//If NOT below-the-fold, scrolls down and back up to 0 to load ads.
-		scrollToStartHeight(activeWebDriver, activeAdShot);
+		//Scroll down and back up to load lazy ads (ads that only load after the user scrolls)
+		scrollToLoadLazyAds(activeWebDriver);
 		
 		//Get the CreativeInjecter javascript with the creatives inserted into it
 		String creativeInjecterJS = "";
@@ -207,7 +205,9 @@ public class AdShotter extends BasicShotter {
 			activeAdShot.setError("COULD NOT EXECUTE CREATIVEINJECTER"); return;
 		}
 		
-		//Parse the Injecter response, mark which Creatives were injected, and find optimal crop length
+		//Parse the Injecter response, mark which Creatives were injected and 
+		//find crop start height and optimal length
+		int cropStartHeight = 0;
 		int optimalCropLength = MINIMUMCROPLENGTH;
 		try {
 			
@@ -216,14 +216,22 @@ public class AdShotter extends BasicShotter {
 			//Output the message log
 			consoleLog("\n-----Injecter Script Log-----\n" + responseFromInjecter.outputLog + "\n--------------------------");
 			
-			//Mark the Creatives as injected
-			for (Map.Entry<Integer, InjecterResponse.Coordinate> injected : responseFromInjecter.injectedCreatives.entrySet()) {
-			    Creative currentCreative = getCreativeByID(injected.getKey(), activeAdShot.creatives());
-			    activeAdShot.creativeInjected(currentCreative);
-			}
+			//Get the crop start height. Default is 0 unless below-the-fold screenshot.
+			cropStartHeight = (activeAdShot.belowTheFold()) ? 
+										getBTFCropStartHeight(responseFromInjecter) : 0;
 			
 			//Get the optimal crop length
-			optimalCropLength = getOptimalCropLength(responseFromInjecter, activeAdShot);
+			optimalCropLength = getOptimalCropLength(responseFromInjecter, activeAdShot, cropStartHeight);
+			
+			//Mark the Creatives as injected if they are in the visible range
+			for (Map.Entry<Integer, InjecterResponse.Coordinate> injected : responseFromInjecter.injectedCreatives.entrySet()) {
+				if ((injected.getValue().y >= cropStartHeight) && 
+					(injected.getValue().y <= (cropStartHeight + optimalCropLength))) {
+					
+					Creative currentCreative = getCreativeByID(injected.getKey(), activeAdShot.creatives());
+			    	activeAdShot.creativeInjected(currentCreative);
+				}
+			}						
 		}
 		catch (Exception e) {
 			consoleLog("------ Unable to Parse Injecter Response ------");
@@ -244,9 +252,11 @@ public class AdShotter extends BasicShotter {
 		activeAdShot.setPageTitle(activeWebDriver.getTitle());
 		
 		//Crop the image
+		consoleLog("Crop Start: " + cropStartHeight);
+		consoleLog("Crop Length: " + optimalCropLength);
 		BufferedImage croppedScreenshot = null;
 		int cropWidth = (activeAdShot.mobile()) ? MOBILEVIEWWIDTH : DESKTOPVIEWWIDTH;
-		try {croppedScreenshot = cropAdShotScreenshot(screenShot, cropWidth, optimalCropLength);}
+		try {croppedScreenshot = cropAdShotScreenshot(screenShot, cropWidth, cropStartHeight, optimalCropLength);}
 		catch (Exception e) {
 			e.printStackTrace();
 			activeAdShot.setError("COULD NOT CROP SCREENSHOT"); return;
@@ -418,32 +428,33 @@ public class AdShotter extends BasicShotter {
 	}
 	
 	/**
-	 * Scrolls the current browser page to its start height determined by whether or not
-	 * the AdShot is Below-the-Fold and whether it is desktop or mobile.
-	 * 
-	 * If the AdShot is NOT Below-the-Fold, this function scrolls down and then back up
-	 * to the top in order to load ads.
-	 * 
-	 * If the AdShot is Below-the-Fold, this function scrolls the browser to a height
-	 * of BTFDESKTOPSTARTHEIGHT or BTFMOBILESTARTHEIGHT depending on whether the AdShot
-	 * is for mobile.
+	 * Scrolls the current browser page down and back up to load lazy ads (ads that
+	 * do not load until the user scrolls)
 	 * 
 	 * @param activeWebDriver		WebDriver to scroll
-	 * @param currentAdShot			AdShot used to determine where to scroll
 	 */
-	static private void scrollToStartHeight(WebDriver activeWebDriver, AdShot currentAdShot) {
+	static private void scrollToLoadLazyAds(WebDriver activeWebDriver) {
 		
-		//If the AdShot is below-the-fold, scroll down to the start height
-		if (currentAdShot.belowTheFold()) {
-			int startHeight = (currentAdShot.mobile()) ? BTFMOBILESTARTHEIGHT : BTFDESKTOPSTARTHEIGHT;
-			executeSeleniumDriverJavascript(activeWebDriver, "window.scrollBy(0, " + startHeight + ");");
-		}
+		//Scroll down and back up to load the lazy ads
+		executeSeleniumDriverJavascript(activeWebDriver, 
+				"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
 		
-		//If the AdShot is NOT below-the-fold, scroll down and back up to load advertisements
-		else {
-			executeSeleniumDriverJavascript(activeWebDriver, 
-					"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
-		}
+//		//If the AdShot is below-the-fold, scroll down to the start height
+//		if (currentAdShot.belowTheFold()) {
+//			int startHeight = (currentAdShot.mobile()) ? BTFMOBILESTARTHEIGHT : BTFDESKTOPSTARTHEIGHT;
+//			consoleLog("BELOW THE FOLD: Scrolling to: " + startHeight);
+//			pause(2500);
+//			executeSeleniumDriverJavascript(activeWebDriver, "window.scrollBy(0, " + startHeight + ");");
+//			consoleLog("Done!");
+//			pause(2500);
+//		}
+//		
+//		//If the AdShot is NOT below-the-fold, scroll down and back up to load advertisements
+//		else {
+//			consoleLog("DEFAULT: scrolling 300 down and back up");
+//			executeSeleniumDriverJavascript(activeWebDriver, 
+//					"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
+//		}
 	}
 
 	/**
@@ -469,9 +480,20 @@ public class AdShotter extends BasicShotter {
 							  "height: " + currentCreative.height() + ", " +
 							  "priority: " + currentCreative.priority() + "},";
 		}
-		creativesJSON += "];";
+		creativesJSON += "];\n";
 		
-		//Insert the creatives into the code by replacing the 'INSERT CREATIVES OBJECT' marker with them
+		//Add the injection start height based on below-the-fold and mobile
+		int injectionStartHeight = 0;
+		if ((currentAdShot.belowTheFold()) && (!currentAdShot.mobile())) {
+			injectionStartHeight = BTFDESKTOPSTARTHEIGHT;
+		}
+		else if ((currentAdShot.belowTheFold()) && (currentAdShot.mobile())) {
+			injectionStartHeight = BTFMOBILESTARTHEIGHT;
+		}
+		creativesJSON += "injectionStartHeight = " + injectionStartHeight + ";";
+		
+		//Insert the creatives and start height into the code by 
+		//replacing the 'INSERT CREATIVES OBJECT' marker with them
 		String finalJS = creativeInjecterJS.replace("//INSERT CREATIVES OBJECT//", creativesJSON);
 		
 		//If an exceptions exists, insert its script into the final string
@@ -535,10 +557,44 @@ public class AdShotter extends BasicShotter {
 		//If the Creative wasn't found, return null
 		return null;
 	}
-
 	
 	/**
-	 * Returns the optimal crop height for the screenshot. 
+	 * Returns the crop start height for a below-the-fold AdShot based on its injected
+	 * Creatives.
+	 * 
+	 * This function returns the y-coordinate of the highest injected Creative minus
+	 * BTFCROPPADDING. If the value is less than 0, 0 is returned. If no Creative
+	 * were injected, 0 is returned.
+	 * 
+	 * @param responseFromInjecter		Locations of injected Creatives from CreativeInjecter
+	 * @return							Crop start height for a below-the-fold AdShot
+	 */
+	static private int getBTFCropStartHeight(InjecterResponse responseFromInjecter) {
+		
+		//Get the y-coordinate of the heighest injected Creative
+		int highestCreativeCoordinate = 0;
+		boolean firstComparison = true;
+		for (Map.Entry<Integer, InjecterResponse.Coordinate> injected : responseFromInjecter.injectedCreatives.entrySet()) {
+			
+			//If this is the first comparison, initialize the highest coordinate to it
+			if (firstComparison) {
+				highestCreativeCoordinate = injected.getValue().y;
+				firstComparison = false;
+			}
+			
+			//If the current injected Creative is higher than the highest, use its value
+			if (injected.getValue().y < highestCreativeCoordinate) {
+				highestCreativeCoordinate = injected.getValue().y;
+			}
+		}
+		
+		//Return the highest injected coordinate with padding
+		int desiredStartHeight = highestCreativeCoordinate - BTFCROPPADDING;
+		return (desiredStartHeight >= 0) ? desiredStartHeight : 0;
+	}
+	
+	/**
+	 * Returns the optimal crop length for the screenshot. 
 	 * 
 	 * If the Creatives were injected in locations less than MINIMUMCROPLENGTH then MINIMUMCROPLENGTH is returned.
 	 * 
@@ -547,10 +603,12 @@ public class AdShotter extends BasicShotter {
 	 * 
 	 * @param responseFromInjecter			Locations of injected Creatives from CreativeInjecter
 	 * @param currentAdShot					AdShot with Creative injected into the page
+	 * @param cropStartHeight				Crop start height
 	 * @return								Optimal crop height for the screenshot
 	 */
-	static private int getOptimalCropLength(InjecterResponse responseFromInjecter, AdShot currentAdShot) {
-		
+	static private int getOptimalCropLength(InjecterResponse responseFromInjecter, AdShot currentAdShot, 
+											int cropStartHeight) {
+				
 		//Loop through the injected Creatives and use the bottom of the lowest within the crop length limits
 		int optimalCropLength = MINIMUMCROPLENGTH;
 		for (Map.Entry<Integer, InjecterResponse.Coordinate> injected : responseFromInjecter.injectedCreatives.entrySet()) {
@@ -560,8 +618,9 @@ public class AdShotter extends BasicShotter {
 		    int bottomCoordinate = injected.getValue().y + currentCreative.height();
 		    
 		    //If the bottom coordinate is lower than the requested crop length but not lower than maximum, use it
-		    if ((bottomCoordinate > optimalCropLength) && (bottomCoordinate < MAXIMUMCROPLENGTH)) {
-		    	optimalCropLength = bottomCoordinate;
+		    int possibleNewLength = bottomCoordinate - cropStartHeight;
+		    if ((possibleNewLength > optimalCropLength) && (possibleNewLength <= MAXIMUMCROPLENGTH)) {
+		    	optimalCropLength = possibleNewLength;
 		    }
 		}
 		
@@ -578,20 +637,23 @@ public class AdShotter extends BasicShotter {
 	 * 
 	 * @param originalImageFile			Original screenshot captured by driver
 	 * @param cropWidth					Width of final crop
+	 * @param cropStartHeight			Height at which to begin the crop
 	 * @param cropLength				Length of final crop
 	 * @return							Cropped screenshot image
 	 */
-	static private BufferedImage cropAdShotScreenshot(File originalImageFile, int cropWidth, int cropLength) throws IOException {
+	static private BufferedImage cropAdShotScreenshot(File originalImageFile, int cropWidth, 
+													  int cropStartHeight, int cropLength) throws IOException {
 		
 		//Verify the crop width is within the image width
 		BufferedImage originalImage = ImageIO.read(originalImageFile);
 		int finalWidth = (cropWidth < originalImage.getWidth()) ? cropWidth : originalImage.getWidth();
 		
 		//Verify the crop length is within the image length
-		int finalHeight = (cropLength < originalImage.getHeight()) ? cropLength : originalImage.getHeight();
+		int finalHeight = ((cropLength + cropStartHeight) < originalImage.getHeight()) ? 
+											cropLength : (originalImage.getHeight() - cropStartHeight);
 		
 		//Crop the image
-		BufferedImage croppedImage = originalImage.getSubimage(0, 0, finalWidth, finalHeight);
+		BufferedImage croppedImage = originalImage.getSubimage(0, cropStartHeight, finalWidth, finalHeight);
 		
 		//Make BufferedImage generic so it can be written as png or jpg
 		BufferedImage cleanedImage = new BufferedImage(croppedImage.getWidth(),
