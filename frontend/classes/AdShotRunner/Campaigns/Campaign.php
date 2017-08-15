@@ -36,6 +36,11 @@ class Campaign {
 	const FINISHED = "FINISHED"; 
 	const ERROR = "ERROR"; 
 
+	//Error constants
+	const SCREENSHOTCAPTURE = "SCREENSHOTCAPTURE"; 
+	const POWERPOINTGENERATION = "POWERPOINTGENERATION"; 
+	const CAMPAIGNEMAILSEND = "CAMPAIGNEMAILSEND"; 
+
 	//URL path for screenshot images
 	const POWERPOINTURLPATH = "https://s3.amazonaws.com/";
 

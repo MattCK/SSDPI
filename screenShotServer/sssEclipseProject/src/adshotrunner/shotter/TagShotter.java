@@ -54,6 +54,9 @@ public class TagShotter extends BasicShotter {
 	
 	//The time each Creative needs to run for animations to finish
 	final private static int CREATIVERUNTIME = 17000;			//in milliseconds
+	
+	//The HTML Div element containing the tag to image
+	final private static String TAGDIVCONTAINERID = "adTagContainer";
 
 	//---------------------------------------------------------------------------------------
 	//--------------------------------- Static Methods --------------------------------------
@@ -87,7 +90,7 @@ public class TagShotter extends BasicShotter {
 			
 			//IF the navigation failed, set the AdShot error
 			if (!navigationSucceeded) {
-				currentCreative.setError("UNABLE TO NAVIGATE TO URL");
+				currentCreative.setError(Creative.URLNAVIGATION);
 			}
 			
 			//Otherwise, get the screenshot
@@ -106,12 +109,7 @@ public class TagShotter extends BasicShotter {
 			//If there was no error, mark the Creative as finished
 			if (!currentCreative.status().equals(Creative.ERROR)) {
 				currentCreative.setStatus(Creative.FINISHED);
-			}
-			
-			//Otherwise, flag that no more attempts will be made
-			else {
-				currentCreative.setFinalError(true);
-			}
+			}			
 		}
 
 		//Quit the driver
@@ -133,7 +131,7 @@ public class TagShotter extends BasicShotter {
 		File screenShot = null;
 		try {screenShot = captureSeleniumDriverScreenshot(activeWebDriver);}
 		catch (Exception e) {
-			activeCreative.setError("UNABLE TO TAKE SCREENSHOT"); return;
+			activeCreative.setError(Creative.SCREENSHOTCAPTURE); return;
 		}
 		
 		//Crop the image
@@ -141,13 +139,13 @@ public class TagShotter extends BasicShotter {
 		try {croppedScreenshot = cropCreativeScreenshot(activeWebDriver, screenShot);}
 		catch (Exception e) {
 			e.printStackTrace();
-			activeCreative.setError("COULD NOT CROP SCREENSHOT"); return;
+			activeCreative.setError(Creative.SCREENSHOTCROP); return;
 		}
 		
 		//Add the final image to the Creative
 		try {activeCreative.setImage(croppedScreenshot);}
 		catch (Exception e) {
-			activeCreative.setError("COULD NOT SET AND UPLOAD IMAGE"); return;
+			activeCreative.setError(Creative.IMAGEUPLOAD); return;
 		}
 	}
 
@@ -299,7 +297,7 @@ public class TagShotter extends BasicShotter {
 	static private BufferedImage cropCreativeScreenshot(final WebDriver activeWebDriver, File originalImageFile) throws IOException {
 		
 		//Get the tag height and width
-		WebElement tagDiv = activeWebDriver.findElement(By.id("adTagContainer"));
+		WebElement tagDiv = activeWebDriver.findElement(By.id(TAGDIVCONTAINERID));
 		int cropHeight = tagDiv.getSize().getHeight();
 		int cropWidth = tagDiv.getSize().getWidth();
 						

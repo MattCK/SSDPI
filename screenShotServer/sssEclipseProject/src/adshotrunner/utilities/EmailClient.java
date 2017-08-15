@@ -15,11 +15,6 @@ import adshotrunner.system.ASRProperties;
  * The EmailClient sends emails to the intended recipients from the stated email address
  */
 public class EmailClient {
-
-	//---------------------------------------------------------------------------------------
-	//---------------------------------- Constants ------------------------------------------
-	//---------------------------------------------------------------------------------------	
-	//final public static String SCREENSHOTADDRESS = "screenshots@adshotrunner.com";
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------

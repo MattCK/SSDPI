@@ -2,6 +2,7 @@ package adshotrunner.dispatcher;
 
 import java.text.SimpleDateFormat;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -15,7 +16,7 @@ import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.EmailClient;
 
 /**
- * The CampaignEmail class send an email to a Campaign's user formatted with the
+ * The CampaignEmail class sends an email to a Campaign's user formatted with the
  * finished Campaign details such as which Creative was injected on which pages and links
  * to the results page and final PowerPoint.
  */
@@ -26,6 +27,9 @@ public class CampaignEmail {
 	//---------------------------------------------------------------------------------------	
 	//URL to final results page. The query portion takes the Campaign UUID.
 	final public static String RESULTSPAGEURL = "https://" + ASRProperties.asrDomain() + "/campaignResults.php?uuid="; 
+	
+	//HTML Styles
+	final private static String TITLESTYLE = "style='font-weight: bold; font-size: 15px;'";
 
 	
 	//---------------------------------------------------------------------------------------
@@ -90,10 +94,16 @@ public class CampaignEmail {
 		String resultLinks = "PowerPoint:  <a href='" + _finishedCampaign.powerPointURL() + "'>Download</a><br>" + 
 						     "Screenshots: <a href='" + RESULTSPAGEURL + _finishedCampaign.uuid() + "'>View All</a>";
 		
+		
+		
 		//Put the email parts together
-		return "<p>" + getIntroText() + "</p><p>" + resultLinks + "</p><br><br>" + 
-				getAdShotInjectedCreativesTable() + "<br><br>" +
-				getCreativeNamesTable();
+		return "<p>" + getIntroText() + "</p><p>" + 
+					   resultLinks + "</p><p>" + 
+					   getContactText(true) + "</p><br>" + 
+					   getErrorTable() + 
+					   getSummaryTable() + "<br><br>" +
+					   getUnusedAdShotsTable() +
+					   getCreativeNamesTable();
 	}
 	
 	private String getPlainText() {
@@ -103,10 +113,15 @@ public class CampaignEmail {
 						     "Screenshots: " + RESULTSPAGEURL + _finishedCampaign.uuid();
 		
 		//Put the email parts together
-		return getIntroText() + "\n\n" + resultLinks;
+		return getIntroText() + "\n\n" + resultLinks + "\n\n" + getContactText(false);
 	}
 	
-	
+	/**
+	 * Returns the introduction text for the email stating the campaign is finished
+	 * while giving the Campaign's customer name and date it was finished.
+	 * 
+	 * @return	Introduction text with Campaign customer name and Campaign finish date
+	 */
 	private String getIntroText() {
 		
 		//Get the finished date
@@ -116,6 +131,27 @@ public class CampaignEmail {
 				_finishedCampaign.customerName() + " - " + campaignDate;
 	}
 	
+	/**
+	 * Returns the contact us text, phone number, and email address.
+	 * 
+	 * If TRUE is passed, line breaks will be defined by <br/> tags. If
+	 * FALSE is passed, line breaks will be defined by the "\n" character.
+	 * 
+	 * @param formatForHTML		TRUE to use <br/> for line breaks, otherwise "\n" will be used.
+	 * @return
+	 */
+	private String getContactText(boolean formatForHTML) {
+		
+		//Set the newline dilineator
+		String newlineDilineator = (formatForHTML) ? "<br/>" : "\n";
+		
+		//Create the text
+		String contactText = "Experiencing Issues or Have Questions?" + newlineDilineator;
+		contactText += "Call Us: (773) 295-2386" + newlineDilineator;
+		contactText += "Email Us: " + ASRProperties.emailAddressSupport();
+		return contactText;
+	}
+		
 	/**
 	 * Creates a map pairing each injected Creative with its name.
 	 * 
@@ -191,31 +227,228 @@ public class CampaignEmail {
 		return creativeImageNames;
 	}
 	
-	private String getAdShotInjectedCreativesTable() {
+	/**
+	 * Returns HTML string of the summary table for the finished AdShots that were placed
+	 * in the final PowerPoint.
+	 * 
+	 * The HTML includes a "Summary: " span followed by the actual table.
+	 * 
+	 * @return		HTML string of the summary table with title
+	 */
+	private String getSummaryTable() {
 		
-		//Get the tag image names
-		Map<Creative, String> creativeImageNames = getInjectedCreativeNames();
+		//Create the title text
+		String titleText = "<span " + TITLESTYLE + ">Summary: </span><br/><br/>";
 		
-		//Create the table that will show each AdShot page and the names of the injected Creatives
-		String adShotsTable = "<table border='1' style='border-collapse: collapse;'>";
-		adShotsTable += 	  "<tr style='font-weight: bold'><th>Page</th><th>Tags Used</th></tr>";		
+		//Create the table that will show each AdShot and its information
+		String summaryTable = "<table border='1' cellpadding='3px' cellspacing='0' width='800px' style='border-collapse: collapse;'>";
 		
-		//For each adshot, add a row that shows which tag images, if any, were injected
+		//Create the header row	
+		summaryTable += "<tr style='font-weight: bold'><th>Page</th>"
+				   	  + "<th>Device</th>"
+				  	  + "<th>Below Fold</th>"
+					  + "<th>Creative Used</tr>";		
+		
+		//Add the rows for Desktop AdShots that finished without error
 		for (AdShot currentAdShot : _finishedCampaign.adShots()) {
-			
-			//Create the string of injected tag image names to be placed in the cell
-			String injectedCreativeNames = "";
-			for (Creative currentCreative : currentAdShot.injectedCreatives()) {
-				if (!injectedCreativeNames.isEmpty()) {injectedCreativeNames += ", ";}
-				injectedCreativeNames += creativeImageNames.get(currentCreative);
+			if ((currentAdShot.status().equals(AdShot.FINISHED)) && (!currentAdShot.mobile())) {
+				summaryTable += getSummaryTableRow(currentAdShot);
 			}
-			
-			//Add the current AdShot page row to the table
-			adShotsTable += "<tr><td>" + currentAdShot.finalURL() + "</td>" + 
-								"<td>" + injectedCreativeNames + "</td></tr>";
 		}
-		adShotsTable += "</table>";
-		return adShotsTable;
+		
+		//Add the rows for Mobile AdShots that finished without error
+		for (AdShot currentAdShot : _finishedCampaign.adShots()) {
+			if ((currentAdShot.status().equals(AdShot.FINISHED)) && (currentAdShot.mobile())) {
+				summaryTable += getSummaryTableRow(currentAdShot);
+			}
+		}
+		
+		summaryTable += "</table>";
+				
+		//Return the title with the table
+		return titleText + summaryTable;
+	}
+	
+	/**
+	 * Creates and returns the row (<tr>...</tr>) HTML for the passed
+	 * AdShot to be placed in the summary table
+	 * 
+	 * @param targetAdShot		AdShot to create row for
+	 * @return
+	 */
+	private String getSummaryTableRow(AdShot targetAdShot) {
+
+		//Create the string of injected tag image names to be placed in the cell
+		Map<Creative, String> creativeImageNames = getInjectedCreativeNames();
+		String injectedCreativeNames = "";
+		for (Creative currentCreative : targetAdShot.injectedCreatives()) {
+			if (!injectedCreativeNames.isEmpty()) {injectedCreativeNames += ", ";}
+			injectedCreativeNames += creativeImageNames.get(currentCreative);
+		}
+		
+		//Create the cell text for the device and below-the-fold
+		String deviceText = (targetAdShot.mobile()) ? "Mobile" : "Desktop";
+		String btfText = (targetAdShot.belowTheFold()) ? "✓" : "";
+		
+		//Create the row HTML
+		String rowHTML = "<tr>"
+						   + "<td>" + targetAdShot.finalURL() + "</td>"
+						   + "<td style='text-align: center;'>" + deviceText + "</td>"
+						   + "<td style='text-align: center;'>" + btfText + "</td>"
+						   + "<td style='text-align: center;'>" + injectedCreativeNames + "</td>"
+						   + "</tr>";
+		
+		return rowHTML;
+	}
+	
+	private String getErrorTable() {
+		
+		//Determine if there were any AdShots with errors (not including Creative not placed)
+		Set<AdShot> problemAdShots = new LinkedHashSet<AdShot>();
+		for (AdShot currentAdShot : _finishedCampaign.adShots()) {
+			if ((currentAdShot.status().equals(AdShot.ERROR)) && 
+				(!currentAdShot.errorMessage().equals(AdShot.CREATIVENOTINJECTED))) {
+				problemAdShots.add(currentAdShot);
+			}
+		}
+		
+		//If no errors were found, return an empty string
+		if (problemAdShots.size() == 0) {return "";}
+					
+		//If errors were found, begin by creating the title text
+		String errorTitle = "<span " + TITLESTYLE + ">Issues: </span><br/>";
+		errorTitle += "<p>Unfortunately, a problem occurred while processing the following screenshots. "
+					 + "We have been notified of this issue and are looking into it. <br/>"
+					 + "We apologize for this inconvenience and we appreciate your understanding "
+					 + "while we investigate this matter.</p>";
+		
+		//Create the table that will show each AdShot and its information
+		String errorTable = "<table border='1' cellpadding='3px' cellspacing='0' width='800px' style='border-collapse: collapse;'>";
+		
+		//Create the header row	
+		errorTable += "<tr style='font-weight: bold'><th>Page</th>"
+			   	  	  + "<th>Device</th>"
+			   	  	  + "<th>Story Finder</th>"
+				  	  + "<th>Below Fold</th>"
+					  + "<th>Creative Sizes</tr>";		
+
+		//Add the rows for Desktop AdShots that had an error
+		for (AdShot currentAdShot : problemAdShots) {
+			if (!currentAdShot.mobile()) {
+				errorTable += getErrorTableRow(currentAdShot);
+			}
+		}
+		
+		//Add the rows for Mobile AdShots that had an error
+		for (AdShot currentAdShot : problemAdShots) {
+			if (currentAdShot.mobile()) {
+				errorTable += getErrorTableRow(currentAdShot);
+			}
+		}
+		
+		errorTable += "</table><br/><br/>";
+		
+		//Return the final title and table
+		return errorTitle + errorTable;
+	}
+	
+	private String getErrorTableRow(AdShot targetAdShot) {
+		
+		//Create the string of requested creative sizes
+		String creativeSizes = "";
+		for (Creative currentCreative : targetAdShot.creatives()) {
+			if (!creativeSizes.isEmpty()) {creativeSizes += ", ";}
+			creativeSizes += currentCreative.width() + "x" + currentCreative.height();
+		}
+		
+		//Create the cell text for the device and below-the-fold
+		String deviceText = (targetAdShot.mobile()) ? "Mobile" : "Desktop";
+		String storyFinderText = (targetAdShot.storyFinder()) ? "✓" : "";
+		String btfText = (targetAdShot.belowTheFold()) ? "✓" : "";
+		
+		//Create the row HTML
+		String rowHTML = "<tr>"
+						   + "<td>" + targetAdShot.requestedURL() + "</td>"
+						   + "<td style='text-align: center;'>" + deviceText + "</td>"
+						   + "<td style='text-align: center;'>" + storyFinderText + "</td>"
+						   + "<td style='text-align: center;'>" + btfText + "</td>"
+						   + "<td style='text-align: center;'>" + creativeSizes + "</td>"
+						   + "</tr>";
+		
+		return rowHTML;
+	}
+	
+	private String getUnusedAdShotsTable() {
+		
+		//Determine if there were any AdShots with Creative not placed
+		Set<AdShot> unusedAdShots = new LinkedHashSet<AdShot>();
+		for (AdShot currentAdShot : _finishedCampaign.adShots()) {
+			if ((currentAdShot.status().equals(AdShot.ERROR)) && 
+				(currentAdShot.errorMessage().equals(AdShot.CREATIVENOTINJECTED))) {
+				unusedAdShots.add(currentAdShot);
+			}
+		}
+		
+		//If no unused AdShots were found, return an empty string
+		if (unusedAdShots.size() == 0) {return "";}
+		
+		//If unused AdShots were found, begin by creating the title text
+		String unusedTitle = "<span " + TITLESTYLE + ">Screenshots Not Included: </span><br/>";
+		unusedTitle += "<p>The following pages appear not to have an ad placement size matching "
+					 + "the Creative size(s). <br/>"
+					 + "They have not been included in the PowerPoint.</p>";
+		
+		//Create the table that will show each AdShot and its information
+		String unusedTable = "<table border='1' cellpadding='3px' cellspacing='0' width='800px' style='border-collapse: collapse;'>";
+		
+		//Create the header row	
+		unusedTable += "<tr style='font-weight: bold'><th>Page</th>"
+			   	  	  + "<th>Device</th>"
+				  	  + "<th>Below Fold</th>"
+					  + "<th>Creative Sizes</tr>";		
+
+		//Add the rows for Desktop AdShots that had an error
+		for (AdShot currentAdShot : unusedAdShots) {
+			if (!currentAdShot.mobile()) {
+				unusedTable += getUnusedAdshotsTableRow(currentAdShot);
+			}
+		}
+		
+		//Add the rows for Mobile AdShots that had an error
+		for (AdShot currentAdShot : unusedAdShots) {
+			if (currentAdShot.mobile()) {
+				unusedTable += getUnusedAdshotsTableRow(currentAdShot);
+			}
+		}
+		
+		unusedTable += "</table><br/><br/>";
+		
+		//Return the final title and table
+		return unusedTitle + unusedTable;
+	}
+	
+	private String getUnusedAdshotsTableRow(AdShot targetAdShot) {
+		
+		//Create the string of requested creative sizes
+		String creativeSizes = "";
+		for (Creative currentCreative : targetAdShot.creatives()) {
+			if (!creativeSizes.isEmpty()) {creativeSizes += ", ";}
+			creativeSizes += currentCreative.width() + "x" + currentCreative.height();
+		}
+		
+		//Create the cell text for the device and below-the-fold
+		String deviceText = (targetAdShot.mobile()) ? "Mobile" : "Desktop";
+		String btfText = (targetAdShot.belowTheFold()) ? "✓" : "";
+		
+		//Create the row HTML
+		String rowHTML = "<tr>"
+						   + "<td>" + targetAdShot.finalURL() + "</td>"
+						   + "<td style='text-align: center;'>" + deviceText + "</td>"
+						   + "<td style='text-align: center;'>" + btfText + "</td>"
+						   + "<td style='text-align: center;'>" + creativeSizes + "</td>"
+						   + "</tr>";
+		
+		return rowHTML;
 	}
 	
 	private String getCreativeNamesTable() {
@@ -224,7 +457,7 @@ public class CampaignEmail {
 		Map<Creative, String> creativeImageNames = getInjectedCreativeNames();
 		
 		//Create the table that will show each AdShot page and the names of the injected Creatives
-		String tagImagesTable = "<table border='1' style='border-collapse: collapse;'>";
+		String tagImagesTable = "<table border='1' cellpadding='3px' cellspacing='0' width='800px' style='border-collapse: collapse;'>";
 		tagImagesTable += 	    "<tr style='font-weight: bold'><th>Name</th><th>Image</th></tr>";		
 
 		//Add each injected tag to the table
@@ -233,7 +466,11 @@ public class CampaignEmail {
 								  "<td><img src='" + creativeImageName.getKey().imageURL() + "'></td></tr>";
 		}
 		tagImagesTable += "</table>";
-		return tagImagesTable;
+		
+		//Create the title text
+		String titleText = "<span " + TITLESTYLE + ">Creative: </span><br/><br/>";
+		
+		return titleText + tagImagesTable;
 	}
 	
 }

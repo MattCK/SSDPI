@@ -13,12 +13,18 @@ class Creative {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------
 	//Status constants for Creative processing
-	static get CREATED() {return 'CREATED';}
-	static get READY() {return 'READY';}
-	static get QUEUED() {return 'QUEUED';}
-	static get PROCESSING() {return 'PROCESSING';}
-	static get FINISHED() {return 'FINISHED';}
-	static get ERROR() {return 'ERROR';}
+	static get CREATED() {return "CREATED";}
+	static get READY() {return "READY";}
+	static get QUEUED() {return "QUEUED";}
+	static get PROCESSING() {return "PROCESSING";}
+	static get FINISHED() {return "FINISHED";}
+	static get ERROR() {return "ERROR";}
+
+	//Error constants
+	static get URLNAVIGATION() {return "URLNAVIGATION";}
+	static get SCREENSHOTCAPTURE() {return "SCREENSHOTCAPTURE";}
+	static get SCREENSHOTCROP() {return "SCREENSHOTCROP";}
+	static get IMAGEUPLOAD() {return "IMAGEUPLOAD";}
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------

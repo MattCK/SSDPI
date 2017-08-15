@@ -458,7 +458,7 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     border-right: 1px solid #c2c2c2;
 }
 
-.pagesTable th, td {
+.pagesTable th, .pagesTable td {
     padding: 2px 2px 5px 0px;
 }
 
@@ -772,3 +772,47 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
 #lineItemsTable tr:hover, #lineItemsTable tr:hover td {
     background-color: #8AFF7F;
  }
+
+.issuesTable {
+    margin-top: 5px;
+    padding: 5px;
+    width: 100%;
+    border: 1px solid #6D6D6D;
+}
+
+.issuesTable th {
+    border-bottom: 1px solid #6D6D6D;
+}
+
+.issuesTable td, .issuesTable th {
+    vertical-align: middle;
+    text-align: center;
+    border-right: 1px solid #c2c2c2;
+}
+
+.issuesTable th, .issuesTable td {
+    padding: 2px 2px 5px 0px;
+}
+
+.issuesTable td:first-child {
+    text-align: left;
+    padding-left: 8px;
+    padding-bottom: 2px;
+}
+
+.issuesTable td:last-child, .issuesTable th:last-child {
+    border-right: none;
+}
+
+.issuesTable tr:nth-child(even) {
+    background-color: #fff;
+}
+
+.issuesTable tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+.issuesTable tr:not(:first-child):hover {
+    background-color: #8AFF7F;
+}
+

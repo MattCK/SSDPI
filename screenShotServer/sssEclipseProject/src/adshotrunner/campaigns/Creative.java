@@ -33,6 +33,12 @@ public class Creative implements Comparable<Creative> {
 	final public static String PROCESSING = "PROCESSING"; 
 	final public static String FINISHED = "FINISHED"; 
 	final public static String ERROR = "ERROR"; 
+	
+	//Error constants (Note: String constants instead of Enum for symmetry with PHP/Javascript)
+	final public static String URLNAVIGATION = "URLNAVIGATION"; 
+	final public static String SCREENSHOTCAPTURE = "SCREENSHOTCAPTURE"; 
+	final public static String SCREENSHOTCROP = "SCREENSHOTCROP"; 
+	final public static String IMAGEUPLOAD = "IMAGEUPLOAD"; 
 
 	//URL path for creative images and tag pages
 	final public static String CREATIVEURLPATH = "http://s3.amazonaws.com/" + ASRProperties.containerForCreativeImages() + "/";
@@ -277,7 +283,30 @@ public class Creative implements Comparable<Creative> {
 		_width = imageWidth;
 		_height = imageHeight;
 	}
-	
+
+	/**
+	 * Returns the email address of the user who created the Creative
+	 * 
+	 * @return 	Email address of the user who created the Creative
+	 */
+	public String userEmailAddress() {
+		
+		//Query the database for the user
+		try (ResultSet userResult = ASRDatabase.executeQuery("SELECT * " + 
+															 "FROM creatives " + 
+															 "LEFT JOIN users ON CRV_USR_id = USR_id " +
+															 "WHERE CRV_id = " + _id)) {
+			
+			//Return the email address
+			userResult.next();
+			return userResult.getString("USR_emailAddress");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+	    	throw new AdShotRunnerException("Could not retrieve user email address for creative: " + _id, e);
+		}
+	}
+
 	/**
 	 * Sets the processing status of the Creative and sets the associated timestamp.
 	 * 

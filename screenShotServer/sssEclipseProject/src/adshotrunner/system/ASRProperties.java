@@ -50,10 +50,10 @@ public class ASRProperties {
 
 	//Email Addresses
 	public static String emailAddressScreenshots() {return getProperties().getProperty("emailAddressScreenshots");}
+	public static String emailAddressSupport() {return getProperties().getProperty("emailAddressSupport");}
 	
 	//Notification groups
-	public static String notificationGroupForFrontend() {return getProperties().getProperty("notificationGroupForFrontend");}
-	public static String notificationGroupForSSS() {return getProperties().getProperty("notificationGroupForSSS");}
+	public static String notificationGroupForSSSIssues() {return getProperties().getProperty("notificationGroupForSSSIssues");}
 	
 	//Paths
 	public static String pathForAdInjecterJavascript() {return getProperties().getProperty("pathForAdInjecterJavascript");}

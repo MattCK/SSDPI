@@ -18,6 +18,15 @@ class AdShot {
 	static get FINISHED() {return 'FINISHED';}
 	static get ERROR() {return 'ERROR';}
 
+	//Error constants
+	static get URLNAVIGATION() {return "URLNAVIGATION";}
+	static get INJECTERCREATION() {return "INJECTERCREATION";}
+	static get INJECTEREXECUTION() {return "INJECTEREXECUTION";}
+	static get SCREENSHOTCAPTURE() {return "SCREENSHOTCAPTURE";}
+	static get SCREENSHOTCROP() {return "SCREENSHOTCROP";}
+	static get IMAGEUPLOAD() {return "IMAGEUPLOAD";}
+	static get CREATIVENOTINJECTED() {return "CREATIVENOTINJECTED";}
+
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
 	//---------------------------------------------------------------------------------------	
@@ -74,9 +83,9 @@ class AdShot {
 		this._uuid = baseAdShot.uuid;
 		this._campaignID = baseAdShot.campaignID;
 		this._requestedURL = baseAdShot.requestedURL;
-		this._storyFinder = baseAdShot.storyFinder;
-		this._mobile = baseAdShot.mobile;
-		this._belowTheFold = baseAdShot.belowTheFold;
+		this._storyFinder = (baseAdShot.storyFinder == 1);
+		this._mobile = (baseAdShot.mobile == 1);
+		this._belowTheFold = (baseAdShot.belowTheFold == 1);
 		this._finalURL = baseAdShot.finalURL;
 		this._pageTitle = baseAdShot.pageTitle;
 		this._imageFilename = baseAdShot.imageFilename;

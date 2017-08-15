@@ -40,6 +40,15 @@ public class AdShot {
 	final public static String FINISHED = "FINISHED"; 
 	final public static String ERROR = "ERROR"; 
 
+	//Error constants (Note: String constants instead of Enum for symmetry with PHP/Javascript)
+	final public static String URLNAVIGATION = "URLNAVIGATION"; 
+	final public static String INJECTERCREATION = "INJECTERCREATION"; 
+	final public static String INJECTEREXECUTION = "INJECTEREXECUTION"; 
+	final public static String SCREENSHOTCAPTURE = "SCREENSHOTCAPTURE"; 
+	final public static String SCREENSHOTCROP = "SCREENSHOTCROP"; 
+	final public static String IMAGEUPLOAD = "IMAGEUPLOAD"; 
+	final public static String CREATIVENOTINJECTED = "CREATIVENOTINJECTED"; 
+
 	//URL path for creative images and tag pages
 	final public static String SCREENSHOTURLPATH = "http://s3.amazonaws.com/" + ASRProperties.containerForScreenshots() + "/";
 	
@@ -583,6 +592,30 @@ public class AdShot {
 		}		
 
 	}
+
+	/**
+	 * Returns the email address of the user who created the AdShot
+	 * 
+	 * @return 	Email address of the user who created the AdShot
+	 */
+	public String userEmailAddress() {
+		
+		//Query the database for the user
+		try (ResultSet userResult = ASRDatabase.executeQuery("SELECT * " + 
+															 "FROM adshots " + 
+															 "LEFT JOIN users ON ADS_USR_id = USR_id " +
+															 "WHERE ADS_id = " + _id)) {
+			
+			//Return the email address
+			userResult.next();
+			return userResult.getString("USR_emailAddress");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+	    	throw new AdShotRunnerException("Could not retrieve user email address for adshot: " + _id, e);
+		}
+	}
+	
 
 	//---------------------------------------------------------------------------------------
 	//----------------------------------- Accessors -----------------------------------------

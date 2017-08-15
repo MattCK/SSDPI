@@ -1,9 +1,7 @@
 package adshotrunner.tests;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import adshotrunner.utilities.FileStorageClient;
+import adshotrunner.system.ASRProperties;
+import adshotrunner.utilities.NotificationClient;
 
 public class UtilityTester {
 
@@ -26,20 +24,21 @@ public class UtilityTester {
 			System.out.println(e);
 		}*/
 
-		/*try {
-			NotificationClient.sendNotice(NotificationClient.FRONTEND, "TESTER", "Message text");
+		try {
+			NotificationClient.sendNotice(ASRProperties.notificationGroupForSSSIssues(), 
+										  "TESTER", "Message text");
 			System.out.println("Notice sent");
 		}
 		catch(Exception e) {
 			System.out.println(e);
-		}*/
-		try {
-			//MessageQueueClient.sendMessage(MessageQueueClient.TAGIMAGEREQUESTS, "Message text");
-			//System.out.println("Queue message sent");
 		}
-		catch(Exception e) {
-			System.out.println(e);
-		}
+//		try {
+//			//MessageQueueClient.sendMessage(MessageQueueClient.TAGIMAGEREQUESTS, "Message text");
+//			//System.out.println("Queue message sent");
+//		}
+//		catch(Exception e) {
+//			System.out.println(e);
+//		}
 		/*try {
 			HashMap<String, String> receivedMessages = MessageQueueClient.getMessages(MessageQueueClient.TAGIMAGEREQUESTS);
 			boolean deletedOne = false;

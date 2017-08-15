@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +22,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
@@ -40,6 +40,7 @@ import adshotrunner.campaigns.Creative;
 import adshotrunner.errors.AdShotRunnerException;
 import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.ASRDatabase;
+import adshotrunner.utilities.NotificationClient;
 import adshotrunner.utilities.URLTool;
 
 /**
@@ -74,7 +75,7 @@ public class AdShotter extends BasicShotter {
 	final private static String MOBILEUSERAGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1";
 	
 	//Timeouts for page loads and javascript execution
-	final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
+	//final private static int INITIALMOBILETIMEOUT = 17000;	//in milliseconds
 	
 	//Below the fold start heights and top padding
 	final private static int BTFDESKTOPSTARTHEIGHT = 700;	//in pixels
@@ -133,7 +134,7 @@ public class AdShotter extends BasicShotter {
 		setCookiesforSites(activeWebDriver, adShots);
 		
 		//Loop through the AdShots and process them
-		boolean initialPageLoad = true;
+		//boolean initialPageLoad = true;
 		for (AdShot currentAdShot : adShots) {
 			
 			//Mark the AdShot as being processed.
@@ -154,9 +155,10 @@ public class AdShotter extends BasicShotter {
 //				}
 				boolean navigationSucceeded = navigateSeleniumDriverToURL(activeWebDriver, currentAdShot.targetURL(), pageLoadTime);
 				
-				//IF the navigation failed, set the AdShot error
+				//If the navigation failed, set the AdShot error
 				if (!navigationSucceeded) {
-					currentAdShot.setError("UNABLE TO NAVIGATE TO URL");
+					currentAdShot.setError(AdShot.URLNAVIGATION);
+					sendErrorNotification(currentAdShot, null);
 				}
 				
 				//Otherwise, get the screenshot
@@ -193,7 +195,8 @@ public class AdShotter extends BasicShotter {
 		String creativeInjecterJS = "";
 		try {creativeInjecterJS = getInjecterJS(activeAdShot);}
 		catch (Exception e) {
-			activeAdShot.setError("UNABLE TO GET CREATIVEINJECTER JAVASCRIPT"); return;
+			activeAdShot.setError(AdShot.INJECTERCREATION);
+			sendErrorNotification(activeAdShot, e);  return;
 		}
 		
 		//Execute the CreativeInjecter javascript
@@ -202,7 +205,8 @@ public class AdShotter extends BasicShotter {
 		catch (Exception e) {
 			consoleLog("ERROR: Could not execute CreativeInjecter");
 			e.printStackTrace();
-			activeAdShot.setError("COULD NOT EXECUTE CREATIVEINJECTER"); return;
+			activeAdShot.setError(AdShot.INJECTEREXECUTION); 
+			sendErrorNotification(activeAdShot, e);  return;
 		}
 		
 		//Parse the Injecter response, mark which Creatives were injected and 
@@ -242,7 +246,8 @@ public class AdShotter extends BasicShotter {
 		File screenShot = null;
 		try {screenShot = captureSeleniumDriverScreenshot(activeWebDriver);}
 		catch (Exception e) {
-			activeAdShot.setError("UNABLE TO TAKE SCREENSHOT"); return;
+			activeAdShot.setError(AdShot.SCREENSHOTCAPTURE); 
+			sendErrorNotification(activeAdShot, e);  return;
 		}
 		
 		//Store the final URL in the AdShot
@@ -259,16 +264,21 @@ public class AdShotter extends BasicShotter {
 		try {croppedScreenshot = cropAdShotScreenshot(screenShot, cropWidth, cropStartHeight, optimalCropLength);}
 		catch (Exception e) {
 			e.printStackTrace();
-			activeAdShot.setError("COULD NOT CROP SCREENSHOT"); return;
+			activeAdShot.setError(AdShot.SCREENSHOTCROP); 
+			sendErrorNotification(activeAdShot, e);  return;
 		}
 		
 		//Add the final image to the AdShot
 		try {activeAdShot.setImage(croppedScreenshot);}
 		catch (Exception e) {
-			activeAdShot.setError("COULD NOT SET AND UPLOAD IMAGE"); return;
+			activeAdShot.setError(AdShot.IMAGEUPLOAD); 
+			sendErrorNotification(activeAdShot, e);  return;
 		}
 		
-		
+		//If Creative was associated with the AdShot, but none injected, set the error
+		if ((activeAdShot.creatives().size() > 0) && (activeAdShot.injectedCreatives().size() == 0)) {
+			activeAdShot.setError(AdShot.CREATIVENOTINJECTED); return;
+		}
 	}
 		
 	/**
@@ -664,6 +674,31 @@ public class AdShotter extends BasicShotter {
 		return croppedImage;
 	}
 	
+	/**
+	 * Sends notification to SSS Issues group that includes the passed error message,
+	 * the Exception stacktrace, and AdShot information (ID, UUID, User Email, Campaign ID)
+	 * 
+	 * @param errorMessage			Description of the error that occurred
+	 * @param adShotException		Exception thrown from the error
+	 */
+	static private void sendErrorNotification(AdShot currentAdShot, Exception adShotException) {
+		
+		//Create the initial notification message with the AdShot information
+		String notice = "There was an error processing an AdShot: " + currentAdShot.errorMessage() + "\n\n";
+		notice += "ID: " + currentAdShot.id() + "\n";
+		notice += "UUID: " + currentAdShot.uuid() + "\n";
+		notice += "Campaign: " + currentAdShot.campaignID() + "\n";
+		notice += "User: " + currentAdShot.userEmailAddress() + "\n\n";
+				
+		//Include the exception
+		if (adShotException != null) {
+			notice += "Thrown Exception: \n\n" + ExceptionUtils.getStackTrace(adShotException);
+		}
+		
+		//Send the notice
+		NotificationClient.sendNotice(ASRProperties.notificationGroupForSSSIssues(), 
+									  "ERROR PROCESSING ADSHOT: " + currentAdShot.errorMessage(), notice);
+	}
 
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------

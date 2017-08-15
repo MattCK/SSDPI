@@ -22,14 +22,14 @@ asrDomain = app.adshotrunner.com
 contact = contact@adshotrunner.com
 doNotReply = donotreply@adshotrunner.com
 info = info@adshotrunner.com
+support = support@adshotrunner.com
 
 [messageQueues]
 tagImageRequests = https://sqs.us-east-1.amazonaws.com/469658404108/production-TagImageRequests
 screenshotRequests = https://sqs.us-east-1.amazonaws.com/469658404108/production-ScreenShotRequests
 
 [notificationGroups]
-frontend = arn:aws:sns:us-east-1:469658404108:Frontend
-SSS = arn:aws:sns:us-east-1:469658404108:ScreenShotServer
+sssIssues = arn:aws:sns:us-east-1:469658404108:production-SSS-Issues
 
 [powerPoint]
 defaultBackgroundImage = DefaultBackground.jpg

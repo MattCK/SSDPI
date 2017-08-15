@@ -13,17 +13,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
  *
  */
 public class FileStorageClient {
-
-	//---------------------------------------------------------------------------------------
-	//---------------------------------- Constants ------------------------------------------
-	//---------------------------------------------------------------------------------------	
-	/*final public static String CAMPAIGNJOBS = "asr-campaignjobs";
-	final public static String POWERPOINTS = "asr-powerpoints";
-	final public static String POWERPOINTBACKGROUNDS = "asr-powerpointbackgrounds";
-	final public static String SCREENSHOTSCONTAINER = "asr-screenshots";
-	final public static String TAGIMAGESCONTAINER = "asr-tagimages";
-	final public static String TAGTEXTSCONTAINER = "asr-tagtexts";
-	final public static String TAGPAGESCONTAINER = "asr-tagpages";*/
 	
 	//--------------------------------------------------------------------------------------
 	//---------------------------------- Static Methods ------------------------------------

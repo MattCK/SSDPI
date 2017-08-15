@@ -1298,6 +1298,52 @@ class GPTSlots {
 
 }
 
+/**
+* The BingAds class returns AdSelectors on the MSN network.
+*
+* The single static function uses the site's "adsDivs" object to identify
+* the ads and their possible sizes.
+*/
+class BingAds {
+
+	/**
+	* @return {Set}		Set of BingAd AdSelectors if they exist on the current site.
+	*/	
+	static getSelectors() {
+
+		//If the BingAds "adsDivs" object exists, use it to create AdSelectors
+		let bingAdSelectors = new Set();
+		if (typeof adsDivs !== 'undefined') {
+
+			//Loop through the divs and create an AdSelector for each
+			for (let currentAdDiv of adsDivs) {
+
+				//Make sure the sz size holding property is a non-empty string
+				if ((typeof currentAdDiv.sz === 'string') && (currentAdDiv.sz.length >= 3)) {
+
+					//Create the new AdSelector with the div ID as the selector
+					let newAdSelector = new AdSelector("#" + currentAdDiv.id, true);
+
+					//Add the sizes to the AdSelector
+					console.log("Sz: " + currentAdDiv.sz);
+					let adSizes = currentAdDiv.sz.split(",");
+					for (let currentAdSize of adSizes) {
+						let sizeParts = currentAdSize.split("x");
+						console.log(sizeParts[0] + " and " + sizeParts[1]);
+						newAdSelector.addSize(Number(sizeParts[0]), Number(sizeParts[1]));
+					}
+
+					//Add the AdSelector to the overall set
+					bingAdSelectors.add(newAdSelector);
+				}
+			}
+		}
+
+		//Return either the found AdSelectors or the initial empty set
+		return bingAdSelectors;
+	}
+}
+
 
 //---------------------------------------------------------------------------------------
 //----------------------------------- CreativeInjecter Class ----------------------------------
@@ -1343,11 +1389,13 @@ class CreativeInjecter {
 	/**
 	* Initializes the CreativeInjecter with its creative and optional selectors.
 	*
-	* @param {CreativeGroup} 	creatives				Creatives to inject into the running page
-	* @param {Array} 			adSelectors				Array of AdSelectors
-	* @param {number} 			injectionStartHeight	Height at which creatives should be injected (this height and below)
+	* @param {CreativeGroup} 	creatives					Creatives to inject into the running page
+	* @param {Array} 			adSelectors					Array of AdSelectors
+	* @param {number} 			injectionStartHeight		Height at which creatives should be injected (this height and below)
+	* @param {boolean} 			hideLargeFloatingElements	If TRUE, hides large floating elements. (Default: TRUE)
+	*														WARNING: SETTING TO FALSE MAY PREVENT INTERSTITIALS FROM BEING HIDDEN
 	*/
-	constructor(creatives, adSelectors, injectionStartHeight) {
+	constructor(creatives, adSelectors, injectionStartHeight, hideLargeFloatingElements) {
 
 		//Verify creatives is a CreativeGroup
 		if (!(creatives instanceof CreativeGroup)) {throw "CreativeInjecter.constructor: creatives must be of type CreativeGroup";}
@@ -1362,9 +1410,13 @@ class CreativeInjecter {
 			injectionStartHeight = 0;
 		}
 
-		//Store the creatives and start height
+		//If no hide large element argument was passed, set it to true
+		if (hideLargeFloatingElements == null) {hideLargeFloatingElements = true;}
+
+		//Store the creatives, start height, and hide floating argument
 		this._creatives = creatives;
 		this._injectionStartHeight = injectionStartHeight;
+		this._hideLargeFloatingElements = hideLargeFloatingElements;
 
 		//Store the AdSelectors
 		this._adSelectors = [];
@@ -1527,6 +1579,7 @@ class CreativeInjecter {
 		creativeImage.style.maxWidth = replacementCreative.width() + 'px';
 		creativeImage.style.maxHeight = replacementCreative.height() + 'px';
 		creativeImage.style.margin = 'auto';
+		creativeImage.style.display = 'inline-block';
 
 		while (elementNode.hasChildNodes()) {
             elementNode.removeChild(elementNode.lastChild);
@@ -1545,8 +1598,11 @@ class CreativeInjecter {
 			
 
 			//Make sure the current node is displayed
+			//***************
+			//Note: The LI Exception is for MSN. It should not be permanent. It could cause future errors.
+			//***************
 			let displayStatus = document.defaultView.getComputedStyle(currentNode, null).getPropertyValue('display');
-			if (displayStatus == "none") {
+			if ((displayStatus == "none") && (currentNode.nodeName != "LI")) {
 				currentNode.style.display = "block";
 			}
 			currentNode.style.visibility = "visible";
@@ -1652,7 +1708,8 @@ class CreativeInjecter {
 			// 		thisCreativeInjecter._hideElement(currentNode);
 			// 	}
 			// }
-			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
+			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
+				     (this._hideLargeFloatingElements)) {
 				let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
 				let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);
 				if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
@@ -2040,10 +2097,11 @@ class CreativeInjecter {
 //window.onload = function() {
 
 //Remove the scrollbars
-document.documentElement.style.overflow = 'hidden';
+// document.documentElement.style.overflow = 'hidden';
 
 let creatives = [];
 let injectionStartHeight = 0;
+let hideLargeFloatingElements = true;
 
 /*creatives = [
 	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
@@ -2051,8 +2109,8 @@ let injectionStartHeight = 0;
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: '640', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/66370d12-95c1-4870-b63f-dcfc13b11933.png', width: 300, height: 250, priority: 0},{id: '644', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/8824e996-34be-4bae-8d6d-611554fc26e8.png', width: 300, height: 50, priority: 4},{id: '641', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/5649a7ad-414d-4be1-a3fe-7563dcea4981.png', width: 300, height: 600, priority: 1},{id: '645', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/58ee8968-084c-4e12-ae3f-e5d4730b2534.png', width: 320, height: 50, priority: 5},{id: '642', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/a4176e66-c618-4cf1-8fb6-36abe6b53b4e.png', width: 728, height: 90, priority: 2},{id: '643', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9d03711f-0d5c-44f6-8816-ca1f4fce76b5.png', width: 970, height: 250, priority: 3},];
-injectionStartHeight = 700;
+creatives = [{id: '224', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/d6799e78-b9ff-4691-9bd8-28d8c4dbb867.png', width: 970, height: 250, priority: 3},{id: '221', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/f0419e14-e32c-4443-b3d4-2884c2075e28.png', width: 300, height: 250, priority: 1},{id: '225', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/a05b2c71-3c1c-4bb8-ba97-7914cababfff.png', width: 300, height: 50, priority: 4},{id: '222', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/f129d7ad-7500-4e0c-b94a-45dfa454ad95.png', width: 300, height: 600, priority: 2},{id: '226', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/ea86a655-c423-4499-ab6a-ef1eea4c09d2.png', width: 320, height: 50, priority: 5},{id: '223', imageURL: 'http://s3.amazonaws.com/asr-production/creativeimages/2ec54256-c00d-4054-ac05-9e0cb8558234.png', width: 728, height: 90, priority: 0},];
+injectionStartHeight = 0;
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2083,6 +2141,14 @@ if ((gptAdSelectors != null) && (gptAdSelectors.size > 0)){
 	}
 }
 
+//Get any BingAds AdSelectors
+let bingAdSelectors = BingAds.getSelectors();
+if ((bingAdSelectors != null) && (bingAdSelectors.size > 0)){
+	for (let currentBingAdSelector of bingAdSelectors){
+		allSelectors.push(currentBingAdSelector);
+	}
+}
+
 //Verify each selector points to an element then turn it into an AdSelector
 for (let currentSelector of selectors) {
 	let selectorElement = document.querySelector(currentSelector.selector);
@@ -2097,7 +2163,7 @@ for (let currentSelector of selectors) {
 
 
 //Initialize the CreativeInjecter and inject the creatives
-let injecter = new CreativeInjecter(allCreatives, allSelectors);
+let injecter = new CreativeInjecter(allCreatives, allSelectors, injectionStartHeight, hideLargeFloatingElements);
 injecter.injectCreativesIntoPage();
 
 //Create the list of injected Creatives and their locations
@@ -2115,5 +2181,5 @@ let messageLog = Log.getMessages();
 
 //Return the injected creatives with their locations and any log messages
 //Log.output(JSON.stringify(injectedIDsAndLocations));
-return JSON.stringify({'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog});
+// return JSON.stringify({'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog});
 

@@ -35,6 +35,12 @@ class Creative {
 	const FINISHED = "FINISHED"; 
 	const ERROR = "ERROR"; 
 
+	//Error constants
+	const URLNAVIGATION = "URLNAVIGATION";
+	const SCREENSHOTCAPTURE = "SCREENSHOTCAPTURE";
+	const SCREENSHOTCROP = "SCREENSHOTCROP";
+	const IMAGEUPLOAD = "IMAGEUPLOAD";
+
 	//URL path for creative images
 	const CREATIVEURLPATH = "https://s3.amazonaws.com/";
 

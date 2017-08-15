@@ -107,7 +107,7 @@ function registerUser($accountNumber, $emailAddress, $plaintextPassword, $firstN
 												  $newUserClient->getPowerPointBackground(), 
 												  $temporaryFile, 
 												  $newUser->getID());
-	$newUser->setPowerPointBackgroundID($newBackground->getID());
+	$newUser->setPowerPointBackgroundID($newBackground->id());
 	$newUser = User::update($newUser);
 
 	//Delete the background temporary file

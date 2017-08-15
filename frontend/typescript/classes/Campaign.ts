@@ -13,12 +13,17 @@ class Campaign {
 	//---------------------------------- Constants ------------------------------------------
 	//---------------------------------------------------------------------------------------
 	//Status constants for Capaign processing
-	static get CREATED() {return 'CREATED';}
-	static get READY() {return 'READY';}
-	static get QUEUED() {return 'QUEUED';}
-	static get PROCESSING() {return 'PROCESSING';}
-	static get FINISHED() {return 'FINISHED';}
-	static get ERROR() {return 'ERROR';}
+	static get CREATED() {return "CREATED";}
+	static get READY() {return "READY";}
+	static get QUEUED() {return "QUEUED";}
+	static get PROCESSING() {return "PROCESSING";}
+	static get FINISHED() {return "FINISHED";}
+	static get ERROR() {return "ERROR";}
+
+	//Error constants
+	static get SCREENSHOTCAPTURE() {return "SCREENSHOTCAPTURE";}
+	static get POWERPOINTGENERATION() {return "POWERPOINTGENERATION";}
+	static get CAMPAIGNEMAILSEND() {return "CAMPAIGNEMAILSEND";}
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------

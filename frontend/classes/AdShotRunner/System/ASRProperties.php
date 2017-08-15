@@ -63,14 +63,14 @@ class ASRProperties {
 	public static function emailAddressDoNotReply() {return (self::getProperties())['emailAddresses']['doNotReply'];}
 	public static function emailAddressContact() {return (self::getProperties())['emailAddresses']['contact'];}
 	public static function emailAddressInfo() {return (self::getProperties())['emailAddresses']['info'];}
+	public static function emailAddressSupport() {return (self::getProperties())['emailAddresses']['support'];}
 
 	//Message queues
 	public static function queueForTagImageRequests() {return (self::getProperties())['messageQueues']['tagImageRequests'];}
 	public static function queueForScreenshotRequests() {return (self::getProperties())['messageQueues']['screenshotRequests'];}
 
 	//Notification groups
-	public static function notificationGroupForFrontend() {return (self::getProperties())['notificationGroups']['frontend'];}
-	public static function notificationGroupForSSS() {return (self::getProperties())['notificationGroups']['SSS'];}
+	public static function notificationGroupForSSSIssues() {return (self::getProperties())['notificationGroups']['sssIssues'];}
 
 	//PowerPoint
 	public static function powerPointDefaultBackgroundImage() {return (self::getProperties())['powerPoint']['defaultBackgroundImage'];}

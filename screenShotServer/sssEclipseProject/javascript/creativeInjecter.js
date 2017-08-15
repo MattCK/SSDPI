@@ -1298,6 +1298,50 @@ class GPTSlots {
 
 }
 
+/**
+* The BingAds class returns AdSelectors on the MSN network.
+*
+* The single static function uses the site's "adsDivs" object to identify
+* the ads and their possible sizes.
+*/
+class BingAds {
+
+	/**
+	* @return {Set}		Set of BingAd AdSelectors if they exist on the current site.
+	*/	
+	static getSelectors() {
+
+		//If the BingAds "adsDivs" object exists, use it to create AdSelectors
+		let bingAdSelectors = new Set();
+		if (typeof adsDivs !== 'undefined') {
+
+			//Loop through the divs and create an AdSelector for each
+			for (let currentAdDiv of adsDivs) {
+
+				//Make sure the sz size holding property is a non-empty string
+				if ((typeof currentAdDiv.sz === 'string') && (currentAdDiv.sz.length >= 3)) {
+
+					//Create the new AdSelector with the div ID as the selector
+					let newAdSelector = new AdSelector("#" + currentAdDiv.id, true);
+
+					//Add the sizes to the AdSelector
+					let adSizes = currentAdDiv.sz.split(",");
+					for (let currentAdSize of adSizes) {
+						let sizeParts = currentAdSize.split("x");
+						newAdSelector.addSize(Number(sizeParts[0]), Number(sizeParts[1]));
+					}
+
+					//Add the AdSelector to the overall set
+					bingAdSelectors.add(newAdSelector);
+				}
+			}
+		}
+
+		//Return either the found AdSelectors or the initial empty set
+		return bingAdSelectors;
+	}
+}
+
 
 //---------------------------------------------------------------------------------------
 //----------------------------------- CreativeInjecter Class ----------------------------------
@@ -1343,11 +1387,13 @@ class CreativeInjecter {
 	/**
 	* Initializes the CreativeInjecter with its creative and optional selectors.
 	*
-	* @param {CreativeGroup} 	creatives				Creatives to inject into the running page
-	* @param {Array} 			adSelectors				Array of AdSelectors
-	* @param {number} 			injectionStartHeight	Height at which creatives should be injected (this height and below)
+	* @param {CreativeGroup} 	creatives					Creatives to inject into the running page
+	* @param {Array} 			adSelectors					Array of AdSelectors
+	* @param {number} 			injectionStartHeight		Height at which creatives should be injected (this height and below)
+	* @param {boolean} 			hideLargeFloatingElements	If TRUE, hides large floating elements. (Default: TRUE)
+	*														WARNING: SETTING TO FALSE MAY PREVENT INTERSTITIALS FROM BEING HIDDEN
 	*/
-	constructor(creatives, adSelectors, injectionStartHeight) {
+	constructor(creatives, adSelectors, injectionStartHeight, hideLargeFloatingElements) {
 
 		//Verify creatives is a CreativeGroup
 		if (!(creatives instanceof CreativeGroup)) {throw "CreativeInjecter.constructor: creatives must be of type CreativeGroup";}
@@ -1362,9 +1408,13 @@ class CreativeInjecter {
 			injectionStartHeight = 0;
 		}
 
-		//Store the creatives and start height
+		//If no hide large element argument was passed, set it to true
+		if (hideLargeFloatingElements == null) {hideLargeFloatingElements = true;}
+
+		//Store the creatives, start height, and hide floating argument
 		this._creatives = creatives;
 		this._injectionStartHeight = injectionStartHeight;
+		this._hideLargeFloatingElements = hideLargeFloatingElements;
 
 		//Store the AdSelectors
 		this._adSelectors = [];
@@ -1527,6 +1577,7 @@ class CreativeInjecter {
 		creativeImage.style.maxWidth = replacementCreative.width() + 'px';
 		creativeImage.style.maxHeight = replacementCreative.height() + 'px';
 		creativeImage.style.margin = 'auto';
+		creativeImage.style.display = 'inline-block';
 
 		while (elementNode.hasChildNodes()) {
             elementNode.removeChild(elementNode.lastChild);
@@ -1545,8 +1596,11 @@ class CreativeInjecter {
 			
 
 			//Make sure the current node is displayed
+			//***************
+			//Note: The LI Exception is for MSN. It should not be permanent. It could cause future errors.
+			//***************
 			let displayStatus = document.defaultView.getComputedStyle(currentNode, null).getPropertyValue('display');
-			if (displayStatus == "none") {
+			if ((displayStatus == "none") && (currentNode.nodeName != "LI")) {
 				currentNode.style.display = "block";
 			}
 			currentNode.style.visibility = "visible";
@@ -1595,6 +1649,7 @@ class CreativeInjecter {
 		//Crawl through the DOM and remove all large ads and fixed elements with matching criteria
 		let thisCreativeInjecter = this; 	//For scope
 		let creatives = this._creatives; 	//For scope
+		let hideLargeFloatingElements = this._hideLargeFloatingElements; //For scope
 		this._crawlDocumentHTMLElements(document, function(currentNode) {
 
 			//Get the node size minus border width
@@ -1652,7 +1707,8 @@ class CreativeInjecter {
 			// 		thisCreativeInjecter._hideElement(currentNode);
 			// 	}
 			// }
-			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
+			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
+				     (hideLargeFloatingElements)) {
 				let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
 				let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);
 				if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
@@ -2044,6 +2100,7 @@ document.documentElement.style.overflow = 'hidden';
 
 let creatives = [];
 let injectionStartHeight = 0;
+let hideLargeFloatingElements = true;
 
 /*creatives = [
 	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
@@ -2082,6 +2139,14 @@ if ((gptAdSelectors != null) && (gptAdSelectors.size > 0)){
 	}
 }
 
+//Get any BingAds AdSelectors
+let bingAdSelectors = BingAds.getSelectors();
+if ((bingAdSelectors != null) && (bingAdSelectors.size > 0)){
+	for (let currentBingAdSelector of bingAdSelectors){
+		allSelectors.push(currentBingAdSelector);
+	}
+}
+
 //Verify each selector points to an element then turn it into an AdSelector
 for (let currentSelector of selectors) {
 	let selectorElement = document.querySelector(currentSelector.selector);
@@ -2096,7 +2161,7 @@ for (let currentSelector of selectors) {
 
 
 //Initialize the CreativeInjecter and inject the creatives
-let injecter = new CreativeInjecter(allCreatives, allSelectors, injectionStartHeight);
+let injecter = new CreativeInjecter(allCreatives, allSelectors, injectionStartHeight, hideLargeFloatingElements);
 injecter.injectCreativesIntoPage();
 
 //Create the list of injected Creatives and their locations

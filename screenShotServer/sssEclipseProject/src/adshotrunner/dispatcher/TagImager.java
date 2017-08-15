@@ -4,8 +4,13 @@ import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+
+import adshotrunner.campaigns.AdShot;
 import adshotrunner.campaigns.Creative;
 import adshotrunner.shotter.TagShotter;
+import adshotrunner.system.ASRProperties;
+import adshotrunner.utilities.NotificationClient;
 
 /**
  * The TagImager captures tag images for Creative using the TagShotter.
@@ -77,6 +82,14 @@ public class TagImager implements Runnable {
 			retryAttempts++;
 		}
 		
+		//For any Creative with ERROR statuses, mark that no further attempts will occur
+		//and send a notification to the SSSIssues group
+		for (Creative currentCreative : _creativesToCapture) {
+			if (currentCreative.status().matches(Creative.ERROR)) {
+				currentCreative.setFinalError(true);
+				sendErrorNotification(currentCreative);
+			}
+		}	
 	}
 	
 	//---------------------------------------------------------------------------------------
@@ -136,4 +149,27 @@ public class TagImager implements Runnable {
 	 */
 	public Thread thread() {return _imagerThread;}
 	
+	//******************************** Private Accessors *************************************
+	/**
+	 * Sends notification to SSS Issues group that includes the passed error message
+	 * and Creative information
+	 * 
+	 * @param problemCreative		Creative with ERROR status
+	 */
+	private void sendErrorNotification(Creative problemCreative) {
+		
+		//Create the initial notification message with the Creative information
+		String notice = "There was an error processing a tag: " + problemCreative.errorMessage() + "\n\n";
+		notice += "ID: " + problemCreative.id() + "\n";
+		notice += "UUID: " + problemCreative.uuid() + "\n";
+		notice += "User: " + problemCreative.userEmailAddress() + "\n\n";
+		
+		//Include the tag script
+		notice += "Tag Script: \n\n" + problemCreative.tagScript();
+		
+		//Send the notice
+		NotificationClient.sendNotice(ASRProperties.notificationGroupForSSSIssues(), 
+									  "ERROR PROCESSING TAG", notice);
+	}
+
 }

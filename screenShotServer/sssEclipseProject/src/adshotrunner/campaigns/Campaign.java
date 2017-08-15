@@ -38,6 +38,11 @@ public class Campaign {
 	final public static String FINISHED = "FINISHED"; 
 	final public static String ERROR = "ERROR"; 
 
+	//Error constants (Note: String constants instead of Enum for symmetry with PHP/Javascript)
+	final public static String SCREENSHOTCAPTURE = "SCREENSHOTCAPTURE"; 
+	final public static String POWERPOINTGENERATION = "POWERPOINTGENERATION"; 
+	final public static String CAMPAIGNEMAILSEND = "CAMPAIGNEMAILSEND"; 
+
 	//URL path for PowerPoint files
 	final public static String POWERPOINTURLPATH = "http://s3.amazonaws.com/" + ASRProperties.containerForPowerPoints() + "/";
 	
