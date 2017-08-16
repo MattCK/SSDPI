@@ -53,7 +53,7 @@ import adshotrunner.utilities.URLTool;
  * If an AdShot URL is behind a paywall, the AdShotter will attempt to login to the site
  * before navigating to the URL.
  */
-public class AdShotter extends BasicShotter {
+public class AdShotter extends SeleniumBase {
 
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------
@@ -530,7 +530,7 @@ public class AdShotter extends BasicShotter {
 	static private String getCreativeInjecterException(String targetURL) throws SQLException {
 		
 		//Get subdomain of the url. A protocol type is necessary for getSubomain.
-		String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
+		String urlDomain = URLTool.getSubdomain(targetURL);
 		
 		//Check the database to see if any entries matching the domain exist
 		try (ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 

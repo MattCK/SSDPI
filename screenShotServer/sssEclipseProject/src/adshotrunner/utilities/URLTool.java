@@ -48,12 +48,21 @@ public class URLTool {
 	 * @return				Full subdomain of the passed URL
 	 */	
 	static public String getSubdomain(String url) {
+		
+		//A protocol is required for the URI object. Add if necessary.
+		if (!url.substring(0, 4).toLowerCase().equals("http")) {
+			url = setProtocol("http", url);
+		}
+		
+		//Try instantiating a URI from the URL
 		URI uri;
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
 			return "";
 		}
+		
+		//If successful, return the "host": full subdomain
 	    return uri.getHost();
 	}
 	

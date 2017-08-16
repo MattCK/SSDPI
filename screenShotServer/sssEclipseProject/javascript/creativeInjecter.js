@@ -6,7 +6,7 @@
 * This CreativeInjecter script inserts creative images in the running page while removing
 * pop-up ads and overlays. 
 * 
-* The script is designed to be run by and return a JSON response to PhantomJS.
+* The script is designed to be run by and return a JSON response to Selenium.
 */
 
 //---------------------------------------------------------------------------------------

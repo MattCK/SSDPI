@@ -7,9 +7,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
-import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -109,7 +106,7 @@ public class StoryFinder {
 	/**
 	 * All links on the target URL and their info (id, href, name, onclick, text, style, title) (immutable)
 	 */
-	private final List<StoryLink> _links;
+	public final List<StoryLink> _links;
 	
 	/**
 	 * Width to set phantomjs screen to before grabbing links
@@ -191,7 +188,7 @@ public class StoryFinder {
 		
 		
 		//loop through the phantomjs request trying different user agents
-		String userAgents[] = new String [] {"googlebot","firefox", "msnbot", "firefoxlinux"};
+		String userAgents[] = new String [] {"firefox","googlebot", "msnbot", "firefoxlinux"};
 		int userAgentIncrementor = 0;
 		int linkCountMinimumNormal = 10;
 		int linkCountMinimumWException = 5;
@@ -231,6 +228,21 @@ public class StoryFinder {
 		_links = retrievedLinks;
 	}
 	
+	//TEMP TEMP TEMP
+	//TEST CODE
+	public StoryFinder(String url, int viewWidth, int viewHeight, boolean unused) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+		
+		//Store the target URL for the class to get stories from
+		_targetURL = url;
+		
+		//Store the height and width to use for the phantomjs screen
+		_screenWidth = viewWidth;
+		_screenHeight = viewHeight;
+		
+		
+		_links = StoryLinkRetriever.getStoryLinks(url);
+	}
+
 	public static Map<String, String> getException(String targetURL) throws SQLException {
 		
 		//Get the domain with subdomain of the url. The protocol type is not important. It is necessary for getDomain.
@@ -306,52 +318,46 @@ public class StoryFinder {
 		String primaryDomain = URLTool.getDomain(_targetURL);
 		
 		//Loop through the list removing null and empty href elements and setting null class to empty string
-		
-			Iterator<StoryLink> linksIterator = storyLinkList.iterator();
-			while(linksIterator.hasNext()){
-				
-				StoryLink currentLink = linksIterator.next();
-				//StoryFinder.consoleLog("processing: " + currentLink.href);
-				//Check for // at beginning of href and add protocol if not there
-				if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
-					//StoryFinder.consoleLog("Inside //: " + currentLink.href );
-					currentLink.href = "http:" + currentLink.href;
-				}
-				if ((currentLink.text == null || currentLink.text == "" || currentLink.text.isEmpty()) && (currentLink.title != null && !currentLink.title.isEmpty())){
-					currentLink.text = currentLink.title;
-				}
-				
-				String currentDomain = (currentLink.href != null) ? URLTool.getDomain(currentLink.href) : null;
-				
-				if (currentLink.href == null || currentLink.href.isEmpty()) {
-					linksIterator.remove();
-				}
-				else if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 7) && (currentLink.href.substring(0, 7).equals("mailto:"))){
-					linksIterator.remove();
-				}
-				else if ((currentDomain != "") && (!primaryDomain.equals(currentDomain))) {
-					linksIterator.remove();
-				}
-				else {
-					if (currentLink.className == null) {currentLink.className = "";}
-					
-					//If the link begins with javascript, try to get the URL
-					if ((currentLink.href.length() >= 11) && currentLink.href.substring(0, 11).equals("javascript:")) {
-				        String urlPattern = "((https?|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
-				        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
-				        Matcher m = p.matcher(currentLink.href);
-				        if (m.find()) {currentLink.href = m.group(0);}
-				        else {linksIterator.remove();}
-				    }
-				}
+		Iterator<StoryLink> linksIterator = storyLinkList.iterator();
+		while(linksIterator.hasNext()){
+			
+			StoryLink currentLink = linksIterator.next();
+			//StoryFinder.consoleLog("processing: " + currentLink.href);
+			//Check for // at beginning of href and add protocol if not there
+			if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
+				//StoryFinder.consoleLog("Inside //: " + currentLink.href );
+				currentLink.href = "http:" + currentLink.href;
 			}
+			if ((currentLink.text == null || currentLink.text == "" || currentLink.text.isEmpty()) && (currentLink.title != null && !currentLink.title.isEmpty())){
+				currentLink.text = currentLink.title;
+			}
+			
+			String currentDomain = (currentLink.href != null) ? URLTool.getDomain(currentLink.href) : null;
+			
+			if (currentLink.href == null || currentLink.href.isEmpty()) {
+				linksIterator.remove();
+			}
+			else if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 7) && (currentLink.href.substring(0, 7).equals("mailto:"))){
+				linksIterator.remove();
+			}
+			else if ((currentDomain != "") && (!primaryDomain.equals(currentDomain))) {
+				linksIterator.remove();
+			}
+			else {
+				if (currentLink.className == null) {currentLink.className = "";}
+				
+				//If the link begins with javascript, try to get the URL
+				if ((currentLink.href.length() >= 11) && currentLink.href.substring(0, 11).equals("javascript:")) {
+			        String urlPattern = "((https?|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
+			        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
+			        Matcher m = p.matcher(currentLink.href);
+			        if (m.find()) {currentLink.href = m.group(0);}
+			        else {linksIterator.remove();}
+			    }
+			}
+		}
 
-		
-        
-        //Make the linksList immutable and return it
-		//List<Map<String, String>> immutableLinkList = Collections.unmodifiableList(linksList);  
 		return storyLinkList;
-		
 	}
 		
 	/**

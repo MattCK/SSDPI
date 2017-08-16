@@ -2,15 +2,19 @@ package adshotrunner.tests;
 
 import adshotrunner.campaigns.Campaign;
 import adshotrunner.dispatcher.CampaignEmail;
+import adshotrunner.storyfinder.StoryLinkRetriever;
 
 public class CampaignEmailTest {
 
 	public static void main(String[] args) {
 
-		Campaign testCampaign = Campaign.getCampaign(217);
-		CampaignEmail resultsEmail = CampaignEmail.createCampaignEmail(testCampaign);
-		resultsEmail.send(testCampaign.userEmailAddress());
+//		Campaign testCampaign = Campaign.getCampaign(217);
+//		CampaignEmail resultsEmail = CampaignEmail.createCampaignEmail(testCampaign);
+//		resultsEmail.send(testCampaign.userEmailAddress());
 
+		//System.out.println(StoryLinkRetriever.getStoryLinks("http://www.businessinsider.com"));
+		System.out.println(StoryLinkRetriever.getStoryLinks("http://www.observer.com"));
+		
 		
 
 //		Creative creative144 = Creative.getCreative(144);

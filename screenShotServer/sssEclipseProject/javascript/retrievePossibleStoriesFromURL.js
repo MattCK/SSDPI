@@ -18,7 +18,6 @@ var WINDOWWIDTH = (system.args[2]) ? system.args[2] : 1366;
 var WINDOWHEIGHT = (system.args[3]) ? system.args[3] : 768;
 
 var USERAGENT = (system.args[4]) ? system.args[4] : "googlebot";
-//var REFERRER = (system.args[5]) ? system.args[5] : "google";
 
 var DESIREDELEMENTID = (system.args[5]) ? system.args[5] : '';
 var DESIREDELEMENTCLASS = (system.args[6]) ? system.args[6] : '';
@@ -27,9 +26,12 @@ var DESIREDELEMENTCLASS = (system.args[6]) ? system.args[6] : '';
 var page = require('webpage').create();
 page.viewportSize = {width: WINDOWWIDTH, height: WINDOWHEIGHT};
 page.settings.resourceTimeout = 10000;
-//set browser user agent
-//page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
-
+// page.onResourceTimeout = function(e) {
+// 	// console.log(e.errorCode);   // it'll probably be 408 
+// 	// console.log(e.errorString); // it'll probably be 'Network timeout on resource'
+// 	// console.log(e.url);         // the url whose request timed out
+// 	// phantom.exit(1);
+// };
 
 switch (USERAGENT) {
   case "googlebot":
@@ -70,18 +72,29 @@ page.onLoadStarted = function() {
 //This suppresses all error messages. Comment out to view console errors.
 page.onError = function(msg, trace) {
 
-	/*console.log("there was an error on the page");
-	console.log("m: " + msg);
-	console.log("trace: " + trace);
-	trace.forEach(function(item) {
-        console.log('  ', item.file, ':', item.line);
-    });*/
+	// console.log("there was an error on the page");
+	// console.log("m: " + msg);
+	// console.log("trace: " + trace);
+	// console.log(msg + " - " + trace);
+	// trace.forEach(function(item) {
+ //        console.log('  ', item.file, ':', item.line);
+ //    });
 };
 
 page.onResourceError = function(resourceError) {
     page.reason = resourceError.errorString;
     page.reason_url = resourceError.url;
+    // console.log("Resource error: " + resourceError.errorString + " - " + resourceError.url);
 };
+
+// page.onResourceRequested = function(requestData, networkRequest) {
+//   var match = requestData.url.match(/.*[push].*/g);
+//   // var match = requestData.url.match(/.*js/g);
+//   if (match != null) {
+//     console.log('Cancel Request (#' + requestData.id + '): ' + JSON.stringify(requestData));
+//     networkRequest.cancel(); // or .abort() 
+//   }
+// };
 
 function returnDesiredClass() {
     return DESIREDELEMENTCLASS;
@@ -90,9 +103,13 @@ function returnDesiredID() {
     return DESIREDELEMENTID;
 }
 
+// page.onInitialized = function() {
+//   page.injectJs('polyfill.js');
+// };
 
 //Try to connect to and open the target URL
 page.open(targetURL, function(status) {
+
 	//If the connection failed, notify and end execution	
 	if (status !== 'success') {
 		console.log(status + ': FAILURE: Unable to connect to URL- ' + page.reason_url + " reason: " + page.reason + " targetURL:" + targetURL); phantom.exit();
@@ -165,7 +182,7 @@ page.open(targetURL, function(status) {
 			//Loop through each elements and grab its own attributes and info
 			var anchorInfoList = [];
 			if (anchorElements != null){
-					for (var curIndex = 0; curIndex < anchorElements.length; curIndex++) {
+				for (var curIndex = 0; curIndex < anchorElements.length; curIndex++) {
 					//console.log("link found");
 					//Store the element's basic attributes 
 					var curAnchorInfo = {};

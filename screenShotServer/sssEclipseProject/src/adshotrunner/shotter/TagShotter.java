@@ -38,7 +38,7 @@ import adshotrunner.system.ASRProperties;
 /**
  * The TagShotter captures images of Creative tag pages and adds them to the Creatives.
  */
-public class TagShotter extends BasicShotter {
+public class TagShotter extends SeleniumBase {
 	
 	//---------------------------------------------------------------------------------------
 	//---------------------------------- Constants ------------------------------------------

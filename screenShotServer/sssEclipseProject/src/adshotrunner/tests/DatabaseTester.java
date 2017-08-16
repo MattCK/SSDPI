@@ -22,7 +22,7 @@ public class DatabaseTester {
 	public static Map<String, String> getException(String targetURL) throws SQLException {
 		
 		//Get the domain with subdomain of the url. The protocol type is not important. It is necessary for getDomain.
-		String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
+		String urlDomain = URLTool.getSubdomain(targetURL);
 		
 		//Check the database to see if any entries matching the domain exist
 		ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 

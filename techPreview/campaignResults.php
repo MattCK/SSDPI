@@ -36,7 +36,7 @@ header("Cache-control: private");
 			<div style="width: 50%">
 				Your campaign has been added to the queue.<br/><br/>
 				You will receive an email when it is ready and the results will appear here.<br/><br/>
-				<p><input class="button-tiny" type="button" value="Start Another Campaign in a New Tab" onclick="window.open('/', '_blank');"></p>
+				<p style="text-align: center;"><input class="button-tiny" type="button" value="Start Another Campaign in a New Tab" onclick="window.open('/', '_blank');"></p>
 			</div>
 			<div style="float: right; width: 50%; text-align: center; border-left: 1px solid;">
 				<p style="font-weight: bold; font-size: 20px">
