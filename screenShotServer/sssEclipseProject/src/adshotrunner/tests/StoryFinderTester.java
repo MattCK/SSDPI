@@ -124,7 +124,7 @@ public class StoryFinderTester {
 
 			String foundStoryURL = "";
 			try {
-				ArrayList<String> foundStories = new StoryFinder(URLTool.setProtocol("http",currentSection)).Scorer().getStories(3);
+				List<String> foundStories = new StoryFinder(URLTool.setProtocol("http",currentSection)).Scorer().getStories(3);
 				System.out.println("StoryFinder found: " + foundStories);
 				if (!foundStories.isEmpty()) {
 					for (int storyIndex = 0; storyIndex < foundStories.size(); ++storyIndex) {
@@ -132,8 +132,7 @@ public class StoryFinderTester {
 					}
 				}
 				
-			} catch (MalformedURLException | UnsupportedEncodingException
-					| URISyntaxException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				System.out.println("Error finding story");
 				e.printStackTrace();

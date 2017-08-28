@@ -6,7 +6,7 @@
 * This CreativeInjecter script inserts creative images in the running page while removing
 * pop-up ads and overlays. 
 * 
-* The script is designed to be run by and return a JSON response to PhantomJS.
+* The script is designed to be run by and return a JSON response to Selenium.
 */
 
 //---------------------------------------------------------------------------------------
@@ -1298,6 +1298,50 @@ class GPTSlots {
 
 }
 
+/**
+* The BingAds class returns AdSelectors on the MSN network.
+*
+* The single static function uses the site's "adsDivs" object to identify
+* the ads and their possible sizes.
+*/
+class BingAds {
+
+	/**
+	* @return {Set}		Set of BingAd AdSelectors if they exist on the current site.
+	*/	
+	static getSelectors() {
+
+		//If the BingAds "adsDivs" object exists, use it to create AdSelectors
+		let bingAdSelectors = new Set();
+		if (typeof adsDivs !== 'undefined') {
+
+			//Loop through the divs and create an AdSelector for each
+			for (let currentAdDiv of adsDivs) {
+
+				//Make sure the sz size holding property is a non-empty string
+				if ((typeof currentAdDiv.sz === 'string') && (currentAdDiv.sz.length >= 3)) {
+
+					//Create the new AdSelector with the div ID as the selector
+					let newAdSelector = new AdSelector("#" + currentAdDiv.id, true);
+
+					//Add the sizes to the AdSelector
+					let adSizes = currentAdDiv.sz.split(",");
+					for (let currentAdSize of adSizes) {
+						let sizeParts = currentAdSize.split("x");
+						newAdSelector.addSize(Number(sizeParts[0]), Number(sizeParts[1]));
+					}
+
+					//Add the AdSelector to the overall set
+					bingAdSelectors.add(newAdSelector);
+				}
+			}
+		}
+
+		//Return either the found AdSelectors or the initial empty set
+		return bingAdSelectors;
+	}
+}
+
 
 //---------------------------------------------------------------------------------------
 //----------------------------------- CreativeInjecter Class ----------------------------------
@@ -1343,10 +1387,13 @@ class CreativeInjecter {
 	/**
 	* Initializes the CreativeInjecter with its creative and optional selectors.
 	*
-	* @param {CreativeGroup} 	creatives		Creatives to inject into the running page
-	* @param {Array} 			adSelectors		Array of AdSelectors
+	* @param {CreativeGroup} 	creatives					Creatives to inject into the running page
+	* @param {Array} 			adSelectors					Array of AdSelectors
+	* @param {number} 			injectionStartHeight		Height at which creatives should be injected (this height and below)
+	* @param {boolean} 			hideLargeFloatingElements	If TRUE, hides large floating elements. (Default: TRUE)
+	*														WARNING: SETTING TO FALSE MAY PREVENT INTERSTITIALS FROM BEING HIDDEN
 	*/
-	constructor(creatives, adSelectors) {
+	constructor(creatives, adSelectors, injectionStartHeight, hideLargeFloatingElements) {
 
 		//Verify creatives is a CreativeGroup
 		if (!(creatives instanceof CreativeGroup)) {throw "CreativeInjecter.constructor: creatives must be of type CreativeGroup";}
@@ -1356,8 +1403,18 @@ class CreativeInjecter {
 			throw "CreativeInjecter.constructor: adSelectors must be an array of AdSelector objects or null";
 		}
 
-		//Store the creatives
+		//If the start height is null or not a number, set it to 0
+		if ((injectionStartHeight == null) || (isNaN(injectionStartHeight))) {
+			injectionStartHeight = 0;
+		}
+
+		//If no hide large element argument was passed, set it to true
+		if (hideLargeFloatingElements == null) {hideLargeFloatingElements = true;}
+
+		//Store the creatives, start height, and hide floating argument
 		this._creatives = creatives;
+		this._injectionStartHeight = injectionStartHeight;
+		this._hideLargeFloatingElements = hideLargeFloatingElements;
 
 		//Store the AdSelectors
 		this._adSelectors = [];
@@ -1411,7 +1468,7 @@ class CreativeInjecter {
 						if (currentElement) {
 
 							//If the y-position is positive (negative occurs when scrolled for below-the-fold)
-							if (ElementInfo.yPosition(currentElement) >= 0) {
+							if (ElementInfo.yPosition(currentElement) >= this._injectionStartHeight) {
 
 								//Replace the element
 								this._replaceElementWithCreative(currentElement, creativeToInject)
@@ -1460,7 +1517,7 @@ class CreativeInjecter {
 			if (creativeToInject) {
 
 				//If the y-position is positive (negative occurs when scrolled for below-the-fold)
-				if (ElementInfo.yPosition(currentElement) >= 0) {
+				if (ElementInfo.yPosition(currentElement) >= this._injectionStartHeight) {
 
 					//Replace the element
 					this._replaceElementWithCreative(currentElement, creativeToInject)
@@ -1489,7 +1546,7 @@ class CreativeInjecter {
 				if (creativeToInject) {
 
 					//If the y-position is positive (negative occurs when scrolled for below-the-fold)
-					if (ElementInfo.yPosition(currentElement) >= 0) {
+					if (ElementInfo.yPosition(currentElement) >= this._injectionStartHeight) {
 
 						//Replace the element
 						this._replaceElementWithCreative(currentElement, creativeToInject)
@@ -1512,77 +1569,21 @@ class CreativeInjecter {
 		let originalNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
 		let originalNodeHeight = ElementInfo.heightWithoutBorder(elementNode);
 
-		// let creativeImage = document.createElement('img');
-		// creativeImage.src = replacementCreative.imageURL();
-		// creativeImage.style.width = replacementCreative.width() + 'px';
-		// creativeImage.style.height = replacementCreative.height() + 'px';
-		// elementNode.parentNode.replaceChild(creativeImage, elementNode);
-		// return;
-
 		//Create the replacement image
 		let creativeImage = document.createElement('img');
 		creativeImage.src = replacementCreative.imageURL();
-		//creativeImage.style.maxWidth = 'none';
-		// creativeImage.className = elementNode.className;
-		// creativeImage.id = elementNode.id;
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
 		creativeImage.style.maxWidth = replacementCreative.width() + 'px';
 		creativeImage.style.maxHeight = replacementCreative.height() + 'px';
 		creativeImage.style.margin = 'auto';
+		creativeImage.style.display = 'inline-block';
 
 		while (elementNode.hasChildNodes()) {
             elementNode.removeChild(elementNode.lastChild);
         }
 
 		elementNode.appendChild(creativeImage);
-
-
-		//If the element node is an IFrame, replace it with another IFrame
-		//if (elementNode.nodeName == "IFRAME") {
-
-			// //Once the IFrame is loaded, add the image element
-			// elementNode.onload = function()
-			// {
-			// 	//Set the body margin to zero because old HTML rules are dumb and append the image
-			//     let iframeDocument = elementNode.contentDocument;
-			//     iframeDocument.body.style.margin = "0px";
-			//     iframeDocument.body.appendChild(creativeImage);
-			// };
-
-			// //Replace the element node with the new IFrame
-			// elementNode.src = 'about:config';
-
-			//Create the IFrame node
-			// let creativeIFrame = document.createElement('iframe');
-			// creativeIFrame.className = elementNode.className;
-			// //creativeIFrame.id = elementNode.id;
-			// creativeIFrame.style.border = '0px';
-			// //creativeIFrame.style.cssText = document.defaultView.getComputedStyle(elementNode, "").cssText;
-			// creativeIFrame.width = replacementCreative.width() + 'px';
-			// creativeIFrame.height = replacementCreative.height() + 'px';
-			// creativeIFrame.style.width = replacementCreative.width() + 'px';
-			// creativeIFrame.style.height = replacementCreative.height() + 'px';
-   //          creativeIFrame.style.overflow = "hidden";
-   //          creativeIFrame.style.scrolling = "no";
-
-			// //Once the IFrame is loaded, add the image element
-			// creativeIFrame.onload = function()
-			// {
-			// 	//Set the body margin to zero because old HTML rules are dumb and append the image
-			//     let iframeDocument = creativeIFrame.contentDocument;
-			//     iframeDocument.body.style.margin = "0px";
-			//     iframeDocument.body.appendChild(creativeImage);
-			// };
-
-			// //Replace the element node with the new IFrame
-			// while (elementNode.hasChildNodes()) {
-   //              elementNode.removeChild(elementNode.lastChild);
-   //          }
-
-			// elementNode.appendChild(creativeIFrame);
-		//}
-
 
 		//Make sure the parents are displayed and at least as big as the Creative image
 		// this._crawlParentHTMLElements(creativeIFrame, function(currentNode) {
@@ -1595,8 +1596,11 @@ class CreativeInjecter {
 			
 
 			//Make sure the current node is displayed
+			//***************
+			//Note: The LI Exception is for MSN. It should not be permanent. It could cause future errors.
+			//***************
 			let displayStatus = document.defaultView.getComputedStyle(currentNode, null).getPropertyValue('display');
-			if (displayStatus == "none") {
+			if ((displayStatus == "none") && (currentNode.nodeName != "LI")) {
 				currentNode.style.display = "block";
 			}
 			currentNode.style.visibility = "visible";
@@ -1645,6 +1649,7 @@ class CreativeInjecter {
 		//Crawl through the DOM and remove all large ads and fixed elements with matching criteria
 		let thisCreativeInjecter = this; 	//For scope
 		let creatives = this._creatives; 	//For scope
+		let hideLargeFloatingElements = this._hideLargeFloatingElements; //For scope
 		this._crawlDocumentHTMLElements(document, function(currentNode) {
 
 			//Get the node size minus border width
@@ -1702,7 +1707,8 @@ class CreativeInjecter {
 			// 		thisCreativeInjecter._hideElement(currentNode);
 			// 	}
 			// }
-			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
+			else if ((nodeZIndex > 1) && (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
+				     (hideLargeFloatingElements)) {
 				let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
 				let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);
 				if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
@@ -2093,6 +2099,8 @@ class CreativeInjecter {
 document.documentElement.style.overflow = 'hidden';
 
 let creatives = [];
+let injectionStartHeight = 0;
+let hideLargeFloatingElements = true;
 
 /*creatives = [
 	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
@@ -2100,7 +2108,8 @@ let creatives = [];
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: '631', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/26a87545-e437-4961-8d4f-3e41cbf083fc.png', width: 300, height: 50, priority: 3},{id: '628', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/837c45b1-e768-4f07-8cd2-61c151c9cd97.png', width: 300, height: 250, priority: 0},{id: '632', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/dabac0f9-1958-4699-ba71-68e51fd32bc1.png', width: 970, height: 250, priority: 4},{id: '629', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/619007db-10cd-4a30-be1b-6c1dcde4fd59.png', width: 728, height: 90, priority: 1},{id: '633', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/174915be-4477-4976-980c-387cfc70d96a.png', width: 320, height: 50, priority: 5},{id: '630', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/cd6c3f98-5518-4b5f-8015-3d07c57fe6de.png', width: 300, height: 600, priority: 2},];
+creatives = [{id: '713', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/f24e4f00-b135-4cce-96b6-b77fec551a0a.png', width: 970, height: 250, priority: 1},];
+injectionStartHeight = 0;
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2131,6 +2140,14 @@ if ((gptAdSelectors != null) && (gptAdSelectors.size > 0)){
 	}
 }
 
+//Get any BingAds AdSelectors
+let bingAdSelectors = BingAds.getSelectors();
+if ((bingAdSelectors != null) && (bingAdSelectors.size > 0)){
+	for (let currentBingAdSelector of bingAdSelectors){
+		allSelectors.push(currentBingAdSelector);
+	}
+}
+
 //Verify each selector points to an element then turn it into an AdSelector
 for (let currentSelector of selectors) {
 	let selectorElement = document.querySelector(currentSelector.selector);
@@ -2145,7 +2162,7 @@ for (let currentSelector of selectors) {
 
 
 //Initialize the CreativeInjecter and inject the creatives
-let injecter = new CreativeInjecter(allCreatives, allSelectors);
+let injecter = new CreativeInjecter(allCreatives, allSelectors, injectionStartHeight, hideLargeFloatingElements);
 injecter.injectCreativesIntoPage();
 
 //Create the list of injected Creatives and their locations

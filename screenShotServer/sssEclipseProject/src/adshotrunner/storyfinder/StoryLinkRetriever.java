@@ -17,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -63,14 +65,16 @@ public class StoryLinkRetriever extends SeleniumBase {
 	 * These exceptions tell the instance to only get StoryLinks from inside a container element 
 	 * with a specific ID or a specific CSS class name.
 	 * 
-	 * @param url		URL of page to get StoryLinks from
+	 * @param url				URL of page to get StoryLinks from
+	 * @param viewportWidth		Width of driver viewport to use
+	 * @param viewportHeight	Height of driver viewport to use
 	 * @return			List of StoryLinks from the passed URL
 	 */
-	static public List<StoryLink> getStoryLinks(String url) {
+	static public List<StoryLink> getStoryLinks(String url, int viewportWidth, int viewportHeight) {
 		
 		//Try to create a web driver to connect with
 		WebDriver activeWebDriver = null;
-		try {activeWebDriver = getStoryDriver();}
+		try {activeWebDriver = getStoryDriver(viewportWidth, viewportHeight);}
 		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
 		
 		//Navigate to the passed URL
@@ -140,9 +144,11 @@ public class StoryLinkRetriever extends SeleniumBase {
 	 * 
 	 * (CURRENTLY USES TAG IMAGER NODES)
 	 * 
-	 * @return				Initialized Chrome WebDriver
+	 * @param viewportWidth		Width of driver viewport to use
+	 * @param viewportHeight	Height of driver viewport to use
+	 * @return					Initialized Chrome WebDriver
 	 */
-	static private WebDriver getStoryDriver() throws MalformedURLException {
+	static private WebDriver getStoryDriver(int viewportWidth, int viewportHeight) throws MalformedURLException {
 
 		//Define the path to the ChromeDriver. 
 		System.setProperty("webdriver.chrome.driver", "chromedriver");
@@ -158,10 +164,11 @@ public class StoryLinkRetriever extends SeleniumBase {
 		driverOptions.addArguments("disable-gpu");
 
 		//Set the viewport
-		driverOptions.addArguments("window-size=1366,768");
+		driverOptions.addArguments("window-size=" + viewportWidth + "," + viewportHeight);
 		
 		//Use the AWS tag imagers for now
 		driverCapabilities.setCapability("applicationName", "awsTagImager");
+//		driverCapabilities.setPlatform(Platform.WINDOWS);
 				
 		//Initialize the actual driver
 		WebDriver chromeDriver = null;
@@ -172,7 +179,10 @@ public class StoryLinkRetriever extends SeleniumBase {
 		
 		//Set the page timeout
 		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
-				
+
+		//Set the viewport
+//		chromeDriver.manage().window().setSize(new Dimension(viewportWidth, viewportHeight));
+
 		//Return the initialized remote chrome web driver
 		consoleLog("Done creating Story driver.");
 		return chromeDriver;

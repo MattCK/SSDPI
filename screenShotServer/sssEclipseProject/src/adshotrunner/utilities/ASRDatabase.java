@@ -30,7 +30,7 @@ public class ASRDatabase {
 	//--------------------------------------------------------------------------------------
 	//***************************** Public Static Methods **********************************
 	public static PreparedStatement getPreparedStatement(String query) throws SQLException {
-		return getConnection().prepareStatement(query);
+		return getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 	}
 	
 	public static ResultSet executeQuery(String query) throws SQLException {
@@ -39,7 +39,7 @@ public class ASRDatabase {
 
 	public static int executeUpdate(String query) throws SQLException {
 		Statement newStatement = getConnection().createStatement();
-		int queryResult = newStatement.executeUpdate(query);
+		int queryResult = newStatement.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
 		newStatement.close();
 		return queryResult;
 	}

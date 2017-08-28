@@ -87,7 +87,7 @@ public class CampaignRunner implements Runnable {
 			
 			//If finding a story is requested, set the page URL to the found story
 			if (findStory) {
-				ArrayList<String> foundStories = new ArrayList<String>();
+				List<String> foundStories = new ArrayList<String>();
 				try {
 					foundStories = new StoryFinder(URLTool.setProtocol("http",pageURL)).Scorer().getStories(3);
 					System.out.println("StoryFinder found: " + foundStories);

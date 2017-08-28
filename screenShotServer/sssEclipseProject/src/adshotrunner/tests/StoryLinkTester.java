@@ -14,7 +14,7 @@ public class StoryLinkTester {
 		
 		int NUMBEROFSTORIES = 3;
 		
-		String url = "http://bloomberg.com";
+		String url = "http://sfgate.com/business";
 
 		List<String> originalStories = new ArrayList<String>();
 		List<StoryLink> originalLinks = new ArrayList<StoryLink>();
@@ -34,7 +34,7 @@ public class StoryLinkTester {
 
 		//Get the new stories
 		try {
-			StoryFinder tempNewStoryFinder = new StoryFinder(URLTool.setProtocol("http", url), 1366, 768, true);
+			StoryFinder tempNewStoryFinder = new StoryFinder(URLTool.setProtocol("http", url));
 			newLinks = tempNewStoryFinder._links;
 			newStories = tempNewStoryFinder.Scorer().getStories(NUMBEROFSTORIES);
 		}

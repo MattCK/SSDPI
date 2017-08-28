@@ -13,7 +13,7 @@ public class CampaignEmailTest {
 //		resultsEmail.send(testCampaign.userEmailAddress());
 
 		//System.out.println(StoryLinkRetriever.getStoryLinks("http://www.businessinsider.com"));
-		System.out.println(StoryLinkRetriever.getStoryLinks("http://www.observer.com"));
+//		System.out.println(StoryLinkRetriever.getStoryLinks("http://www.observer.com"));
 		
 		
 

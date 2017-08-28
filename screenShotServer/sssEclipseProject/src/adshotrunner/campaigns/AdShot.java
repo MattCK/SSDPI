@@ -321,7 +321,7 @@ public class AdShot {
 			//If _storyFinder is true, get the stories
 			else {
 				try {
-					_candidateURLs = new StoryFinder(URLTool.setProtocol("http", _requestedURL)).Scorer().getStories(NUMBEROFSTORIES);
+					_candidateURLs = StoryFinder.getStories(URLTool.setProtocol("http", _requestedURL), NUMBEROFSTORIES);
 				}
 				catch (Exception e) {
 					System.out.println("Unable to find stories for Adshot");

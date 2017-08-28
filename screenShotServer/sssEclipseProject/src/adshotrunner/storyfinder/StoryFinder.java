@@ -1,16 +1,12 @@
 package adshotrunner.storyfinder;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,341 +21,237 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import adshotrunner.errors.AdShotRunnerException;
-import adshotrunner.system.ASRProperties;
 import adshotrunner.utilities.ASRDatabase;
 import adshotrunner.utilities.URLTool;
 
 /**
- * The StoryFinder class attempts to retrieve a feature story from the passed URL. This story
- * must be prominent on the page and not focus on a negative topic such as a murder.
+ * The StoryFinder class retrieves feature stories from the passed URL. 
  * 
- * The target URL is passed through the constructor. All links on the page and their info are retrieved.
- * The resulting object is immutable.
- * 
- * The story is retrieved through the nested class Scorer. Scorer has the option of
- * setting the many variables used to calculate the best story. 
+ * The stories are retrieved through the nested class Scorer. The Scorer has the option of
+ * setting the many variables used to calculate the best stories. 
  */
 public class StoryFinder {
 	
+	//---------------------------------------------------------------------------------------
+	//---------------------------------- Constants ------------------------------------------
+	//---------------------------------------------------------------------------------------	
+	final private static long CACHEEXPIRATIONSECONDS = 600;	//in seconds
+
+	//When set to true, debug information is passed to the console
 	final private static boolean VERBOSE = true;
 	
-	private static void consoleLog(String message) {
-		if (VERBOSE) {System.out.println(message);}
-	}
-	
+	//Viewport dimensions to use for the browser driver. Necessary for Scorer calculations.
+	final private static int VIEWPORTWIDTH = 1366;
+	final private static int VIEWPORTHEIGHT = 768;
+			
 	//---------------------------------------------------------------------------------------
 	//--------------------------------- Static Methods --------------------------------------
 	//---------------------------------------------------------------------------------------	
-	//***************************** Private Static Methods **********************************
+	//***************************** Public Static Methods ***********************************
 	/**
-	 * Returns a JSON string of all the links and their info from the passed URL
+	 * Returns featured stories from the passed URL.
 	 * 
-	 * Link info: id, href, name, onclick, text, style, title
-	 * 
-	 * @param url			URL to grab the links from
-	 * @param viewWidth		Width of the screen phantomjs should use
-	 * @param viewHeight	Height of the screen phantomjs should use
-	 * @param viewHeight	URL to grab the links from
-	 * @return				JSON string of links and their info
+	 * @param url			URL to retrieve stories from
+	 * @param maxStories	Maximum number of stories to return
+	 * @return
 	 */
-	private static String getLinkJSONFromURL(String url, int viewWidth, int viewHeight, String userAgent, String ExceptionID, String ExceptionClass) {
+	public static List<String> getStories(String url, int maxStories) {
 		
-		//Try to make the phantomjs call and return the JSON
-        String phantomJSResponse = null;
-        
-        try {
-            
-        	//Run the retrieve links js file with phantomjs
-        	StoryFinder.consoleLog("getLinkJSONFromUrl url: " + url);
-        	//StoryFinder.consoleLog("getLinkJSONFromUrl width: " + viewWidth);
-        	//StoryFinder.consoleLog("getLinkJSONFromUrl height: " + viewHeight);
-            Process p = Runtime.getRuntime().exec(new String[]{
-	            ASRProperties.pathForPhantomJS(), 
-	            ASRProperties.pathForPossibleStoriesJavascript(),
-	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass        	
-            });
-            //Get the string returned from phantomjs
-            BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            phantomJSResponse = commandLineInput.readLine();
-        }
-        catch (IOException e) {
-			throw new AdShotRunnerException("Could not execute phantomjs", e);
-        }
-		//StoryFinder.consoleLog("PhantomJSResponse: " + phantomJSResponse);
-        //If the command was successful, return the phantomjs response
-		return phantomJSResponse;
+		//Check the database cache for stories. Return them if found.
+		List<String> stories = getStoriesFromDatabaseCache(url);
+		if (stories.size() >0) {return stories;}
+		
+		//Create a new StoryFinder instance and get the stories
+		stories = new StoryFinder(URLTool.setProtocol("http", url)).Scorer().getStories(maxStories);
+		
+		//If stories were found, store them in the database
+		insertStoriesInDatabaseCache(url, stories);
+		
+		//Return any found stories
+		return stories;
 	}
 	
+	
+	//***************************** Private Static Methods **********************************
+	/**
+	 * Returns stories for the passed URL from the database cache if any exist.
+	 * 
+	 * If the timestamp of the stories is older than CACHEEXPIRATIONSECONDS, the
+	 * stories are deleted and an empty list is returned. 
+	 * 
+	 * @param requestedURL	URL to get stories for
+	 * @return				List of stories in database if they exist and haven't expired
+	 */
+	static private List<String> getStoriesFromDatabaseCache(String requestedURL) {
+		
+		//Remove the protocol from the target URL
+		requestedURL = URLTool.removeProtocol(requestedURL);
+		
+		//Check the database for a matching URL in the cache
+		List<String> cachedStories = new ArrayList<String>();
+		int secondsInCache = 0;
+		try (ResultSet cachedStoriesSet = 
+				ASRDatabase.executeQuery("SELECT *, " +
+										 "		 TIMESTAMPDIFF(SECOND, SFC_timestamp, CURRENT_TIMESTAMP()) " +
+										 "	 	 as secondsInCache " + 
+				 						 "FROM storyFinderCache " +
+				 						 "LEFT JOIN storyFinderCacheLinks on SCL_SFC_id = SFC_id " +
+				 						 "WHERE SFC_requestedURL LIKE '" + requestedURL + "' " +
+				 						 "ORDER BY SCL_priority ASC")) {
+
+			//If a match was found, store the stories, cache ID, and time in cache 
+			while (cachedStoriesSet.next()) {
+				cachedStories.add(cachedStoriesSet.getString("SCL_url"));
+				secondsInCache = cachedStoriesSet.getInt("secondsInCache");			//redundant for simplicity
+			}
+			
+		//If the database was unaccessible, return an empty list
+		} catch (Exception e) {return new ArrayList<String>();} 
+		
+		//If stories were found, but the timestamp was too old, remove the stories from the database
+		if ((cachedStories.size() > 0) && 
+			(secondsInCache > CACHEEXPIRATIONSECONDS)) {
+			
+			//Delete the entry in the cache. The trigger will delete the links.
+			deleteStoriesFromDatabaseCache(requestedURL);
+			
+			//Remove the stored originally found stories
+			cachedStories = new ArrayList<String>();
+		}
+		
+		//Return any found stories or the empty list
+		return cachedStories;
+	}
+	
+	/**
+	 * Inserts the passed stories into the database cache.
+	 * 
+	 * @param requestedURL		URL the stories came from
+	 * @param stories			Stories to insert
+	 */
+	static private void insertStoriesInDatabaseCache(String requestedURL, List<String> stories) {
+		
+		//If no stories were passed in, do nothing
+		if (stories.size() == 0) {return;}
+		
+		//Delete any stories that might be in the cache
+		deleteStoriesFromDatabaseCache(requestedURL);
+		
+		//Remove the protocol from the target URL
+		requestedURL = URLTool.removeProtocol(requestedURL);
+		
+		//Insert the requested URL into the cache and get its ID
+		int cacheInsertID = 0;
+		try (PreparedStatement insertRequestedURL = 
+				ASRDatabase.getPreparedStatement("INSERT INTO storyFinderCache (SFC_requestedURL) " +
+										 		 "VALUES (?)")) {
+			
+			//Insert the requested URL into the database
+			insertRequestedURL.setString(1, requestedURL);
+			insertRequestedURL.execute();
+			
+			//Get the insert ID
+            ResultSet keys = insertRequestedURL.getGeneratedKeys();
+            if(keys.next()) {
+                cacheInsertID = keys.getInt(1);
+            }
+			
+		//If the database was unaccessible, do nothing
+		} catch (Exception e) {return;} 
+		
+		//Insert the stories and priorities into the cache
+		int currentPriority = 1;
+		try (PreparedStatement insertStory = 
+				ASRDatabase.getPreparedStatement("INSERT INTO storyFinderCacheLinks (SCL_SFC_id, " +
+												 "									 SCL_priority, " + 
+												 "									 SCL_url) " + 
+										 		 "VALUES (?,?,?)")) {
+			
+			//Insert each requested URL into the database
+			for (String currentStory : stories) {
+				insertStory.setInt(1, cacheInsertID);
+				insertStory.setInt(2, currentPriority);
+				insertStory.setString(3, currentStory);
+				insertStory.execute();
+				++currentPriority;
+			}
+							
+		//If the database was unaccessible, try deleting the previous entry and return
+		} catch (Exception e) {deleteStoriesFromDatabaseCache(requestedURL); return;} 
+	}
+	
+	/**
+	 * Deletes any cached stories in the database for the passed URL if any exist.
+	 * 
+	 * @param requestedURL		URL to delete stories for
+	 */
+	static private void deleteStoriesFromDatabaseCache(String requestedURL) {
+		
+		//Remove the protocol from the target URL
+		requestedURL = URLTool.removeProtocol(requestedURL);
+		
+		//Delete the entry in the cache. The trigger will delete the links.
+		try {
+			ASRDatabase.executeUpdate("DELETE FROM storyFinderCache " +
+									  "WHERE SFC_requestedURL LIKE '" + requestedURL + "' ");
+							
+		//If the database was unaccessible, do nothing
+		} catch (Exception e) {} 
+	}
+
+	/**
+	 * Outputs the message to standard output with the thread ID and timestamp
+	 * if the VERBOSE flag constant is set to TRUE
+	 * 
+	 * @param message		Message to output to the console
+	 */
+	static private void consoleLog(String message) {
+		if (VERBOSE) {
+			
+			//Get the current timestamp
+			String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
+			
+			//Output the message preceded by the timestamp and thread ID
+			System.out.println(timeStamp + " - " + Thread.currentThread().getId() + ": " + message);
+		}
+	}
+
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
 	//---------------------------------------------------------------------------------------	
 	//******************************** Private Variables ************************************
 	/**
-	 * URL to find a story on
+	 * URL to find stories on
 	 */
 	private final String _targetURL;
 	
 	/**
-	 * All links on the target URL and their info (id, href, name, onclick, text, style, title) (immutable)
+	 * All links on the target URL and their info (Example: id, href, name, onclick, text, style, title)
 	 */
 	public final List<StoryLink> _links;
 	
-	/**
-	 * Width to set phantomjs screen to before grabbing links
-	 */
-	private final int _screenWidth;
-	
-	/**
-	 * Height to set phantomjs screen to before grabbing links
-	 */
-	private final int _screenHeight;
-	
-	/**
-	 * HTML ID Exception in the database for this URL 
-	 */
-	private String _dbExceptionID;
-	/**
-	 * HTML ClassName Exception in the database for this URL 
-	 */
-	private String _dbExceptionClassName;
-	
+		
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Returns a StoryFinder instance with the links retrieved from the passed URL
 	 * 
-	 * The screen is automatically set to 1366x768.
-	 * 
-	 * Instance is immutable
-	 * 
 	 * @param url	URL to retrieve stories from
-	 * 
-	 * @throws MalformedURLException
-	 * @throws URISyntaxException
-	 * @throws UnsupportedEncodingException 
 	 */
-	public StoryFinder(String url) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
-		
-		//Create the instance with the default 1366x768 phantomjs screen
-		this(url, 1366, 768);
-	}
-
-	/**
-	 * Returns a StoryFinder instance with the links retrieved from the passed URL, utilizing the
-	 * screen size passed.
-	 * 
-	 * Instance is immutable
-	 * 
-	 * @param url			URL to retrieve stories from 
-	 * @param viewWidth		Width of the screen phantomjs should use
-	 * @param viewHeight	Height of the screen phantomjs should use
-	 * @throws MalformedURLException
-	 * @throws URISyntaxException
-	 * @throws UnsupportedEncodingException 
-	 */
-	public StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+	public StoryFinder(String url) {
 		
 		//Store the target URL for the class to get stories from
-		_targetURL = url;
+		_targetURL = url;		
 		
-		//Store the height and width to use for the phantomjs screen
-		_screenWidth = viewWidth;
-		_screenHeight = viewHeight;
-		
-		//get possible exceptions from the DB
-		Map<String, String> storyException = null;
-		_dbExceptionID = "";
-		_dbExceptionClassName = "";
-		try {
-			storyException = getException(url);
-			if (storyException != null){
-				_dbExceptionID = storyException.get("containerID");
-				_dbExceptionClassName = storyException.get("className");
-			}
-				
-		} catch (SQLException e) {
-			StoryFinder.consoleLog("Database Error When finding Exception for: " + url);
-		}
-		
-		
-		//loop through the phantomjs request trying different user agents
-		String userAgents[] = new String [] {"firefox","googlebot", "msnbot", "firefoxlinux"};
-		int userAgentIncrementor = 0;
-		int linkCountMinimumNormal = 10;
-		int linkCountMinimumWException = 5;
-		int linkCountMinimum = linkCountMinimumNormal;
-		boolean useException = false;
-		
-		if ((_dbExceptionID != "") || (_dbExceptionClassName != "")){
-			linkCountMinimum = linkCountMinimumWException;
-			useException = true;
-		}
-		
-		List<StoryLink> retrievedLinks = new ArrayList<StoryLink>();
-		while((userAgentIncrementor < userAgents.length) && (retrievedLinks.size() < linkCountMinimum)){
-		
-			StoryFinder.consoleLog("Trying phantomJS with agent:" + userAgents[userAgentIncrementor]);
-			//Get the possible story links using phantomjs
-			String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor], _dbExceptionID, _dbExceptionClassName);
-			StoryFinder.consoleLog("after get JSON fron phantomJS");
-			//StoryFinder.consoleLog("full String: " + linkJSON);
-			
-	        //Get the immutable link info as array of maps
-			retrievedLinks = getStoryLinksFromJSON(linkJSON);
-			
-			userAgentIncrementor++;
-			
-			//if this is an exception and we've gotten all the way through all the user agents
-			//without enough results loop through again without the exception
-			if((userAgentIncrementor >= userAgents.length) && 
-			   ((_dbExceptionID != "") || (_dbExceptionClassName != ""))){
-				StoryFinder.consoleLog("Unable to get links with StoryFinder Exception. Retrying without it.");
-				_dbExceptionID = "";
-				_dbExceptionClassName = "";
-				userAgentIncrementor = 0;
-			}
-		}
-		
-		_links = retrievedLinks;
-	}
-	
-	//TEMP TEMP TEMP
-	//TEST CODE
-	public StoryFinder(String url, int viewWidth, int viewHeight, boolean unused) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
-		
-		//Store the target URL for the class to get stories from
-		_targetURL = url;
-		
-		//Store the height and width to use for the phantomjs screen
-		_screenWidth = viewWidth;
-		_screenHeight = viewHeight;
-		
-		
-		_links = StoryLinkRetriever.getStoryLinks(url);
-	}
-
-	public static Map<String, String> getException(String targetURL) throws SQLException {
-		
-		//Get the domain with subdomain of the url. The protocol type is not important. It is necessary for getDomain.
-		String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
-		
-		//Check the database to see if any entries matching the domain exist
-		String urlPart = "", containerID = "", className = "";
-		try (ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
-															 	"FROM exceptionsStoryFinder " +
-															 	"WHERE ESF_url LIKE '" + urlDomain + "%'")) {
-				
-			//If a match was found, use the container ID and class of the longest matching url part
-			while (exceptionsSet.next()) {
-							
-				//Get the current URL part
-				String currentURLPart = exceptionsSet.getString("ESF_url");
-				
-				//If the url part is a substring of the target URL, store its info if it is the longest
-				if (targetURL.toLowerCase().contains(currentURLPart.toLowerCase())) {
-					
-					//See if the new part is longer than the current
-					if (currentURLPart.length() > urlPart.length()) {
-						
-						//Store the new exception
-						urlPart = currentURLPart;
-						containerID = exceptionsSet.getString("ESF_containerID");
-						className = exceptionsSet.getString("ESF_className");
-					}
-				}			
-			}
-		//If the database was unaccessible, do nothing for the time being
-		} catch (Exception e){return null;} 
-		
-		//If no matches in the database were found, return null
-		if (urlPart.isEmpty()) {return null;}
-		
-		//Otherwise, put the info in a map and return it
-		else {
-			Map<String, String> storyException = new HashMap<String, String>();
-			storyException.put("url", urlPart);
-			storyException.put("containerID", containerID);
-			storyException.put("className", className);
-			return storyException;
-		}
-	} 
+		//Get the story links
+		_links = StoryLinkRetriever.getStoryLinks(url, VIEWPORTWIDTH, VIEWPORTHEIGHT);
+	}	
 
 	//---------------------------------------------------------------------------------------
-	//------------------------------- Modification Methods ----------------------------------
+	//----------------------------------- Accessors -----------------------------------------
 	//---------------------------------------------------------------------------------------
-	//********************************* Private Methods *************************************
-	/**
-	 * Returns an immutable list of links and their info (each link an immutable map)
-	 * 
-	 * @param linkJSON	JSON string of links as their info in the form of an array of associative arrays
-	 * @return				Immutable list of immutable maps, each map a set of link info (text, href, xPosition, etc...)
-	 * @throws MalformedURLException
-	 * @throws URISyntaxException
-	 * @throws UnsupportedEncodingException 
-	 */
-	private List<StoryLink> getStoryLinksFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
-		
-		Gson gson = new Gson();
-		Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
-		ArrayList<StoryLink> storyLinkList = new ArrayList<StoryLink>();
-		try{
-			storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
-		}
-		catch(com.google.gson.JsonSyntaxException e){
-			StoryFinder.consoleLog("unable to parse linkJSON");
-			
-		}
-		//Get the primary domain of the StoryFinder URL
-		String primaryDomain = URLTool.getDomain(_targetURL);
-		
-		//Loop through the list removing null and empty href elements and setting null class to empty string
-		Iterator<StoryLink> linksIterator = storyLinkList.iterator();
-		while(linksIterator.hasNext()){
-			
-			StoryLink currentLink = linksIterator.next();
-			//StoryFinder.consoleLog("processing: " + currentLink.href);
-			//Check for // at beginning of href and add protocol if not there
-			if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
-				//StoryFinder.consoleLog("Inside //: " + currentLink.href );
-				currentLink.href = "http:" + currentLink.href;
-			}
-			if ((currentLink.text == null || currentLink.text == "" || currentLink.text.isEmpty()) && (currentLink.title != null && !currentLink.title.isEmpty())){
-				currentLink.text = currentLink.title;
-			}
-			
-			String currentDomain = (currentLink.href != null) ? URLTool.getDomain(currentLink.href) : null;
-			
-			if (currentLink.href == null || currentLink.href.isEmpty()) {
-				linksIterator.remove();
-			}
-			else if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 7) && (currentLink.href.substring(0, 7).equals("mailto:"))){
-				linksIterator.remove();
-			}
-			else if ((currentDomain != "") && (!primaryDomain.equals(currentDomain))) {
-				linksIterator.remove();
-			}
-			else {
-				if (currentLink.className == null) {currentLink.className = "";}
-				
-				//If the link begins with javascript, try to get the URL
-				if ((currentLink.href.length() >= 11) && currentLink.href.substring(0, 11).equals("javascript:")) {
-			        String urlPattern = "((https?|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
-			        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
-			        Matcher m = p.matcher(currentLink.href);
-			        if (m.find()) {currentLink.href = m.group(0);}
-			        else {linksIterator.remove();}
-			    }
-			}
-		}
-
-		return storyLinkList;
-	}
-		
+	//********************************* Public Accessors ************************************
 	/**
 	 * Simply returns a new Scorer attached to this StoryFinder instance.
 	 * 
@@ -370,85 +262,11 @@ public class StoryFinder {
 	public Scorer Scorer() {
 		return new Scorer();
 	}
-	
-	public class StoryColumn{
 		
-		public String className;
-		public int xPosition;
-		public int runningScore;
-		public HashMap<StoryLink,Integer> columnStoryLinks;
-		public StoryColumn(){
-			className  = "";
-			xPosition = 0;
-			runningScore = 0;
-			columnStoryLinks =  new HashMap<StoryLink, Integer>();
-		}
-		public boolean goodColumn( boolean doubleStrict){
-			boolean currentlyGood = true;
-			int storyCount = columnStoryLinks.size();
-			int topScore = 0;
-			int secondScore = 0;
-			int thirdScore = 0;
-			List<Integer> tempStoryList=new ArrayList<Integer>();
-			for (Map.Entry<StoryLink, Integer> storyLinkScore : columnStoryLinks.entrySet()) {
-				tempStoryList.add(storyLinkScore.getValue());
-			}
-			Collections.sort(tempStoryList, Collections.reverseOrder());
-			if(tempStoryList.size() >= 3){
-				thirdScore = tempStoryList.get(2);
-			}
-			if(tempStoryList.size() >= 2){
-				secondScore = tempStoryList.get(1);
-			}
-			if(tempStoryList.size() >= 1){
-				topScore = tempStoryList.get(0);
-			}
-			
-			double SCOREMULTIPLIERMINIMUM = 2.5;
-			//if the total score is only 2.5x more than the top score then this isn't a good column
-			if((double)topScore * SCOREMULTIPLIERMINIMUM > (double)runningScore ){
-				currentlyGood = false;
-				//StoryFinder.consoleLog("total only 2.5x: " + currentlyGood);
-			}
-			//if there are fewer than 3 stories then this isn't a good column
-			int MINIMUMSTORYCOUNT = 3;
-			if(storyCount <= MINIMUMSTORYCOUNT){
-				currentlyGood = false;
-				//StoryFinder.consoleLog("min count: " + currentlyGood);
-			}
-			if(doubleStrict){
-				//if the average score is less than .65 of the top story then this isn't a good column
-				double SCOREAVERAGEMULTIPLIER = .40;
-				if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
-					currentlyGood = false;
-					//StoryFinder.consoleLog(".65 avg: " + currentlyGood);
-				}
-				double SCOREMULTIPLIER = .65;
-				//if the second and third score are too low compared to the first it isn't a good column
-				if( ((double)((double)secondScore + (double)thirdScore)/(double)2) < ((double)topScore * SCOREMULTIPLIER)) {
-					currentlyGood = false;
-					//StoryFinder.consoleLog("2nd and 3rd low: " + currentlyGood);
-				}
-			}
-			else{
-				//if the average score is less than .65 of the top story then this isn't a good column
-				double SCOREAVERAGEMULTIPLIER = .30;
-				if(((double)runningScore / (double)storyCount) < ((double)topScore * SCOREAVERAGEMULTIPLIER)){
-					currentlyGood = false;
-					//StoryFinder.consoleLog(".65 avg: " + currentlyGood);
-				}
-				
-			}
-			
-			/*StoryFinder.consoleLog("column entries:");
-			for (Map.Entry<StoryLink, Integer> storyLinkScore : columnStoryLinks.entrySet()) {
-				StoryFinder.consoleLog("l: " + storyLinkScore.getKey().href + " s: " + storyLinkScore.getValue() + " x: " + storyLinkScore.getKey().xPosition);
-			}*/
-			
-			return currentlyGood;
-		}
-	}
-	
+	//---------------------------------------------------------------------------------------
+	//------------------------------------ Scorer -------------------------------------------
+	//--------------------------------- Nested Class ----------------------------------------
+	//---------------------------------------------------------------------------------------
 	/**
 	 * Calculates scores for each of the containing StoryFinder's links and returns 
 	 * the most likely good story (highest score with highest class)
@@ -461,9 +279,8 @@ public class StoryFinder {
 		 * Score of the left most width point (complete left side of page). DEFAULT: 0
 		 */
 		private int POSITIONLEFTMOSTXSCORE;
-		/**
-		 * Score of the one third point of the screen width. DEFAULT: 10
-		 */
+		
+		/**  Score of the one third point of the screen width. DEFAULT: 10 */
 		private int POSITIONONEFOURTHXSCORE;
 		/**
 		 * Score of the one half point of the screen width. DEFAULT: 19
@@ -598,10 +415,11 @@ public class StoryFinder {
 		 * Score link receives if the link is the preferred size
 		 */
 		private int PREFERREDLINKWIDTHSCORE;
+		
 		/**
 		 * Handicap class rank receives if the class has only one entry
 		 */
-		private int ONLYONECLASSENTRYHANDICAP;
+//		private int ONLYONECLASSENTRYHANDICAP;
 		
 		/**
 		 * Creates the instance and sets all of the variables to their default values
@@ -663,7 +481,7 @@ public class StoryFinder {
 			NEGATIVEWORDSINLINKTEXTHANDICAP = -5;
 			
 			// set handicap for only class entry
-			ONLYONECLASSENTRYHANDICAP = -9;
+//			ONLYONECLASSENTRYHANDICAP = -9;
 		}
 		
 		
@@ -818,78 +636,68 @@ public class StoryFinder {
 		 */
 		public String getStory() {
 			
-			ArrayList<String> listOfRankedStories = getStories(1);
+			List<String> listOfRankedStories = getStories(1);
 			return listOfRankedStories.get(0);
 			
 		}
 		
-		public ArrayList<String> getStories(int maxStories) {
-			
+		public List<String> getStories(int maxStories) {
+						
 			//Get all the link scores using the containing class links and the Scorer's numbers
 			HashMap<StoryLink, Integer> storyLinkScores = getLinkScores();
 			
-			//print list of stories for debugging purposes
-			//for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {
-				//StoryFinder.consoleLog("link: " + storyLinkScore.getKey().href);}
-			
-			/*if((_dbExceptionID != "") || (_dbExceptionClassName != "")){
-				//this is just a reminder that we're not scoring any columns if there is an exception
-				storyLinkScores = storyLinkScores;
-				//StoryFinder.consoleLog("Inside DB Exception");
-			}*/
-			//else{
-				ArrayList<StoryColumn> rankedByClass = getColumnsScoredWClassNameStrictXPos(storyLinkScores);
-				//if the first ranked column is scored poorly then retry with less strict columns
-				//StoryFinder.consoleLog("After get strict x w class");
-				if (!rankedByClass.isEmpty() && rankedByClass.get(0).goodColumn(true)){
-					//StoryFinder.consoleLog("strict x w class marked as good");
-					//if the strict x pos and classname had a good first column grab all the columns of that class
-					String topClassName = (!rankedByClass.isEmpty()) ? rankedByClass.get(0).className : "";
-					if (!rankedByClass.isEmpty()){
-						StoryFinder.consoleLog("Top Ranked ClassName : " + rankedByClass.get(0).className + " at: " + rankedByClass.get(0).xPosition);
-						StoryFinder.consoleLog("With a final score of: " + rankedByClass.get(0).runningScore);
-					}
-					storyLinkScores = new HashMap<StoryLink, Integer>();
-					//this adds every story from every column with a mataching classname where the column is good
-					for (StoryColumn currColumn : rankedByClass) {
-						if ((currColumn.className == topClassName) && (currColumn.goodColumn(true))){
-							//StoryFinder.consoleLog("adding good columns to the storylinklist");
-							storyLinkScores.putAll(currColumn.columnStoryLinks);
-						}
-						
-					}
-	
+			ArrayList<StoryColumn> rankedByClass = getColumnsScoredWClassNameStrictXPos(storyLinkScores);
+			//if the first ranked column is scored poorly then retry with less strict columns
+			//StoryFinder.consoleLog("After get strict x w class");
+			if (!rankedByClass.isEmpty() && rankedByClass.get(0).goodColumn(true)){
+				//StoryFinder.consoleLog("strict x w class marked as good");
+				//if the strict x pos and classname had a good first column grab all the columns of that class
+				String topClassName = (!rankedByClass.isEmpty()) ? rankedByClass.get(0).className : "";
+				if (!rankedByClass.isEmpty()){
+					StoryFinder.consoleLog("Top Ranked ClassName : " + rankedByClass.get(0).className + " at: " + rankedByClass.get(0).xPosition);
+					StoryFinder.consoleLog("With a final score of: " + rankedByClass.get(0).runningScore);
 				}
-				//if the strictx pos and classname did not return a good column
+				storyLinkScores = new HashMap<StoryLink, Integer>();
+				//this adds every story from every column with a mataching classname where the column is good
+				for (StoryColumn currColumn : rankedByClass) {
+					if ((currColumn.className == topClassName) && (currColumn.goodColumn(true))){
+						//StoryFinder.consoleLog("adding good columns to the storylinklist");
+						storyLinkScores.putAll(currColumn.columnStoryLinks);
+					}
+					
+				}
+
+			}
+			
+			//if the strictx pos and classname did not return a good column
+			else{
+				//StoryFinder.consoleLog("strict x no class scoring");
+				ArrayList<StoryColumn> looseColumns = getColumnsScoredWStrictXPosNoClass(storyLinkScores);
+				if(!looseColumns.isEmpty() && looseColumns.get(0).goodColumn(false)){
+					//StoryFinder.consoleLog("strict x no class scoring: had good columns");
+					storyLinkScores = looseColumns.get(0).columnStoryLinks;
+				}
 				else{
-					//StoryFinder.consoleLog("strict x no class scoring");
-					ArrayList<StoryColumn> looseColumns = getColumnsScoredWStrictXPosNoClass(storyLinkScores);
-					if(!looseColumns.isEmpty() && looseColumns.get(0).goodColumn(false)){
-						//StoryFinder.consoleLog("strict x no class scoring: had good columns");
-						storyLinkScores = looseColumns.get(0).columnStoryLinks;
+					//StoryFinder.consoleLog("with class no X scoring");
+					ArrayList<StoryColumn> justClassName = getColumnsScoredWClassNoXPos(storyLinkScores);
+					if (!justClassName.isEmpty() && justClassName.get(0).goodColumn(false)){
+						storyLinkScores = justClassName.get(0).columnStoryLinks;
 					}
 					else{
-						//StoryFinder.consoleLog("with class no X scoring");
-						ArrayList<StoryColumn> justClassName = getColumnsScoredWClassNoXPos(storyLinkScores);
-						if (!justClassName.isEmpty() && justClassName.get(0).goodColumn(false)){
-							storyLinkScores = justClassName.get(0).columnStoryLinks;
+						//StoryFinder.consoleLog("just remove bad positions scoring");
+						ArrayList<StoryColumn> reallyBadPositionsRemoved = getColumnsRemoveBadPositions(storyLinkScores);
+						if(!reallyBadPositionsRemoved.isEmpty() && reallyBadPositionsRemoved.get(0).goodColumn(false)){
+							storyLinkScores = reallyBadPositionsRemoved.get(0).columnStoryLinks;
 						}
 						else{
-							//StoryFinder.consoleLog("just remove bad positions scoring");
-							ArrayList<StoryColumn> reallyBadPositionsRemoved = getColumnsRemoveBadPositions(storyLinkScores);
-							if(!reallyBadPositionsRemoved.isEmpty() && reallyBadPositionsRemoved.get(0).goodColumn(false)){
-								storyLinkScores = reallyBadPositionsRemoved.get(0).columnStoryLinks;
-							}
-							else{
-								//if none of the scoring worked return the whole list
-								//this is here just to make it easier to follow
-								//storyLinkScores = storyLinkScores;
-							}
+							//if none of the scoring worked return the whole list
+							//this is here just to make it easier to follow
+							//storyLinkScores = storyLinkScores;
 						}
 					}
-	
 				}
-			//}
+
+			}
 			
 			if (storyLinkScores.isEmpty()) {return new ArrayList<String>();}
 			
@@ -1013,7 +821,7 @@ public class StoryFinder {
 			ArrayList<StoryLink> unseenURLs = new ArrayList<StoryLink>();
 			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
 				int currentLinkXPosition = storyLinkScore.getKey().xPosition;
-			    if ((currentLinkXPosition < 0) || (currentLinkXPosition > _screenWidth)) {
+			    if ((currentLinkXPosition < 0) || (currentLinkXPosition > VIEWPORTWIDTH)) {
 			    	unseenURLs.add(storyLinkScore.getKey());
 			    }
 			}
@@ -1089,9 +897,9 @@ public class StoryFinder {
 			int linkXPosition = xPosition;
 			//Set the points based on the screen size
 			int firstPoint = 0;  								//Named for simpler clarity
-			int secondPoint = _screenWidth*3/12;					//One fourth mark
-			int thirdPoint = _screenWidth*3/4;						//three fourths mark
-			int fourthPoint = _screenWidth;  					////Also added for clarity
+			int secondPoint = VIEWPORTWIDTH*3/12;					//One fourth mark
+			int thirdPoint = VIEWPORTWIDTH*3/4;						//three fourths mark
+			int fourthPoint = VIEWPORTWIDTH;  					////Also added for clarity
 			
 			int linkRelativeXPosition = 0;
 			double xPositionScoreAdjustment = 0;
@@ -1732,73 +1540,6 @@ public class StoryFinder {
 			return rankedColumns;
 		}
 		
-		/**
-		 * Returns array list of all the links' classes ranked by average link score. The first class (at 0)
-		 * has the highest average.
-		 * 
-		 * The average is calculated by taking the sum of the scores of all the links that have a class
-		 * and dividing by that number of links.
-		 * 
-		 * THE AVERAGES GET PENALIZED FOR ONLY HAVING ONE CLASS ENTRY
-		 * 
-		 * @param storyLinkScores	Map of StoryLinks associated with their individual scores
-		 * @return
-		 */
-		private ArrayList<String> getClassesRankedByAveragedLinkScore(HashMap<StoryLink, Integer> storyLinkScores) {
-			
-			//Prepare to store each class' use count and total score
-			HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
-			HashMap<String, Integer> classTotalScores = new HashMap<String, Integer>();
-			
-			//Loop through the urls and total up the classes with the urls' scores
-			for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
-				
-				//Get the url's classes from the class attribute
-				String classString = storyLinkScore.getKey().className;
-				String[] urlClasses = classString.trim().split("\\s+");
-				
-				//Loop through each class if any exist
-				if (classString.length() > 0) {
-					for (String currentClass : urlClasses) {
-						
-						//If this class has not been seen before, begin an entry for it
-						if (!classCounts.containsKey(currentClass)) {
-							classCounts.put(currentClass, 1);
-							classTotalScores.put(currentClass, storyLinkScore.getValue());
-						}
-						
-						//Otherwise, add the current score to its score and increment the count
-						else {
-							classCounts.put(currentClass, classCounts.get(currentClass) + 1);
-							classTotalScores.put(currentClass, classTotalScores.get(currentClass) + storyLinkScore.getValue());
-						}
-						
-					}
-				}
-			}
-			
-			//Get the class score averages and put them into a TreeMap for sorting
-			TreeMap<Integer, String> averagedClassScores = new TreeMap<Integer, String>(Collections.reverseOrder());
-			for (Map.Entry<String, Integer> currentClassScore : classTotalScores.entrySet()) {
-				int averageScore = currentClassScore.getValue() / classCounts.get(currentClassScore.getKey());
-				//This is where the deduction for only one class entry happens
-				//StoryFinder.consoleLog("find average of :" + currentClassScore.getKey() + "- :" + currentClassScore.getValue() + " Div by: " + classCounts.get(currentClassScore.getKey()));
-				if(classCounts.get(currentClassScore.getKey()) == 1){
-					averageScore += ONLYONECLASSENTRYHANDICAP;
-					//StoryFinder.consoleLog("Scoring down class for one entry: " + currentClassScore.getKey());
-				}
-				//StoryFinder.consoleLog("Average - " + averageScore);
-				averagedClassScores.put(averageScore, currentClassScore.getKey());
-			}
-			
-			//Turn the sorted map into the final array and return it
-			ArrayList<String> rankedClasses = new ArrayList<String>();
-			for (Map.Entry<Integer, String> storyLinkScore : averagedClassScores.entrySet()) {
-				rankedClasses.add(storyLinkScore.getValue());
-			}
-			
-			return rankedClasses;
-		}
 		
 		/**
 		 * Returns the first path part of a URI.
@@ -1832,7 +1573,7 @@ public class StoryFinder {
 			else {
 				//StoryFinder.consoleLog("return nothing");
 				return "";
-				}
+			}
 		}
 		
 		
@@ -1848,6 +1589,7 @@ public class StoryFinder {
 		    }
 		    return false;
 		}
+		
 		/**
 		 * Writes a csv file with all the stories and scores 
 		 * this is intended to make tuning the story finder easier
@@ -1900,3 +1642,313 @@ public class StoryFinder {
 	}
 }
 
+/** Archived Code for reference */
+
+
+	/**
+	 * Returns a JSON string of all the links and their info from the passed URL
+	 * 
+	 * Link info: id, href, name, onclick, text, style, title
+	 * 
+	 * @param url			URL to grab the links from
+	 * @param viewWidth		Width of the screen phantomjs should use
+	 * @param viewHeight	Height of the screen phantomjs should use
+	 * @param viewHeight	URL to grab the links from
+	 * @return				JSON string of links and their info
+	 */
+//	private static String getLinkJSONFromURL(String url, int viewWidth, int viewHeight, String userAgent, String ExceptionID, String ExceptionClass) {
+//		
+//		//Try to make the phantomjs call and return the JSON
+//        String phantomJSResponse = null;
+//        
+//        try {
+//            
+//        	//Run the retrieve links js file with phantomjs
+//        	StoryFinder.consoleLog("getLinkJSONFromUrl url: " + url);
+//        	//StoryFinder.consoleLog("getLinkJSONFromUrl width: " + viewWidth);
+//        	//StoryFinder.consoleLog("getLinkJSONFromUrl height: " + viewHeight);
+//            Process p = Runtime.getRuntime().exec(new String[]{
+//	            ASRProperties.pathForPhantomJS(), 
+//	            ASRProperties.pathForPossibleStoriesJavascript(),
+//	            url, Integer.toString(viewWidth), Integer.toString(viewHeight), userAgent, ExceptionID, ExceptionClass        	
+//            });
+//            //Get the string returned from phantomjs
+//            BufferedReader commandLineInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//            phantomJSResponse = commandLineInput.readLine();
+//        }
+//        catch (IOException e) {
+//			throw new AdShotRunnerException("Could not execute phantomjs", e);
+//        }
+//		//StoryFinder.consoleLog("PhantomJSResponse: " + phantomJSResponse);
+//        //If the command was successful, return the phantomjs response
+//		return phantomJSResponse;
+//	}
+
+/**
+ * Returns a StoryFinder instance with the links retrieved from the passed URL, utilizing the
+ * screen size passed.
+ * 
+ * Instance is immutable
+ * 
+ * @param url			URL to retrieve stories from 
+ * @param viewWidth		Width of the screen phantomjs should use
+ * @param viewHeight	Height of the screen phantomjs should use
+ * @throws MalformedURLException
+ * @throws URISyntaxException
+ * @throws UnsupportedEncodingException 
+ */
+//public StoryFinder(String url, int viewWidth, int viewHeight) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+//	
+//	//Store the target URL for the class to get stories from
+//	_targetURL = url;
+//	
+//	//Store the height and width to use for the phantomjs screen
+//	_screenWidth = viewWidth;
+//	_screenHeight = viewHeight;
+//	
+//	//get possible exceptions from the DB
+//	Map<String, String> storyException = null;
+//	_dbExceptionID = "";
+//	_dbExceptionClassName = "";
+//	try {
+//		storyException = getException(url);
+//		if (storyException != null){
+//			_dbExceptionID = storyException.get("containerID");
+//			_dbExceptionClassName = storyException.get("className");
+//		}
+//			
+//	} catch (SQLException e) {
+//		StoryFinder.consoleLog("Database Error When finding Exception for: " + url);
+//	}
+//	
+//	
+//	//loop through the phantomjs request trying different user agents
+//	String userAgents[] = new String [] {"firefox","googlebot", "msnbot", "firefoxlinux"};
+//	int userAgentIncrementor = 0;
+//	int linkCountMinimumNormal = 10;
+//	int linkCountMinimumWException = 5;
+//	int linkCountMinimum = linkCountMinimumNormal;
+//	boolean useException = false;
+//	
+//	if ((_dbExceptionID != "") || (_dbExceptionClassName != "")){
+//		linkCountMinimum = linkCountMinimumWException;
+//		useException = true;
+//	}
+//	
+//	List<StoryLink> retrievedLinks = new ArrayList<StoryLink>();
+//	while((userAgentIncrementor < userAgents.length) && (retrievedLinks.size() < linkCountMinimum)){
+//	
+//		StoryFinder.consoleLog("Trying phantomJS with agent:" + userAgents[userAgentIncrementor]);
+//		//Get the possible story links using phantomjs
+//		String linkJSON = getLinkJSONFromURL(_targetURL, _screenWidth, _screenHeight, userAgents[userAgentIncrementor], _dbExceptionID, _dbExceptionClassName);
+//		StoryFinder.consoleLog("after get JSON fron phantomJS");
+//		//StoryFinder.consoleLog("full String: " + linkJSON);
+//		
+//        //Get the immutable link info as array of maps
+//		retrievedLinks = getStoryLinksFromJSON(linkJSON);
+//		
+//		userAgentIncrementor++;
+//		
+//		//if this is an exception and we've gotten all the way through all the user agents
+//		//without enough results loop through again without the exception
+//		if((userAgentIncrementor >= userAgents.length) && 
+//		   ((_dbExceptionID != "") || (_dbExceptionClassName != ""))){
+//			StoryFinder.consoleLog("Unable to get links with StoryFinder Exception. Retrying without it.");
+//			_dbExceptionID = "";
+//			_dbExceptionClassName = "";
+//			userAgentIncrementor = 0;
+//		}
+//	}
+//	
+//	_links = retrievedLinks;
+//}
+
+//public static Map<String, String> getException(String targetURL) throws SQLException {
+//	
+//	//Get the domain with subdomain of the url. The protocol type is not important. It is necessary for getDomain.
+//	String urlDomain = URLTool.getSubdomain(URLTool.setProtocol("http", targetURL));
+//	
+//	//Check the database to see if any entries matching the domain exist
+//	String urlPart = "", containerID = "", className = "";
+//	try (ResultSet exceptionsSet = ASRDatabase.executeQuery("SELECT * " + 
+//														 	"FROM exceptionsStoryFinder " +
+//														 	"WHERE ESF_url LIKE '" + urlDomain + "%'")) {
+//			
+//		//If a match was found, use the container ID and class of the longest matching url part
+//		while (exceptionsSet.next()) {
+//						
+//			//Get the current URL part
+//			String currentURLPart = exceptionsSet.getString("ESF_url");
+//			
+//			//If the url part is a substring of the target URL, store its info if it is the longest
+//			if (targetURL.toLowerCase().contains(currentURLPart.toLowerCase())) {
+//				
+//				//See if the new part is longer than the current
+//				if (currentURLPart.length() > urlPart.length()) {
+//					
+//					//Store the new exception
+//					urlPart = currentURLPart;
+//					containerID = exceptionsSet.getString("ESF_containerID");
+//					className = exceptionsSet.getString("ESF_className");
+//				}
+//			}			
+//		}
+//	//If the database was unaccessible, do nothing for the time being
+//	} catch (Exception e){return null;} 
+//	
+//	//If no matches in the database were found, return null
+//	if (urlPart.isEmpty()) {return null;}
+//	
+//	//Otherwise, put the info in a map and return it
+//	else {
+//		Map<String, String> storyException = new HashMap<String, String>();
+//		storyException.put("url", urlPart);
+//		storyException.put("containerID", containerID);
+//		storyException.put("className", className);
+//		return storyException;
+//	}
+//} 
+
+/**
+ * Returns an immutable list of links and their info (each link an immutable map)
+ * 
+ * @param linkJSON	JSON string of links as their info in the form of an array of associative arrays
+ * @return				Immutable list of immutable maps, each map a set of link info (text, href, xPosition, etc...)
+ * @throws MalformedURLException
+ * @throws URISyntaxException
+ * @throws UnsupportedEncodingException 
+ */
+//private List<StoryLink> getStoryLinksFromJSON(String linkJSON) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+//	
+//	Gson gson = new Gson();
+//	Type arrayStoryLinksToken = new TypeToken<ArrayList<StoryLink>>(){}.getType();
+//	ArrayList<StoryLink> storyLinkList = new ArrayList<StoryLink>();
+//	try{
+//		storyLinkList = gson.fromJson(linkJSON, arrayStoryLinksToken);
+//	}
+//	catch(com.google.gson.JsonSyntaxException e){
+//		StoryFinder.consoleLog("unable to parse linkJSON");
+//		
+//	}
+//	//Get the primary domain of the StoryFinder URL
+//	String primaryDomain = URLTool.getDomain(_targetURL);
+//	
+//	//Loop through the list removing null and empty href elements and setting null class to empty string
+//	Iterator<StoryLink> linksIterator = storyLinkList.iterator();
+//	while(linksIterator.hasNext()){
+//		
+//		StoryLink currentLink = linksIterator.next();
+//		//StoryFinder.consoleLog("processing: " + currentLink.href);
+//		//Check for // at beginning of href and add protocol if not there
+//		if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 2) && (currentLink.href.substring(0, 2).equals("//"))){
+//			//StoryFinder.consoleLog("Inside //: " + currentLink.href );
+//			currentLink.href = "http:" + currentLink.href;
+//		}
+//		if ((currentLink.text == null || currentLink.text == "" || currentLink.text.isEmpty()) && (currentLink.title != null && !currentLink.title.isEmpty())){
+//			currentLink.text = currentLink.title;
+//		}
+//		
+//		String currentDomain = (currentLink.href != null) ? URLTool.getDomain(currentLink.href) : null;
+//		
+//		if (currentLink.href == null || currentLink.href.isEmpty()) {
+//			linksIterator.remove();
+//		}
+//		else if ((currentLink.href != null) && (!currentLink.href.isEmpty()) && (currentLink.href.length() >= 7) && (currentLink.href.substring(0, 7).equals("mailto:"))){
+//			linksIterator.remove();
+//		}
+//		else if ((currentDomain != "") && (!primaryDomain.equals(currentDomain))) {
+//			linksIterator.remove();
+//		}
+//		else {
+//			if (currentLink.className == null) {currentLink.className = "";}
+//			
+//			//If the link begins with javascript, try to get the URL
+//			if ((currentLink.href.length() >= 11) && currentLink.href.substring(0, 11).equals("javascript:")) {
+//		        String urlPattern = "((https?|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
+//		        Pattern p = Pattern.compile(urlPattern,Pattern.CASE_INSENSITIVE);
+//		        Matcher m = p.matcher(currentLink.href);
+//		        if (m.find()) {currentLink.href = m.group(0);}
+//		        else {linksIterator.remove();}
+//		    }
+//		}
+//	}
+//
+//	return storyLinkList;
+//}
+
+/**
+ * Returns array list of all the links' classes ranked by average link score. The first class (at 0)
+ * has the highest average.
+ * 
+ * The average is calculated by taking the sum of the scores of all the links that have a class
+ * and dividing by that number of links.
+ * 
+ * THE AVERAGES GET PENALIZED FOR ONLY HAVING ONE CLASS ENTRY
+ * 
+ * @param storyLinkScores	Map of StoryLinks associated with their individual scores
+ * @return
+ */
+//private ArrayList<String> getClassesRankedByAveragedLinkScore(HashMap<StoryLink, Integer> storyLinkScores) {
+//	
+//	//Prepare to store each class' use count and total score
+//	HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
+//	HashMap<String, Integer> classTotalScores = new HashMap<String, Integer>();
+//	
+//	//Loop through the urls and total up the classes with the urls' scores
+//	for (Map.Entry<StoryLink, Integer> storyLinkScore : storyLinkScores.entrySet()) {		
+//		
+//		//Get the url's classes from the class attribute
+//		String classString = storyLinkScore.getKey().className;
+//		String[] urlClasses = classString.trim().split("\\s+");
+//		
+//		//Loop through each class if any exist
+//		if (classString.length() > 0) {
+//			for (String currentClass : urlClasses) {
+//				
+//				//If this class has not been seen before, begin an entry for it
+//				if (!classCounts.containsKey(currentClass)) {
+//					classCounts.put(currentClass, 1);
+//					classTotalScores.put(currentClass, storyLinkScore.getValue());
+//				}
+//				
+//				//Otherwise, add the current score to its score and increment the count
+//				else {
+//					classCounts.put(currentClass, classCounts.get(currentClass) + 1);
+//					classTotalScores.put(currentClass, classTotalScores.get(currentClass) + storyLinkScore.getValue());
+//				}
+//				
+//			}
+//		}
+//	}
+//	
+//	//Get the class score averages and put them into a TreeMap for sorting
+//	TreeMap<Integer, String> averagedClassScores = new TreeMap<Integer, String>(Collections.reverseOrder());
+//	for (Map.Entry<String, Integer> currentClassScore : classTotalScores.entrySet()) {
+//		int averageScore = currentClassScore.getValue() / classCounts.get(currentClassScore.getKey());
+//		//This is where the deduction for only one class entry happens
+//		//StoryFinder.consoleLog("find average of :" + currentClassScore.getKey() + "- :" + currentClassScore.getValue() + " Div by: " + classCounts.get(currentClassScore.getKey()));
+//		if(classCounts.get(currentClassScore.getKey()) == 1){
+//			averageScore += ONLYONECLASSENTRYHANDICAP;
+//			//StoryFinder.consoleLog("Scoring down class for one entry: " + currentClassScore.getKey());
+//		}
+//		//StoryFinder.consoleLog("Average - " + averageScore);
+//		averagedClassScores.put(averageScore, currentClassScore.getKey());
+//	}
+//	
+//	//Turn the sorted map into the final array and return it
+//	ArrayList<String> rankedClasses = new ArrayList<String>();
+//	for (Map.Entry<Integer, String> storyLinkScore : averagedClassScores.entrySet()) {
+//		rankedClasses.add(storyLinkScore.getValue());
+//	}
+//	
+//	return rankedClasses;
+//}
+
+
+
+
+
+
+
+
+ 

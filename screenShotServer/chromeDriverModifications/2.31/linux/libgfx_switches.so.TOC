@@ -1,0 +1,13 @@
+ 0x000000000000000e (SONAME)             Library soname: [libgfx_switches.so]
+__bss_start A
+__cxa_finalize w
+_edata A
+_end A
+_fini T
+__gmon_start__ w
+_init T
+_ITM_deregisterTMCloneTable w
+_ITM_registerTMCloneTable w
+_Jv_RegisterClasses w
+_ZN8features22kColorCorrectRenderingE D
+_ZN8switches9kHeadlessE R
