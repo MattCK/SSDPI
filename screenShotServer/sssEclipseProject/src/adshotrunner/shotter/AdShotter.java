@@ -300,6 +300,10 @@ public class AdShotter extends SeleniumBase {
 		
 		//Set the driver to use a Windows node
 		driverCapabilities.setPlatform(Platform.WINDOWS);
+
+//		driverOptions.addArguments("headless");
+//		driverOptions.addArguments("disable-gpu");
+//		driverOptions.addArguments("window-size=" + DESKTOPVIEWWIDTH + "," + DESKTOPVIEWHEIGHT);
 		
 		//If the browser needs to be in mobile mode, set the driver options for it
 		if (mobile) {
@@ -329,6 +333,8 @@ public class AdShotter extends SeleniumBase {
 		try {
 			driverOptions.addExtensions(new File(ADMARKERPATH));
 			driverOptions.addExtensions(new File(CSPDISABLEPATH));
+//			driverOptions.addExtensions(new File("chromeExtensions/disableVisibility.crx"));
+//			driverOptions.addExtensions(new File("chromeExtensions/ublock.crx"));
 		} catch (Exception e) {
 			consoleLog("	FAILED: Unable to load AdMarker and Disabled CSP Extensions: " + e.toString() );
 		}
