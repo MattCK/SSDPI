@@ -73,6 +73,11 @@ public class ASRProperties {
 	//Selenium Hub information
 	public static String seleniumHubURL() {return getProperties().getProperty("seleniumHubURL");}
 	
+	//Testing
+	public static boolean unmodifiedScreenShotCompare() {
+		return Boolean.parseBoolean(getProperties().getProperty("unmodifiedScreenShotCompare"));
+	}
+	
 	
 	//**************************** Protected Static Methods *********************************
 

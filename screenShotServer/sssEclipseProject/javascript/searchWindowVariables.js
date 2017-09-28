@@ -18,9 +18,19 @@
 * 	     the browser console, and hit enter.
 */
 
-//Set the value to search for
-if (typeof searchValue !== 'undefined') {let searchValue;}
-searchValue = "728";
+//Created undefined variables
+if (typeof searchValue === 'undefined') {let searchValue;}
+if (typeof objectToSearch === 'undefined') {let objectToSearch;}
+if (typeof objectName === 'undefined') {let objectName;}
+if (typeof outputContainingObject === 'undefined') {let outputContainingObject;}
+
+//Set the object and value to search
+objectToSearch = window;
+objectName = "window";
+searchValue = "ad-position-73";
+
+//If TRUE, the containing object holding the search value and its key will be output to the console
+outputContainingObject = true;
 
 /**
 * Recursively searches the window global variables for a specific value and, if found, outputs
@@ -28,8 +38,9 @@ searchValue = "728";
 */
 function findValue(searchValue) {
 
+	//let propertyHistory = '';
 	let cache = [];
-	let recursiveFind = function(currentObject) {
+	let recursiveFind = function(currentObject, currentHistory) {
 
 		//If we have already seen this object, ignore it and return to prevent circular reference
 	    if (typeof currentObject === 'object' && currentObject !== null) {
@@ -52,12 +63,18 @@ function findValue(searchValue) {
 		        		//If the current value is an object, call this recursive function on it
 					    if (typeof value == "object" ) {
 
-
-							//If true is returned, output the current key
-					    	if (recursiveFind(value)) {
-					    		console.log(key);
-					    		return true;
+							let found = recursiveFind(value, currentHistory + '["' + key + '"]')
+					    	if (found && outputContainingObject) {
+					    		console.log(value);
+								// propertyHistory = '["' + key + '"]' + propertyHistory;
+					    		// return true;
 					    	};
+							//If true is returned, output the current key
+					    	// if (recursiveFind(value)) {
+					    	// 	console.log(key);
+							// 	propertyHistory = '["' + key + '"]' + propertyHistory;
+					    	// 	return true;
+					    	// };
 
 					    }
 
@@ -65,7 +82,9 @@ function findValue(searchValue) {
 					    //If they are equal, output the current key with the value and return true.
 					    else {
 					    	if (value == searchValue) {
-					    		console.log(key + " = " + value); 
+								// console.log(key + " = " + value); 
+								// propertyHistory = '["' + key + '"]' + propertyHistory;
+								console.log(currentHistory + '["' + key + '"]');
 					    		return true;
 					    	}
 					    }
@@ -75,7 +94,16 @@ function findValue(searchValue) {
 		}
 	}
 
-	recursiveFind(window);
+	recursiveFind(objectToSearch, objectName);
+	// console.log("Property List: " + propertyHistory);
 }
 
+console.log('');
+console.log("-------------------- Recursive Search -------------------");
+console.log("Searching: " + objectName);
+console.log("For Value: " + searchValue);
+console.log('');
+
 findValue(searchValue);
+
+console.log("---------------------------------------------------------");

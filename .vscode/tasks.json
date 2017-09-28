@@ -1,10 +1,38 @@
 {
-	// See https://go.microsoft.com/fwlink/?LinkId=733558
-	// for the documentation about the tasks.json format
-	"version": "0.1.0",
-	"command": "tsc",
-	"isShellCommand": true,
-	"args": ["-p", "./frontend/typescript"],
-	"showOutput": "silent",
-	"problemMatcher": "$tsc"
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+	"version": "2.0.0",
+    "tasks": [
+        {
+            "label": "frontend",
+            "type": "typescript",
+            "tsconfig": "frontend/typescript/tsconfig.json",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "never"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+
+        {
+            "label": "sss",
+            "type": "typescript",
+            "tsconfig": "screenShotServer/sssEclipseProject/typescript/tsconfig.json",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "never"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        }
+    ]
 }

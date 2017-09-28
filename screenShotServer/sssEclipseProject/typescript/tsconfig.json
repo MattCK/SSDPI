@@ -1,0 +1,16 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "allowJs": false,
+        "alwaysStrict": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "outDir": "../javascript",
+        "strictNullChecks": true,
+        "target": "es6"
+    },
+    "include": [
+        "**/*"
+    ]
+}

@@ -1,13 +1,15 @@
+Change manifest.json to AdMarker title
+
+Search and replace:
+
 display: none -> flood-opacity: 0.9898
 'display', 'none' -> 'flood-opacity', '0.9898'
 display:none -> flood-opacity: 0.9898
 hidden = true	 -> hidden = false
 
-
-
 visibility:hidden -> visibility: visible
 
-static-net-filtering ==> comment out fromCompiledContent 1974 -> 2010
+static-net-filtering ==> comment out fromCompiledContent 2253 -> 2318
 (Everything after: this.acceptedCount += 1;)
 
 
@@ -20,6 +22,8 @@ in batchProcess -
                 vNodes[j++] = node;
             }
 
+
+----------------------------------------------
 
 (Originally shadow root, seems to be gone
 content-script ==> comment out 535 - 536

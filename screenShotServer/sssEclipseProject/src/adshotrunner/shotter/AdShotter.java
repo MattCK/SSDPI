@@ -183,13 +183,22 @@ public class AdShotter extends SeleniumBase {
 	 * the screenshot, and sets the screenshot image, final URL, and page title
 	 * into the AdShot.
 	 * 
-	 * @param activeWebDriver	Webdriver navigated to AdShot current candidate URL
+	 * @param activeWebDriver		Webdriver navigated to AdShot current candidate URL
 	 * @param activeAdShot			AdShot to capture screenshot image for
 	 */
 	static private void createAdShotImage(WebDriver activeWebDriver, AdShot activeAdShot) {
 		
 		//Scroll down and back up to load lazy ads (ads that only load after the user scrolls)
 		scrollToLoadLazyAds(activeWebDriver);
+		
+		//TESTING PURPOSES ONLY: If the development domain is being used and the
+		//getUnmodifiedScreenshot is set to TRUE , take a screenshot now before
+		//we modify the page. It will be appended to the side of the final AdShot for comparison.
+		File unmodifiedScreenShot = null;
+		if (ASRProperties.asrDomain().equals("development.adshotrunner.com") &&
+			ASRProperties.unmodifiedScreenShotCompare()) {
+				unmodifiedScreenShot = getUnmodifiedScreenshot(activeWebDriver);
+		}
 		
 		//Get the CreativeInjecter javascript with the creatives inserted into it
 		String creativeInjecterJS = "";
@@ -268,6 +277,12 @@ public class AdShotter extends SeleniumBase {
 			sendErrorNotification(activeAdShot, e);  return;
 		}
 		
+		//TESTING PURPOSES ONLY: If we took a screenshot of the unmodified page, append it to AdShot
+		if (unmodifiedScreenShot != null) {
+			BufferedImage joinedScreenshot = appendScreenshotToAdShot(croppedScreenshot, unmodifiedScreenShot);
+			if (joinedScreenshot != null) {croppedScreenshot = joinedScreenshot;}
+		}
+		
 		//Add the final image to the AdShot
 		try {activeAdShot.setImage(croppedScreenshot);}
 		catch (Exception e) {
@@ -289,8 +304,6 @@ public class AdShotter extends SeleniumBase {
 	 * @return				Initialized Chrome WebDriver
 	 */
 	static private WebDriver getAdShotDriver(boolean mobile) throws MalformedURLException {
-
-		//System.setProperty("webdriver.chrome.driver", "chromedriver");
 		
 		//Begin creating the driver for a Chrome window
 		consoleLog("Creating Chrome driver...");
@@ -300,10 +313,6 @@ public class AdShotter extends SeleniumBase {
 		
 		//Set the driver to use a Windows node
 		driverCapabilities.setPlatform(Platform.WINDOWS);
-
-//		driverOptions.addArguments("headless");
-//		driverOptions.addArguments("disable-gpu");
-//		driverOptions.addArguments("window-size=" + DESKTOPVIEWWIDTH + "," + DESKTOPVIEWHEIGHT);
 		
 		//If the browser needs to be in mobile mode, set the driver options for it
 		if (mobile) {
@@ -324,17 +333,15 @@ public class AdShotter extends SeleniumBase {
 			
 			//Turn off flash and the pdf viewer
 			chromePreferences.put("plugins.plugins_disabled", new String[] {
-				    "Adobe Flash Player",
-				    "Chrome PDF Viewer"
-				});
+				    			  "Adobe Flash Player",
+				    			  "Chrome PDF Viewer"
+			});
 		}
 		driverOptions.setExperimentalOption("prefs", chromePreferences);
 		
 		try {
 			driverOptions.addExtensions(new File(ADMARKERPATH));
 			driverOptions.addExtensions(new File(CSPDISABLEPATH));
-//			driverOptions.addExtensions(new File("chromeExtensions/disableVisibility.crx"));
-//			driverOptions.addExtensions(new File("chromeExtensions/ublock.crx"));
 		} catch (Exception e) {
 			consoleLog("	FAILED: Unable to load AdMarker and Disabled CSP Extensions: " + e.toString() );
 		}
@@ -453,24 +460,7 @@ public class AdShotter extends SeleniumBase {
 		
 		//Scroll down and back up to load the lazy ads
 		executeSeleniumDriverJavascript(activeWebDriver, 
-				"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
-		
-//		//If the AdShot is below-the-fold, scroll down to the start height
-//		if (currentAdShot.belowTheFold()) {
-//			int startHeight = (currentAdShot.mobile()) ? BTFMOBILESTARTHEIGHT : BTFDESKTOPSTARTHEIGHT;
-//			consoleLog("BELOW THE FOLD: Scrolling to: " + startHeight);
-//			pause(2500);
-//			executeSeleniumDriverJavascript(activeWebDriver, "window.scrollBy(0, " + startHeight + ");");
-//			consoleLog("Done!");
-//			pause(2500);
-//		}
-//		
-//		//If the AdShot is NOT below-the-fold, scroll down and back up to load advertisements
-//		else {
-//			consoleLog("DEFAULT: scrolling 300 down and back up");
-//			executeSeleniumDriverJavascript(activeWebDriver, 
-//					"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");
-//		}
+				"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");		
 	}
 
 	/**
@@ -705,6 +695,58 @@ public class AdShotter extends SeleniumBase {
 		NotificationClient.sendNotice(ASRProperties.notificationGroupForSSSIssues(), 
 									  "ERROR PROCESSING ADSHOT: " + currentAdShot.errorMessage(), notice);
 	}
+	
+	/**
+	 * FOR TESTING PURPOSES ONLY!!!
+	 * 
+	 * Returns a screenshot of the current WebDriver while ignoring any errors.
+	 * 
+	 * @param activeWebDriver	WebDriver to take screenshot of
+	 * @return					Screenshot of driver (all errors ignored)
+	 */
+	static private File getUnmodifiedScreenshot(WebDriver activeWebDriver) {
+		
+		consoleLog("Getting Unmodified Screenshot...");
+		File screenShot = null;
+		try {screenShot = captureSeleniumDriverScreenshot(activeWebDriver);}
+		catch (Exception e) {}
+		consoleLog("Done.");
+		return screenShot;
+	}
+
+	/**
+	 * FOR TESTING PURPOSES ONLY!!!
+	 * 
+	 * Appends the unmodified screenshot to the right-side of the AdShot and 
+	 * returns the image.
+	 * 
+	 * @param adShot					AdShot created by the AdShotter
+	 * @param unmodifiedScreenshot		Screenshot taken before anything was done to the page
+	 * @return
+	 */
+	static private BufferedImage appendScreenshotToAdShot(BufferedImage adShot, File unmodifiedScreenshot) {
+		
+		//Turn the unmodified screenshot file into an image object
+		BufferedImage unmodifiedImage = null;
+		try {
+			unmodifiedImage = ImageIO.read(unmodifiedScreenshot);
+		} catch (IOException e) {return null;}
+		
+		//Get the combined width and tallest height
+		int finalWidth = adShot.getWidth() + unmodifiedImage.getWidth();
+		int finalHeight = (adShot.getHeight() > unmodifiedImage.getHeight()) ?
+									adShot.getHeight() : unmodifiedImage.getHeight();
+		
+		//Create the joined image
+		BufferedImage joinedImage = new BufferedImage(finalWidth, adShot.getHeight(), 
+													  BufferedImage.TYPE_INT_RGB);
+		joinedImage.createGraphics().drawImage(adShot, 0, 0, Color.WHITE, null);
+		joinedImage.createGraphics().drawImage(unmodifiedImage, adShot.getWidth() + 1, 0, Color.WHITE, null);
+		
+		//Return the finished image					
+		return joinedImage;
+	}
+	
 
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------

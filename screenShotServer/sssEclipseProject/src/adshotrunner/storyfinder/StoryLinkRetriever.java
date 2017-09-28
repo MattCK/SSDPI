@@ -147,9 +147,6 @@ public class StoryLinkRetriever extends SeleniumBase {
 	 * @return					Initialized Chrome WebDriver
 	 */
 	static private WebDriver getStoryDriver(int viewportWidth, int viewportHeight) throws MalformedURLException {
-
-		//Define the path to the ChromeDriver. 
-		System.setProperty("webdriver.chrome.driver", "chromedriver");
 		
 		//Create the capability, option, and preference objects for the driver
 		consoleLog("Creating Story driver...");
@@ -157,7 +154,7 @@ public class StoryLinkRetriever extends SeleniumBase {
 		ChromeOptions driverOptions = new ChromeOptions();	
 
 		//Define the options to run the latest Chrome headless
-		driverOptions.setBinary("/usr/bin/google-chrome-beta");
+		driverOptions.setBinary("/usr/bin/google-chrome");
 		driverOptions.addArguments("headless");
 		driverOptions.addArguments("disable-gpu");
 
@@ -166,7 +163,6 @@ public class StoryLinkRetriever extends SeleniumBase {
 		
 		//Use the AWS tag imagers for now
 		driverCapabilities.setCapability("applicationName", "awsTagImager");
-//		driverCapabilities.setPlatform(Platform.WINDOWS);
 				
 		//Initialize the actual driver
 		WebDriver chromeDriver = null;
@@ -177,9 +173,6 @@ public class StoryLinkRetriever extends SeleniumBase {
 		
 		//Set the page timeout
 		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
-
-		//Set the viewport
-//		chromeDriver.manage().window().setSize(new Dimension(viewportWidth, viewportHeight));
 
 		//Return the initialized remote chrome web driver
 		consoleLog("Done creating Story driver.");

@@ -1572,6 +1572,28 @@ class CreativeInjecter {
 		//Create the replacement image
 		let creativeImage = document.createElement('img');
 		creativeImage.src = replacementCreative.imageURL();
+
+		// let replacementChild = null;
+		// for (let currentChild of elementNode.children) {
+        //     if (replacementChild == null) {
+		// 		if ((currentChild.nodeName == "IFRAME") ||
+		// 			(currentChild.nodeName == "DIV") ||
+		// 			(currentChild.nodeName == "IMG")) {
+		// 				replacementChild = currentChild;
+		// 		}
+		// 	}
+        // }
+		
+		// if (replacementChild) {
+		// 	creativeImage.style.cssText = document.defaultView.getComputedStyle(replacementChild, "").cssText;			
+		// 	Log.output("Got child styles for: " + replacementChild.nodeName);
+		// }
+		
+		// styleObject = document.defaultView.getComputedStyle(elementNode, "");
+		// for (let property in styleObject) {
+		// 	creativeImage.style[property] = styleObject[property];
+		// }
+
 		creativeImage.style.width = replacementCreative.width() + 'px';
 		creativeImage.style.height = replacementCreative.height() + 'px';
 		creativeImage.style.maxWidth = replacementCreative.width() + 'px';
@@ -2108,8 +2130,7 @@ let hideLargeFloatingElements = true;
 	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
 	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
 ];//*/
-creatives = [{id: '713', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/f24e4f00-b135-4cce-96b6-b77fec551a0a.png', width: 970, height: 250, priority: 1},];
-injectionStartHeight = 0;
+//INSERT CREATIVES OBJECT//
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();

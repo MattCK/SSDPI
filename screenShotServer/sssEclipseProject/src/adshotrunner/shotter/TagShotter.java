@@ -30,7 +30,6 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import adshotrunner.campaigns.AdShot;
 import adshotrunner.campaigns.Creative;
 import adshotrunner.errors.AdShotRunnerException;
 import adshotrunner.system.ASRProperties;
@@ -160,10 +159,6 @@ public class TagShotter extends SeleniumBase {
 	 * @return				Initialized Chrome WebDriver
 	 */
 	static private WebDriver getCreativeDriver() throws MalformedURLException {
-
-		//Define the path to the ChromeDriver. 
-		//The Tag Imager uses the stock ChromeDriver and not our modified one
-		System.setProperty("webdriver.chrome.driver", "chromedriver");
 		
 		//Create the capability, option, and preference objects for the driver
 		consoleLog("Creating Creative driver...");
@@ -171,7 +166,7 @@ public class TagShotter extends SeleniumBase {
 		ChromeOptions driverOptions = new ChromeOptions();	
 
 		//Define the options to run the latest Chrome headless
-		driverOptions.setBinary("/usr/bin/google-chrome-beta");
+		driverOptions.setBinary("/usr/bin/google-chrome");
 		driverOptions.addArguments("headless");
 		driverOptions.addArguments("disable-gpu");
 		

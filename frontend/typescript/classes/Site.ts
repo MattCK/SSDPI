@@ -351,11 +351,13 @@ class Site {
 	 * a select menu of the menu items for the user to choose from. On FALSE,
 	 * a text field to input a URL will be displayed instead.
 	 * 
+	 * NOTE: Made public for quickly adding and testing many pages at once
+	 * 
 	 * @private
-	 * @param {boolean} [useMenuItems=true] 
+	 * @param {boolean} [useMenuItems=true] TRUE to show list of menu items, FALSE for URL input
 	 * @memberof Site
 	 */
-	private addSitePageRow(useMenuItems = true): void {
+	public addSitePageRow(useMenuItems = true): void {
 
 		//Get the Site's pages table to add the row to
 		let pagesTable = <HTMLTableElement> base.nodeFromID(this.pagesTableID());
@@ -450,6 +452,14 @@ class Site {
 	 */
 	public pageCount(): number {return this._pages.size;}
 
+	/**
+	 * Returns the sites menu items (title => URL)
+	 * 
+	 * @returns {Map<string, string>} The sites menu items (title => URL)
+	 * @memberof Site	
+	 */
+	public menuItems(): Map<string, string> {return this._menuItems;}
+	
 	/**
 	 * Returns TRUE if any of the instance's SitePages have an empty URL field
 	 * and FALSE otherwise.

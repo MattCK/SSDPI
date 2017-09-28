@@ -778,6 +778,66 @@ namespace asr {
 		base.enable("getScreenshotsButton"); //Testing
 	}
 
+	export function addTestPages() {
+
+		//If no sites have been created, do nothing
+		if (sites.size == 0) {console.log("No domain added."); return;}
+
+		//Add pages for each menu item
+		let testSite: Site = sites.values().next().value;
+		let menuItemCount: number = testSite.menuItems().size;
+		for (let menuIndex: number = 0; menuIndex < menuItemCount; ++menuIndex) {
+			for (let pageIndex: number = 0; pageIndex < 4; ++pageIndex) {
+				testSite.addSitePageRow();
+			}
+		}
+
+		//Set the menu item and options for each page
+		let allRowElements: NodeList = document.querySelectorAll(".siteDiv tr");
+		let rowIndex: number = 0;
+		let menuIndex: number = 0;
+		while (rowIndex < allRowElements.length) {
+
+			//Set the first page simply to the menu item
+			let currentRow = <HTMLTableRowElement> allRowElements[rowIndex];
+			let currentPrefix = currentRow.id.substr(0, currentRow.id.length - 4);
+			let rowMenu = <HTMLSelectElement> document.getElementById(currentPrefix + "-URLInput");
+			rowMenu.selectedIndex = menuIndex;
+			++rowIndex;
+
+			//Set the second page to the menu item and top story
+			currentRow = <HTMLTableRowElement> allRowElements[rowIndex];
+			currentPrefix = currentRow.id.substr(0, currentRow.id.length - 4);
+			rowMenu = <HTMLSelectElement> document.getElementById(currentPrefix + "-URLInput");
+			rowMenu.selectedIndex = menuIndex;
+			let storyCheckbox = <HTMLInputElement> document.getElementById(currentPrefix + "-findStoryCheckbox");
+			storyCheckbox.checked = true;
+			++rowIndex;
+			
+			//Set the third page to the menu item and mobile
+			currentRow = <HTMLTableRowElement> allRowElements[rowIndex];
+			currentPrefix = currentRow.id.substr(0, currentRow.id.length - 4);
+			rowMenu = <HTMLSelectElement> document.getElementById(currentPrefix + "-URLInput");
+			rowMenu.selectedIndex = menuIndex;
+			let mobileCheckbox = <HTMLInputElement> document.getElementById(currentPrefix + "-mobileCheckbox");
+			mobileCheckbox.checked = true;
+			++rowIndex;
+			
+			//Set the fourth page to the menu item, mobile, and top story
+			currentRow = <HTMLTableRowElement> allRowElements[rowIndex];
+			currentPrefix = currentRow.id.substr(0, currentRow.id.length - 4);
+			rowMenu = <HTMLSelectElement> document.getElementById(currentPrefix + "-URLInput");
+			rowMenu.selectedIndex = menuIndex;
+			storyCheckbox = <HTMLInputElement> document.getElementById(currentPrefix + "-findStoryCheckbox");
+			storyCheckbox.checked = true;
+			mobileCheckbox = <HTMLInputElement> document.getElementById(currentPrefix + "-mobileCheckbox");
+			mobileCheckbox.checked = true;
+			++rowIndex;
+			++menuIndex;
+		}
+
+	}
+
 	$(function() {
 
 		//Enable all of the submit buttons in case they were disabled and the user did a refresh
