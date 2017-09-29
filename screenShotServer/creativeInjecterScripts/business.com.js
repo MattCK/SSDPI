@@ -1,0 +1,1 @@
+hideLargeFloatingElements = false;
