@@ -36,3 +36,5 @@ queueForScreenshotRequests = https://sqs.us-east-1.amazonaws.com/469658404108/pr
 queueForTagImageRequests = https://sqs.us-east-1.amazonaws.com/469658404108/production-TagImageRequests
 
 seleniumHubURL = http://localhost:4444/wd/hub
+
+unmodifiedScreenShotCompare = false

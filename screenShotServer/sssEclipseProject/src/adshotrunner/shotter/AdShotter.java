@@ -460,7 +460,7 @@ public class AdShotter extends SeleniumBase {
 		
 		//Scroll down and back up to load the lazy ads
 		executeSeleniumDriverJavascript(activeWebDriver, 
-				"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -300);}, 200);");		
+				"window.scrollBy(0, 300); setTimeout(function() {window.scrollBy(0, -600);}, 200);");		
 	}
 
 	/**

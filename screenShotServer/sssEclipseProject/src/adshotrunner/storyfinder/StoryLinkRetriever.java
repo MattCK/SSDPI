@@ -17,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -70,6 +72,7 @@ public class StoryLinkRetriever extends SeleniumBase {
 	 */
 	static public List<StoryLink> getStoryLinks(String url, int viewportWidth, int viewportHeight) {
 		
+		consoleLog("Getting stories for: " + url);
 		//Try to create a web driver to connect with
 		WebDriver activeWebDriver = null;
 		try {activeWebDriver = getStoryDriver(viewportWidth, viewportHeight);}
@@ -80,6 +83,16 @@ public class StoryLinkRetriever extends SeleniumBase {
 			quitWebdriver(activeWebDriver);
 			throw new AdShotRunnerException("StoryLinks: could not navigate to URL");
 		}
+		
+		consoleLog("Saving screenshot...");
+		File tempScreenshot = ((TakesScreenshot) activeWebDriver).getScreenshotAs(OutputType.FILE);
+		try {
+			FileUtils.copyFile(tempScreenshot, new File("sfScreenshot.png"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		consoleLog("Done.");
 		
 		//Get possible exception container from the database
 		Map<String, String> storyExceptionContainer = getStoryLinkExceptionContainer(url);
@@ -107,6 +120,7 @@ public class StoryLinkRetriever extends SeleniumBase {
 		
 		//Get the story links from the returned JSON
 		List<StoryLink> storyLinks = getStoryLinksFromJSON(storyLinksJSON, url);
+		consoleLog("Links found by Retriever: " + storyLinks.size());
 		
 		//If not enough links were found and an exception was used, try without the exception
 		if ((storyLinks.size() <= MINIMUMWITHEXCEPTION) && (storyExceptionContainer != null)) {
@@ -160,7 +174,10 @@ public class StoryLinkRetriever extends SeleniumBase {
 
 		//Set the viewport
 		driverOptions.addArguments("window-size=" + viewportWidth + "," + viewportHeight);
-		
+
+		//Set the user-agent
+		driverOptions.addArguments("user-agent=Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
+
 		//Use the AWS tag imagers for now
 		driverCapabilities.setCapability("applicationName", "awsTagImager");
 				
@@ -292,6 +309,7 @@ public class StoryLinkRetriever extends SeleniumBase {
 		catch(Exception e){
 			consoleLog("unable to parse linkJSON");	
 		}
+		consoleLog("Number of raw links returned: " + storyLinkList.size());
 		
 		//Get the primary domain of the URL (excludes subdomain)
 		String primaryDomain = URLTool.getDomain(url);

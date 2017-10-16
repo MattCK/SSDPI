@@ -17,7 +17,7 @@
 class Log {
     //---------------------------------------------------------------------------------------
     //--------------------------------- Static Methods --------------------------------------
-    //---------------------------------------------------------------------------------------	
+    //---------------------------------------------------------------------------------------
     //***************************** Public Static Methods ***********************************
     /**
      * Outputs the passed message to the browser console and stores the message
@@ -45,7 +45,7 @@ class Log {
 }
 //---------------------------------------------------------------------------------------
 //-------------------------------- Static Variables -------------------------------------
-//---------------------------------------------------------------------------------------	
+//---------------------------------------------------------------------------------------
 //***************************** Private Static Variables ********************************
 /**
  * List of messages in the Log. Each message is separated by a newline.
@@ -208,14 +208,14 @@ class CreativeGroup {
         //Creat the set to hold all the creatives
         this._creatives = new Set();
         //Create the map to mark all the creatives that were injected
-        //and the locations they were injected. THe keys should be a 
+        //and the locations they were injected. THe keys should be a
         //subset of or equivalent to _creatives
         this._injectedCreatives = new Map();
     }
     //---------------------------------------------------------------------------------------
     //------------------------------- Modification Methods ----------------------------------
     //---------------------------------------------------------------------------------------
-    //********************************* Public Methods **************************************		
+    //********************************* Public Methods **************************************
     /**
      * Adds a Creative object to the CreativeGroup.
     *
@@ -431,7 +431,7 @@ class AdSelector {
     //---------------------------------------------------------------------------------------
     //------------------------------- Modification Methods ----------------------------------
     //---------------------------------------------------------------------------------------
-    //********************************* Public Methods **************************************		
+    //********************************* Public Methods **************************************
     /**
      * Adds the passed width and height as a possible creative size for the ad element
      *
@@ -525,7 +525,7 @@ class AdSelector {
 class ElementInfo {
     //---------------------------------------------------------------------------------------
     //--------------------------------- Static Methods --------------------------------------
-    //---------------------------------------------------------------------------------------	
+    //---------------------------------------------------------------------------------------
     //***************************** Public Static Methods ***********************************
     /**
     * @return {Number}	Current width of the element
@@ -539,9 +539,6 @@ class ElementInfo {
      * @memberof ElementInfo
      */
     static width(elementNode) {
-        if (!ElementInfo.isHTMLElement(elementNode)) {
-            return null;
-        }
         //Get the computed width of the string
         let elementWidth = document.defaultView.getComputedStyle(elementNode).getPropertyValue('width');
         //If the width is either a % or auto, get the parent width
@@ -581,9 +578,6 @@ class ElementInfo {
      * @memberof ElementInfo
      */
     static widthWithoutBorder(elementNode) {
-        if (!ElementInfo.isHTMLElement(elementNode)) {
-            return null;
-        }
         return ElementInfo.width(elementNode) -
             ElementInfo.borderWidthLeft(elementNode) - ElementInfo.borderWidthRight(elementNode);
     }
@@ -596,9 +590,6 @@ class ElementInfo {
      * @memberof ElementInfo
      */
     static height(elementNode) {
-        if (!ElementInfo.isHTMLElement(elementNode)) {
-            return null;
-        }
         //Get the computed height of the string
         let elementHeight = document.defaultView.getComputedStyle(elementNode).getPropertyValue('height');
         //If the height is either a % or auto, get the parent height
@@ -638,9 +629,6 @@ class ElementInfo {
      * @memberof ElementInfo
      */
     static heightWithoutBorder(elementNode) {
-        if (!ElementInfo.isHTMLElement(elementNode)) {
-            return null;
-        }
         return ElementInfo.height(elementNode) -
             ElementInfo.borderWidthTop(elementNode) - ElementInfo.borderWidthBottom(elementNode);
     }
@@ -874,6 +862,16 @@ class ElementInfo {
         }
         return document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('z-index');
     }
+    static backgroundAlpha(elementNode) {
+        let backgroundColors = document.defaultView.getComputedStyle(elementNode).getPropertyValue('background-color');
+        let colorValues = backgroundColors.slice(5, -1).split("");
+        if (colorValues.length < 4) {
+            return 1;
+        }
+        else {
+            return colorValues[3];
+        }
+    }
     /**
      * Returns the x,y coordinates of the passed node in relation to the screen view.
      *
@@ -1005,6 +1003,8 @@ class GPTSlots {
      * @memberof GPTSlots	Set of AdSelectors for all of the Google.Slots.
      */
     adSelectors() {
+        //Get the screen width
+        let screenWidth = window.innerWidth;
         //Loop through the slots and create an accessor for each one
         let slotAdSelectors = new Set();
         for (let [currentSlot, currentCreativeSizes] of this._slotCreativeSizes) {
@@ -1016,7 +1016,10 @@ class GPTSlots {
             //Create the AdSelector and add each CreativeSize width and height to it
             let currentAdSelector = new AdSelector(slotSelector, true);
             for (let slotCreativeSize of currentCreativeSizes) {
-                currentAdSelector.addSize(slotCreativeSize.width(), slotCreativeSize.height());
+                //If the size width can fit in the screen, add it
+                if (slotCreativeSize.width() <= screenWidth) {
+                    currentAdSelector.addSize(slotCreativeSize.width(), slotCreativeSize.height());
+                }
             }
             //Add the current selector to the overall set
             slotAdSelectors.add(currentAdSelector);
@@ -1027,7 +1030,7 @@ class GPTSlots {
     //---------------------------------------------------------------------------------------
     //------------------------------- Modification Methods ----------------------------------
     //---------------------------------------------------------------------------------------
-    //********************************* Private Methods *************************************		
+    //********************************* Private Methods *************************************
     /**
      * Returns a Set of CreativeSizes for all the possible sizes of the passed slot
      *
@@ -1462,7 +1465,7 @@ class GPTSlots {
 }
 //---------------------------------------------------------------------------------------
 //-------------------------------- Static Variables -------------------------------------
-//---------------------------------------------------------------------------------------	
+//---------------------------------------------------------------------------------------
 //***************************** Private Static Variables ********************************
 /**
  * Used to flag the width of a created dummy slot
@@ -1535,6 +1538,13 @@ class BingAds {
                     //Add the AdSelector to the overall set
                     bingAdSelectors.add(newAdSelector);
                 }
+                else if ((currentAdDiv.h > 0) && (currentAdDiv.w > 0)) {
+                    //Create the new AdSelector with the div ID as the selector
+                    let newAdSelector = new AdSelector("#" + currentAdDiv.id, true);
+                    newAdSelector.addSize(Number(currentAdDiv.w), Number(currentAdDiv.h));
+                    //Add the AdSelector to the overall set
+                    bingAdSelectors.add(newAdSelector);
+                }
             }
         }
         //Return either the found AdSelectors or the initial empty set
@@ -1599,7 +1609,7 @@ class CreativeInjecter {
     //---------------------------------------------------------------------------------------
     //------------------------------- Modification Methods ----------------------------------
     //---------------------------------------------------------------------------------------
-    //********************************* Public Methods **************************************		
+    //********************************* Public Methods **************************************
     /**
      * Injects all possible Creative into the page and stores the screen coordinates for each.
      *
@@ -1653,13 +1663,15 @@ class CreativeInjecter {
             if (!adSelectorReplaced && currentAdSelector.hideIfNotReplaced()) {
                 let currentElement = document.querySelector(currentAdSelector.selector());
                 if (currentElement) {
-                    this._hideElement(currentElement);
+                    if ((currentElement.offsetHeight > 0) && (currentElement.offsetWidth > 0)) {
+                        this._hideElement(currentElement);
+                    }
                 }
             }
         }
         // return; //testing
         //-------------------- Marked Creatives and IFrames ------------------------
-        //Get the elements from the page that are the size of an instance creative, 
+        //Get the elements from the page that are the size of an instance creative,
         //both marked by AdMarker and unmarked
         let elementsOfCreativeSizes = this._getPageElementsOfCreativeSizes();
         //For forgotten practical purposes from years of testing, we include
@@ -1691,7 +1703,7 @@ class CreativeInjecter {
             }
         }
         //-------------------- Unmarked Creatives ------------------------
-        //Finally, if none of the Creatives have been injected using the AdSelectors or 
+        //Finally, if none of the Creatives have been injected using the AdSelectors or
         //elements marked by the AdMarker, replace any element on the page of a Creative size
         if (this._creatives.getInjectedCreatives().size == 0) {
             let unmarkedElements = Array.from(elementsOfCreativeSizes.get("unmarkedElements"));
@@ -1719,7 +1731,7 @@ class CreativeInjecter {
             }
         }
     }
-    //********************************* Private Methods *************************************		
+    //********************************* Private Methods *************************************
     /**
      * Replaces the passed element with an image element referencing the image URL of the
      * passed Creative.
@@ -1752,7 +1764,7 @@ class CreativeInjecter {
         // 	}
         // }
         // if (replacementChild) {
-        // 	creativeImage.style.cssText = document.defaultView.getComputedStyle(replacementChild, "").cssText;			
+        // 	creativeImage.style.cssText = document.defaultView.getComputedStyle(replacementChild, "").cssText;
         // 	Log.output("Got child styles for: " + replacementChild.nodeName);
         // }
         // styleObject = document.defaultView.getComputedStyle(elementNode, "");
@@ -1765,12 +1777,62 @@ class CreativeInjecter {
         creativeImage.style.maxHeight = replacementCreative.height() + 'px';
         creativeImage.style.margin = 'auto';
         creativeImage.style.display = 'flex';
+        let elementChildren = elementNode.children;
+        let headerNode = null;
+        let firstFound = false;
+        let headerIndex = 0;
+        while ((!firstFound) && (headerIndex < elementChildren.length)) {
+            let currentChild = elementChildren[headerIndex];
+            if (currentChild != null) {
+                if ((currentChild.nodeName == "A") || (currentChild.nodeName == "DIV")) {
+                    firstFound = true;
+                    if ((currentChild.innerHTML.toLowerCase().includes("adchoice")) ||
+                        ((currentChild.textContent != null) &&
+                            (currentChild.textContent.toLowerCase().includes("advertisement")))) {
+                        headerNode = currentChild.cloneNode(true);
+                    }
+                }
+                else if (currentChild.nodeName == "IFRAME") {
+                    firstFound = true;
+                }
+            }
+            ++headerIndex;
+        }
+        let footerNode = null;
+        let lastFound = false;
+        let footerIndex = elementChildren.length;
+        while ((!lastFound) && (footerIndex >= 0)) {
+            let currentChild = elementChildren[footerIndex];
+            if (currentChild != null) {
+                if ((currentChild.nodeName == "A") || (currentChild.nodeName == "DIV")) {
+                    lastFound = true;
+                    if ((currentChild.innerHTML.toLowerCase().includes("adchoice")) ||
+                        ((currentChild.textContent != null) &&
+                            (currentChild.textContent.toLowerCase().includes("advertisement")))) {
+                        footerNode = currentChild.cloneNode(true);
+                        console.log('______ Footer NOde FOund ____________');
+                    }
+                }
+                else if (currentChild.nodeName == "IFRAME") {
+                    lastFound = true;
+                }
+            }
+            --footerIndex;
+        }
         while (elementNode.hasChildNodes()) {
             if (elementNode.lastChild) {
                 elementNode.removeChild(elementNode.lastChild);
             }
         }
+        if (headerNode != null) {
+            elementNode.appendChild(headerNode);
+            creativeImage.style.clear = 'both';
+        }
         elementNode.appendChild(creativeImage);
+        if (footerNode != null) {
+            footerNode.style.width = replacementCreative.width() + 'px';
+            elementNode.appendChild(footerNode);
+        }
         //Make sure the parents are displayed and at least as big as the Creative image
         // this._crawlParentHTMLElements(creativeIFrame, function(currentNode) {
         this._crawlParentHTMLElements(creativeImage, function (currentNode) {
@@ -1800,7 +1862,7 @@ class CreativeInjecter {
                     //unintentionally cause bugs
                     currentNode.style.minHeight = replacementCreative.height() + 'px';
                     //currentNode.style.width = replacementCreative.width() + 'px';
-                    currentNode.style.height = replacementCreative.height() + 'px';
+                    // currentNode.style.height = replacementCreative.height() + 'px';
                     // Log.output("Shrinking parent");
                 }
                 //If the current node is smaller than the Creative image, expand it
@@ -1827,6 +1889,9 @@ class CreativeInjecter {
      * @memberof CreativeInjecter
      */
     _hideLargeAdsAndOverlays() {
+        //Get the highest z-index to flag overlays
+        let highestZIndex = this._getHighestZIndex();
+        console.log("Highest z-index: " + highestZIndex);
         //Crawl through the DOM and remove all large ads and fixed elements with matching criteria
         let thisCreativeInjecter = this; //For scope
         let creatives = this._creatives; //For scope
@@ -1841,6 +1906,8 @@ class CreativeInjecter {
             let nodeXPosition = ElementInfo.xPosition(currentNode);
             let nodeYPosition = ElementInfo.yPosition(currentNode);
             let nodeZIndex = Number(ElementInfo.zIndex(currentNode));
+            let nodeAlpha = ElementInfo.backgroundAlpha(currentNode);
+            let nodeContentLength = (currentNode.textContent != null) ? currentNode.textContent.length : 0;
             /**************************** Remove Large Ads ****************************/
             //If the node has been :
             //	- Marked by the AdMarker as an ad element
@@ -1866,13 +1933,34 @@ class CreativeInjecter {
                 (nodeWidth != null) && (nodeHeight != null) &&
                 (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
                 (hideLargeFloatingElements)) {
-                let nodeScreenWidthPercentage = (nodeWidth / window.innerWidth);
-                let nodeScreenHeightPercentage = (nodeHeight / window.innerHeight);
-                if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
-                    thisCreativeInjecter._hideElement(currentNode);
+                if ((nodeContentLength < 500) &&
+                    ((nodeAlpha < 1) || (nodeZIndex >= highestZIndex))) {
+                    let nodeScreenWidthPercentage = (nodeWidth / window.innerWidth);
+                    let nodeScreenHeightPercentage = (nodeHeight / window.innerHeight);
+                    if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
+                        thisCreativeInjecter._hideElement(currentNode);
+                    }
                 }
             }
         });
+    }
+    _getHighestZIndex() {
+        let highestZIndex = 0;
+        this._crawlDocumentHTMLElements(document, function (currentNode) {
+            let nodeZIndex = Number(ElementInfo.zIndex(currentNode));
+            let nodeWidth = ElementInfo.widthWithoutBorder(currentNode);
+            let nodeHeight = ElementInfo.heightWithoutBorder(currentNode);
+            let nodeScreenWidthPercentage = (nodeWidth / window.innerWidth);
+            let nodeScreenHeightPercentage = (nodeHeight / window.innerHeight);
+            if (nodeZIndex > highestZIndex) {
+                if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
+                    if ((currentNode.offsetHeight > 0) && (currentNode.offsetWidth > 0)) {
+                        highestZIndex = nodeZIndex;
+                    }
+                }
+            }
+        });
+        return highestZIndex;
     }
     /**
      * Returns all elements on the page matching Creative sizes.
@@ -1945,11 +2033,11 @@ class CreativeInjecter {
         if ((elementNode == null) || (!ElementInfo.isHTMLElement(elementNode))) {
             return;
         }
-        //Get the smallest parent node of the element to hide. 
+        //Get the smallest parent node of the element to hide.
         //Sometimes an ad element can have larger non-viewable dimensions than its parents
         let smallestParentNode = this._getSmallestContainingParent(elementNode);
         //Hack for business insider
-        // if ((ElementInfo.widthWithoutBorder(elementNode) > 1000) && 
+        // if ((ElementInfo.widthWithoutBorder(elementNode) > 1000) &&
         //     (ElementInfo.heightWithoutBorder(elementNode) > 1000)) {smallestParentNode = elementNode;}
         //Hide the final element (original or smallest highest parent)
         smallestParentNode.style.display = 'none';
@@ -1996,7 +2084,7 @@ class CreativeInjecter {
         //Get the element node's width and height
         let nodeWidth = ElementInfo.width(elementNode);
         let nodeHeight = ElementInfo.height(elementNode);
-        //Crawl upwards through the containing frames. If a frame of the 
+        //Crawl upwards through the containing frames. If a frame of the
         //same size exists, store it or replace the previous stored one.
         let heighestContainingFrame = null;
         let currentContainingFrame = ElementInfo.getContainingFrame(elementNode);
@@ -2062,8 +2150,8 @@ class CreativeInjecter {
             //Make sure none of the properties are null
             if ((currentNodeWidth != null) && (currentNodeHeight != null) &&
                 (smallestNodeWidth != null) && (smallestNodeHeight != null)) {
-                //If the node is smaller or the same size as the the current smallest, 
-                //not an object, not an anchor, and above the minimum size requirements, 
+                //If the node is smaller or the same size as the the current smallest,
+                //not an object, not an anchor, and above the minimum size requirements,
                 //store it as the smallest
                 if ((currentNodeWidth > CreativeInjecter._SMALLNODEMINWIDTH) && (currentNodeHeight > CreativeInjecter._SMALLNODEMINHEIGHT) &&
                     (currentNode.nodeName != "A") && (currentNode.nodeName != "OBJECT") &&
@@ -2107,7 +2195,7 @@ class CreativeInjecter {
         for (let currentNode of allHTMLElementNodes) {
             //Apply the passed function on the node
             nodeFunction(currentNode);
-            //If the node is an IFrame, crawl it as well. 
+            //If the node is an IFrame, crawl it as well.
             //Try-Catch is used in case crawling it is not permitted by browser security.
             try {
                 //If the node is an iframe, find the ads in it too
@@ -2191,7 +2279,7 @@ class CreativeInjecter {
             //to decrease its importance compared to the y position factor.
             let firstPositionFactor = firstElementY + firstElementX / 1000;
             let secondPositionFactor = secondElementY + secondElementX / 1000;
-            //Return the difference. If negative, the firstElement comes first, if positive, the second come first.    
+            //Return the difference. If negative, the firstElement comes first, if positive, the second come first.
             return firstPositionFactor - secondPositionFactor;
         };
         //Sort the elements
@@ -2265,7 +2353,7 @@ class CreativeInjecter {
                     return -1;
                 }
             }
-            //Return the difference. If negative, the firstElement comes first, if positive, the second come first.    
+            //Return the difference. If negative, the firstElement comes first, if positive, the second come first.
             return firstPositionFactor - secondPositionFactor;
         };
         //Sort the elements
@@ -2274,7 +2362,7 @@ class CreativeInjecter {
 }
 //---------------------------------------------------------------------------------------
 //-------------------------------- Static Variables -------------------------------------
-//---------------------------------------------------------------------------------------	
+//---------------------------------------------------------------------------------------
 //***************************** Private Static Variables ********************************
 /**
  * The flood-opacity of ads marked by the AdMarker browser plugin
@@ -2319,16 +2407,11 @@ CreativeInjecter._MAXIMUMADKEEPWIDTH = 971;
 CreativeInjecter._MAXIMUMADKEEPHEIGHT = 971;
 //window.onload = function() {
 //Remove the scrollbars
-document.documentElement.style.overflow = 'hidden';
+//document.documentElement.style.overflow = 'hidden';
 let creatives = [];
 let injectionStartHeight = 0;
 let hideLargeFloatingElements = true;
-/*creatives = [
-    {id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
-    {id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/filler-300x250.jpg', priority: 0, width: 300, height: 250},
-    {id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
-    {id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
-];//*/
+//creatives = [{id: '887', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/65157428-d651-4a41-9ac4-7ed38913b6d3.png', width: 300, height: 50, priority: 3},{id: '884', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/7342bc19-a3b7-473d-837f-4a6c3c14ccb3.png', width: 300, height: 250, priority: 0},{id: '888', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/8a9640ea-e713-4f19-9262-5410b2df4482.png', width: 970, height: 250, priority: 4},{id: '885', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/da6f1689-a606-45d2-8c9e-091e100eca14.png', width: 728, height: 90, priority: 1},{id: '889', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/2941f395-f829-462f-8b99-bc240e510082.png', width: 320, height: 50, priority: 5},{id: '886', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9e60ee39-b7e5-4e77-82aa-5082dd56e83e.png', width: 300, height: 600, priority: 2},];
 //INSERT CREATIVES OBJECT//
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2370,7 +2453,7 @@ let injecter = new CreativeInjecter(allCreatives, allSelectors, injectionStartHe
 injecter.injectCreativesIntoPage();
 //Create the list of injected Creatives and their locations
 //Format: {creativeID: {x: xPosition, y: yPosition}}
-//Example: {"4ce6dca7-1d71-4e5b-9bfb-17a41190151a":{"x":312,"y":106},"1e678430-90b4-4c9f-ad81-739826d05c0e":{"x":942,"y":262}} 
+//Example: {"4ce6dca7-1d71-4e5b-9bfb-17a41190151a":{"x":312,"y":106},"1e678430-90b4-4c9f-ad81-739826d05c0e":{"x":942,"y":262}}
 let injectedCreatives = allCreatives.getInjectedCreatives();
 let injectedIDsAndLocations = {};
 for (let [injectedCreative, location] of injectedCreatives) {
@@ -2381,4 +2464,4 @@ Log.output("End of message log");
 let messageLog = Log.getMessages();
 //Return the injected creatives with their locations and any log messages
 //Log.output(JSON.stringify(injectedIDsAndLocations));
-return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });
+//return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });

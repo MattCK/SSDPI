@@ -1,7 +1,7 @@
 /**
 * This CreativeInjecter script inserts creative images in the running page while removing
-* pop-up ads and overlays. 
-* 
+* pop-up ads and overlays.
+*
 * The script is designed to be run by and return a JSON response to Selenium.
 */
 
@@ -18,18 +18,18 @@ declare var adsDivs: any;
 /**
  * The Log class both outputs messages to the browser console and stores the messages. The stored log
  * is returned with the injected tags (and their locations) at the end of script execution.
- * 
+ *
  * @class Log
  */
 class Log {
 
 	//---------------------------------------------------------------------------------------
 	//-------------------------------- Static Variables -------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//***************************** Private Static Variables ********************************
 	/**
 	 * List of messages in the Log. Each message is separated by a newline.
-	 * 
+	 *
 	 * @static
 	 * @memberof Log
 	 */
@@ -37,11 +37,11 @@ class Log {
 
 	//---------------------------------------------------------------------------------------
 	//--------------------------------- Static Methods --------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//***************************** Public Static Methods ***********************************
 	/**
 	 * Outputs the passed message to the browser console and stores the message
-	 * 
+	 *
 	 * @static
 	 * @param {string} newMessage 	Message to output to browser console and store
 	 * @memberof Log
@@ -53,37 +53,37 @@ class Log {
 
 		//Store the message and add a newline to the end
 		Log._messages += newMessage + "\n";
-	}	
+	}
 
 	/**
 	 * Returns all the messages stored in the log (separated by newlines)
-	 * 
+	 *
 	 * @static
-	 * @returns 
+	 * @returns
 	 * @memberof Log	All log messages (separated by newlines)
 	 */
 	public static getMessages() {
 		return Log._messages;
-	}	
+	}
 }
 
 /**
- * The Creative class stores the basic information for an ad creative image. 
+ * The Creative class stores the basic information for an ad creative image.
  *
  * It contains the creative unique ID, image URL, width and height in pixels,
  * and display priority.
- * 
+ *
  * @class Creative
  */
 class Creative {
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//******************************** Private Variables ************************************
 	/**
 	 * Unique ID (UUID) of the Creative
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof Creative
@@ -92,16 +92,16 @@ class Creative {
 
 	/**
 	 * URL of the Creative's image
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof Creative
 	 */
 	private readonly _imageURL: string;
-	
+
 	/**
 	 * Width in pixels of the image
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof Creative
@@ -110,16 +110,16 @@ class Creative {
 
 	/**
 	 * Height in pixels of the image
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof Creative
 	 */
 	private readonly _height: number;
-	
+
 	/**
 	 * Priority of the Creative. A lower number means higher priority.
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof Creative
@@ -131,7 +131,7 @@ class Creative {
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Creates an instance of Creative.
-	 * 
+	 *
 	 * @param {string} id 			Unique ID (UUID) of the Creative
 	 * @param {string} imageURL 	URL of the Creative's image
 	 * @param {number} width 		Width of the creative in pixels (must be greater than 0)
@@ -170,7 +170,7 @@ class Creative {
 	//********************************* Public Accessors ************************************
 	/**
 	 * Returns unique ID (UUID) of the Creative
-	 * 
+	 *
 	 * @returns 			unique ID (UUID) of the Creative
 	 * @memberof Creative
 	 */
@@ -178,31 +178,31 @@ class Creative {
 
 	/**
 	 * Returns URL of the Creative's image
-	 * 
+	 *
 	 * @returns 			URL of the Creative's image
 	 * @memberof Creative
 	 */
 	public imageURL() {return this._imageURL;}
-	
+
 	/**
 	 * Returns width in pixels of the Creative's image
-	 * 
+	 *
 	 * @returns 			width in pixels of the Creative's image
 	 * @memberof Creative
 	 */
 	public width() {return this._width;}
-	
+
 	/**
 	 * Returns height in pixels of the Creative's image
-	 * 
+	 *
 	 * @returns 			height in pixels of the Creative's image
 	 * @memberof Creative
 	 */
 	public height() {return this._height;}
-	
+
 	/**
 	 * Returns the priority of the Creative. A lower number means higher priority.
-	 * 
+	 *
 	 * @returns 			Priority of the Creative. A lower number means higher priority.
 	 * @memberof Creative
 	 */
@@ -212,41 +212,41 @@ class Creative {
 
 /**
  * The Coordinates class stores x and y coordinates
- * 
+ *
  * @class Coordinates
  */
 class CICoordinates {
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//******************************** Private Variables ************************************
 	/**
 	 * Coordinate x-position
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof Creative
 	 */
 	private readonly _x: number;
-	
+
 	/**
 	 * Coordinate y-position
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof Creative
 	 */
 	private readonly _y: number;
-	
+
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Creates an instance of Coordinates with the passed x and y positions.
-	 * 
-	 * @param {number} xPosition  		x position  
-	 * @param {number} yPosition  		y position 
+	 *
+	 * @param {number} xPosition  		x position
+	 * @param {number} yPosition  		y position
 	 * @memberof Coordinates
 	 */
 	constructor(xPosition: number, yPosition: number) {
@@ -267,15 +267,15 @@ class CICoordinates {
 	//********************************* Public Accessors ************************************
 	/**
 	 * Return the x-position of the Coordinates
-	 * 
+	 *
 	 * @returns 				The x-position of the Coordinates
 	 * @memberof Coordinates
 	 */
 	public x() {return this._x;}
-	
+
 	/**
 	 * Return the y-position of the Coordinates
-	 * 
+	 *
 	 * @returns 				The y-position of the Coordinates
 	 * @memberof Coordinates
 	 */
@@ -286,18 +286,18 @@ class CICoordinates {
 /**
  * The CreativeGroup stores a group of Creative objects and tracks which are injected
  * and where they are injected.
- * 
+ *
  * @class CreativeGroup
  */
 class CreativeGroup {
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//******************************** Private Variables ************************************
 	/**
 	 * The set of Creatives stored by the CreativeGroup
-	 * 
+	 *
 	 * @private
 	 * @type {Set<Creative>}
 	 * @memberof CreativeGroup
@@ -306,7 +306,7 @@ class CreativeGroup {
 
 	/**
 	 * Map of injected Creatives paired with their injected Coordinates
-	 * 
+	 *
 	 * @private
 	 * @type {Map<Creative, Coordinates>}
 	 * @memberof CreativeGroup
@@ -318,7 +318,7 @@ class CreativeGroup {
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Creates an instance of CreativeGroup.
-	 * 
+	 *
 	 * @memberof CreativeGroup
 	 */
 	constructor() {
@@ -327,7 +327,7 @@ class CreativeGroup {
 		this._creatives = new Set();
 
 		//Create the map to mark all the creatives that were injected
-		//and the locations they were injected. THe keys should be a 
+		//and the locations they were injected. THe keys should be a
 		//subset of or equivalent to _creatives
 		this._injectedCreatives = new Map();
 	}
@@ -335,14 +335,14 @@ class CreativeGroup {
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
 	//---------------------------------------------------------------------------------------
-	//********************************* Public Methods **************************************		
+	//********************************* Public Methods **************************************
 	/**
 	 * Adds a Creative object to the CreativeGroup.
 	*
 	* If the Creative already exists in the CreativeGroup, nothing occurs.
-	* 
+	*
 	* @param {Creative} newCreative 	New Creative to add.
-	* @returns {void} 
+	* @returns {void}
 	* @memberof CreativeGroup
 	*/
 	public addCreative(newCreative: Creative): void {
@@ -352,9 +352,9 @@ class CreativeGroup {
 
 	/**
 	 * Removes a Creative object from the CreativeGroup.
-	 * 
+	 *
 	 * If the Creative does not exist in the CreativeGroup, nothing occurs.
-	 * 
+	 *
 	 * @param {Creative} creativeToRemove 	Creative to remove
 	 * @memberof CreativeGroup
 	 */
@@ -365,14 +365,14 @@ class CreativeGroup {
 	/**
 	 * Returns true if the instance contains a Creative with the passed dimensions
 	 * and false otherwise
-	 * 
+	 *
 	 * @param {number} width 	Width of to check all the Creatives against
 	 * @param {number} height 	Height of to check all the Creatives against
 	 * @returns 				TRUE if a Creative the dimensions exist, FALSE otherwise
 	 * @memberof CreativeGroup
 	 */
 	public hasCreativeWithDimensions(width: number, height: number) {
-		
+
 		//If any of the arguments are missing, throw an error
 		if ((width == null) || (height == null)) {
 				throw "CreativeGroup.hasCreativeWithDimensions: missing argument";
@@ -392,7 +392,7 @@ class CreativeGroup {
 	/**
 	 * Returns the Creative of the passed dimensions with the highest priority (lowest number)
 	 * that has not been marked as injected. Returns null if none exists.
-	 * 
+	 *
 	 * @param {number} width 	Width of Creative
 	 * @param {number} height 	Height of Creative
 	 * @returns 				Uninjected Creative with highest priority of passed dimensions if exists or null
@@ -412,7 +412,7 @@ class CreativeGroup {
 			//If the current creative has the passed width and height and is not injected
 			if ((currentCreative.width() == width) && (currentCreative.height() == height) &&
 				(!this._injectedCreatives.has(currentCreative))) {
-				
+
 				//If this is the first Creative found, store it
 				if (nextUninjectedCreative == null) {nextUninjectedCreative = currentCreative;}
 
@@ -433,7 +433,7 @@ class CreativeGroup {
 	 * If the Creative does not exist in the CreativeGroup instance, an error is thrown.
 	 *
 	 * If the Creative has already been maked as injected, an error is thrown.
-	 * 
+	 *
 	 * @param {Creative} injectedCreative 	Creative to flag as injected
 	 * @param {number} xPosition 			x position of the injected Creative's location on the page
 	 * @param {number} yPosition 			y position of the injected Creative's location on the page
@@ -463,7 +463,7 @@ class CreativeGroup {
 	//********************************* Public Accessors ************************************
 	/**
 	 * Returns the set of Creatives in the CreativeGroup
-	 * 
+	 *
 	 * @returns 				Set of Creatives in the CreativeGroup
 	 * @memberof CreativeGroup
 	 */
@@ -471,11 +471,11 @@ class CreativeGroup {
 
 	/**
 	* @return {Map}	Map of Creatives that have been flagged as injected with their page Coordinates
-	*/	
+	*/
 
 	/**
 	 * Returns the map of Creatives flagged as injected paired with their coordinates
-	 * 
+	 *
 	 * @returns 					Map of Creatives flagged as injected paired with their coordinates
 	 * @memberof CreativeGroup
 	 */
@@ -485,18 +485,18 @@ class CreativeGroup {
 
 /**
  * The CreativeSize class stores the width and height of a Creative.
- * 
+ *
  * @class CreativeSize
  */
 class CreativeSize {
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//******************************** Private Variables ************************************
 	/**
 	 * The width of the Creative in pixels
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof CreativeSize
@@ -505,7 +505,7 @@ class CreativeSize {
 
 	/**
 	 * The height of the Creative in pixels
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof CreativeSize
@@ -517,7 +517,7 @@ class CreativeSize {
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Creates a CreativeSize instance with its width and height.
-	 * 
+	 *
 	 * @param {number} width 	Width of the creative in pixels (must be greater than 0)
 	 * @param {number} height 	Height of the creative in pixels (must be greater than 0)
 	 * @memberof CreativeSize
@@ -544,15 +544,15 @@ class CreativeSize {
 	//********************************* Public Accessors ************************************
 	/**
 	 * Returns the width of the Creative in pixels
-	 * 
+	 *
 	 * @returns 				The width of the Creative in pixels
 	 * @memberof CreativeSize
 	 */
 	public width() {return this._width;}
-	
+
 	/**
 	 * Returns the height of the Creative in pixels
-	 * 
+	 *
 	 * @returns 				The height of the Creative in pixels
 	 * @memberof CreativeSize
 	 */
@@ -562,18 +562,18 @@ class CreativeSize {
 /**
  * The AdSelector class stores a selector that points to an ad element on the page and
  * the possible creative sizes that the element accepts.
- * 
+ *
  * @class AdSelector
  */
 class AdSelector {
 
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//******************************** Private Variables ************************************
 	/**
 	 * The selector to the ad element
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof AdSelector
@@ -582,7 +582,7 @@ class AdSelector {
 
 	/**
 	 * Set of CreativeSizes that the ad element can accept
-	 * 
+	 *
 	 * @private
 	 * @type {Set<CreativeSize>}
 	 * @memberof AdSelector
@@ -592,7 +592,7 @@ class AdSelector {
 	/**
 	 * Flag to tell the CreativeInjecter whether or not to remove the ad element
 	 * if the AdSelector is not used. TRUE to remove it if not used, FALSE otherwise.
-	 * 
+	 *
 	 * @private
 	 * @type {boolean}
 	 * @memberof AdSelector
@@ -604,11 +604,11 @@ class AdSelector {
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Creates an instance of AdSelector.
-	 * 
+	 *
 	 * Receives the optional argument 'hideIfNotReplaced' to flag whether or not
 	 * the selector element should be hidden if it is not replaced with a Creative.
 	 * Default: FALSE (Used by CreativeInjecter)
-	 * 
+	 *
 	 * @param {string} selector 			The selector to the ad element
 	 * @param {boolean} hideIfNotReplaced 	TRUE to hide if AdSelector not used, FALE otherwise
 	 * @memberof AdSelector
@@ -631,14 +631,14 @@ class AdSelector {
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
 	//---------------------------------------------------------------------------------------
-	//********************************* Public Methods **************************************		
+	//********************************* Public Methods **************************************
 	/**
 	 * Adds the passed width and height as a possible creative size for the ad element
-	 * 
+	 *
 	 * @param {number} width 	Width of the creative in pixels (must be greater than 0)
 	 * @param {number} height 	Height of the creative in pixels (must be greater than 0)
 	 * @returns 				This AdSelector instance
-	 * @memberof AdSelector		
+	 * @memberof AdSelector
 	 */
 	public addSize(width: number, height: number) {
 
@@ -668,7 +668,7 @@ class AdSelector {
 	 *
 	 * Any [width, height] array not meeting the width and height integer greater than 0 requirement
 	 * will be ignored.
-	 * 
+	 *
 	 * @param {Array<Array<number>>} sizesArray 	Array of [width, height] arrays
 	 * @returns 									This AdSelector instance
 	 * @memberof AdSelector
@@ -697,7 +697,7 @@ class AdSelector {
 	//********************************* Public Accessors ************************************
 	/**
 	 * Returns the selector to the ad element
-	 * 
+	 *
 	 * @returns 				Selector to the ad element
 	 * @memberof AdSelector
 	 */
@@ -705,7 +705,7 @@ class AdSelector {
 
 	/**
 	 * Returns the set of CreativeSizes the ad element will accept
-	 * 
+	 *
 	 * @returns 				Set of CreativeSizes the ad element will accept
 	 * @memberof AdSelector
 	 */
@@ -713,9 +713,9 @@ class AdSelector {
 
 	/**
 	 * Returns flag whether or not the ad element should be hidden if AdSelector is unused. TRUE to hide.
-	 * 
+	 *
 	 * @returns 			 	Flag for whether or not the ad element should be hidden if AdSelector is unused. TRUE to hide.
-	 * @memberof AdSelector	
+	 * @memberof AdSelector
 	 */
 	public hideIfNotReplaced() {return this._hideIfNotReplaced;}
 }
@@ -725,22 +725,22 @@ class AdSelector {
  * information on an HTMLElement node.
  *
  * All information is calculated on the current state of the node.
- * 
+ *
  * @class ElementInfo
  */
 class ElementInfo {
 
 	//---------------------------------------------------------------------------------------
 	//--------------------------------- Static Methods --------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//***************************** Public Static Methods ***********************************
 	/**
 	* @return {Number}	Current width of the element
-	*/	
+	*/
 
 	/**
 	 * Returns the current width of the element (including border)
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							Current width of the element (including border)
@@ -748,11 +748,9 @@ class ElementInfo {
 	 */
 	public static width(elementNode: HTMLElement) {
 
-		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
-		
         //Get the computed width of the string
-        let elementWidth = document.defaultView.getComputedStyle(elementNode).getPropertyValue('width'); 
-		
+        let elementWidth = document.defaultView.getComputedStyle(elementNode).getPropertyValue('width');
+
 		//If the width is either a % or auto, get the parent width
 		if ((elementWidth.slice(-1) == "%") || (elementWidth == "auto")) {
 
@@ -791,21 +789,20 @@ class ElementInfo {
 
 	/**
 	 * Returns the current width of the element (not including border)
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							Current width of the element (not including border)
 	 * @memberof ElementInfo
 	 */
 	public static widthWithoutBorder(elementNode: HTMLElement) {
-		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
-		return ElementInfo.width(elementNode) - 
+		return ElementInfo.width(elementNode) -
 			   ElementInfo.borderWidthLeft(elementNode) - ElementInfo.borderWidthRight(elementNode);
 	}
 
 	/**
 	 * Returns the current height of the element (including border)
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							Current height of the element (including border)
@@ -813,11 +810,9 @@ class ElementInfo {
 	 */
 	public static height(elementNode: HTMLElement) {
 
-		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
-
         //Get the computed height of the string
-        let elementHeight = document.defaultView.getComputedStyle(elementNode).getPropertyValue('height'); 
-		
+        let elementHeight = document.defaultView.getComputedStyle(elementNode).getPropertyValue('height');
+
 		//If the height is either a % or auto, get the parent height
 		if ((elementHeight.slice(-1) == "%") || (elementHeight == "auto")) {
 
@@ -856,21 +851,20 @@ class ElementInfo {
 
 	/**
 	 * Returns the current height of the element (not including border)
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							Current height of the element (not including border)
 	 * @memberof ElementInfo
 	 */
 	public static heightWithoutBorder(elementNode: HTMLElement) {
-		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
-		return ElementInfo.height(elementNode) - 
+		return ElementInfo.height(elementNode) -
 			   ElementInfo.borderWidthTop(elementNode) - ElementInfo.borderWidthBottom(elementNode);
 	}
 
 	/**
 	 * Returns the current x-position of the element
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							Current x-position of the element
@@ -883,7 +877,7 @@ class ElementInfo {
 
 	/**
 	 * Returns the current y-position of the element
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							Current y-position of the element
@@ -896,7 +890,7 @@ class ElementInfo {
 
 	/**
 	 * Returns the current bottom border of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current bottom border of the element in pixels
@@ -906,10 +900,10 @@ class ElementInfo {
 		let widthString = document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('border-bottom-width');
 		return Number(widthString.slice(0, -2));
 	}
-	
+
 	/**
 	 * Returns the current left border of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current left border of the element in pixels
@@ -919,10 +913,10 @@ class ElementInfo {
 		let widthString = document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('border-left-width');
 		return Number(widthString.slice(0, -2));
 	}
-	
+
 	/**
 	 * Returns the current right border of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current right border of the element in pixels
@@ -932,10 +926,10 @@ class ElementInfo {
 		let widthString = document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('border-right-width');
 		return Number(widthString.slice(0, -2));
 	}
-	
+
 	/**
 	 * Returns the current top border of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current top border of the element in pixels
@@ -945,10 +939,10 @@ class ElementInfo {
 		let widthString = document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('border-top-width');
 		return Number(widthString.slice(0, -2));
 	}
-	
+
 	/**
 	 * Returns the current flood-opacity of the element
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current flood-opacity of the element
@@ -958,10 +952,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('flood-opacity');
 	}
-	
+
 	/**
 	 * Returns the current bottom margin of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current bottom margin of the element in pixels
@@ -971,10 +965,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return parseInt(document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('margin-bottom'), 10);
 	}
-	
+
 	/**
 	 * Returns the current left margin of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current left margin of the element in pixels
@@ -984,10 +978,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return parseInt(document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('margin-left'), 10);
 	}
-	
+
 	/**
 	 * Returns the current right margin of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current right margin of the element in pixels
@@ -997,10 +991,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return parseInt(document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('margin-right'), 10);
 	}
-	
+
 	/**
 	 * Returns the current top margin of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current top margin of the element in pixels
@@ -1010,10 +1004,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return parseInt(document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('margin-top'), 10);
 	}
-	
+
 	/**
 	 * Returns the current bottom padding of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current bottom padding of the element in pixels
@@ -1023,10 +1017,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return parseInt(document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('padding-bottom'), 10);
 	}
-	
+
 	/**
 	 * Returns the current left padding of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current left padding of the element in pixels
@@ -1036,10 +1030,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return parseInt(document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('padding-left'), 10);
 	}
-	
+
 	/**
 	 * Returns the current right padding of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current right padding of the element in pixels
@@ -1049,10 +1043,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return parseInt(document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('padding-right'), 10);
 	}
-	
+
 	/**
 	 * Returns the current top padding of the element in pixels
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current top padding of the element in pixels
@@ -1065,7 +1059,7 @@ class ElementInfo {
 
 	/**
 	 * Returns the current "position" style of the element, such as 'fixed'
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current "position" style of the element, such as 'fixed'
@@ -1075,10 +1069,10 @@ class ElementInfo {
 		if (!ElementInfo.isHTMLElement(elementNode)) {return null;}
 		return document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('position');
 	}
-	
+
 	/**
 	 * Returns the current z-index of the element
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							The current z-index of the element
@@ -1089,9 +1083,16 @@ class ElementInfo {
 		return document.defaultView.getComputedStyle(elementNode, undefined).getPropertyValue('z-index');
 	}
 
+	public static backgroundAlpha(elementNode: HTMLElement) {
+		let backgroundColors = document.defaultView.getComputedStyle(elementNode).getPropertyValue('background-color');
+		let colorValues = backgroundColors.slice(5, -1).split("");
+		if (colorValues.length < 4) {return 1;}
+		else {return colorValues[3];}
+	}
+
 	/**
 	 * Returns the x,y coordinates of the passed node in relation to the screen view.
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							Coordinates object with x,y set to node's screen position
@@ -1131,7 +1132,7 @@ class ElementInfo {
 
 	/**
 	 * Returns the element's containing IFrame or null if not inside an IFrame.
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} containedNode 	Element inside possible IFrame
 	 * @returns 							IFrame containing element or null otherwise
@@ -1151,7 +1152,7 @@ class ElementInfo {
 
 	/**
 	 * Returns TRUE if passed argument is an HTMLElement and FALSE otherwise
-	 * 
+	 *
 	 * @static
 	 * @param {HTMLElement} elementNode 	Target element
 	 * @returns 							TRUE if passed argument is an HTMLElement and FALSE otherwise
@@ -1183,11 +1184,11 @@ class GPTSlots {
 
 	//---------------------------------------------------------------------------------------
 	//-------------------------------- Static Variables -------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//***************************** Private Static Variables ********************************
 	/**
-	 * Used to flag the width of a created dummy slot 
-	 * 
+	 * Used to flag the width of a created dummy slot
+	 *
 	 * @private
 	 * @static
 	 * @memberof GPTSlots
@@ -1196,16 +1197,16 @@ class GPTSlots {
 
 	/**
 	 * Used to flag the height of a created dummy slot
-	 * 
+	 *
 	 * @private
 	 * @static
 	 * @memberof GPTSlots
 	 */
 	private static readonly _TARGETHEIGHT = 7531;
-	
+
 	/**
-	 * Used to flag the viewport width of a created dummy slot 
-	 * 
+	 * Used to flag the viewport width of a created dummy slot
+	 *
 	 * @private
 	 * @static
 	 * @memberof GPTSlots
@@ -1213,21 +1214,21 @@ class GPTSlots {
 	private static readonly _TARGETVIEWPORTWIDTH = 8642;
 
 	/**
-	 * Used to flag the viewport height of a created dummy slot 
-	 * 
+	 * Used to flag the viewport height of a created dummy slot
+	 *
 	 * @private
 	 * @static
 	 * @memberof GPTSlots
 	 */
 	private static readonly _TARGETVIEWPORTHEIGHT = 9753;
-	
+
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//******************************** Private Variables ************************************
 	/**
 	 * Array of googletag slots returned by googletag.pubads
-	 * 
+	 *
 	 * @private
 	 * @type {Array<any>}
 	 * @memberof GPTSlots
@@ -1236,7 +1237,7 @@ class GPTSlots {
 
 	/**
 	 * Map of each googletag slot and the sizes it accepts (as set of CreativeSizes)
-	 * 
+	 *
 	 * @private
 	 * @type {Map<any, CreativeSize>}
 	 * @memberof GPTSlots
@@ -1245,7 +1246,7 @@ class GPTSlots {
 
 	/**
 	 * The property of a googletag slots object that contains the accepted sizes
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
@@ -1254,7 +1255,7 @@ class GPTSlots {
 
 	/**
 	 * The class associated with the googletag slot acceptable sizes
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
@@ -1263,34 +1264,34 @@ class GPTSlots {
 
 	/**
 	 * The property of a googletag slots object that contains the width of an accepted size
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
 	 */
 	private readonly _sizesWidthKey: string;
-	
+
 	/**
 	 * The property of a googletag slots object that contains the height of an accepted size
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
 	 */
 	private readonly _sizesHeightKey: string;
-	
+
 	/**
 	 * The property of a googletag SizeMapping object that contains the accepted sizes
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
 	 */
 	private readonly _mappingPropertyKey: string;
-	
+
 	/**
 	 * The class associated with the googletag SizeMapping acceptable sizes
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
@@ -1299,7 +1300,7 @@ class GPTSlots {
 
 	/**
 	 * The class associated with the googletag SizeMapping viewport
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
@@ -1308,29 +1309,29 @@ class GPTSlots {
 
 	/**
 	 * The property of a googletag SizeMapping object that contains the viewport width
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
 	 */
 	private readonly _viewportWidthKey: string;
-	
+
 	/**
 	 * The property of a googletag SizeMapping object that contains the viewport height
-	 * 
+	 *
 	 * @private
 	 * @type {string}
 	 * @memberof GPTSlots
 	 */
 	private readonly _viewportHeightKey: string;
-					
+
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Creates an instance of GPTSlots and loads it with any Google tag slots
 	 * currently on the page.
-	 * 
+	 *
 	 * @memberof GPTSlots
 	 */
 	constructor() {
@@ -1378,13 +1379,16 @@ class GPTSlots {
 	//********************************* Public Accessors ************************************
 	/**
 	 * Returns the set of AdSelectors for all of the Google.Slots.
-	 * 
+	 *
 	 * The hide if not replaced flag is set to true for all AdSelectors.
-	 * 
-	 * @returns 
+	 *
+	 * @returns
 	 * @memberof GPTSlots	Set of AdSelectors for all of the Google.Slots.
 	 */
 	public adSelectors() {
+
+		//Get the screen width
+		let screenWidth = window.innerWidth;
 
 		//Loop through the slots and create an accessor for each one
 		let slotAdSelectors = new Set();
@@ -1399,7 +1403,11 @@ class GPTSlots {
 			//Create the AdSelector and add each CreativeSize width and height to it
 			let currentAdSelector = new AdSelector(slotSelector, true);
 			for (let slotCreativeSize of currentCreativeSizes) {
-				currentAdSelector.addSize(slotCreativeSize.width(), slotCreativeSize.height());
+
+				//If the size width can fit in the screen, add it
+				if (slotCreativeSize.width() <= screenWidth) {
+					currentAdSelector.addSize(slotCreativeSize.width(), slotCreativeSize.height());
+				}
 			}
 
 			//Add the current selector to the overall set
@@ -1414,10 +1422,10 @@ class GPTSlots {
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
 	//---------------------------------------------------------------------------------------
-	//********************************* Private Methods *************************************		
+	//********************************* Private Methods *************************************
 	/**
 	 * Returns a Set of CreativeSizes for all the possible sizes of the passed slot
-	 * 
+	 *
 	 * @private
 	 * @param {*} slot 		Slot to get CreativeSizes for
 	 * @returns 			Set of CreativeSizes for the passed slot
@@ -1486,11 +1494,11 @@ class GPTSlots {
 	 *
 	 * The returned object uses the following structure:
 	 *
-	 *		{containingPropertyKey: containingPropertyKey, 
+	 *		{containingPropertyKey: containingPropertyKey,
 	 * 		 sizesClass: sizesClass,
-	 *		 widthKey: widthKey, 
+	 *		 widthKey: widthKey,
 	 * 		 heightKey: heightKey}
-	 * 
+	 *
 	 * @private
 	 * @param {*} slot 					Slot to get property information for
 	 * @param {number} targetWidth 		Width of the predefined size to look for
@@ -1588,12 +1596,12 @@ class GPTSlots {
 	 *
 	 * The returned object uses the following structure:
 	 *
-	 *		{containingPropertyKey: containingPropertyKey, 
+	 *		{containingPropertyKey: containingPropertyKey,
 	 * 		 mappingClass: mapping class,
 	 * 		 viewportClass: viewport class,
-	 *		 viewportWidthKey: viewport width key, 
+	 *		 viewportWidthKey: viewport width key,
 	 * 		 viewportHeightKey: viewport height key}
-	 * 
+	 *
 	 * @private
 	 * @param {*} slot 							Slot with size mapping to get property information for
 	 * @param {number} targetViewportWidth 		Width of the predefined viewport to look for
@@ -1685,20 +1693,20 @@ class GPTSlots {
 		findViewport(slot);
 
 		//Return the found information
-		return {containingPropertyKey: containingPropertyKey, 
+		return {containingPropertyKey: containingPropertyKey,
 				mappingClass: mappingClass,
 				viewportClass: viewportClass,
-				viewportWidthKey: viewportWidthKey, 
+				viewportWidthKey: viewportWidthKey,
 				viewportHeightKey: viewportHeightKey};
 	}
 
 	/**
 	 * Returns a set of CreativeSizes for each possible size in the passed object
-	 * 
+	 *
 	 * @private
 	 * @param {string} slotProperty 	Slot object property to find sizes in
 	 * @returns 						Set of CreativeSizes for all the sizes found in the passed object
-	 * @memberof GPTSlots				
+	 * @memberof GPTSlots
 	 */
 	private _getCreativeSizesInProperty(slotProperty: string) {
 
@@ -1732,12 +1740,12 @@ class GPTSlots {
 
 						    	//If the object is a sizes class, store the size
 								if (value.constructor.name == thisInstance._sizesClass) {
-									let currentCreativeSize = new CreativeSize(value[thisInstance._sizesWidthKey], 
+									let currentCreativeSize = new CreativeSize(value[thisInstance._sizesWidthKey],
 																			   value[thisInstance._sizesHeightKey]);
 									sizes.add(currentCreativeSize);
 								}
 
-								//Otherwise, traverse the object. 
+								//Otherwise, traverse the object.
 						    	else {findSizes(value);};
 
 						    }
@@ -1799,7 +1807,7 @@ class GPTSlots {
 									return true;
 								}
 
-								//Otherwise, traverse the object. 
+								//Otherwise, traverse the object.
 						    	else if (findViewport(value)) {return true;}
 
 						    }
@@ -1821,7 +1829,7 @@ class GPTSlots {
 	 *
 	 * Each key is a Map with 'width' and 'height' keys for the viewport. Each value is a Set of CreativeSizes
 	 * for the viewport.
-	 * 
+	 *
 	 * @private
 	 * @param {any} slotProperty 	Slot object property to find sizes in
 	 * @returns 					Map of viewports to their Set of CreativeSizes for all the sizes found in the passed object
@@ -1864,7 +1872,7 @@ class GPTSlots {
 									mappedSizes.set(currentViewport, viewportSizes);
 								}
 
-								//Otherwise, traverse the object. 
+								//Otherwise, traverse the object.
 						    	else {
 						    		findSizes(value);
 						    	};
@@ -1884,7 +1892,7 @@ class GPTSlots {
 
 	/**
 	 * Creates a googletag slot with the size arguments passed to the Slot constructor
-	 * 
+	 *
 	 * @private
 	 * @param {number} targetWidth 		Width of the slot
 	 * @param {number} targetHeight 	Height of the slot
@@ -1902,16 +1910,16 @@ class GPTSlots {
 
 	/**
 	 * Creates a google slot with the size arguments and using a size mapping
-	 * 
+	 *
 	 * @private
 	 * @param {number} targetWidth 				Width of the slot
 	 * @param {number} targetHeight 			Height of the slot
 	 * @param {number} targetViewPortWidth 		Width of the viewport
 	 * @param {number} targetViewPortHeight 	Height of the viewport
 	 * @returns 								Newly created slot with the size arguments added to the slot through a size mapping
-	 * @memberof GPTSlots					
+	 * @memberof GPTSlots
 	 */
-	private _getDummySlotWithMapping(targetWidth: number, targetHeight: number, 
+	private _getDummySlotWithMapping(targetWidth: number, targetHeight: number,
 									 targetViewPortWidth: number, targetViewPortHeight: number) {
 
 		//Create a dummy slot with no sizes
@@ -1931,7 +1939,7 @@ class GPTSlots {
  *
  * The single static function uses the site's "adsDivs" object to identify
  * the ads and their possible sizes.
- * 
+ *
  * @class BingAds
  */
 class BingAds {
@@ -1942,7 +1950,7 @@ class BingAds {
 	//********************************* Public Accessors ************************************
 	/**
 	 * Returns the Set of BingAd AdSelectors if they exist on the current site.
-	 * 
+	 *
 	 * @static
 	 * @returns 			Set of BingAd AdSelectors if they exist on the current site.
 	 * @memberof BingAds
@@ -1972,6 +1980,17 @@ class BingAds {
 					//Add the AdSelector to the overall set
 					bingAdSelectors.add(newAdSelector);
 				}
+
+				//If the sz property is empty but the 'h' and 'w' are not, use them
+				else if ((currentAdDiv.h > 0) && (currentAdDiv.w > 0)) {
+
+					//Create the new AdSelector with the div ID as the selector
+					let newAdSelector = new AdSelector("#" + currentAdDiv.id, true);
+					newAdSelector.addSize(Number(currentAdDiv.w), Number(currentAdDiv.h));
+					
+					//Add the AdSelector to the overall set
+					bingAdSelectors.add(newAdSelector);
+				}
 			}
 		}
 
@@ -1987,19 +2006,19 @@ class BingAds {
 /**
  * The CreativeInjecter replaces ad elements on the running page with the passed creative.
  * It locates the ad elements first using any passed ad selectors and then using
- * elements marked by the AdMarker extension. 
- * 
+ * elements marked by the AdMarker extension.
+ *
  * @class CreativeInjecter
  */
 class CreativeInjecter {
 
 	//---------------------------------------------------------------------------------------
 	//-------------------------------- Static Variables -------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//***************************** Private Static Variables ********************************
 	/**
 	 * The flood-opacity of ads marked by the AdMarker browser plugin
-	 * 
+	 *
 	 * @static
 	 * @memberof Log
 	 */
@@ -2008,7 +2027,7 @@ class CreativeInjecter {
 	/**
 	 * Used by _getSmallestContainingParent. Any parent of a size smaller than
 	 * these minimums is ignored.
-	 * 
+	 *
 	 * @private
 	 * @static
 	 * @memberof CreativeInjecter
@@ -2018,7 +2037,7 @@ class CreativeInjecter {
 	/**
 	 * Used by _getSmallestContainingParent. Any parent of a size smaller than
 	 * these minimums is ignored.
-	 * 
+	 *
 	 * @private
 	 * @static
 	 * @memberof CreativeInjecter
@@ -2027,7 +2046,7 @@ class CreativeInjecter {
 
 	/**
 	 * Any ads and iframes larger than these dimensions are removed
-	 * 
+	 *
 	 * @private
 	 * @static
 	 * @memberof CreativeInjecter
@@ -2036,20 +2055,20 @@ class CreativeInjecter {
 
 	/**
 	 * Any ads and iframes larger than these dimensions are removed
-	 * 
+	 *
 	 * @private
 	 * @static
 	 * @memberof CreativeInjecter
 	 */
 	private static readonly _MAXIMUMADKEEPHEIGHT = 971;
-	
+
 	//---------------------------------------------------------------------------------------
 	//------------------------------------ Variables ----------------------------------------
-	//---------------------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------------------
 	//******************************** Private Variables ************************************
 	 /**
 	  * CreativeGroup storing all of the Creatives to attempt to inject into the page
-	  * 
+	  *
 	  * @private
 	  * @type {CreativeGroup}
 	  * @memberof CreativeInjecter
@@ -2058,7 +2077,7 @@ class CreativeInjecter {
 
 	/**
 	 * Array of AdSelectors for ad elements on the page
-	 * 
+	 *
 	 * @private
 	 * @type {Array<AdSelector>}
 	 * @memberof CreativeInjecter
@@ -2067,7 +2086,7 @@ class CreativeInjecter {
 
 	/**
 	 * Height at which creatives should be injected (this height and below)
-	 * 
+	 *
 	 * @private
 	 * @type {number}
 	 * @memberof CreativeInjecter
@@ -2076,21 +2095,21 @@ class CreativeInjecter {
 
 	/**
 	 * If TRUE, hides large floating elements. (Default: TRUE)
-	 * 
+	 *
 	 * WARNING: SETTING TO FALSE MAY PREVENT INTERSTITIALS FROM BEING HIDDEN
-	 * 
+	 *
 	 * @private
 	 * @type {boolean}
 	 * @memberof CreativeInjecter
 	 */
 	private readonly _hideLargeFloatingElements: boolean;
-	
+
 	//---------------------------------------------------------------------------------------
 	//------------------------ Constructors/Copiers/Destructors -----------------------------
 	//---------------------------------------------------------------------------------------
 	/**
 	 * Creates an instance of CreativeInjecter.
-	 * 
+	 *
 	 * @param {CreativeGroup} creatives 			Creatives to inject into the running page
 	 * @param {Array<AdSelector>} adSelectors 		Array of AdSelectors for ad elements on the page
 	 * @param {number} injectionStartHeight 		Height at which creatives should be injected (this height and below)
@@ -2098,7 +2117,7 @@ class CreativeInjecter {
 	 * 												WARNING: SETTING TO FALSE MAY PREVENT INTERSTITIALS FROM BEING HIDDEN
 	 * @memberof CreativeInjecter
 	 */
-	constructor(creatives: CreativeGroup, adSelectors: Array<AdSelector>, 
+	constructor(creatives: CreativeGroup, adSelectors: Array<AdSelector>,
 				injectionStartHeight: number, hideLargeFloatingElements: boolean) {
 
 		//Verify creatives is a CreativeGroup
@@ -2134,11 +2153,11 @@ class CreativeInjecter {
 	//---------------------------------------------------------------------------------------
 	//------------------------------- Modification Methods ----------------------------------
 	//---------------------------------------------------------------------------------------
-	//********************************* Public Methods **************************************		
+	//********************************* Public Methods **************************************
 	/**
 	 * Injects all possible Creative into the page and stores the screen coordinates for each.
-	 * 
-	 * @returns 
+	 *
+	 * @returns
 	 * @memberof CreativeInjecter
 	 */
 	public injectCreativesIntoPage() {
@@ -2199,7 +2218,9 @@ class CreativeInjecter {
 			if (!adSelectorReplaced && currentAdSelector.hideIfNotReplaced()) {
 				let currentElement = <HTMLElement> document.querySelector(currentAdSelector.selector());
 				if (currentElement) {
-					this._hideElement(currentElement);
+                    if ((currentElement.offsetHeight > 0) && (currentElement.offsetWidth > 0)) {
+						this._hideElement(currentElement);
+					}
 				}
 			}
 		}
@@ -2207,7 +2228,7 @@ class CreativeInjecter {
 		// return; //testing
 
 		//-------------------- Marked Creatives and IFrames ------------------------
-		//Get the elements from the page that are the size of an instance creative, 
+		//Get the elements from the page that are the size of an instance creative,
 		//both marked by AdMarker and unmarked
 		let elementsOfCreativeSizes = this._getPageElementsOfCreativeSizes();
 
@@ -2247,7 +2268,7 @@ class CreativeInjecter {
 		}
 
 		//-------------------- Unmarked Creatives ------------------------
-		//Finally, if none of the Creatives have been injected using the AdSelectors or 
+		//Finally, if none of the Creatives have been injected using the AdSelectors or
 		//elements marked by the AdMarker, replace any element on the page of a Creative size
 		if (this._creatives.getInjectedCreatives().size == 0) {
 			let unmarkedElements: Array<HTMLElement> = Array.from(elementsOfCreativeSizes.get("unmarkedElements"));
@@ -2281,14 +2302,14 @@ class CreativeInjecter {
 		}
 	}
 
-	//********************************* Private Methods *************************************		
+	//********************************* Private Methods *************************************
 	/**
-	 * Replaces the passed element with an image element referencing the image URL of the 
+	 * Replaces the passed element with an image element referencing the image URL of the
 	 * passed Creative.
-	 * 
+	 *
 	 * @param {HTMLElement} elementNode  		Element to replace
 	 * @param {Creative} replacementCreative 	Creative to use for replacement image element
-	 * @returns 
+	 * @returns
 	 * @memberof CreativeInjecter
 	 */
 	private _replaceElementWithCreative(elementNode: HTMLElement, replacementCreative: Creative) {
@@ -2315,12 +2336,12 @@ class CreativeInjecter {
 		// 		}
 		// 	}
         // }
-		
+
 		// if (replacementChild) {
-		// 	creativeImage.style.cssText = document.defaultView.getComputedStyle(replacementChild, "").cssText;			
+		// 	creativeImage.style.cssText = document.defaultView.getComputedStyle(replacementChild, "").cssText;
 		// 	Log.output("Got child styles for: " + replacementChild.nodeName);
 		// }
-		
+
 		// styleObject = document.defaultView.getComputedStyle(elementNode, "");
 		// for (let property in styleObject) {
 		// 	creativeImage.style[property] = styleObject[property];
@@ -2332,14 +2353,72 @@ class CreativeInjecter {
 		creativeImage.style.maxHeight = replacementCreative.height() + 'px';
 		creativeImage.style.margin = 'auto';
 		creativeImage.style.display = 'flex';
-		
+
+		let elementChildren = elementNode.children;
+		let headerNode: Node | null = null;
+		let firstFound = false;
+		let headerIndex = 0;
+		while ((!firstFound) && (headerIndex < elementChildren.length)) {
+			let currentChild = elementChildren[headerIndex];
+			if (currentChild != null) {
+				if ((currentChild.nodeName == "A") || (currentChild.nodeName == "DIV")) {
+
+					firstFound = true;
+
+					if ((currentChild.innerHTML.toLowerCase().includes("adchoice")) ||
+						((currentChild.textContent != null) &&
+						 (currentChild.textContent.toLowerCase().includes("advertisement")))) {
+							headerNode = currentChild.cloneNode(true);
+					}
+				}
+				else if (currentChild.nodeName == "IFRAME") {
+					firstFound = true;
+				}
+			}
+			++headerIndex;
+		}
+
+		let footerNode: Node | null = null;
+		let lastFound = false;
+		let footerIndex = elementChildren.length;
+		while ((!lastFound) && (footerIndex >= 0)) {
+			let currentChild = elementChildren[footerIndex];
+			if (currentChild != null) {
+				if ((currentChild.nodeName == "A") || (currentChild.nodeName == "DIV")) {
+
+					lastFound = true;
+
+					if ((currentChild.innerHTML.toLowerCase().includes("adchoice")) ||
+						((currentChild.textContent != null) &&
+						 (currentChild.textContent.toLowerCase().includes("advertisement")))) {
+							footerNode = currentChild.cloneNode(true);
+							console.log('______ Footer NOde FOund ____________');
+					}
+				}
+				else if (currentChild.nodeName == "IFRAME") {
+					lastFound = true;
+				}
+			}
+			--footerIndex;
+		}
+
 		while (elementNode.hasChildNodes()) {
 			if (elementNode.lastChild) {
 				elementNode.removeChild(elementNode.lastChild);
 			}
 		}
 
+		if (headerNode != null) {
+			elementNode.appendChild(headerNode);
+			creativeImage.style.clear = 'both';
+		}
+
 		elementNode.appendChild(creativeImage);
+
+		if (footerNode != null) {
+			(<HTMLElement> footerNode).style.width = replacementCreative.width() + 'px';
+			elementNode.appendChild(footerNode);
+		}
 
 		//Make sure the parents are displayed and at least as big as the Creative image
 		// this._crawlParentHTMLElements(creativeIFrame, function(currentNode) {
@@ -2349,7 +2428,7 @@ class CreativeInjecter {
 			let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
 			let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
 			// Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
-			
+
 
 			//Make sure the current node is displayed
 			//***************
@@ -2377,7 +2456,7 @@ class CreativeInjecter {
 																						//unintentionally cause bugs
 					currentNode.style.minHeight = replacementCreative.height() + 'px';
 					//currentNode.style.width = replacementCreative.width() + 'px';
-					currentNode.style.height = replacementCreative.height() + 'px';
+					// currentNode.style.height = replacementCreative.height() + 'px';
 					// Log.output("Shrinking parent");
 				}
 
@@ -2402,10 +2481,14 @@ class CreativeInjecter {
 
 	/**
 	 * Hides any large elements that are likely ads
-	 * 
+	 *
 	 * @memberof CreativeInjecter
 	 */
 	private _hideLargeAdsAndOverlays() {
+
+		//Get the highest z-index to flag overlays
+		let highestZIndex = this._getHighestZIndex();
+		console.log("Highest z-index: " + highestZIndex);
 
 		//Crawl through the DOM and remove all large ads and fixed elements with matching criteria
 		let thisCreativeInjecter = this; 	//For scope
@@ -2423,6 +2506,8 @@ class CreativeInjecter {
 			let nodeXPosition = ElementInfo.xPosition(currentNode);
 			let nodeYPosition = ElementInfo.yPosition(currentNode);
 			let nodeZIndex = Number(ElementInfo.zIndex(currentNode));
+			let nodeAlpha = ElementInfo.backgroundAlpha(currentNode);
+			let nodeContentLength = (currentNode.textContent != null) ? currentNode.textContent.length : 0;
 
 			/**************************** Remove Large Ads ****************************/
 			//If the node has been :
@@ -2442,7 +2527,7 @@ class CreativeInjecter {
 
 				//Remove the ad if it is bigger than the allowed 'keep' size
 				if ((viewableWidth != null) && (viewableHeight != null) &&
-					(viewableWidth >= CreativeInjecter._MAXIMUMADKEEPWIDTH) && 
+					(viewableWidth >= CreativeInjecter._MAXIMUMADKEEPWIDTH) &&
 					(viewableHeight >= CreativeInjecter._MAXIMUMADKEEPHEIGHT)) {
 					thisCreativeInjecter._hideElement(smallestParentNode);
 				}
@@ -2454,7 +2539,7 @@ class CreativeInjecter {
 			//	- Is not the size of an instance Creative
 			//	- Is too large or fixed anywhere other than (0,0)
 			//hide it
-			// else if ((nodePositionStyle == 'fixed') && (nodeZIndex > 1) && 
+			// else if ((nodePositionStyle == 'fixed') && (nodeZIndex > 1) &&
 			// 		(!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 
 			// 	//If the node is fixed anywhere other than the top left corner, hide it
@@ -2470,30 +2555,54 @@ class CreativeInjecter {
 			// 		thisCreativeInjecter._hideElement(currentNode);
 			// 	}
 			// }
-			else if ((nodeZIndex != null) && ((nodeZIndex > 1) || (nodeZIndex < 0)) && 
+			else if ((nodeZIndex != null) && ((nodeZIndex > 1) || (nodeZIndex < 0)) &&
 					 (nodeWidth != null) && (nodeHeight != null) &&
 					 (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
-				     (hideLargeFloatingElements)) {
-
-				let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
-				let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);
-				if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
-					thisCreativeInjecter._hideElement(currentNode);
+					 (hideLargeFloatingElements)) {
+				
+				if ((nodeContentLength < 500) &&
+					((nodeAlpha < 1) || (nodeZIndex >= highestZIndex))) {
+						
+					let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
+					let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);
+					if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
+						thisCreativeInjecter._hideElement(currentNode);
+					}
 				}
-			}
+			}	
 		});
+	}
+
+	private _getHighestZIndex() {
+
+		let highestZIndex = 0;
+        this._crawlDocumentHTMLElements(document, function (currentNode) {
+            let nodeZIndex = Number(ElementInfo.zIndex(currentNode));
+            let nodeWidth = ElementInfo.widthWithoutBorder(currentNode);
+            let nodeHeight = ElementInfo.heightWithoutBorder(currentNode);
+            let nodeScreenWidthPercentage = (nodeWidth / window.innerWidth);
+            let nodeScreenHeightPercentage = (nodeHeight / window.innerHeight);
+            if (nodeZIndex > highestZIndex) {
+                if ((nodeScreenWidthPercentage > 0.96) && (nodeScreenHeightPercentage > 0.96)) {
+                    if ((currentNode.offsetHeight > 0) && (currentNode.offsetWidth > 0)) {
+                        highestZIndex = nodeZIndex;
+                    }
+                }
+            }
+		});
+		return highestZIndex;
 	}
 
 	/**
 	 * Returns all elements on the page matching Creative sizes.
-	 * 
+	 *
 	 * The elements are returned in a map with the values as arrays
 	 * of HTMLElements.
-	 * 
+	 *
 	 * The items are labelled "markedAdElements", "unmarkedIFrames",
 	 * and "unmarkedElements", respectively. No individual element
 	 * exists in more than one array.
-	 * 
+	 *
 	 * @returns 					Map of arrays of elements matching Creative sizes (see description)
 	 * @memberof CreativeInjecter
 	 */
@@ -2532,14 +2641,14 @@ class CreativeInjecter {
 			}
 
 			//Else if it is an IFrame and the size of an instance Creative, store it
-			else if ((currentNode.nodeName == "IFRAME") && 
-					 (nodeWidth != null) && (nodeHeight != null) && 
+			else if ((currentNode.nodeName == "IFRAME") &&
+					 (nodeWidth != null) && (nodeHeight != null) &&
 					 (creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 					unmarkedIFrameElements.add(currentNode);
 			}
 
 			//Finally, if it is none of the above but the size of an instance Creative, store it
-			else if ((nodeWidth != null) && (nodeHeight != null) && 
+			else if ((nodeWidth != null) && (nodeHeight != null) &&
 					 (creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
 					unmarkedElementsOfCreativeSizes.add(currentNode);
 			}
@@ -2557,9 +2666,9 @@ class CreativeInjecter {
 	 * Hides the passed node and any parent nodes of the same or smaller size.
 	 *
 	 * Hiding consists of setting the display style to 'none'.
-	 * 
+	 *
 	 * @param {HTMLElement} elementNode 	Node to hide
-	 * @returns 
+	 * @returns
 	 * @memberof CreativeInjecter
 	 */
 	private _hideElement(elementNode: HTMLElement) {
@@ -2567,12 +2676,12 @@ class CreativeInjecter {
 		//Verify the passed node exists and is an HTMLElement. If not, simply return.
 		if ((elementNode == null) || (!ElementInfo.isHTMLElement(elementNode))) {return;}
 
-		//Get the smallest parent node of the element to hide. 
+		//Get the smallest parent node of the element to hide.
 		//Sometimes an ad element can have larger non-viewable dimensions than its parents
 		let smallestParentNode = this._getSmallestContainingParent(elementNode);
 
 		//Hack for business insider
-		// if ((ElementInfo.widthWithoutBorder(elementNode) > 1000) && 
+		// if ((ElementInfo.widthWithoutBorder(elementNode) > 1000) &&
 		//     (ElementInfo.heightWithoutBorder(elementNode) > 1000)) {smallestParentNode = elementNode;}
 
 		//Hide the final element (original or smallest highest parent)
@@ -2613,7 +2722,7 @@ class CreativeInjecter {
 	 *
 	 * This is used to hide an ad element's entire IFrame. Hiding simply the ad can result in the
 	 * IFrame still taking up space on the page.
-	 * 
+	 *
 	 * @private
 	 * @param {HTMLElement} elementNode 	HTMLElement to check for an IFrame of the same size
 	 * @returns 							Topmost containing frame the same size of the node or null if none found
@@ -2628,7 +2737,7 @@ class CreativeInjecter {
 		let nodeWidth = ElementInfo.width(elementNode);
 		let nodeHeight = ElementInfo.height(elementNode);
 
-		//Crawl upwards through the containing frames. If a frame of the 
+		//Crawl upwards through the containing frames. If a frame of the
 		//same size exists, store it or replace the previous stored one.
 		let heighestContainingFrame = null;
 		let currentContainingFrame = <HTMLElement> ElementInfo.getContainingFrame(elementNode);
@@ -2654,14 +2763,14 @@ class CreativeInjecter {
 	 * Returns the smallest and highest containing parent holding the starting node.`
 	 *
 	 * This function is used in the situation where an ad might have rather large non-visible dimensions.
-	 * It's displayed size is then determined by the smallest containing node. 
+	 * It's displayed size is then determined by the smallest containing node.
 	 *
 	 * The returned node can be the same as the passed node.
 	 *
 	 * Nodes with a width and height less than _SMALLNODEMINWIDTH and _SMALLNODEMINHEIGHT, anchors,
 	 * or objects are not counted. The minimum height and width are required since sometimes containing
 	 * nodes register as 1x1 or similar and must be ignored.
-	 * 
+	 *
 	 * @private
 	 * @param {HTMLElement} startingNode 	Starting node of parents to crawl
 	 * @returns 							Smallest containing parent
@@ -2704,8 +2813,8 @@ class CreativeInjecter {
 			if ((currentNodeWidth != null) && (currentNodeHeight != null) &&
 				(smallestNodeWidth != null) && (smallestNodeHeight != null)) {
 
-				//If the node is smaller or the same size as the the current smallest, 
-				//not an object, not an anchor, and above the minimum size requirements, 
+				//If the node is smaller or the same size as the the current smallest,
+				//not an object, not an anchor, and above the minimum size requirements,
 				//store it as the smallest
 				if ((currentNodeWidth > CreativeInjecter._SMALLNODEMINWIDTH) && (currentNodeHeight > CreativeInjecter._SMALLNODEMINHEIGHT) &&
 					(currentNode.nodeName != "A") && (currentNode.nodeName != "OBJECT") &&
@@ -2724,18 +2833,18 @@ class CreativeInjecter {
 	}
 
 	/**
-	 * Crawls the DOM document, including any iFrames, and calls the passed function on 
+	 * Crawls the DOM document, including any iFrames, and calls the passed function on
 	 * each HTMLElement node.
 	 *
 	 * The function receives a single argument of the HTMLElement node.
-	 * 
+	 *
 	 * @private
 	 * @param {HTMLDocument} documentToCrawl 						The DOM document to crawl
 	 * @param {(nodeElement: HTMLElement) => void} nodeFunction 	Function to call on each HTMLElement node
-	 * @returns 
+	 * @returns
 	 * @memberof CreativeInjecter
 	 */
-	private _crawlDocumentHTMLElements(documentToCrawl: HTMLDocument, 
+	private _crawlDocumentHTMLElements(documentToCrawl: HTMLDocument,
 									   nodeFunction: (nodeElement: HTMLElement) => void) {
 
 		//If the document does not exist, is not a HTMLDocument, or does not have a "body" property, exit the function
@@ -2755,7 +2864,7 @@ class CreativeInjecter {
 			//Apply the passed function on the node
 			nodeFunction(currentNode);
 
-			//If the node is an IFrame, crawl it as well. 
+			//If the node is an IFrame, crawl it as well.
 			//Try-Catch is used in case crawling it is not permitted by browser security.
 			try {
 				//If the node is an iframe, find the ads in it too
@@ -2770,21 +2879,21 @@ class CreativeInjecter {
 	}
 
 	/**
-	 * Crawls the HTMLElement node's parents, including any frames, and calls the passed function on 
+	 * Crawls the HTMLElement node's parents, including any frames, and calls the passed function on
 	 * each HTMLElement node.
 	 *
-	 * The function receives a single argument of the HTMLElement node. The passed function is not 
+	 * The function receives a single argument of the HTMLElement node. The passed function is not
 	 * applied to the starting node.
-	 * 
+	 *
 	 * @private
 	 * @param {HTMLElement} startingNode 							Starting node of parents to crawl
 	 * @param {(nodeElement: HTMLElement) => void} nodeFunction 	Function to call on each parent
-	 * @returns 
+	 * @returns
 	 * @memberof CreativeInjecter
 	 */
-	private _crawlParentHTMLElements(startingNode: HTMLElement, 
+	private _crawlParentHTMLElements(startingNode: HTMLElement,
 									 nodeFunction: (nodeElement: HTMLElement) => void) {
-			
+
 		//Verify the passed node exists and is an HTMLElement. If not, simply return null.
 		if ((startingNode == null) || (!ElementInfo.isHTMLElement(startingNode))) {return;}
 
@@ -2808,7 +2917,7 @@ class CreativeInjecter {
 
 	/**
 	 * Sorts an array of Elements according to position from top-left to bottom-right
-	 * 
+	 *
 	 * @private
 	 * @param {Array<HTMLElement>} elements 	Elements to sort
 	 * @returns 								Sorted array of elements by position top-left to bottom-right
@@ -2822,7 +2931,7 @@ class CreativeInjecter {
 		//Function that sorts array of HTMLElements from top-right screen position to bottom-left
 		//If either element is not an HTMLElement, an error is thrown.
 		let elementSortFunction = function(firstElement: HTMLElement, secondElement: HTMLElement) {
-		    
+
 		    //If either element is not an HTMLElement, throw an error
 			if ((!ElementInfo.isHTMLElement(firstElement)) || (!ElementInfo.isHTMLElement(secondElement))) {
 				throw "CreativeInjecter._sortElementsByPosition: array element not an HTMLElement";
@@ -2844,7 +2953,7 @@ class CreativeInjecter {
 		    let firstPositionFactor = firstElementY + firstElementX/1000;
 		    let secondPositionFactor = secondElementY + secondElementX/1000;
 
-			//Return the difference. If negative, the firstElement comes first, if positive, the second come first.    
+			//Return the difference. If negative, the firstElement comes first, if positive, the second come first.
 		    return firstPositionFactor - secondPositionFactor;
 		};
 
@@ -2854,7 +2963,7 @@ class CreativeInjecter {
 
 	/**
 	 * Sorts an array of AdSelectors according to its Element's position from top-left to bottom-right
-	 * 
+	 *
 	 * @private
 	 * @param {Array<HTMLElement>} elements 	Elements to sort
 	 * @returns 								Sorted array of AdSelectors according to its Element's top-left to bottom-right
@@ -2868,7 +2977,7 @@ class CreativeInjecter {
 		//Function that sorts array of AdSelectors from top-right screen position to bottom-left
 		//If either argument is not an AdSelector, an error is thrown.
 		let adSelectorSortFunction = function(firstAdSelector: AdSelector, secondAdSelector: AdSelector) {
-		    
+
 		    //If either element is not an HTMLElement, throw an error
 			if ((!(firstAdSelector instanceof AdSelector)) || (!(firstAdSelector instanceof AdSelector))) {
 				throw "CreativeInjecter._sortAdSelectorsByPosition: array element not an AdSelector";
@@ -2921,7 +3030,7 @@ class CreativeInjecter {
 				if ((firstPositionFactor != 0) && (secondPositionFactor == 0)) {return -1;}
 			}
 
-			//Return the difference. If negative, the firstElement comes first, if positive, the second come first.    
+			//Return the difference. If negative, the firstElement comes first, if positive, the second come first.
 		    return firstPositionFactor - secondPositionFactor;
 		};
 
@@ -2939,18 +3048,13 @@ let creatives: Array<any> = [];
 let injectionStartHeight = 0;
 let hideLargeFloatingElements = true;
 
-/*creatives = [
-	{id: '28577acb-9fbe-4861-a0ef-9d1a7397b4c9', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-994x250.jpg', priority: 0, width: 994, height: 250},
-	{id: 'ab4ec323-f91b-4578-a6c8-f57e5fca5c87', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/filler-300x250.jpg', priority: 0, width: 300, height: 250},
-	{id: 'b4cce6c3-d68c-4cb4-b50c-6c567e0d3789', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-970x250.jpg', priority: 0, width: 970, height: 250},
-	{id: '312e383f-314e-4ba2-85f0-5f6937990fa6', imageURL: 'https://s3.amazonaws.com/asr-images/fillers/nsfiller-300x600.jpg', priority: 0, width: 300, height: 600}
-];//*/
+//creatives = [{id: '887', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/65157428-d651-4a41-9ac4-7ed38913b6d3.png', width: 300, height: 50, priority: 3},{id: '884', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/7342bc19-a3b7-473d-837f-4a6c3c14ccb3.png', width: 300, height: 250, priority: 0},{id: '888', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/8a9640ea-e713-4f19-9262-5410b2df4482.png', width: 970, height: 250, priority: 4},{id: '885', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/da6f1689-a606-45d2-8c9e-091e100eca14.png', width: 728, height: 90, priority: 1},{id: '889', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/2941f395-f829-462f-8b99-bc240e510082.png', width: 320, height: 50, priority: 5},{id: '886', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9e60ee39-b7e5-4e77-82aa-5082dd56e83e.png', width: 300, height: 600, priority: 2},];
 //INSERT CREATIVES OBJECT//
 
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
 for (let currentCreative of creatives) {
-	allCreatives.addCreative((new Creative(currentCreative.id, 
+	allCreatives.addCreative((new Creative(currentCreative.id,
 										   currentCreative.imageURL,
 										   currentCreative.width,
 										   currentCreative.height,
@@ -3003,7 +3107,7 @@ injecter.injectCreativesIntoPage();
 
 //Create the list of injected Creatives and their locations
 //Format: {creativeID: {x: xPosition, y: yPosition}}
-//Example: {"4ce6dca7-1d71-4e5b-9bfb-17a41190151a":{"x":312,"y":106},"1e678430-90b4-4c9f-ad81-739826d05c0e":{"x":942,"y":262}} 
+//Example: {"4ce6dca7-1d71-4e5b-9bfb-17a41190151a":{"x":312,"y":106},"1e678430-90b4-4c9f-ad81-739826d05c0e":{"x":942,"y":262}}
 let injectedCreatives = allCreatives.getInjectedCreatives();
 let injectedIDsAndLocations: any = {};
 for (let [injectedCreative, location] of injectedCreatives) {

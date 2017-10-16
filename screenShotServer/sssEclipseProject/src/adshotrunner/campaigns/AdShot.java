@@ -321,7 +321,10 @@ public class AdShot {
 			//If _storyFinder is true, get the stories
 			else {
 				try {
+					System.out.println("Getting story candidates...");
 					_candidateURLs = StoryFinder.getStories(URLTool.setProtocol("http", _requestedURL), NUMBEROFSTORIES);
+					System.out.println("Done getting story candidates");
+					System.out.println("Number of candidates: " + _candidateURLs.size());
 				}
 				catch (Exception e) {
 					System.out.println("Unable to find stories for Adshot");
@@ -398,7 +401,7 @@ public class AdShot {
 	 * @param finalURL		Final URL of the AdShot
 	 */
 	public void setFinalURL(String finalURL) {
-				
+						
 		//Update the final URL in the database
 		try {
 			ASRDatabase.executeUpdate("UPDATE adshots " +
@@ -420,6 +423,11 @@ public class AdShot {
 	 */
 	public void setPageTitle(String pageTitle) {
 		
+		//If the page title is longer than 255 characters, shorten it
+		if (pageTitle.length() > 255) {
+			pageTitle = pageTitle.substring(0, 252) + "...";
+		}
+
 		//Update the final URL in the database
 		try {
 			ASRDatabase.executeUpdate("UPDATE adshots " +
