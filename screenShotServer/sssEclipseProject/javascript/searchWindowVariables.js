@@ -27,7 +27,7 @@ if (typeof outputContainingObject === 'undefined') {let outputContainingObject;}
 //Set the object and value to search
 objectToSearch = window;
 objectName = "window";
-searchValue = "ad-position-92";
+searchValue = "defaultdestLDRB";
 
 //If TRUE, the containing object holding the search value and its key will be output to the console
 outputContainingObject = true;

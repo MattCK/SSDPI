@@ -1008,11 +1008,17 @@ class GPTSlots {
         //Loop through the slots and create an accessor for each one
         let slotAdSelectors = new Set();
         for (let [currentSlot, currentCreativeSizes] of this._slotCreativeSizes) {
-            //Create the selector string. If any forward slashes exist, put backslashes before them
-            // let slotSelector = "#" + currentSlot.getSlotElementId() + " iframe";
-            let slotSelector = "#" + currentSlot.getSlotElementId() + "";
-            slotSelector = slotSelector.replace(/\//g, "\\/");
-            slotSelector = slotSelector.replace(/\./g, "\\.");
+            let slotSelector = "";
+            //If the id DOES NOT begin with a number, use the # sign
+            if (isNaN(parseInt(currentSlot.getSlotElementId().charAt(0)))) {
+                //Create the selector string. If any forward slashes exist, put backslashes before them
+                slotSelector = "#" + currentSlot.getSlotElementId() + "";
+                slotSelector = slotSelector.replace(/\//g, "\\/");
+                slotSelector = slotSelector.replace(/\./g, "\\.");
+            }
+            else {
+                slotSelector = "[id='" + currentSlot.getSlotElementId() + "']";
+            }
             //Create the AdSelector and add each CreativeSize width and height to it
             let currentAdSelector = new AdSelector(slotSelector, true);
             for (let slotCreativeSize of currentCreativeSizes) {
@@ -1551,6 +1557,46 @@ class BingAds {
         return bingAdSelectors;
     }
 }
+/**
+ * The YahooAds class returns AdSelectors on the YAHOO network.
+ *
+ * The single static function uses the site's "DARLA_CONFIG" object to identify
+ * the ads and their possible sizes.
+ *
+ * @class BingAds
+ */
+class YahooAds {
+    //---------------------------------------------------------------------------------------
+    //----------------------------------- Accessors -----------------------------------------
+    //---------------------------------------------------------------------------------------
+    //********************************* Public Accessors ************************************
+    /**
+     * Returns the Set of YAHOO AdSelectors if they exist on the current site.
+     *
+     * @static
+     * @returns 			Set of YAHOO AdSelectors if they exist on the current site.
+     * @memberof YahooAds
+     */
+    static getSelectors() {
+        //If the YAHOO "DARLA_CONFIG" object exists, use it to create AdSelectors
+        let yahooAdSelectors = new Set();
+        if (typeof DARLA_CONFIG !== 'undefined') {
+            //Loop through the divs and create an AdSelector for each
+            for (let currentIndex in DARLA_CONFIG.positions) {
+                let currentAdDiv = DARLA_CONFIG.positions[currentIndex];
+                if ((currentAdDiv.h > 1) && (currentAdDiv.w > 1)) {
+                    //Create the new AdSelector with the div ID as the selector
+                    let newAdSelector = new AdSelector("#" + currentAdDiv.dest, true);
+                    newAdSelector.addSize(Number(currentAdDiv.w), Number(currentAdDiv.h));
+                    //Add the AdSelector to the overall set
+                    yahooAdSelectors.add(newAdSelector);
+                }
+            }
+        }
+        //Return either the found AdSelectors or the initial empty set
+        return yahooAdSelectors;
+    }
+}
 //---------------------------------------------------------------------------------------
 //----------------------------------- CreativeInjecter Class ----------------------------------
 //---------------------------------------------------------------------------------------
@@ -1747,6 +1793,11 @@ class CreativeInjecter {
             (!elementNode.parentNode)) {
             return;
         }
+        //If the element is an IFRAME, use its parent
+        //Children elements cannot be added/removed from an IFRAME
+        if (elementNode.nodeName == "IFRAME") {
+            elementNode = elementNode.parentElement;
+        }
         //Store the original height and width of the node
         let originalNodeWidth = ElementInfo.widthWithoutBorder(elementNode);
         let originalNodeHeight = ElementInfo.heightWithoutBorder(elementNode);
@@ -1839,6 +1890,8 @@ class CreativeInjecter {
             //Get the current node's width and height minus border width
             let currentNodeWidth = ElementInfo.widthWithoutBorder(currentNode);
             let currentNodeHeight = ElementInfo.heightWithoutBorder(currentNode);
+            let currentNodeLeftMargin = ElementInfo.marginLeft(currentNode);
+            let currentNodeRightMargin = ElementInfo.marginRight(currentNode);
             // Log.output(currentNode.id + ": " + currentNodeWidth + "x" + currentNodeHeight);
             //Make sure the current node is displayed
             //***************
@@ -1869,16 +1922,18 @@ class CreativeInjecter {
                 //This occurs when the element has been hidden by the page.
                 //For example, a containing div set to 0x0
                 if (currentNodeWidth < replacementCreative.width()) {
-                    // let widthPadding = ElementInfo.paddingLeft(currentNode) + ElementInfo.paddingLeft(currentNode);
-                    // currentNode.style.width = (replacementCreative.width() + widthPadding) + 'px';
-                    currentNode.style.width = '100%';
-                    // Log.output("Expanding parent width");
+                    //If the width is zero, but the element has margins, do nothing
+                    if ((currentNodeWidth == 0) &&
+                        ((currentNodeLeftMargin != null) && (currentNodeRightMargin != null)) &&
+                        ((currentNodeLeftMargin > 0) || (currentNodeRightMargin > 0))) {
+                        //Do nothing
+                    }
+                    else {
+                        currentNode.style.width = '100%';
+                    }
                 }
                 if (currentNodeHeight < replacementCreative.height()) {
-                    // let heightPadding = ElementInfo.paddingTop(currentNode) + ElementInfo.paddingBottom(currentNode);
-                    // currentNode.style.height = (replacementCreative.height() + heightPadding) + 'px';
                     currentNode.style.height = '100%';
-                    // Log.output("Expanding parent height");
                 }
             }
         });
@@ -1916,7 +1971,8 @@ class CreativeInjecter {
             //hide it.
             if ((nodeFloodOpacity == CreativeInjecter._ADMARKERFLOODOPACITY) &&
                 (nodeWidth != null) && (nodeHeight != null) &&
-                (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight))) {
+                (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
+                (currentNode.offsetHeight > 0) && (currentNode.offsetWidth > 0)) {
                 //Get the viewable width and height of the node minus the borders
                 //Sometimes an ad element can have larger non-viewable dimensions than its parents
                 let smallestParentNode = thisCreativeInjecter._getSmallestContainingParent(currentNode);
@@ -2407,11 +2463,11 @@ CreativeInjecter._MAXIMUMADKEEPWIDTH = 971;
 CreativeInjecter._MAXIMUMADKEEPHEIGHT = 971;
 //window.onload = function() {
 //Remove the scrollbars
-//document.documentElement.style.overflow = 'hidden';
+document.documentElement.style.overflow = 'hidden';
 let creatives = [];
 let injectionStartHeight = 0;
 let hideLargeFloatingElements = true;
-//creatives = [{id: '887', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/65157428-d651-4a41-9ac4-7ed38913b6d3.png', width: 300, height: 50, priority: 3},{id: '884', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/7342bc19-a3b7-473d-837f-4a6c3c14ccb3.png', width: 300, height: 250, priority: 0},{id: '888', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/8a9640ea-e713-4f19-9262-5410b2df4482.png', width: 970, height: 250, priority: 4},{id: '885', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/da6f1689-a606-45d2-8c9e-091e100eca14.png', width: 728, height: 90, priority: 1},{id: '889', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/2941f395-f829-462f-8b99-bc240e510082.png', width: 320, height: 50, priority: 5},{id: '886', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9e60ee39-b7e5-4e77-82aa-5082dd56e83e.png', width: 300, height: 600, priority: 2},];
+creatives = [{ id: '887', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/65157428-d651-4a41-9ac4-7ed38913b6d3.png', width: 300, height: 50, priority: 3 }, { id: '884', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/7342bc19-a3b7-473d-837f-4a6c3c14ccb3.png', width: 300, height: 250, priority: 0 }, { id: '888', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/8a9640ea-e713-4f19-9262-5410b2df4482.png', width: 970, height: 250, priority: 4 }, { id: '885', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/da6f1689-a606-45d2-8c9e-091e100eca14.png', width: 728, height: 90, priority: 1 }, { id: '889', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/2941f395-f829-462f-8b99-bc240e510082.png', width: 320, height: 50, priority: 5 }, { id: '886', imageURL: 'http://s3.amazonaws.com/asr-development/creativeimages/9e60ee39-b7e5-4e77-82aa-5082dd56e83e.png', width: 300, height: 600, priority: 2 },];
 //INSERT CREATIVES OBJECT//
 //Create the CreativesGroup and add each passed Creative to it
 let allCreatives = new CreativeGroup();
@@ -2440,6 +2496,13 @@ if ((bingAdSelectors != null) && (bingAdSelectors.size > 0)) {
         allSelectors.push(currentBingAdSelector);
     }
 }
+//Get any Yahoo AdSelectors
+let yahooAdSelectors = YahooAds.getSelectors();
+if ((yahooAdSelectors != null) && (yahooAdSelectors.size > 0)) {
+    for (let currentYahooAdSelector of yahooAdSelectors) {
+        allSelectors.push(currentYahooAdSelector);
+    }
+}
 //Verify each selector points to an element then turn it into an AdSelector
 for (let currentSelector of selectors) {
     let selectorElement = document.querySelector(currentSelector.selector);
@@ -2464,4 +2527,4 @@ Log.output("End of message log");
 let messageLog = Log.getMessages();
 //Return the injected creatives with their locations and any log messages
 //Log.output(JSON.stringify(injectedIDsAndLocations));
-//return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });
+return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });

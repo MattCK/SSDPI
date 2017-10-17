@@ -17,7 +17,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Platform;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -73,10 +76,25 @@ public class StoryLinkRetriever extends SeleniumBase {
 	static public List<StoryLink> getStoryLinks(String url, int viewportWidth, int viewportHeight) {
 		
 		consoleLog("Getting stories for: " + url);
+		
 		//Try to create a web driver to connect with
 		WebDriver activeWebDriver = null;
-		try {activeWebDriver = getStoryDriver(viewportWidth, viewportHeight);}
+		try {activeWebDriver = getHeadlessDriver(viewportWidth, viewportHeight);}
 		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
+		
+		List<StoryLink> storyLinks = getStoryLinksFromDriver(activeWebDriver, url);
+		
+		if (storyLinks.size() == 0) {
+			try {activeWebDriver = getWindowsDriver(viewportWidth, viewportHeight);}
+			catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
+			storyLinks = getStoryLinksFromDriver(activeWebDriver, url);
+		}
+		
+		//Return the found StoryLink objects
+		return storyLinks;
+	}
+	
+	static public List<StoryLink> getStoryLinksFromDriver(WebDriver activeWebDriver, String url) {
 		
 		//Navigate to the passed URL
 		if (!navigateSeleniumDriverToURL(activeWebDriver, url, STORYTIMEOUT)) {
@@ -84,15 +102,14 @@ public class StoryLinkRetriever extends SeleniumBase {
 			throw new AdShotRunnerException("StoryLinks: could not navigate to URL");
 		}
 		
-		consoleLog("Saving screenshot...");
-		File tempScreenshot = ((TakesScreenshot) activeWebDriver).getScreenshotAs(OutputType.FILE);
-		try {
-			FileUtils.copyFile(tempScreenshot, new File("sfScreenshot.png"));
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		consoleLog("Done.");
+//		consoleLog("Saving screenshot...");
+//		File tempScreenshot = ((TakesScreenshot) activeWebDriver).getScreenshotAs(OutputType.FILE);
+//		try {
+//			FileUtils.copyFile(tempScreenshot, new File("sfScreenshot.png"));
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+//		consoleLog("Done.");
 		
 		//Get possible exception container from the database
 		Map<String, String> storyExceptionContainer = getStoryLinkExceptionContainer(url);
@@ -160,7 +177,7 @@ public class StoryLinkRetriever extends SeleniumBase {
 	 * @param viewportHeight	Height of driver viewport to use
 	 * @return					Initialized Chrome WebDriver
 	 */
-	static private WebDriver getStoryDriver(int viewportWidth, int viewportHeight) throws MalformedURLException {
+	static private WebDriver getHeadlessDriver(int viewportWidth, int viewportHeight) throws MalformedURLException {
 		
 		//Create the capability, option, and preference objects for the driver
 		consoleLog("Creating Story driver...");
@@ -196,6 +213,40 @@ public class StoryLinkRetriever extends SeleniumBase {
 		return chromeDriver;
 	} 
 
+	static private WebDriver getWindowsDriver(int viewportWidth, int viewportHeight) throws MalformedURLException {
+		
+		consoleLog("-----------------------------");
+		consoleLog("WARNING: WINDOWS STORY DRIVER");
+		consoleLog("-----------------------------");
+
+		
+		DesiredCapabilities driverCapabilities = DesiredCapabilities.chrome();
+		
+		//Set the driver to use a Windows node
+		driverCapabilities.setPlatform(Platform.WINDOWS);
+		
+		//Initialize the actual driver
+		WebDriver chromeDriver = null;
+		chromeDriver = new RemoteWebDriver(
+							new URL(SELENIUMHUBURL), 
+							driverCapabilities);
+		
+
+		//Set the viewport position
+		chromeDriver.manage().window().setPosition(new Point(0,20));
+		
+		//Set the page timeout
+		setCommandTimeout(chromeDriver, DEFAULTTIMEOUT);
+		
+		//If not using mobile, set the viewport size
+		chromeDriver.manage().window().setSize(new Dimension(viewportWidth, viewportHeight));
+		
+		//Return the initialized remote chrome web driver
+		consoleLog("Done creating screenshot driver.");
+		return chromeDriver;
+	}
+	
+	
 	/**
 	 * Returns the container ID and/or class name to get StoryLinks from if a matching
 	 * exception exists in the database for the passed URL.

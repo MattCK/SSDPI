@@ -325,6 +325,11 @@ public class AdShot {
 					_candidateURLs = StoryFinder.getStories(URLTool.setProtocol("http", _requestedURL), NUMBEROFSTORIES);
 					System.out.println("Done getting story candidates");
 					System.out.println("Number of candidates: " + _candidateURLs.size());
+					
+					//If no stories were found, use the requested URL to prevent errors 
+					if (_candidateURLs.size() == 0) {
+						_candidateURLs.add(URLTool.setProtocol("http",_requestedURL));
+					}
 				}
 				catch (Exception e) {
 					System.out.println("Unable to find stories for Adshot");

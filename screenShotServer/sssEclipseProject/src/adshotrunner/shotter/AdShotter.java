@@ -125,11 +125,27 @@ public class AdShotter extends SeleniumBase {
 	 */
 	static private void captureAdShotBrowserGroup(Set<AdShot> adShots, boolean mobileDriver) {
 		
+		//Loop through the AdShot target URLs to force the StoryFinder to run
+		for (AdShot currentAdShot: adShots) {
+			currentAdShot.targetURL();
+		}
+		
 		//Try to create a web driver to connect with
 		WebDriver activeWebDriver = null;
 		try {activeWebDriver = getAdShotDriver(mobileDriver);}
 		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
 						
+		//Get a set of all the AdShots' domains
+		Set<String> domainSet = new HashSet<String>();
+		for (AdShot currentAdShot: adShots) {
+			domainSet.add(URLTool.getSubdomain(currentAdShot.targetURL()));
+		}
+		
+		//Navigate to each domain once to help prevent strange one-timer ads
+		for (String domain: domainSet) {
+			navigateSeleniumDriverToURL(activeWebDriver, URLTool.setProtocol("http", domain), 3000);
+		}
+		
 		//Login to any sites that require it
 		setCookiesforSites(activeWebDriver, adShots);
 		
