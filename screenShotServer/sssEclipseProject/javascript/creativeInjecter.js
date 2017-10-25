@@ -864,7 +864,8 @@ class ElementInfo {
     }
     static backgroundAlpha(elementNode) {
         let backgroundColors = document.defaultView.getComputedStyle(elementNode).getPropertyValue('background-color');
-        let colorValues = backgroundColors.slice(5, -1).split("");
+        //let colorValues = backgroundColors.slice(5, -1).split("");
+        let colorValues = backgroundColors.split('(').pop().split(')').shift().split(',');
         if (colorValues.length < 4) {
             return 1;
         }
@@ -1961,7 +1962,7 @@ class CreativeInjecter {
             let nodeXPosition = ElementInfo.xPosition(currentNode);
             let nodeYPosition = ElementInfo.yPosition(currentNode);
             let nodeZIndex = Number(ElementInfo.zIndex(currentNode));
-            let nodeAlpha = ElementInfo.backgroundAlpha(currentNode);
+            let nodeAlpha = Number(ElementInfo.backgroundAlpha(currentNode));
             let nodeContentLength = (currentNode.textContent != null) ? currentNode.textContent.length : 0;
             /**************************** Remove Large Ads ****************************/
             //If the node has been :
@@ -1989,7 +1990,7 @@ class CreativeInjecter {
                 (nodeWidth != null) && (nodeHeight != null) &&
                 (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
                 (hideLargeFloatingElements)) {
-                if ((nodeContentLength < 500) &&
+                if (((nodeContentLength < 500) || ((nodeAlpha > 0) && (nodeAlpha < 1))) &&
                     ((nodeAlpha < 1) || (nodeZIndex >= highestZIndex))) {
                     let nodeScreenWidthPercentage = (nodeWidth / window.innerWidth);
                     let nodeScreenHeightPercentage = (nodeHeight / window.innerHeight);
@@ -2463,7 +2464,7 @@ CreativeInjecter._MAXIMUMADKEEPWIDTH = 971;
 CreativeInjecter._MAXIMUMADKEEPHEIGHT = 971;
 //window.onload = function() {
 //Remove the scrollbars
-document.documentElement.style.overflow = 'hidden';
+// document.documentElement.style.overflow = 'hidden';
 let creatives = [];
 let injectionStartHeight = 0;
 let hideLargeFloatingElements = true;
@@ -2527,4 +2528,4 @@ Log.output("End of message log");
 let messageLog = Log.getMessages();
 //Return the injected creatives with their locations and any log messages
 //Log.output(JSON.stringify(injectedIDsAndLocations));
-return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });
+//return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });

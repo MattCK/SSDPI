@@ -66,6 +66,10 @@ else if ($_POST['registerSubmit']) {
 		$registrationError = "The passwords do not match. Please re-enter the passwords.";
 	}
 	
+	else if ($_POST['agreementCheckbox'] != 1) {
+		$registrationError = "You must agree to the terms by marking the checkbox.";
+	}
+	
 	//If the info was successfully validated, check to see if the email address is already taken.
 	else if (emailAddressAlreadyInUse($_POST['emailAddress'])) {
 		$registrationError = "The email address provided has already been registered.<br>Please enter another.";
@@ -219,6 +223,21 @@ else {
 					<tr>
 						<td><strong>Re-enter Password:</strong></td>
 						<td><input type="password" id="newPassword2" name="newPassword2" maxlength="24" value="<? if ($registrationError) echo $_POST['newPassword2'];?>"></td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<div>
+								<div style="float:left">
+									<input id="agreementCheckbox" name="agreementCheckbox" type="checkbox" value="1">
+								</div>
+								<div style="float:right; width: 300px">
+									I agree to 
+									the <a href="termsAndConditions.php" target="_blank">Terms and Conditions</a>, 
+									the <a href="privacyPolicy.php" target="_blank">Privacy Policy</a>, and 
+									the <a href="disclaimer.php" target="_blank">Disclaimer</a>.
+								</div>
+							</div>
+						</td>
 					</tr>
 					<tr>
 						<td colspan="2" align="center">

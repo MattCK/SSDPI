@@ -32,6 +32,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -130,16 +131,26 @@ public class AdShotter extends SeleniumBase {
 			currentAdShot.targetURL();
 		}
 		
-		//Try to create a web driver to connect with
-		WebDriver activeWebDriver = null;
-		try {activeWebDriver = getAdShotDriver(mobileDriver);}
-		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
-						
 		//Get a set of all the AdShots' domains
 		Set<String> domainSet = new HashSet<String>();
 		for (AdShot currentAdShot: adShots) {
 			domainSet.add(URLTool.getSubdomain(currentAdShot.targetURL()));
 		}
+		
+		//Use proxy if zillow for now
+		boolean useProxy = false;
+		for (String currentDomain: domainSet) {
+			if (currentDomain.contains("zillow")) {
+				useProxy = true;
+				consoleLog("----!!!! USING ZILLOW PROXY !!!!----");
+			}
+		}
+
+		//Try to create a web driver to connect with
+		WebDriver activeWebDriver = null;
+		try {activeWebDriver = getAdShotDriver(mobileDriver, useProxy);}
+		catch (Exception e) {throw new AdShotRunnerException("Could not connect with Selenium server", e);}
+						
 		
 		//Navigate to each domain once to help prevent strange one-timer ads
 		for (String domain: domainSet) {
@@ -319,7 +330,7 @@ public class AdShotter extends SeleniumBase {
 	 * @param mobile		TRUE to use a mobile browser and FALSE to use desktop
 	 * @return				Initialized Chrome WebDriver
 	 */
-	static private WebDriver getAdShotDriver(boolean mobile) throws MalformedURLException {
+	static private WebDriver getAdShotDriver(boolean mobile, boolean useProxy) throws MalformedURLException {
 		
 		//Begin creating the driver for a Chrome window
 		consoleLog("Creating Chrome driver...");
@@ -355,6 +366,7 @@ public class AdShotter extends SeleniumBase {
 		}
 		driverOptions.setExperimentalOption("prefs", chromePreferences);
 		
+		//Add the extensions
 		try {
 			driverOptions.addExtensions(new File(ADMARKERPATH));
 			driverOptions.addExtensions(new File(CSPDISABLEPATH));
@@ -362,6 +374,12 @@ public class AdShotter extends SeleniumBase {
 			consoleLog("	FAILED: Unable to load AdMarker and Disabled CSP Extensions: " + e.toString() );
 		}
 
+		if (useProxy) {
+			driverOptions.addArguments("proxy-server=" + "10.100.100.52:24000");
+			
+			
+			consoleLog("----!!!! DRIVER USING PROXY !!!!----");
+		}
 
 		//Initialize the actual driver
 		WebDriver chromeDriver = null;
@@ -673,7 +691,10 @@ public class AdShotter extends SeleniumBase {
 		//Verify the crop length is within the image length
 		int finalHeight = ((cropLength + cropStartHeight) < originalImage.getHeight()) ? 
 											cropLength : (originalImage.getHeight() - cropStartHeight);
-		
+		consoleLog("----------------");
+		consoleLog("Final Height: " + finalHeight);
+		consoleLog("----------------");
+				
 		//Crop the image
 		BufferedImage croppedImage = originalImage.getSubimage(0, cropStartHeight, finalWidth, finalHeight);
 		

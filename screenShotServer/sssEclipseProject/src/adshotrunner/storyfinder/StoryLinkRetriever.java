@@ -96,6 +96,18 @@ public class StoryLinkRetriever extends SeleniumBase {
 	
 	static public List<StoryLink> getStoryLinksFromDriver(WebDriver activeWebDriver, String url) {
 		
+		//Landing page sites
+		ArrayList<String> landingPages = new ArrayList<String>();
+		landingPages.add("forbes.com");
+		
+		//If the domain has a landing page, load it up once
+		if (landingPages.contains(URLTool.getDomain(url).toLowerCase())) {
+			if (!navigateSeleniumDriverToURL(activeWebDriver, url, 2000)) {
+				quitWebdriver(activeWebDriver);
+				throw new AdShotRunnerException("StoryLinks: could not navigate to landing page URL");
+			}
+		}
+		
 		//Navigate to the passed URL
 		if (!navigateSeleniumDriverToURL(activeWebDriver, url, STORYTIMEOUT)) {
 			quitWebdriver(activeWebDriver);

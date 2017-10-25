@@ -1087,7 +1087,8 @@ class ElementInfo {
 
 	public static backgroundAlpha(elementNode: HTMLElement) {
 		let backgroundColors = document.defaultView.getComputedStyle(elementNode).getPropertyValue('background-color');
-		let colorValues = backgroundColors.slice(5, -1).split("");
+		//let colorValues = backgroundColors.slice(5, -1).split("");
+		let colorValues = backgroundColors.split('(').pop().split(')').shift().split(',');		
 		if (colorValues.length < 4) {return 1;}
 		else {return colorValues[3];}
 	}
@@ -2576,7 +2577,7 @@ class CreativeInjecter {
 			let nodeXPosition = ElementInfo.xPosition(currentNode);
 			let nodeYPosition = ElementInfo.yPosition(currentNode);
 			let nodeZIndex = Number(ElementInfo.zIndex(currentNode));
-			let nodeAlpha = ElementInfo.backgroundAlpha(currentNode);
+			let nodeAlpha = Number(ElementInfo.backgroundAlpha(currentNode));
 			let nodeContentLength = (currentNode.textContent != null) ? currentNode.textContent.length : 0;
 
 			/**************************** Remove Large Ads ****************************/
@@ -2631,8 +2632,8 @@ class CreativeInjecter {
 					 (!creatives.hasCreativeWithDimensions(nodeWidth, nodeHeight)) &&
 					 (hideLargeFloatingElements)) {
 				
-				if ((nodeContentLength < 500) &&
-					((nodeAlpha < 1) || (nodeZIndex >= highestZIndex))) {
+					if (((nodeContentLength < 500) || ((nodeAlpha > 0) && (nodeAlpha < 1))) &&
+						((nodeAlpha < 1) || (nodeZIndex >= highestZIndex))) {
 						
 					let nodeScreenWidthPercentage = (nodeWidth/window.innerWidth);
 					let nodeScreenHeightPercentage = (nodeHeight/window.innerHeight);

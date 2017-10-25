@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 
 import adshotrunner.campaigns.AdShot;
@@ -25,15 +24,15 @@ public class CampaignPowerPoint {
 	final private static String DEFAULTFONTTYPE = "Arial";		//Default font type
 
 	final private static String TITLEFONTTYPE = "Arial";		//Font type for first slide campaign title
-	final private static int TITLEFONTSIZE = 18;				//Font size for first slide campaign title
-	final private static int TITLEXPOSITION = 40;				//X position for first slide campaign title
-	final private static int TITLEYPOSITION = 440;				//Y position for first slide campaign title
+	final private static int TITLEFONTSIZE = 44;//18;				//Font size for first slide campaign title
+	final private static int TITLEXPOSITION = 240;//40;				//X position for first slide campaign title
+	final private static int TITLEYPOSITION = 250;//440;				//Y position for first slide campaign title
 	final private static int TITLEWIDTH = 500;					//Width for first slide campaign title
 
 	final private static String DATEFONTTYPE = "Arial";			//Font type for first slide campaign date
-	final private static int DATEFONTSIZE = 12;					//Font size for first slide campaign date
-	final private static int DATEXPOSITION = 40;				//X position for first slide campaign date
-	final private static int DATEYPOSITION = 465;				//Y position for first slide campaign date
+	final private static int DATEFONTSIZE = 34;//12;					//Font size for first slide campaign date
+	final private static int DATEXPOSITION = 240;//40;				//X position for first slide campaign date
+	final private static int DATEYPOSITION = 320;//465;				//Y position for first slide campaign date
 	final private static int DATEWIDTH = 500;					//Width for first slide campaign date
 	
 	final private static int SCREENSHOTTOPMARGIN = 50;			//Top margin of an AdShot screenshot
@@ -99,7 +98,8 @@ public class CampaignPowerPoint {
 		SlidePart firstSlide = _powerPoint.addNewSlide();
 		
 		//Add the title
-		_powerPoint.addTextToSlide(firstSlide, campaignName, TITLEXPOSITION, TITLEYPOSITION, TITLEWIDTH, 
+		String formattedName = StringEscapeUtils.escapeHtml(campaignName);
+		_powerPoint.addTextToSlide(firstSlide, formattedName, TITLEXPOSITION, TITLEYPOSITION, TITLEWIDTH, 
 								   TITLEFONTTYPE, TITLEFONTSIZE, fontColor);
 		
 		//Add the date
@@ -119,9 +119,15 @@ public class CampaignPowerPoint {
 		//Create the new slide
 		SlidePart newSlide = _powerPoint.addNewSlide();
 		
+		//Shorten the URL if necessary
+		String adShotURL = slideAdShot.finalURL();
+		if (adShotURL.length() > 95) {
+			adShotURL = adShotURL.substring(0, 95) + "...";
+		}
+		
 		//Add the final page title and injected creative dimensions text
 		_powerPoint.addTextToSlide(newSlide, getSlideDescription(slideAdShot), 30, 1, 800, DEFAULTFONTTYPE, 15, _fontColor);
-		_powerPoint.addTextToSlide(newSlide, StringEscapeUtils.escapeXml(slideAdShot.pageTitle()), 30, 25, 800, DEFAULTFONTTYPE, 10, _fontColor);
+		_powerPoint.addTextToSlide(newSlide, StringEscapeUtils.escapeXml(adShotURL), 30, 25, 800, DEFAULTFONTTYPE, 10, _fontColor);
 		
 		//Get the new dimensions of the screenshot
 		int targetWidth = SLIDEWIDTH - (SCREENSHOTSIDEMARGIN * 2);
