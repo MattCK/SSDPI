@@ -256,7 +256,7 @@ public class Campaign {
 		}
 		
 		//Create the PowerPoint filename
-		String pptxCustomerName = _customerName.trim().replace(' ', '-');
+		String pptxCustomerName = _customerName.trim().replace(' ', '-').replace("'", "");
 		String pptxDate = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
 		String pptxTimestamp = Long.toString(Instant.now().getEpochSecond());
 		pptxTimestamp = pptxTimestamp.substring(pptxTimestamp.length() - 6);

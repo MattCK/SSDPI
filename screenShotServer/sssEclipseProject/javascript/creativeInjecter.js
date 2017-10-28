@@ -922,6 +922,9 @@ class ElementInfo {
         }
         //If the current node is not a document node, grab the containing document
         let frameDocument = (containedNode.ownerDocument) ? containedNode.ownerDocument : containedNode;
+        if (frameDocument.defaultView == null) {
+            return null;
+        }
         return frameDocument.defaultView.frameElement;
     }
     /**
@@ -2464,7 +2467,7 @@ CreativeInjecter._MAXIMUMADKEEPWIDTH = 971;
 CreativeInjecter._MAXIMUMADKEEPHEIGHT = 971;
 //window.onload = function() {
 //Remove the scrollbars
-// document.documentElement.style.overflow = 'hidden';
+document.documentElement.style.overflow = 'hidden';
 let creatives = [];
 let injectionStartHeight = 0;
 let hideLargeFloatingElements = true;
@@ -2528,4 +2531,4 @@ Log.output("End of message log");
 let messageLog = Log.getMessages();
 //Return the injected creatives with their locations and any log messages
 //Log.output(JSON.stringify(injectedIDsAndLocations));
-//return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });
+return JSON.stringify({ 'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog });

@@ -1150,6 +1150,7 @@ class ElementInfo {
 
 		//If the current node is not a document node, grab the containing document
 		let frameDocument = (containedNode.ownerDocument) ? containedNode.ownerDocument : containedNode;
+        if ((<Document> frameDocument).defaultView == null) {return null;}
 		return (<Document> frameDocument).defaultView.frameElement;
 	}
 
@@ -3202,4 +3203,3 @@ let messageLog = Log.getMessages();
 //Log.output(JSON.stringify(injectedIDsAndLocations));
 
 return JSON.stringify({'injectedCreatives': injectedIDsAndLocations, 'outputLog': messageLog});
-

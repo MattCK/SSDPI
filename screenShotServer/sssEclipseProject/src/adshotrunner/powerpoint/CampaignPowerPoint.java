@@ -24,15 +24,15 @@ public class CampaignPowerPoint {
 	final private static String DEFAULTFONTTYPE = "Arial";		//Default font type
 
 	final private static String TITLEFONTTYPE = "Arial";		//Font type for first slide campaign title
-	final private static int TITLEFONTSIZE = 44;//18;				//Font size for first slide campaign title
-	final private static int TITLEXPOSITION = 240;//40;				//X position for first slide campaign title
-	final private static int TITLEYPOSITION = 250;//440;				//Y position for first slide campaign title
-	final private static int TITLEWIDTH = 500;					//Width for first slide campaign title
+	final private static int TITLEFONTSIZE = 26;//18;				//Font size for first slide campaign title
+	final private static int TITLEXPOSITION = 110;//40;				//X position for first slide campaign title
+	final private static int TITLEYPOSITION = 290;//440;				//Y position for first slide campaign title
+	final private static int TITLEWIDTH = 820;					//Width for first slide campaign title
 
 	final private static String DATEFONTTYPE = "Arial";			//Font type for first slide campaign date
-	final private static int DATEFONTSIZE = 34;//12;					//Font size for first slide campaign date
-	final private static int DATEXPOSITION = 240;//40;				//X position for first slide campaign date
-	final private static int DATEYPOSITION = 320;//465;				//Y position for first slide campaign date
+	final private static int DATEFONTSIZE = 18;//12;					//Font size for first slide campaign date
+	final private static int DATEXPOSITION = 110;//40;				//X position for first slide campaign date
+	final private static int DATEYPOSITION = 335;//465;				//Y position for first slide campaign date
 	final private static int DATEWIDTH = 500;					//Width for first slide campaign date
 	
 	final private static int SCREENSHOTTOPMARGIN = 50;			//Top margin of an AdShot screenshot

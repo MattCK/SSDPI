@@ -84,9 +84,14 @@ public class AdShotter extends SeleniumBase {
 	final private static int BTFCROPPADDING = 150;			//in pixels
 	
 	//Crop lengths and bottom margin
+	final private static int MINIMUMDESKTOPCROPLENGTH = 800;	//in pixels
+	final private static int MINIMUMMOBILECROPLENGTH = 500;		//in pixels
 	final private static int MINIMUMCROPLENGTH = 1560;		//in pixels
 	final private static int MAXIMUMCROPLENGTH = 3000; 		//in pixels
 	final private static int CROPBOTTOMMARGIN = 40;			//in pixels
+	
+	//Amount of trailing white space to always keep
+	final private static int TRAILINGWHITESPACEKEEP = 30; 	//in pixels
 
 	//---------------------------------------------------------------------------------------
 	//--------------------------------- Static Methods --------------------------------------
@@ -222,10 +227,10 @@ public class AdShotter extends SeleniumBase {
 		//getUnmodifiedScreenshot is set to TRUE , take a screenshot now before
 		//we modify the page. It will be appended to the side of the final AdShot for comparison.
 		File unmodifiedScreenShot = null;
-		if (ASRProperties.asrDomain().equals("development.adshotrunner.com") &&
-			ASRProperties.unmodifiedScreenShotCompare()) {
-				unmodifiedScreenShot = getUnmodifiedScreenshot(activeWebDriver);
-		}
+//		if (ASRProperties.asrDomain().equals("development.adshotrunner.com") &&
+//			ASRProperties.unmodifiedScreenShotCompare()) {
+//				unmodifiedScreenShot = getUnmodifiedScreenshot(activeWebDriver);
+//		}
 		
 		//Get the CreativeInjecter javascript with the creatives inserted into it
 		String creativeInjecterJS = "";
@@ -248,7 +253,7 @@ public class AdShotter extends SeleniumBase {
 		//Parse the Injecter response, mark which Creatives were injected and 
 		//find crop start height and optimal length
 		int cropStartHeight = 0;
-		int optimalCropLength = MINIMUMCROPLENGTH;
+		int optimalCropLength = (activeAdShot.mobile()) ? MINIMUMMOBILECROPLENGTH : MINIMUMDESKTOPCROPLENGTH;
 		try {
 			
 			InjecterResponse responseFromInjecter = new Gson().fromJson(injecterResponseJSON, InjecterResponse.class);
@@ -636,7 +641,7 @@ public class AdShotter extends SeleniumBase {
 	/**
 	 * Returns the optimal crop length for the screenshot. 
 	 * 
-	 * If the Creatives were injected in locations less than MINIMUMCROPLENGTH then MINIMUMCROPLENGTH is returned.
+	 * If the Creatives were injected in locations less than the minimum crop height, this minimum is returned.
 	 * 
 	 * Otherwise, the functions returns the height of the margin (CROPBOTTOMMARGIN) underneath the lowest Creative
 	 * that is still less than than maximum crop length (MAXIMUMCROPLENGTH)
@@ -650,7 +655,7 @@ public class AdShotter extends SeleniumBase {
 											int cropStartHeight) {
 				
 		//Loop through the injected Creatives and use the bottom of the lowest within the crop length limits
-		int optimalCropLength = MINIMUMCROPLENGTH;
+		int optimalCropLength = (currentAdShot.mobile()) ? MINIMUMMOBILECROPLENGTH : MINIMUMDESKTOPCROPLENGTH;
 		for (Map.Entry<Integer, InjecterResponse.Coordinate> injected : responseFromInjecter.injectedCreatives.entrySet()) {
 		
 		    //Determine the bottom coordinate of the injected creative
@@ -691,10 +696,10 @@ public class AdShotter extends SeleniumBase {
 		//Verify the crop length is within the image length
 		int finalHeight = ((cropLength + cropStartHeight) < originalImage.getHeight()) ? 
 											cropLength : (originalImage.getHeight() - cropStartHeight);
-		consoleLog("----------------");
-		consoleLog("Final Height: " + finalHeight);
-		consoleLog("----------------");
-				
+
+		//Remove any unnecessary trailing whitespace
+		finalHeight = finalHeight - getTraillingWhitespaceHeight(originalImage, (cropStartHeight + finalHeight));
+
 		//Crop the image
 		BufferedImage croppedImage = originalImage.getSubimage(0, cropStartHeight, finalWidth, finalHeight);
 		
@@ -705,6 +710,48 @@ public class AdShotter extends SeleniumBase {
 		
 		//Return the modified image
 		return croppedImage;
+	}
+	
+	/**
+	 * Returns the height of trailing white space at the end of the image in pixels.
+	 * 
+	 * TRAILINGWHITESPACEKEEP is subtracted from this amount before it is returned.
+	 * The returned number will always be 0 or higher. 
+	 * 
+	 * @param image			Image to examine for trailing whitespace
+	 * @param startHeight	Pixel row to begin examining for whitespace
+	 * @return
+	 */
+	public static int getTraillingWhitespaceHeight(BufferedImage image, int startHeight) {
+		
+		//Loop through each pixel row, starting from the lowest, until 
+		//a non-white pixel is found
+	    int imageWidth = image.getWidth();
+	    int imageHeight = image.getHeight();
+	    int yPosition = startHeight;
+	    int whiteSpaceLength = 0;
+	    boolean nonWhitePixelFound = false;
+	    while ((yPosition >= 0) && (!nonWhitePixelFound)) {
+	    	
+	    	//Check the current row for any non-white pixels
+	        for(int xPosition = 0; xPosition < imageWidth; xPosition++) {
+	            int currentPixelColor = image.getRGB(xPosition, yPosition);  
+	            if (currentPixelColor != Color.WHITE.getRGB()) {
+	            	nonWhitePixelFound = true;
+	            }
+	        }
+	        
+	        //If no non-white pixels were found, increment the white space length
+	        if (!nonWhitePixelFound) {++whiteSpaceLength;}
+	        --yPosition;
+	    }
+	    
+	    //Subtract the white space keep height
+	    whiteSpaceLength = whiteSpaceLength - TRAILINGWHITESPACEKEEP;
+	    if (whiteSpaceLength < 0) {whiteSpaceLength = 0;}
+
+	    //Return the final trailing white space height
+		return whiteSpaceLength;
 	}
 	
 	/**

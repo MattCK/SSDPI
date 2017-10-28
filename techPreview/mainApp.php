@@ -101,7 +101,7 @@ $campaignDomain = ($_SESSION['lastCampaignDomain']) ? $_SESSION['lastCampaignDom
 		<img helpIcon="" id="customerHelpIcon" class="helpIcon titleHelpIcon" src="images/helpIcon.png" />
 		<div id="customerDiv" class="section">
 			<div class="textFieldName">Name:</div> 
-			<input id="customerName" name="customerName" type="text">
+			<input id="customerName" name="customerName" type="text" maxlength="44">
 			<span id="emptyCustomerFieldMessage" class="errorMessageSpan">Please enter the customer name</span>
 		</div>
 

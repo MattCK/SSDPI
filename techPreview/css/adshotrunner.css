@@ -332,6 +332,10 @@ input.button-tiny:disabled, input.button-tiny:disabled:hover {
     display: none;
 }
 
+#customerName {
+    width: 330px;
+}
+
 .customerFieldEmpty {
     background-color: #ffd8d8;
 }
